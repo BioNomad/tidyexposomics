@@ -79,6 +79,9 @@ exp_vars <- expom@metadata$var_info |>
 expom <- expom |> 
   filter_missing(na_thresh = 20)
 
+expom |> 
+  plot_missing_summary(threshold = 20)
+
 # --- Imputation --------
 expom <- expom |> 
   impute_missing(
@@ -89,6 +92,9 @@ expom <- expom |>
 expom <- expom |> 
   pca_analysis()
 
+expom |> 
+  plot_pca()
+
 # --- Data Normality Check ------------
 expom <- expom |>
   check_normality()
@@ -96,6 +102,9 @@ expom <- expom |>
 # --- Transform Exposure Data ---------
 expom <- expom |> 
   transform_exposure(transform_method = "best")
+
+expom |> 
+  plot_normality_sum()
 
 # --- Filter Non-Normal Exposure Data ---------
 # expom_6 <- expom_5 |> 
