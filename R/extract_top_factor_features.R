@@ -59,7 +59,7 @@ extract_top_factor_features <- function(expOmicSet, factors, method = "percentil
   # Apply filtering
   filtered_features <- loadings_df |> 
     filter(abs(loading) > threshold) |> 
-    select(features, factor, loading, name) |> distinct()
+    dplyr::select(features, factor, loading, name) |> distinct()
   
   # Store selected features
   metadata(expOmicSet)$top_factor_features <- filtered_features

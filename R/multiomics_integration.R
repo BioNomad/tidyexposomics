@@ -15,6 +15,10 @@ multiomics_integration <- function(expOmicSet,
     stop("Invalid method. Choose from 'MOFA' or 'MCIA'.")
   }
   
+  if(length(experiments(expOmicSet)) < 2){
+    stop("Multi-Omics Integration requires at least two assays in the MultiAssayExperiment object.")
+  }
+  
   if(scale){
     expOmicSet <- scale_multiassay(expOmicSet)
   }
