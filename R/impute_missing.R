@@ -43,7 +43,7 @@ impute_missing <- function(expOmicSet,
   }
   
   # Identify datasets with missing data
-  to_impute <- names(Filter(function(x) x[["all_var_sum"]] %>% nrow() > 1, expom_1@metadata$na_qc))
+  to_impute <- names(Filter(function(x) x[["all_var_sum"]] %>% nrow() > 1, expOmicSet@metadata$na_qc))
   
   omics_to_impute <- setdiff(to_impute, "exposure")
   
