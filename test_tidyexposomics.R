@@ -9,10 +9,8 @@ invisible(lapply(
   source))
 
 # --- Testing tidyexposomics --------------
-# inspiration:
-# https://github.com/tidyomics
-# https://stemangiola.github.io/tidybulk/articles/introduction.html
 
+# --- Load Data ---------------------------
 load("./data/expom.RData")
 
 # TODO: check s2809 - manually coding as male based on gene exp of Y chr genes
@@ -58,31 +56,45 @@ expom <- expOmicSet(
   omics = omics_list,
   row_data = NULL)
 
+# option if you have one omic
+# expom <- expOmicSet(
+#   var_info = des,
+#   exposure = aw_dataset_cv2_filt,
+#   omics = list("cd4_rna"=omics_list$cd4_rna),
+#   row_data = NULL)
+
 colData(expom)
 assays(expom)
 
-exp_vars <- expom@metadata$var_info |> filter( category %in% c("allergen_results","chemical","indoor_pollution","Allergens","smoke_exposure")) |> pull(variable)
+exp_vars <- expom@metadata$var_info |> 
+  filter( category %in% 
+            c("allergen_results",
+              "chemical",
+              "indoor_pollution",
+              "Allergens",
+              "smoke_exposure")) |> 
+  pull(variable)
 
 # --- Missingness Check --------
-expom_1 <- expom |> 
+expom <- expom |> 
   filter_missing(na_thresh = 20)
 
 # --- Imputation --------
-expom_2 <- expom_1 |> 
+expom <- expom |> 
   impute_missing(
     exposure_impute_method = "median",
     omics_impute_method = "median")
 
 # --- PCA Analysis --------
-expom_3 <- expom_2 |> 
+expom <- expom |> 
   pca_analysis()
 
 # --- Data Normality Check ------------
-expom_4 <- expom_3 |>
+expom <- expom |>
   check_normality()
 
 # --- Transform Exposure Data ---------
-expom_5 <- expom_4 |> 
+expom <- expom |> 
   transform_exposure(transform_method = "best")
 
 # --- Filter Non-Normal Exposure Data ---------
@@ -90,76 +102,31 @@ expom_5 <- expom_4 |>
 #   filter_non_normal(p_thresh = 0.05)
 
 # --- Subject Exposure Clustering --------------
-expom_7 <- expom_5 |> 
+expom <- expom |> 
   cluster_samples(exposure_cols = exp_vars,
                   clustering_approach = "diana")
 
 # --- Exposure Correlation --------------------------
-expom_8 <- expom_7 |>
+expom <- expom |>
   exposure_correlation()
 
 # --- Exposure-Outcome Association -----------------
-expom_9 <- expom_8 |> 
+expom <- expom |> 
   perform_exwas(
     outcome = "pftfev1fvc_actual",
-    exposures = colData(expom_8) |> 
+    exposures = colData(expom) |> 
       colnames() |> 
-      (\(x) x[!x %in% c("pftfev1fvc_actual","age","black","female","income5")])(),
+      (\(x) x[!x %in% 
+                c("pftfev1fvc_actual",
+                  "age",
+                  "black",
+                  "female",
+                  "income5")])(),
     confounders = c("age","black","female"))
 
-# --- ExWAS Variable Selection ---------------------
-# expom_10 <- expom_9 |>
-#   exwas_select(
-#     outcome = "pftfev1fvc_actual",
-#     exposures = colData(expom_9) |>
-#       colnames() |>
-#       (\(x) x[!grepl("fev|fef|fvc|income5|black",x)])(),
-#     confounders = c("age","black","female","income5"))
-
-# --- Adjust Omics Data ---------------
-# expom_11 <- expom_9 |>
-#   adjust_assays(
-#     outcome = "fev1fvc_category",
-#     covariates = c("age","female", "black"),
-#     minimum_counts = 10,
-#     minimum_proportion = 0.7,
-#     scaling_method = "none",
-#     skip_identify_abundant = c("cd4_mirna","cd16_mirna","protein"))
-
-# expom_11 <- expom_10 |>
-#   adjust_assays(
-#     outcome = "pftfev1fvc_actual",
-#     covariates = c("age","female", "black"),
-#     minimum_counts = 10,
-#     minimum_proportion = 0.8,
-#     scaling_method = "none",
-#     skip_identify_abundant = c("cd4_mirna","cd16_mirna","protein"))
 
 # --- Differential Analysis -------------
-# a <- expom_9 |>
-#   run_differential_abundance(
-#     formula = ~ 0 + fev1fvc_category + age + sex + race,
-#     minimum_counts = 1,
-#     minimum_proportion = 0.1,
-#     method = "deseq2",
-#     contrasts = c("fev1fvc_categorySevere - fev1fvc_categoryUnobstructed",
-#                   "fev1fvc_categoryModerate - fev1fvc_categoryUnobstructed"),
-# 
-#     scaling_method = "none")
-# 
-# a <- expom_9 |>
-#   run_differential_abundance(
-#     formula = ~ fev1fvc_category + age + sex + race,
-#     minimum_counts = 1,
-#     minimum_proportion = 0.1,
-#     method = "limma_voom",
-#     # contrasts = c("fev1fvc_categorySevere - fev1fvc_categoryUnobstructed",
-#     #               "fev1fvc_categoryModerate - fev1fvc_categoryUnobstructed"),
-#     contrasts = c("fev1fvc_categorySevere - (Intercept)",
-#                   "fev1fvc_categoryModerate - (Intercept)"),
-#     scaling_method = "none")
-
-expom_10 <- expom_9 |>
+expom <- expom |>
   run_differential_abundance(
     formula = ~ pftfev1fvc_actual + age + sex + race,
     method = "limma_voom",
@@ -168,37 +135,16 @@ expom_10 <- expom_9 |>
     minimum_proportion = 0.7,
     scaling_method = "none")
 
-expom_10@metadata[["differential_abundance"]] |>
+expom@metadata[["differential_abundance"]] |>
   #filter(grepl("Severe",contrast)) |> 
   filter(adj.P.Val<0.05 & abs(logFC) > log2(1.5)) |> 
   #filter(adj.P.Val<0.05 ) |> 
   janitor::tabyl(assay_name) |> 
   arrange(desc(n))
 
-# --- Feature:Exposure Correlation Analysis ----------
-# expom_13 <- expom_12 |>
-#   correlate_exposures_with_omics(
-#     exposure_cols = exp_vars,
-#     da_column = "adj.P.Val",
-#     da_threshold = 0.05,
-#     cor_pval_column = "FDR",
-#     pval_cutoff = 0.1,
-#     correlation_cutoff = 0.3
-#   )
-
-# expom_14 <- expom_13 |>
-#   exposure_omic_association(
-#     # exposures = colData(expom_12) |> 
-#     #   colnames() |> 
-#     #   (\(x) x[!x %in% c("pftfev1fvc_actual","age","race","sex")])(), 
-#     exposures = exp_vars,
-#     confounders = c("age","sex","race"), 
-#     family = "gaussian", 
-#     correction_method = "fdr"
-#   )
 # --- Sensitivity Analysis --------------
-expom_11 <- run_sensitivity_analysis(
-  expOmicSet = expom_10, 
+expom <- expom |> 
+  run_sensitivity_analysis(
   base_formula = ~ pftfev1fvc_actual + age + sex + race, 
   contrasts = c("pftfev1fvc_actual - (Intercept)"),
   methods = c("limma_voom"),
@@ -209,33 +155,37 @@ expom_11 <- run_sensitivity_analysis(
 )
 
 # --- Multiomics Analysis -------------------
-expom_12 <- expom_11 |> 
+expom <- expom |> 
   multiomics_integration(method = "MCIA")
 
 # --- Identify Relevant Factors -------------
-expom_13 <- identify_relevant_factors(expOmicSet = expom_12, 
-                                      outcome_var = "pftfev1fvc_actual", 
+expom <- expom |> 
+  identify_relevant_factors(outcome_var = "pftfev1fvc_actual", 
                                       categorical = FALSE,
                                       p_thresh = 0.1)
 
 # --- Top Features By Factor Loadings ------
-expom_14 <- expom_13 |> 
+expom <- expom |> 
   extract_top_factor_features(factors = "V3", 
                               method = "percentile",
                               percentile = 0.95,
                               threshold = 0.3)
 
-# --- Exposure-Omic Corrrelation ----------
-expom_15 <- expom_14 |> 
-  correlate_exposures_with_features(
-    exposure_cols = c(exp_vars[!grepl("-",exp_vars)],"pftfev1fvc_actual"),
-    batch_size = 1500)
+# --- Feature:Exposure Correlation Analysis ----------
+expom <- expom |> 
+  correlate_exposures_with_degs(exposure_cols = exp_vars)
+
+expom <- expom |> 
+  correlate_exposures_with_factors(exposure_cols = exp_vars)
 
 # --- Functional Enrichment --------------
-expom_16 <- expom_15 |> 
-  multiomics_functional_enrichment(
+expom <- expom |> 
+  .exposure_category_functional_enrichment(
+    cor_df = "degs",
     mirna_assays = c("cd4_mirna", "cd16_mirna"), 
     uniprot_assays = c("protein"))
+
+
 # --- TODO ---------------------------
 #| - Ensure that each type of enrichment algorithm enriches each omic separately
 #| - Determine what are the shared terms and what are different per omic
