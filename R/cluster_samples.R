@@ -2,7 +2,7 @@ cluster_samples <- function(expOmicSet,
                             exposure_cols = NULL,  # Character vector of `colData` columns to cluster
                             dist_method = NULL, 
                             cluster_method = "ward.D", 
-                            clustering_approach = "gap") {
+                            clustering_approach = "diana") {
   require(tidyverse)
   require(ComplexHeatmap)
   require(circlize)
@@ -100,10 +100,15 @@ cluster_samples <- function(expOmicSet,
   message("Optimal number of clusters for samples: ", k_samples)
   
   # Generate heatmap
-  heatmap <- Heatmap(
+   heatmap <- Heatmap(
     matrix = t(scale(exposure_data)),  # Scale and transpose for clustering
     name = "Scaled Exposure",
     cluster_columns = sample_cluster,
+    top_annotation = HeatmapAnnotation(
+      df=data.frame(
+      Cluster = as.character(sample_groups),
+      id = names(sample_groups)) |> 
+        column_to_rownames("id")),
     show_row_dend = TRUE,
     show_column_dend = TRUE,
     row_names_gp = gpar(fontsize = 8),
@@ -113,11 +118,54 @@ cluster_samples <- function(expOmicSet,
   )
   
   # Save clustering results in metadata
-  metadata(expOmicSet)$clustering <- list(
+  metadata(expOmicSet)$sample_clustering <- list(
     sample_cluster = sample_cluster,
     sample_groups = sample_groups,
     heatmap = heatmap
   )
+  # ta=HeatmapAnnotation(df=expom@metadata$sample_clustering$a |> 
+  #                        as.data.frame() |> 
+  #                        t() |> 
+  #                        as.data.frame() |> 
+  #                        rownames_to_column("id_to_map") |>
+  #                        left_join(colData(expom) |> 
+  #                                    as.data.frame() |> 
+  #                                    dplyr::select(all_of(c("age","race"))) |> 
+  #                                    rownames_to_column("id_to_map"),
+  #                                  by = "id_to_map") |> 
+  #                        column_to_rownames("id_to_map") |>
+  #                        t() |> 
+  #                        as.data.frame() |> 
+  #                        (\(df) df[rownames(df) %in% c("age","race"),])() |> 
+  #                        t() |> as.data.frame())
+  # 
+  # expom@metadata$sample_clustering$a |> 
+  #   as.data.frame() |> 
+  #   t() |> 
+  #   as.data.frame() |> 
+  #   rownames_to_column("id_to_map") |>
+  #   left_join(colData(expom) |> 
+  #               as.data.frame() |> 
+  #               dplyr::select(all_of(c("age","race"))) |> 
+  #               rownames_to_column("id_to_map"),
+  #             by = "id_to_map") |> 
+  #   column_to_rownames("id_to_map") |>
+  #   t() |> 
+  #   as.data.frame() |> 
+  #   (\(df) df[!rownames(df) %in% c("age","race"),])() |> 
+  #   mutate_all(as.numeric) |> 
+  #   as.matrix() |> 
+  #   Heatmap(  
+  #     name = "Scaled Exposure",
+  #     cluster_columns = expom@metadata$sample_clustering$sample_cluster,
+  #     show_row_dend = TRUE,
+  #     show_column_dend = TRUE,
+  #     row_names_gp = gpar(fontsize = 8),
+  #     column_names_gp = gpar(fontsize = 8, angle = 45),
+  #     heatmap_legend_param = list(title = "Exposure\nValue"),
+  #     col = colorRamp2(c(-2, 0, 2), c("blue", "white", "red")),
+  #     top_annotation = ta
+  #   )
   
   return(expOmicSet)
 }

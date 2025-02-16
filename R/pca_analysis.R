@@ -53,16 +53,7 @@ pca_analysis <- function(expOmicSet) {
   # PCA analysis: feature space
   message("Performing PCA on Feature Space...")
   pca_feature <- prcomp(feature_data, center = TRUE, scale. = TRUE)
-  pca_plot_feature <- autoplot(pca_feature, data = dat, colour = "category") +
-    theme_pubr(legend="right") +
-    scale_color_npg() +
-    labs(title = "PCA of Feature Space", color = "")
-  scree_feature <- fviz_eig(
-    pca_feature,
-    barfill = "#00a9b2",
-    barcolor = "#00a9b2",
-    main = "Scree Plot of Feature Space"
-  )
+ 
   
   # PCA analysis: sample space
   message("Performing PCA on Sample Space...")
@@ -76,31 +67,36 @@ pca_analysis <- function(expOmicSet) {
     mutate(across(where(is.numeric), ~ log2(.+abs(min(.))+1)))
   
   pca_sample <- prcomp(sample_data, center = TRUE, scale. = TRUE)
-  pca_plot_sample <- autoplot(pca_sample, colour = "#8a4f77") +
-    theme_pubr() +
-    labs(title = "PCA of Sample Space")
-  scree_sample <- fviz_eig(
-    pca_sample,
-    barfill = "#8a4f77",
-    barcolor = "#8a4f77",
-    main = "Scree Plot of Sample Space"
-  )
   
-  # Combine plots
-  combined_plot <- wrap_plots(
-    pca_plot_feature, scree_feature,
-    pca_plot_sample, scree_sample
-  )
+  # Compute Mahalanobis distance
+  pca_coords <- pca_sample$x[, c("PC1", "PC2")]  # Adjust if using more PCs
+  cov_mat <- cov(pca_coords)  # Covariance matrix
+  inv_cov <- solve(cov_mat)  # Inverse covariance
+  center <- colMeans(pca_coords)  # Mean vector
+  
+  mahal_dist <- apply(pca_coords, 1, function(x) {
+    sqrt(t(x - center) %*% inv_cov %*% (x - center))
+  })
+  
+  # Determine threshold (Chi-square with 2 degrees of freedom, p < 0.01)
+  threshold <- qchisq(0.99, df = 2)
+  outliers <- which(mahal_dist^2 > threshold)
+  
+  # Print outlier sample names
+  if (length(outliers) > 0) {
+    print(paste("Outliers detected:",
+                paste(rownames(pca_sample$x)[outliers], 
+                  collapse = ", ")))
+  } else {
+    print("No outliers detected.")
+  }
   
   # Store results
   metadata(expOmicSet)$pca <- list(
+    pca_df = tibble(dat),
     pca_feature = pca_feature,
-    pca_plot_feature = pca_plot_feature,
-    scree_feature = scree_feature,
     pca_sample = pca_sample,
-    pca_plot_sample = pca_plot_sample,
-    scree_sample = scree_sample,
-    combined_plot = combined_plot
+    outliers = rownames(pca_sample$x)[outliers]
   )
   
   return(expOmicSet)
