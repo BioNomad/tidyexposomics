@@ -1,1 +1,1 @@
-# tidyexposomics
+# tidyexposomics <a href="#"><img src="./inst/logo.png" align="right" height="200" /></a>
