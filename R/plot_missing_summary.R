@@ -3,6 +3,8 @@ plot_missing_summary <- function(
     threshold=20){
   require(tidyverse)
   require(ggpubr)
+  require(ggsci)
+  
   # Plot missing data summary
   qc_res <- expOmicSet@metadata$na_qc
   
@@ -34,7 +36,10 @@ plot_missing_summary <- function(
       data.frame(
         assay_name = assay_names[!assay_names %in% missing_data$assay_name],
         missingness = 0)) |> 
-    mutate(assay_name = factor(assay_name, levels = assay_names)) |> 
+    mutate(assay_name=case_when(
+      assay_name == "exposure" ~ "Exposure",
+      .default = assay_name
+    )) |> 
     mutate(assay_name = paste(assay_name, " (", missingness, ")", sep = ""))
   
   # plot missing data summary

@@ -43,11 +43,11 @@ prot_abd_unnorm <- prot_abd |>
   (\(x) 2^x)()
 
 omics_list <- list(
-  "cd16_rna" = cd16_rna,
-  "cd4_rna" = cd4_rna,
-  "cd4_mirna"= cd4_mirna,
-  "cd16_mirna" = cd16_mirna,
-  "protein" = prot_abd_unnorm
+  "CD16+ Monocyte RNA" = cd16_rna,
+  "CD4+ T-cell RNA" = cd4_rna,
+  "CD4+ T-cell miRNA"= cd4_mirna,
+  "CD16+ Monocyte miRNA" = cd16_mirna,
+  "Serum Proteomics" = prot_abd_unnorm
 )
 
 expom <- expOmicSet(
@@ -75,6 +75,8 @@ exp_vars <- expom@metadata$var_info |>
               "smoke_exposure")) |> 
   pull(variable)
 
+exp_vars <- c(exp_vars[exp_vars %in% colnames(colData(expom))])
+
 # --- Missingness Check --------
 expom <- expom |> 
   filter_missing(na_thresh = 20)
@@ -93,6 +95,15 @@ expom <- expom |>
   pca_analysis()
 
 expom |> 
+  plot_pca()
+
+a <- expom |> 
+  remove_sample_outliers()
+
+a <- a |> 
+  pca_analysis()
+
+a |> 
   plot_pca()
 
 # --- Data Normality Check ------------
@@ -115,9 +126,14 @@ expom <- expom |>
   cluster_samples(exposure_cols = exp_vars,
                   clustering_approach = "diana")
 
+expom |> 
+  plot_sample_clusters(
+    cols_of_interest = c(exp_vars,"age","pftfev1fvc_actual")) 
+
 # --- Exposure Correlation --------------------------
 expom <- expom |>
-  exposure_correlation()
+  exposure_correlation(
+    exposure_cols = c(exp_vars,"age","pftfev1fvc_actual"))
 
 # --- Exposure-Outcome Association -----------------
 expom <- expom |> 

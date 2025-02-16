@@ -1,4 +1,7 @@
-exposure_correlation <- function(expOmicSet, threshold = 0.3) {
+exposure_correlation <- function(
+    expOmicSet, 
+    exposure_cols=NULL,
+    threshold = 0.3) {
   library(tidyverse)
   library(ggplot2)
   library(ComplexHeatmap)
@@ -10,6 +13,14 @@ exposure_correlation <- function(expOmicSet, threshold = 0.3) {
   exposure_data <- colData(expOmicSet) |>
     as.data.frame() |>
     select_if(~ !all(. == .[1]))  # Keep columns with more than one unique value
+  
+  if(is.null(exposure_cols)) {
+    exposure_cols <- colnames(exposure_data)
+  } else {
+    exposure_cols <- intersect(exposure_cols, colnames(exposure_data))
+    exposure_data <- exposure_data |>
+      select(all_of(exposure_cols))
+  }
   
   # Identify categorical and numeric columns
   categorical_vars <- exposure_data |>
