@@ -3,7 +3,7 @@ remove_sample_outliers <- function(
     outliers=NULL
 ){
   
-  if(!"pca" %in% colnames(expOmicSet@metadata)){
+  if(!"pca" %in% names(expOmicSet@metadata)){
     stop("PCA not performed on the data. Please run 'pca_analysis' first.")
   }
   if(is.null(outliers)){

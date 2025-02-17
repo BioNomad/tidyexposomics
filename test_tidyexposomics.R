@@ -97,14 +97,14 @@ expom <- expom |>
 expom |> 
   plot_pca()
 
-a <- expom |> 
-  remove_sample_outliers()
-
-a <- a |> 
-  pca_analysis()
-
-a |> 
-  plot_pca()
+# a <- expom |> 
+#   remove_sample_outliers()
+# 
+# a <- a |> 
+#   pca_analysis()
+# 
+# a |> 
+#   plot_pca()
 
 # --- Data Normality Check ------------
 expom <- expom |>
@@ -159,6 +159,7 @@ expom <- expom |>
 
 expom |> 
   plot_exp_outcome_association()
+
 # --- Differential Analysis -------------
 expom <- expom |>
   run_differential_abundance(
@@ -169,10 +170,11 @@ expom <- expom |>
     minimum_proportion = 0.7,
     scaling_method = "none")
 
+expom |> 
+  plot_volcano()
+
 expom@metadata[["differential_abundance"]] |>
-  #filter(grepl("Severe",contrast)) |> 
   filter(adj.P.Val<0.05 & abs(logFC) > log2(1.5)) |> 
-  #filter(adj.P.Val<0.05 ) |> 
   janitor::tabyl(assay_name) |> 
   arrange(desc(n))
 
@@ -183,10 +185,13 @@ expom <- expom |>
   contrasts = c("pftfev1fvc_actual - (Intercept)"),
   methods = c("limma_voom"),
   scaling_methods = c("none"),
-  min_counts_range = c(1, 5),
-  min_proportion_range = c(0.1, 0.5),
+  min_counts_range = c(1,5),
+  min_proportion_range = c(0.1,0.5),
   covariates_to_remove = c("age" , "sex" , "race")
 )
+
+expom |> 
+  plot_sensitivity_summary()
 
 # --- Multiomics Analysis -------------------
 expom <- expom |> 
