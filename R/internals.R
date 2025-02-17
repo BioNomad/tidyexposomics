@@ -106,22 +106,18 @@
 }
 
 # --- Calculate Feature Stability -------
-.calculate_feature_stability <- function(expOmicSet, 
+.calculate_feature_stability <- function(sensitivity_df, 
                                          pval_col = "adj.P.Val",
                                          logfc_col = "logFC",
                                          pval_threshold = 0.05, 
                                          logFC_threshold = log2(1.5)) {
   # Extract sensitivity analysis results
-  sa_results <- metadata(expOmicSet)$sensitivity_analysis
-  
-  if (is.null(sa_results) || nrow(sa_results) == 0) {
-    stop("No sensitivity analysis results found.")
-  }
+  sensitivity_df <- sensitivity_df
   
   message("Computing feature stability across sensitivity conditions...")
   
   # Identify significant features in each test setting
-  robust_features <- sa_results |>
+  feature_stability_df <- sensitivity_df |>
     filter(!!sym(pval_col) < pval_threshold,
            abs(!!sym(logfc_col)) > logFC_threshold) |>
     group_by(molecular_feature, exp_name) |>
@@ -129,10 +125,10 @@
     arrange(desc(stability_score))
   
   # Store results in metadata
-  metadata(expOmicSet)$robust_features <- robust_features
+  # metadata(expOmicSet)$feature_stability_df <- feature_stability_df
   
   message("Feature stability analysis completed.")
-  return(expOmicSet)
+  return(feature_stability_df)
 }
 
 # --- Correlate Se with colData --------

@@ -11,7 +11,9 @@ run_sensitivity_analysis <- function(
     resampling = TRUE,  
     resampling_iterations = 50,
     cross_validation = FALSE,  
-    k_folds = 5
+    k_folds = 5,
+    score_thresh=NULL,
+    score_quantile=0.1
 ) {
   require(tidybulk)
   require(MultiAssayExperiment)
@@ -37,7 +39,7 @@ run_sensitivity_analysis <- function(
   }
   
   # Initialize results dataframe
-  da_results_df <- data.frame()
+  sensitivity_df <- data.frame()
   
   for (model_name in names(model_list)) {
     formula <- model_list[[model_name]]
@@ -95,7 +97,7 @@ run_sensitivity_analysis <- function(
               # Append results
               if (!is.null(res)) {
                 res <- res |> mutate(model = model_name, exp_name = exp_name)
-                da_results_df <- bind_rows(da_results_df, res)
+                sensitivity_df <- bind_rows(sensitivity_df, res)
               }
             }
           }
@@ -103,13 +105,45 @@ run_sensitivity_analysis <- function(
       }
     }
   }
-  
-  # Store results in metadata
-  metadata(expOmicSet)$sensitivity_analysis <- da_results_df
+
   
   # Determine stable features 
-  expOmicSet <- expOmicSet |> 
+  feature_stability_df <- sensitivity_df |> 
     .calculate_feature_stability()
+  
+  
+  if(is.null(score_thresh)){
+    score_thresh <- quantile(
+      feature_stability_df$stability_score,
+      score_quantile)
+  }else{
+    score_thresh <- score_thresh
+  }
+  
+  sum <- feature_stability_df |> 
+    group_by(exp_name) |>
+    dplyr::reframe(
+      n_above=sum(stability_score>score_thresh),
+      n=n())
+  
+  message("Number of features above threshold of ", score_thresh, ":")
+  message("-----------------------------------------")
+  for(exp_name in unique(feature_stability_df$exp_name)){
+    n_above  <- sum |> 
+      filter(exp_name==!!exp_name) |>
+      pull(n_above);
+    n <- sum |> 
+      filter(exp_name==!!exp_name) |>
+      pull(n);
+    message(exp_name, ": ", n_above,"/", n)
+  }
+  
+  # Store results in metadata
+  metadata(expOmicSet)$sensitivity_analysis <- list(
+    sensitivity_df = sensitivity_df,
+    feature_stability = feature_stability_df,
+    score_thresh = score_thresh
+  )
   
   message("Sensitivity analysis completed.")
   return(expOmicSet)
