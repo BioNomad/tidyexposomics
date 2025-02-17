@@ -1,4 +1,9 @@
-extract_top_factor_features <- function(expOmicSet, factors, method = "percentile", percentile = 0.9, threshold = 0.3) {
+extract_top_factor_features <- function(
+    expOmicSet, 
+    factors, 
+    method = "percentile", 
+    percentile = 0.9, 
+    threshold = 0.3) {
   require(dplyr)
   require(tidyr)
   require(purrr)
@@ -12,10 +17,10 @@ extract_top_factor_features <- function(expOmicSet, factors, method = "percentil
   # Extract factor loadings based on method
   if (method_used == "MOFA") {
     message("Using MOFA+ factor loadings...")
-    loadings <- get_weights(integration_results$result)  # Extract MOFA loadings
+    loadings <- get_weights(integration_results$result)  
   } else if (method_used == "MCIA") {
     message("Using MCIA block loadings...")
-    loadings <- integration_results$result@block_loadings  # Extract MCIA loadings
+    loadings <- integration_results$result@block_loadings  
   } else {
     stop("Unsupported integration method: ", method_used)
   }
