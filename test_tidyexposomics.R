@@ -135,21 +135,30 @@ expom <- expom |>
   exposure_correlation(
     exposure_cols = c(exp_vars,"age","pftfev1fvc_actual"))
 
+expom |> 
+  plot_exposure_corr()
+
 # --- Exposure-Outcome Association -----------------
+a <- expom@metadata$var_info |> filter(category != "spirometry") |> pull(variable)
 expom <- expom |> 
   perform_exwas(
     outcome = "pftfev1fvc_actual",
-    exposures = colData(expom) |> 
-      colnames() |> 
-      (\(x) x[!x %in% 
-                c("pftfev1fvc_actual",
-                  "age",
-                  "black",
-                  "female",
-                  "income5")])(),
-    confounders = c("age","black","female"))
+    exposures = a[!a %in% c("pftfev1fvc_actual",
+                            "age",
+                            "sex",
+                            "race")],
+    # exposures = colData(expom) |> 
+    #   colnames() |> 
+    #   (\(x) x[!x %in% 
+    #             c("pftfev1fvc_actual",
+    #               "age",
+    #               "black",
+    #               "female",
+    #               "income5")])(),
+    covariates = c("age","sex","race"))
 
-
+expom |> 
+  plot_exp_outcome_association()
 # --- Differential Analysis -------------
 expom <- expom |>
   run_differential_abundance(
