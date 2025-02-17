@@ -1,4 +1,9 @@
-perform_exwas <- function(expOmicSet, exposures, outcome, confounders = NULL, family = "gaussian", correction_method = "fdr") {
+perform_exwas <- function(expOmicSet, 
+                          exposures, 
+                          outcome,
+                          covariates = NULL,
+                          family = "gaussian",
+                          correction_method = "fdr") {
   library(tidyverse)
   library(broom)
   
@@ -18,7 +23,7 @@ perform_exwas <- function(expOmicSet, exposures, outcome, confounders = NULL, fa
     
     # Construct formula
     formula <- as.formula(
-      paste(outcome, "~", exposure, if (!is.null(confounders)) paste("+", paste(confounders, collapse = " +")) else "")
+      paste(outcome, "~", exposure, if (!is.null(covariates)) paste("+", paste(covariates, collapse = " +")) else "")
     )
     
     # Fit the generalized linear model
@@ -64,7 +69,9 @@ perform_exwas <- function(expOmicSet, exposures, outcome, confounders = NULL, fa
   
   # Save results in metadata
   message("Saving results to expOmicSet metadata...")
-  metadata(expOmicSet)$exwas <- results_df
+  metadata(expOmicSet)$exwas <- list(
+    results_df=results_df,
+    covariates=covariates)
   
   message("ExWAS analysis completed.")
   return(expOmicSet)
