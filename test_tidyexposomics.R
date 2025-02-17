@@ -197,15 +197,35 @@ expom |>
 expom <- expom |> 
   multiomics_integration(method = "MCIA")
 
+expom |> 
+  plot_factor_summary()
+
+expom |> 
+  plot_top_factor_features()
+
+a <- expom |> 
+  multiomics_integration(method = "MOFA")
+
 # --- Identify Relevant Factors -------------
 expom <- expom |> 
   identify_relevant_factors(outcome_var = "pftfev1fvc_actual", 
                                       categorical = FALSE,
                                       p_thresh = 0.1)
 
+a <- a |> 
+  identify_relevant_factors(outcome_var = "pftfev1fvc_actual", 
+                            categorical = FALSE,
+                            p_thresh = 0.1)
+
 # --- Top Features By Factor Loadings ------
 expom <- expom |> 
   extract_top_factor_features(factors = "V3", 
+                              method = "percentile",
+                              percentile = 0.95,
+                              threshold = 0.3)
+
+a <- a |> 
+  extract_top_factor_features(factors = "Factor1", 
                               method = "percentile",
                               percentile = 0.95,
                               threshold = 0.3)

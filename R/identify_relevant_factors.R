@@ -1,4 +1,8 @@
-identify_relevant_factors <- function(expOmicSet, outcome_var, categorical = FALSE, p_thresh = 0.05) {
+identify_relevant_factors <- function(
+    expOmicSet, 
+    outcome_var, 
+    categorical = FALSE, 
+    p_thresh = 0.05) {
   require(Hmisc)
   require(stats)
   require(broom)
@@ -15,7 +19,7 @@ identify_relevant_factors <- function(expOmicSet, outcome_var, categorical = FAL
   # Extract factors based on integration method
   if (method_used == "MOFA") {
     message("Detected MOFA+ results, extracting factors...")
-    factors <- get_factors(integration_results$result)
+    factors <- get_factors(integration_results$result)[[1]]
   } else if (method_used == "MCIA") {
     message("Detected MCIA results, extracting global scores...")
     factors <- integration_results$result@global_scores

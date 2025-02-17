@@ -1,5 +1,5 @@
 multiomics_integration <- function(expOmicSet,
-                                   method = "MOFA",
+                                   method = "MCIA",
                                    n_factors = 10,
                                    scale=TRUE) {
   require(MultiAssayExperiment)
