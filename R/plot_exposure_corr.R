@@ -1,4 +1,6 @@
-plot_exposure_corr <- function(expOmicSet, correlation_cutoff = 0.3) {
+plot_exposure_corr <- function(
+    expOmicSet, 
+    correlation_cutoff = 0.3) {
   require(igraph)
   require(ggraph)
   require(tidyverse)
