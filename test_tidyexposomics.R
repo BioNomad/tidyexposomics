@@ -234,8 +234,10 @@ a <- a |>
 expom <- expom |> 
   correlate_exposures_with_degs(exposure_cols = exp_vars)
 
-expom <- expom |> 
+a <- expom |> 
   correlate_exposures_with_factors(exposure_cols = exp_vars)
+
+
 
 # --- Functional Enrichment --------------
 expom <- expom |> 

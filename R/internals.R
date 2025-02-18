@@ -523,7 +523,38 @@
   
   return(enriched_df)
 }
-
+# --- Plot Pie Chart ----------------
+.plot_circular_bar <- function(data, category_col, count_col) {
+  data |> 
+    mutate(
+      fraction = !!sym(count_col) / sum(!!sym(count_col)),  # Compute percentages
+      ymax = cumsum(fraction),  # Top of each rectangle
+      ymin = c(0, head(ymax, n = -1)),  # Bottom of each rectangle
+      labelPosition = (ymax+ymin)/2,  # Midpoint for labels
+      label = paste0(!!sym(category_col),":", " ", !!sym(count_col))  # Label formatting
+    ) |> 
+    ggplot(aes(
+      ymax = ymax,
+      ymin = ymin,
+      xmax = 4, 
+      xmin = 3,
+      fill = !!sym(category_col)
+    )) +
+    geom_rect(alpha=0.8) +
+    geom_label_repel(
+      x = 2, aes(y = labelPosition, 
+                 label = label
+                 #color = !!sym(category_col)
+                 ), 
+      size = 4,
+      fill = "white",
+      color="black") +
+    scale_fill_cosmic()+
+    coord_polar(theta = "y") +
+    xlim(c(-1, 4)) +
+    theme_void() +
+    theme(legend.position = "none")
+}
 # --- Summarize Exposure Enrichment Results -----------------------
 .summarize_exposure_enrichment <- function(enrichment_df, p_adjust_threshold = 0.05) {
   require(tidyverse)
