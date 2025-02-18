@@ -1,6 +1,7 @@
 correlate_exposures_with_degs <- function(
     expOmicSet,
-    exposure_cols = NULL,  
+    exposure_cols = NULL,
+    robust = TRUE,
     correlation_method = "spearman",
     correlation_cutoff = 0.3,        
     cor_pval_column = "p.value",      
@@ -20,6 +21,13 @@ correlate_exposures_with_degs <- function(
   da_results <- metadata(expOmicSet)$differential_abundance
   if (is.null(da_results)) {
     stop("No differential abundance results found in metadata.")
+  }
+  
+  # Stop if robust is true but sensitivity analysis was not run
+  if(robust){
+    if(!"sensitivity_analysis" %in% names(expOmicSet@metadata)){
+      stop("Please run `run_sensitivity_analysis()` first.")
+    }
   }
   
   da_results <- da_results |> 
@@ -46,11 +54,21 @@ correlate_exposures_with_degs <- function(
   for (experiment_name in unique(da_results$assay_name)) {
     message("Processing experiment: ", experiment_name)
     
-    # Extract relevant DEGs for this assay
-    selected_features <- da_results |> 
-      filter(assay_name == experiment_name) |> 
-      pull(molecular_feature) |> 
-      unique()
+    if(robust){
+      # Extract relevant robust DEGs for this assay
+      selected_features <- expOmicSet@metadata$sensitivity_analysis$feature_stability |> 
+        filter(stability_score > expOmicSet@metadata$sensitivity_analysis$score_thresh) |>
+        filter(exp_name == experiment_name) |> 
+        pull(molecular_feature) |>
+        unique()
+      
+    }else{
+      # Extract relevant DEGs for this assay
+      selected_features <- da_results |> 
+        filter(assay_name == experiment_name) |> 
+        pull(molecular_feature) |> 
+        unique()
+    }
     
     if (length(selected_features) == 0) {
       warning("No relevant DEGs found for ", experiment_name, ", skipping.")
