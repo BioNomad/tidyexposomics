@@ -254,7 +254,7 @@ expom |>
 
 # --- Functional Enrichment --------------
 expom <- expom |> 
-  .exposure_category_functional_enrichment(
+  exposure_category_functional_enrichment(
     cor_df = "degs",
     mirna_assays = c("cd4_mirna", "cd16_mirna"), 
     uniprot_assays = c("protein"))
