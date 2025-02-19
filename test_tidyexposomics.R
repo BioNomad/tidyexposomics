@@ -252,6 +252,9 @@ expom |>
 expom |> 
   plot_exp_feature_assoc_summary()
 
+expom |> 
+  plot_shared_exp_features()
+
 # --- Functional Enrichment --------------
 expom <- expom |> 
   exposure_category_functional_enrichment(
