@@ -64,7 +64,7 @@
       # Add metadata
       res <- res |> 
         mutate(
-          molecular_feature = rownames(contrast_results),
+          feature = rownames(contrast_results),
           contrast = contrast,
           method = method,
           scaling = scaling_method,
@@ -93,7 +93,7 @@
     # Add metadata
     res <- res |> 
       mutate(
-        molecular_feature = rownames(contrast_results),
+        feature = rownames(contrast_results),
         contrast = all.vars(formula)[1],
         method = method,
         scaling = scaling_method,

@@ -20,40 +20,40 @@ plot_missing_summary <- function(
     }
     
     if (nrow(df) > 0) {
-      df <- df |> mutate(assay_name = .y)
+      df <- df |> mutate(exp_name = .y)
     }
     
     return(df)  # Always return df, even if empty
   }) |>
     bind_rows() |> 
-    group_by(assay_name) |>
+    group_by(exp_name) |>
     summarise(missingness = n()) 
   
   # add in other assay names and say their missingness is 0
-  assay_names <- expOmicSet@metadata$na_qc |> names()
+  exp_names <- expOmicSet@metadata$na_qc |> names()
   missing_data <- missing_data |> 
     bind_rows(
       data.frame(
-        assay_name = assay_names[!assay_names %in% missing_data$assay_name],
+        exp_name = exp_names[!exp_names %in% missing_data$exp_name],
         missingness = 0)) |> 
-    mutate(assay_name=case_when(
-      assay_name == "exposure" ~ "Exposure",
-      .default = assay_name
+    mutate(exp_name=case_when(
+      exp_name == "exposure" ~ "Exposure",
+      .default = exp_name
     )) |> 
-    mutate(assay_name = paste(assay_name, " (", missingness, ")", sep = ""))
+    mutate(exp_name = paste(exp_name, " (", missingness, ")", sep = ""))
   
   # plot missing data summary
   missing_data |> 
-    ggplot(aes(y = fct_reorder(assay_name, missingness), 
+    ggplot(aes(y = fct_reorder(exp_name, missingness), 
                x = missingness, 
-               fill = assay_name)) +
+               fill = exp_name)) +
     geom_bar(stat = "identity",alpha=0.7) +
     geom_segment(aes(
       x = missingness,                    
       xend = missingness,                    
-      y = as.numeric(fct_reorder(assay_name, missingness)) - 0.45,
-      yend = as.numeric(fct_reorder(assay_name, missingness)) + 0.45,
-      color = assay_name,
+      y = as.numeric(fct_reorder(exp_name, missingness)) - 0.45,
+      yend = as.numeric(fct_reorder(exp_name, missingness)) + 0.45,
+      color = exp_name,
     ), size = 1) +
     scale_fill_npg()+
     scale_color_npg()+

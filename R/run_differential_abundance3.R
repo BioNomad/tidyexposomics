@@ -18,11 +18,11 @@ run_differential_abundance <- function(
   da_results_df <- list()
   
   # Iterate through assays in expOmicSet
-  for (assay_name in names(experiments(expOmicSet))) {
-    message("Processing assay: ", assay_name)
+  for (exp_name in names(experiments(expOmicSet))) {
+    message("Processing assay: ", exp_name)
     
     # Update assay with colData
-    assay <- .update_assay_colData(expOmicSet, assay_name)
+    assay <- .update_assay_colData(expOmicSet, exp_name)
     
     # Run differential analysis using `.run_se_differential_abundance`
     res <- .run_se_differential_abundance(
@@ -38,10 +38,10 @@ run_differential_abundance <- function(
     
     # If results exist, append assay name and store them
     if (!is.null(res) && nrow(res) > 0) {
-      res <- res |> mutate(assay_name = assay_name)
-      da_results_df[[assay_name]] <- res
+      res <- res |> mutate(exp_name = exp_name)
+      da_results_df[[exp_name]] <- res
     } else {
-      warning("No significant results found for assay: ", assay_name)
+      warning("No significant results found for assay: ", exp_name)
     }
   }
   
