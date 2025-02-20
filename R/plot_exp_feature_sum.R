@@ -106,7 +106,7 @@ plot_pop_features <- function(
       theme(plot.title = element_text(face = "bold.italic"))+
       labs(title = "Frequently Associated Features",
            y = "",
-           x = "No. of Feature Associations",
+           x = "No. of Associations",
            fill = "Exposure Category"
       )
 }

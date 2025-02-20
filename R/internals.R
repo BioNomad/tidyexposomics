@@ -231,127 +231,140 @@
   mirna_db <- OmnipathR::import_mirnatarget_interactions()
   mirna_targets <- mirna_db |>
     filter(source_genesymbol %in% mirnas) |>
-    pull(target_genesymbol) |> 
-    unique()
+    dplyr::select(source_genesymbol,target_genesymbol)
+  return(mirna_targets)
 }
 # --- Differential Abundance Functional Enrichment ------------
-.da_functional_enrichment <- function(
-    expOmicSet, 
-    pval_col = "adj.P.Val", 
-    logfc_col = "logFC", 
-    pval_threshold = 0.05, 
-    logFC_threshold = log2(1.5), 
-    ontology = "BP",  # BP (biological process), MF (molecular function), CC (cellular component)
-    mirna_assays = NULL,  # User-specified miRNA assay names
-    uniprot_assays = NULL,  # User-specified protein assay names with UniProt IDs
-    universe_background = TRUE,  # Whether to set universe background (disabled for miRNA)
-    orgdb = org.Hs.eg.db,  # Organism annotation database
-    keytype = "SYMBOL",  # Key type for enrichment analysis
-    p_adjust_method = "fdr",  # Method for multiple testing correction
-    pvalue_cutoff = 0.05,  # p-value threshold for enrichment
-    qvalue_cutoff = 0.1  # q-value threshold for enrichment
-) {
+.da_exposure_functional_enrichment <- function(
+    expOmicSet,
+    proteomics_assay = NULL, 
+    mirna_assays = NULL,
+    pval_col = "adj.P.Val",
+    pval_threshold = 0.05,
+    logfc_col = "logFC",
+    logfc_threshold = log2(1),
+    pAdjustMethod = "fdr",
+    pvalueCutoff = 0.05,
+    qvalueCutoff = 0.1,
+    fun = "enrichGO",
+    OrgDb = 'org.Hs.eg.db',
+    keyType = "SYMBOL",
+    ont = "BP") {
   require(clusterProfiler)
   require(tidyverse)
   require(org.Hs.eg.db)
-  require(biomaRt)
-  require(multiMiR)
   
-  message("Starting differential abundance functional enrichment analysis...")
   
-  da_results <- metadata(expOmicSet)$differential_abundance
-  
-  if (is.null(da_results) || nrow(da_results) == 0) {
-    stop("No differential abundance results found in metadata.")
+  if (!"differential_abundance" %in% names(expOmicSet@metadata)) {
+    stop("Please run `run_differential_abundance() first.`")
   }
   
-  unique_assays <- unique(da_results$assay_name)
-  enrichment_results <- list()
-  
-  for (assay in unique_assays) {
-    message("Processing assay: ", assay)
-    
-    # Extract all features tested for dynamic universe (skip miRNA)
-    tested_features <- if (!is.null(mirna_assays) && assay %in% mirna_assays) NULL else rownames(experiments(expOmicSet)[[assay]])
-    
-    # Extract significant DE features
-    sig_features <- da_results |> 
-      filter(assay_name == assay, 
-             !!sym(pval_col) < pval_threshold, 
-             abs(!!sym(logfc_col)) > logFC_threshold) |> 
-      pull(molecular_feature) |> unique()
-    
-    if (length(sig_features) == 0) {
-      message("No significant features for ", assay, ". Skipping...")
-      next
-    }
-    
-    # Handle Protein Assays (Convert UniProt to Gene Symbols)
-    if (!is.null(uniprot_assays) && assay %in% uniprot_assays) {
-      message("Converting UniProt IDs to gene symbols for: ", assay)
-      id_map <- .convert_uniprot_to_symbol(sig_features)
-      sig_features <- id_map$hgnc_symbol[!is.na(id_map$hgnc_symbol)]
-      
-      if (length(sig_features) == 0) {
-        message("No valid gene symbols found after UniProt conversion for ", assay, ". Skipping...")
-        next
-      }
-      
-      # Convert tested features if universe_background is TRUE
-      if (universe_background && !is.null(tested_features)) {
-        tested_features <- .convert_uniprot_to_symbol(tested_features)$hgnc_symbol
-      }
-    }
-    
-    # Handle miRNA Assays (Get Target Genes)
-    if (!is.null(mirna_assays) && assay %in% mirna_assays) {
-      message("Retrieving target genes for miRNAs in: ", assay)
-      sig_features <- .get_mirna_targets(sig_features)
-      
-      if (length(sig_features) == 0) {
-        message("No validated miRNA targets found for ", assay, ". Skipping...")
-        next
-      }
-    }
-    
-    # Ensure valid genes for enrichment
-    if (length(sig_features) == 0) {
-      message("No valid gene symbols found for ", assay, ". Skipping enrichment...")
-      next
-    }
-    
-    # Run GO Enrichment
-    message("Running GO enrichment for ", assay, " (", ontology, ")")
-    enrich_res <- tryCatch(
-      enrichGO(
-        gene = sig_features, 
-        OrgDb = orgdb, 
-        keyType = keytype,
-        ont = ontology, 
-        universe = if (is.null(tested_features) || !universe_background) NULL else tested_features,
-        pAdjustMethod = p_adjust_method, 
-        pvalueCutoff = pvalue_cutoff, 
-        qvalueCutoff = qvalue_cutoff
-      ),
-      error = function(e) {
-        message("GO enrichment failed for ", assay, ": ", e$message)
-        return(NULL)
-      }
-    )
-    
-    # Store results if enrichment was successful
-    if (!is.null(enrich_res) && nrow(enrich_res@result) > 0) {
-      enrichment_results[[assay]] <- enrich_res@result
-    } else {
-      message("No significant enrichment results for assay: ", assay)
-    }
+  if (!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)) {
+    stop("Please run `correlate_exposures_with_degs() first.`")
   }
   
-  # Store results in metadata
-  metadata(expOmicSet)$da_enrichment_results <- enrichment_results
-  message("Differential abundance functional enrichment analysis completed.")
-  return(expOmicSet)
+  da_res <- expOmicSet@metadata$differential_abundance
+  da_cor_res <- expOmicSet@metadata$omics_exposure_deg_correlation
+  
+  da_res_cor_merged <- da_res |>
+    filter(!!sym(pval_col) < pval_threshold) |>
+    filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
+    mutate(direction=ifelse(logFC>0,"up","down")) |>
+    dplyr::select(molecular_feature,
+                  assay_name,
+                  direction) |>
+    inner_join(da_cor_res,
+               by=c("molecular_feature"="feature",
+                    "assay_name"))
+  
+  
+  mirna_df <- da_res_cor_merged |>
+    filter(assay_name %in% y) |>
+    (\(df) split(df,df$assay_name))() |>
+    map(~ .get_mirna_targets(.x |> 
+                               pull(molecular_feature)) |>
+          mutate(direction="down")) |>
+    bind_rows(.id="assay_name") |>
+    inner_join(da_res_cor_merged |>
+                 dplyr::select(-direction),
+               by=c("source_genesymbol"="molecular_feature",
+                    "assay_name")) |>
+    dplyr::select(-source_genesymbol) |>
+    dplyr::rename(molecular_feature=target_genesymbol)
+  
+  
+  
+  prot_df <- .convert_uniprot_to_symbol(da_res_cor_merged |>
+                                          filter(assay_name=="Serum Proteomics") |>
+                                          pull(molecular_feature)) |>
+    inner_join(da_res_cor_merged,
+               by=c("uniprot_gn_id"="molecular_feature")) |>
+    dplyr::select(-uniprot_gn_id) |>
+    dplyr::rename(molecular_feature=hgnc_symbol)
+  
+  
+  da_res_cor_merged_mapped <- da_res_cor_merged |>
+    filter(!assay_name %in% c(x,y)) |>
+    bind_rows(mirna_df,prot_df)
+  
+  
+  universe_per_assay <- as.list(unique(da_res_cor_merged$assay_name)) |>
+    map( ~
+           {df <- data.frame(all_features=
+                               experiments(expom)[[.x]] |>
+                               rownames(),
+                             assay_name=.x)
+           
+           if (.x %in% mirna_assays) {
+             all_targets <- .get_mirna_targets(df$all_features) |>
+               pull(target_genesymbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              assay_name=.x)
+           } else if (.x %in% proteomics_assay){
+             all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
+               pull(hgnc_symbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              assay_name=.x)
+           }else{
+             df <- df
+           }
+           return(df)}
+    ) |>
+    bind_rows()
+  
+  
+  enrich_res <- da_res_cor_merged_mapped |>
+    (\(df) split(df,df$assay_name))() |>
+    map(~ {
+      message("Working on: ",unique(.x$assay_name))
+      enrich <- compareCluster(
+        molecular_feature~direction+category,
+        data = .x,
+        fun = "enrichGO",
+        OrgDb = 'org.Hs.eg.db',
+        keyType = "SYMBOL",
+        ont = "BP",
+        universe = universe_per_assay |>
+          filter(assay_name==unique(.x$assay_name)) |>
+          pull(all_features),
+        pAdjustMethod = "fdr",
+        pvalueCutoff = 0.05,
+        qvalueCutoff = 0.1
+      )
+    })
+  
+  
+  enrich_df <- enrich_res |>
+    map(~ {
+      enrich <- .x@compareClusterResult
+    }) |>
+    bind_rows(.id="assay_name")
+  
+  return(enrich_df)
 }
+
 
 
 # --- Factor Feature Functional Enrichment ------------
@@ -600,5 +613,146 @@
   
   return(enriched_df)
 }
+# --- Pairwise Overlaps -------------
+
+.get_pairwise_overlaps <- function(sets) {
+  # credit for most of the code:
+  # https://blog.jdblischak.com/posts/pairwise-overlaps/
+  # Ensure that all sets are unique character vectors
+  sets_are_vectors <- vapply(sets, is.vector, logical(1))
+  if (any(!sets_are_vectors)) {
+    stop("Sets must be vectors")
+  }
+  sets_are_atomic <- vapply(sets, is.atomic, logical(1))
+  if (any(!sets_are_atomic)) {
+    stop("Sets must be atomic vectors, i.e. not lists")
+  }
+  sets <- lapply(sets, as.character)
+  is_unique <- function(x) length(unique(x)) == length(x)
+  sets_are_unique <- vapply(sets, is_unique, logical(1))
+  if (any(!sets_are_unique)) {
+    stop("Sets must be unique, i.e. no duplicated elements")
+  }
+  
+  n_sets <- length(sets)
+  set_names <- names(sets)
+  n_overlaps <- choose(n = n_sets, k = 2)
+  
+  vec_name1 <- character(length = n_overlaps)
+  vec_name2 <- character(length = n_overlaps)
+  vec_num_shared <- integer(length = n_overlaps)
+  vec_overlap <- numeric(length = n_overlaps)
+  vec_jaccard <- numeric(length = n_overlaps)
+  vec_shared_terms <- character(length = n_overlaps)
+  overlaps_index <- 1
+  
+  for (i in seq_len(n_sets - 1)) {
+    name1 <- set_names[i]
+    set1 <- sets[[i]]
+    for (j in seq(i + 1, n_sets)) {
+      name2 <- set_names[j]
+      set2 <- sets[[j]]
+      
+      shared_terms <- paste(Reduce(intersect,list(set1,set2)),collapse = ",")
+      
+      set_intersect <- set1[match(set2, set1, 0L)]
+      set_union <- .Internal(unique(c(set1, set2), incomparables = FALSE,
+                                    fromLast = FALSE, nmax = NA))
+      num_shared <- length(set_intersect)
+      overlap <- num_shared / min(length(set1), length(set2))
+      jaccard <- num_shared / length(set_union)
+      
+      vec_name1[overlaps_index] <- name1
+      vec_name2[overlaps_index] <- name2
+      vec_num_shared[overlaps_index] <- num_shared
+      vec_overlap[overlaps_index] <- overlap
+      vec_jaccard[overlaps_index] <- jaccard
+      vec_shared_terms[overlaps_index] <- shared_terms
+      
+      overlaps_index <- overlaps_index + 1
+    }
+  }
+  
+  result <- data.frame(source = vec_name1,
+                       target = vec_name2,
+                       num_shared = vec_num_shared,
+                       overlap = vec_overlap,
+                       jaccard = vec_jaccard,
+                       shared_terms = vec_shared_terms,
+                       stringsAsFactors = FALSE)
+  return(result)
+}
+# --- Cluster Matrix ------------------
+.cluster_mat <- function(data_matrix, dist_method = NULL, cluster_method = "ward.D", clustering_approach = "gap") {
+  require(tidyverse)
+  require(ComplexHeatmap)
+  require(circlize)
+  require(cluster)  # For silhouette scores
+  require(vegan)  # For Gower's distance
+  require(FactoMineR)  # For handling categorical data
+  require(factoextra)
+  require(dynamicTreeCut)
+  require(densityClust)
+  
+  # Determine appropriate distance metric
+  if (is.null(dist_method)) {
+    if (all(sapply(data_matrix, is.numeric))) {
+      dist_method <- "euclidean"  # Continuous data
+    } else {
+      dist_method <- "gower"  # Mixed data types
+    }
+  }
+  
+  # Compute distance matrix
+  sample_dist <- if (dist_method == "gower") {
+    daisy(data_matrix, metric = "gower")
+  } else {
+    dist(data_matrix, method = dist_method)
+  }
+  
+  # Function to determine optimal k based on the selected clustering approach
+  determine_k <- function(dist_matrix, cluster_method) {
+    if (clustering_approach == "diana") {
+      sample_cluster <- diana(as.dist(dist_matrix))
+      height_diffs <- diff(sample_cluster$height)
+      cutoff_index <- which.max(height_diffs)
+      return(length(sample_cluster$height) - cutoff_index)
+      
+    } else if (clustering_approach == "gap") {
+      gap_stat <- clusGap(as.matrix(dist_matrix), FUN = hcut, K.max = 20, B = 50)
+      return(maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"]))
+      
+    } else if (clustering_approach == "elbow") {
+      fviz_nbclust(as.matrix(dist_matrix), FUN = hcut, method = "wss")
+      return(3)  # Adjust manually if needed
+      
+    } else if (clustering_approach == "dynamic") {
+      sample_cluster <- hclust(as.dist(dist_matrix), method = cluster_method)
+      cut_clusters <- cutreeDynamic(dendro = as.dendrogram(sample_cluster), distM = as.matrix(dist_matrix), deepSplit = 2)
+      return(length(unique(cut_clusters)))
+      
+    } else if (clustering_approach == "density") {
+      dclust <- densityClust(dist_matrix, gaussian = TRUE)
+      dclust <- findClusters(dclust, rho = 0.3, delta = 0.5)
+      return(max(dclust$clusters))
+      
+    } else {
+      stop("Invalid clustering approach selected.")
+    }
+  }
+  
+  k_samples <- determine_k(sample_dist, cluster_method)
+  
+  # Perform hierarchical clustering only if needed
+  sample_cluster <- hclust(as.dist(sample_dist), method = cluster_method)
+  
+  # Cut dendrograms using optimal k values
+  sample_groups <- cutree(sample_cluster, k = k_samples)
+  
+  message("Optimal number of clusters for samples: ", k_samples)
+  
+  return(sample_groups)
+}
+# --- Test DA Functional Enrichment ------------
 
 # --- Next Function --------
