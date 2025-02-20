@@ -44,7 +44,11 @@ plot_exposure_corr <- function(
     coord_fixed(xlim = c(-2, 2),
                 ylim = c(-2, 2)) +
     #theme(text = element_text(face = "bold"))+
-    guides(width = "none")  # Hide node fill legend
+    guides(edge_width = "none")+
+    labs(
+      edge_color = "Correlation",
+      fill = "Category"
+    )
 }
 
 
