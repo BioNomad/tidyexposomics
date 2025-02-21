@@ -29,17 +29,19 @@ correlate_exposures_with_factors <- function(
   
   correlation_results <- list()
   
-  for (experiment_name in unique(factor_features$name)) {
+  for (experiment_name in unique(factor_features$exp_name)) {
     message("Processing experiment: ", experiment_name)
     
     # Extract relevant factor features for this assay
     selected_features <- factor_features |> 
-      filter(name == experiment_name) |> 
-      pull(features) |> 
+      filter(exp_name == experiment_name) |> 
+      pull(feature) |> 
       unique()
     
     if (length(selected_features) == 0) {
-      warning("No relevant factor features found for ", experiment_name, ", skipping.")
+      warning("No relevant factor features found for ", 
+              experiment_name,
+              ", skipping.")
       next
     }
     
@@ -50,17 +52,30 @@ correlate_exposures_with_factors <- function(
     se <- se[rownames(se) %in% selected_features, , drop = FALSE]
     
     if (nrow(se) == 0) {
-      warning("No valid factor features left in assay after filtering for ", experiment_name, ", skipping.")
+      warning(
+        "No valid factor features left in assay after filtering for ",
+        experiment_name,
+        ", skipping.")
       next
     }
     
     # **Batch Processing**
-    feature_batches <- split(selected_features, ceiling(seq_along(selected_features) / batch_size))
+    feature_batches <- split(
+      selected_features, 
+      ceiling(seq_along(selected_features) / batch_size))
+    
     batch_results <- list()
     
     batch_index <- 1
+    
     for (batch in feature_batches) {
-      message("  - Processing batch ", batch_index, " of ", length(feature_batches), " (", length(batch), " features)...")
+      message("  - Processing batch ",
+              batch_index, 
+              " of ",
+              length(feature_batches), 
+              " (", length(batch),
+              " features)...")
+      
       batch_index <- batch_index + 1
       
       # **Subset Data to Only Batch Features**
@@ -83,7 +98,7 @@ correlate_exposures_with_factors <- function(
     
     if (length(batch_results) > 0) {
       correlation_results[[experiment_name]] <- bind_rows(batch_results) |> 
-        mutate(assay_name = experiment_name) 
+        mutate(exp_name = experiment_name) 
     }
   }
   

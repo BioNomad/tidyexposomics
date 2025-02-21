@@ -1,10 +1,10 @@
 # --- Update Assay ColData ------
-.update_assay_colData <- function(expOmicSet, assay_name) {
+.update_assay_colData <- function(expOmicSet, exp_name) {
   require(MultiAssayExperiment)
   require(tidyverse)
   
   # Retrieve the assay
-  assay <- experiments(expOmicSet)[[assay_name]]
+  assay <- experiments(expOmicSet)[[exp_name]]
   
   # Extract colData for the assay's samples
   assay_samples <- colnames(assay)
@@ -16,7 +16,7 @@
   
   # Add a check to ensure the order is correct
   if (!identical(rownames(coldata), assay_samples)) {
-    stop("Sample order mismatch detected in assay: ", assay_name, 
+    stop("Sample order mismatch detected in assay: ", exp_name, 
          "\nEnsure the samples in colData are aligned with the assay samples.")
   }
   
@@ -120,7 +120,7 @@
   feature_stability_df <- sensitivity_df |>
     filter(!!sym(pval_col) < pval_threshold,
            abs(!!sym(logfc_col)) > logFC_threshold) |>
-    group_by(molecular_feature, exp_name) |>
+    group_by(feature, exp_name) |>
     dplyr::summarize(stability_score = n(), .groups = "drop") |>
     arrange(desc(stability_score))
   
@@ -211,6 +211,7 @@
 # --- Convert Uniprot to Symbol ------
 
 .convert_uniprot_to_symbol <- function(uniprot_ids) {
+  require(biomaRt)
   mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
   gene_map <- getBM(attributes = c("uniprot_gn_id", "hgnc_symbol"),
                     filters = "uniprot_gn_id",
@@ -234,10 +235,10 @@
     dplyr::select(source_genesymbol,target_genesymbol)
   return(mirna_targets)
 }
-# --- Differential Abundance Functional Enrichment ------------
+# --- Differential Abundance Exposure Functional Enrichment ------------
 .da_exposure_functional_enrichment <- function(
     expOmicSet,
-    proteomics_assay = NULL, 
+    proteomics_assays = NULL, 
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
     pval_threshold = 0.05,
@@ -251,6 +252,7 @@
     keyType = "SYMBOL",
     ont = "BP") {
   require(clusterProfiler)
+  require(biomaRt)
   require(tidyverse)
   require(org.Hs.eg.db)
   
@@ -270,63 +272,63 @@
     filter(!!sym(pval_col) < pval_threshold) |>
     filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
     mutate(direction=ifelse(logFC>0,"up","down")) |>
-    dplyr::select(molecular_feature,
-                  assay_name,
+    dplyr::select(feature,
+                  exp_name,
                   direction) |>
     inner_join(da_cor_res,
-               by=c("molecular_feature"="feature",
-                    "assay_name"))
+               by=c("feature",
+                    "exp_name"))
   
   
   mirna_df <- da_res_cor_merged |>
-    filter(assay_name %in% y) |>
-    (\(df) split(df,df$assay_name))() |>
+    filter(exp_name %in% mirna_assays) |>
+    (\(df) split(df,df$exp_name))() |>
     map(~ .get_mirna_targets(.x |> 
-                               pull(molecular_feature)) |>
+                               pull(feature)) |>
           mutate(direction="down")) |>
-    bind_rows(.id="assay_name") |>
+    bind_rows(.id="exp_name") |>
     inner_join(da_res_cor_merged |>
                  dplyr::select(-direction),
-               by=c("source_genesymbol"="molecular_feature",
-                    "assay_name")) |>
+               by=c("source_genesymbol"="feature",
+                    "exp_name")) |>
     dplyr::select(-source_genesymbol) |>
-    dplyr::rename(molecular_feature=target_genesymbol)
+    dplyr::rename(feature=target_genesymbol)
   
   
   
   prot_df <- .convert_uniprot_to_symbol(da_res_cor_merged |>
-                                          filter(assay_name=="Serum Proteomics") |>
-                                          pull(molecular_feature)) |>
+                                          filter(exp_name %in% proteomics_assays) |>
+                                          pull(feature)) |>
     inner_join(da_res_cor_merged,
-               by=c("uniprot_gn_id"="molecular_feature")) |>
+               by=c("uniprot_gn_id"="feature")) |>
     dplyr::select(-uniprot_gn_id) |>
-    dplyr::rename(molecular_feature=hgnc_symbol)
+    dplyr::rename(feature=hgnc_symbol)
   
   
   da_res_cor_merged_mapped <- da_res_cor_merged |>
-    filter(!assay_name %in% c(x,y)) |>
+    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
     bind_rows(mirna_df,prot_df)
   
   
-  universe_per_assay <- as.list(unique(da_res_cor_merged$assay_name)) |>
+  universe_per_assay <- as.list(unique(da_res_cor_merged$exp_name)) |>
     map( ~
            {df <- data.frame(all_features=
-                               experiments(expom)[[.x]] |>
+                               experiments(expOmicSet)[[.x]] |>
                                rownames(),
-                             assay_name=.x)
+                             exp_name=.x)
            
            if (.x %in% mirna_assays) {
              all_targets <- .get_mirna_targets(df$all_features) |>
                pull(target_genesymbol)
              
              df <- data.frame(all_features=all_targets,
-                              assay_name=.x)
-           } else if (.x %in% proteomics_assay){
+                              exp_name=.x)
+           } else if (.x %in% proteomics_assays){
              all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
                pull(hgnc_symbol)
              
              df <- data.frame(all_features=all_targets,
-                              assay_name=.x)
+                              exp_name=.x)
            }else{
              df <- df
            }
@@ -336,149 +338,404 @@
   
   
   enrich_res <- da_res_cor_merged_mapped |>
-    (\(df) split(df,df$assay_name))() |>
+    (\(df) split(df,df$exp_name))() |>
     map(~ {
-      message("Working on: ",unique(.x$assay_name))
+      message("Working on: ",unique(.x$exp_name))
       enrich <- compareCluster(
-        molecular_feature~direction+category,
+        feature~direction+category,
         data = .x,
-        fun = "enrichGO",
-        OrgDb = 'org.Hs.eg.db',
-        keyType = "SYMBOL",
-        ont = "BP",
+        fun = fun,
+        OrgDb = OrgDb,
+        keyType = keyType,
+        ont = ont,
         universe = universe_per_assay |>
-          filter(assay_name==unique(.x$assay_name)) |>
+          filter(exp_name==unique(.x$exp_name)) |>
           pull(all_features),
-        pAdjustMethod = "fdr",
-        pvalueCutoff = 0.05,
-        qvalueCutoff = 0.1
+        pAdjustMethod = pAdjustMethod,
+        pvalueCutoff = pvalueCutoff,
+        qvalueCutoff = qvalueCutoff
       )
     })
   
   
   enrich_df <- enrich_res |>
     map(~ {
-      enrich <- .x@compareClusterResult
+      if(!is.null(.x)){
+        enrich <- .x@compareClusterResult
+      } else{
+        enrich <- NULL
+      }
     }) |>
-    bind_rows(.id="assay_name")
+    bind_rows(.id="exp_name")
   
   return(enrich_df)
 }
 
+# --- Differential Abundance Functional Enrichment ------------
+.da_functional_enrichment <- function(
+    expOmicSet,
+    proteomics_assays = NULL, 
+    mirna_assays = NULL,
+    pval_col = "adj.P.Val",
+    pval_threshold = 0.05,
+    logfc_col = "logFC",
+    logfc_threshold = log2(1),
+    pAdjustMethod = "fdr",
+    pvalueCutoff = 0.05,
+    qvalueCutoff = 0.1,
+    fun = "enrichGO",
+    OrgDb = 'org.Hs.eg.db',
+    keyType = "SYMBOL",
+    ont = "BP") {
+  require(clusterProfiler)
+  require(biomaRt)
+  require(tidyverse)
+  require(org.Hs.eg.db)
+  
+  
+  if (!"differential_abundance" %in% names(expOmicSet@metadata)) {
+    stop("Please run `run_differential_abundance() first.`")
+  }
+  
+  da_res <- expOmicSet@metadata$differential_abundance |>
+    filter(!!sym(pval_col) < pval_threshold) |>
+    filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
+    mutate(direction=ifelse(logFC>0,"up","down")) |>
+    dplyr::select(feature,
+                  exp_name,
+                  direction) 
+  
+  
+  mirna_df <- da_res |>
+    filter(exp_name %in% mirna_assays) |>
+    (\(df) split(df,df$exp_name))() |>
+    map(~ .get_mirna_targets(.x |> 
+                               pull(feature)) |>
+          mutate(direction="down")) |>
+    bind_rows(.id="exp_name") |>
+    inner_join(da_res |>
+                 dplyr::select(-direction),
+               by=c("source_genesymbol"="feature",
+                    "exp_name")) |>
+    dplyr::select(-source_genesymbol) |>
+    dplyr::rename(feature=target_genesymbol)
+  
+  
+  
+  prot_df <- .convert_uniprot_to_symbol(
+    da_res |>
+      filter(exp_name %in% proteomics_assays) |>
+      pull(feature)) |>
+    inner_join(da_res,
+               by=c("uniprot_gn_id"="feature")) |>
+    dplyr::select(-uniprot_gn_id) |>
+    dplyr::rename(feature=hgnc_symbol)
+  
+  
+  da_res_mapped <- da_res |>
+    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
+    bind_rows(mirna_df,prot_df)
+  
+  
+  universe_per_assay <- as.list(unique(da_res$exp_name)) |>
+    map( ~
+           {df <- data.frame(all_features=
+                               experiments(expOmicSet)[[.x]] |>
+                               rownames(),
+                             exp_name=.x)
+           
+           if (.x %in% mirna_assays) {
+             all_targets <- .get_mirna_targets(df$all_features) |>
+               pull(target_genesymbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              exp_name=.x)
+           } else if (.x %in% proteomics_assays){
+             all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
+               pull(hgnc_symbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              exp_name=.x)
+           }else{
+             df <- df
+           }
+           return(df)}
+    ) |>
+    bind_rows()
+  
+  
+  enrich_res <- da_res_mapped |>
+    (\(df) split(df,df$exp_name))() |>
+    map(~ {
+      message("Working on: ",unique(.x$exp_name))
+      enrich <- compareCluster(
+        feature~direction,
+        data = .x,
+        fun = fun,
+        OrgDb = OrgDb,
+        keyType = keyType,
+        ont = ont,
+        universe = universe_per_assay |>
+          filter(exp_name==unique(.x$exp_name)) |>
+          pull(all_features),
+        pAdjustMethod = pAdjustMethod,
+        pvalueCutoff = pvalueCutoff,
+        qvalueCutoff = qvalueCutoff
+      )
+    })
+  
+  
+  enrich_df <- enrich_res |>
+    map(~ {
+      if(!is.null(.x)){
+        enrich <- .x@compareClusterResult
+      } else{
+        enrich <- NULL
+      }
+    }) |>
+    bind_rows(.id="exp_name")
+  
+  return(enrich_df)
+}
 
+# --- Factor Feature Exposure Functional Enrichment ----------
+.factor_exposure_functional_enrichment <- function(
+    expOmicSet,
+    proteomics_assays = NULL, 
+    mirna_assays = NULL,
+    pAdjustMethod = "fdr",
+    pvalueCutoff = 0.05,
+    qvalueCutoff = 0.1,
+    fun = "enrichGO",
+    OrgDb = 'org.Hs.eg.db',
+    keyType = "SYMBOL",
+    ont = "BP") {
+  require(clusterProfiler)
+  require(biomaRt)
+  require(tidyverse)
+  require(org.Hs.eg.db)
+  
+  
+  if (!"top_factor_features" %in% names(expOmicSet@metadata)) {
+    stop("Please run `extract_top_factor_features() first.`")
+  }
+  
+  if (!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)) {
+    stop("Please run `correlate_exposures_with_factors() first.`")
+  }
+  
+  factor_res <- expOmicSet@metadata$top_factor_features
+  factor_cor_res <- expOmicSet@metadata$omics_exposure_factor_correlation
+  
+  factor_res_cor_merged <- factor_res |>
+    dplyr::select(feature,
+                  exp_name) |>
+    inner_join(factor_cor_res,
+               by=c("feature",
+                    "exp_name"))
+  
+  
+  mirna_df <- factor_res_cor_merged |>
+    filter(exp_name %in% mirna_assays) |>
+    (\(df) split(df,df$exp_name))() |>
+    map(~ .get_mirna_targets(.x |> 
+                               pull(feature))) |>
+    bind_rows(.id="exp_name") |>
+    inner_join(factor_res_cor_merged,
+               by=c("source_genesymbol"="feature",
+                    "exp_name")) |>
+    dplyr::select(-source_genesymbol) |>
+    dplyr::rename(feature=target_genesymbol)
+  
+  
+  
+  prot_df <- .convert_uniprot_to_symbol(factor_res_cor_merged |>
+                                          filter(exp_name %in% proteomics_assays) |>
+                                          pull(feature)) |>
+    inner_join(factor_res_cor_merged,
+               by=c("uniprot_gn_id"="feature")) |>
+    dplyr::select(-uniprot_gn_id) |>
+    dplyr::rename(feature=hgnc_symbol)
+  
+  
+  factor_res_cor_merged_mapped <- factor_res_cor_merged |>
+    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
+    bind_rows(mirna_df,prot_df)
+  
+  
+  universe_per_assay <- as.list(unique(factor_res_cor_merged$exp_name)) |>
+    map( ~
+           {df <- data.frame(all_features=
+                               experiments(expOmicSet)[[.x]] |>
+                               rownames(),
+                             exp_name=.x)
+           
+           if (.x %in% mirna_assays) {
+             all_targets <- .get_mirna_targets(df$all_features) |>
+               pull(target_genesymbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              exp_name=.x)
+           } else if (.x %in% proteomics_assays){
+             all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
+               pull(hgnc_symbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              exp_name=.x)
+           }else{
+             df <- df
+           }
+           return(df)}
+    ) |>
+    bind_rows()
+  
+  
+  enrich_res <- factor_res_cor_merged_mapped |>
+    (\(df) split(df,df$exp_name))() |>
+    map(~ {
+      message("Working on: ",unique(.x$exp_name))
+      enrich <- compareCluster(
+        feature~category,
+        data = .x,
+        fun = fun,
+        OrgDb = OrgDb,
+        keyType = keyType,
+        ont = ont,
+        universe = universe_per_assay |>
+          filter(exp_name==unique(.x$exp_name)) |>
+          pull(all_features),
+        pAdjustMethod = pAdjustMethod,
+        pvalueCutoff = pvalueCutoff,
+        qvalueCutoff = qvalueCutoff
+      )
+    })
+  
+  
+  enrich_df <- enrich_res |>
+    map(~ {
+      if(!is.null(.x)){
+        enrich <- .x@compareClusterResult
+      } else{
+        enrich <- NULL
+      }
+    }) |>
+    bind_rows(.id="exp_name")
+  
+  return(enrich_df)
+}
 
 # --- Factor Feature Functional Enrichment ------------
 .factor_functional_enrichment <- function(
-    expOmicSet, 
-    ontology = "BP",  # BP (biological process), MF (molecular function), CC (cellular component)
-    min_loading = 0.0,  # Minimum absolute loading threshold for feature inclusion
-    mirna_assays = NULL,  # User-specified miRNA assay names
-    uniprot_assays = NULL,  # User-specified protein assay names with UniProt IDs
-    universe_background = TRUE,  # Whether to use a background gene universe (disabled for miRNA)
-    orgdb = org.Hs.eg.db,  # Organism annotation database
-    keytype = "SYMBOL",  # Key type for enrichment analysis
-    p_adjust_method = "fdr",  # Method for multiple testing correction
-    pvalue_cutoff = 0.05,  # p-value threshold for enrichment
-    qvalue_cutoff = 0.1  # q-value threshold for enrichment
-) {
+    expOmicSet,
+    proteomics_assays = NULL, 
+    mirna_assays = NULL,
+    pAdjustMethod = "fdr",
+    pvalueCutoff = 0.05,
+    qvalueCutoff = 0.1,
+    OrgDb = 'org.Hs.eg.db',
+    keyType = "SYMBOL",
+    ont = "BP") {
   require(clusterProfiler)
+  require(biomaRt)
   require(tidyverse)
   require(org.Hs.eg.db)
-  require(biomaRt)
-  require(multiMiR)
   
-  message("Starting functional enrichment analysis for factor features...")
   
-  factor_features <- metadata(expOmicSet)$top_factor_features
-  
-  if (is.null(factor_features) || nrow(factor_features) == 0) {
-    stop("No factor features found in metadata.")
+  if (!"top_factor_features" %in% names(expOmicSet@metadata)) {
+    stop("Please run `extract_top_factor_features() first.`")
   }
   
-  unique_assays <- unique(factor_features$name)
-  enrichment_results <- list()
+  factor_res <- expOmicSet@metadata$top_factor_features |>
+    dplyr::select(feature,
+                  exp_name) 
   
-  for (assay in unique_assays) {
-    message("Processing assay: ", assay)
-    
-    # **Extract significant factor-contributing features**
-    sig_features <- factor_features |> 
-      filter(name == assay, abs(loading) > min_loading) |> 
-      pull(features) |> unique()
-    
-    if (length(sig_features) == 0) {
-      message("No significant factor-contributing features for ", assay, ". Skipping...")
-      next
-    }
-    
-    # **Extract all tested features for dynamic universe (skip miRNA)**
-    tested_features <- if (!is.null(mirna_assays) && assay %in% mirna_assays) NULL else rownames(experiments(expOmicSet)[[assay]])
-    
-    # **Handle Protein Assays (Convert UniProt to Gene Symbols)**
-    if (!is.null(uniprot_assays) && assay %in% uniprot_assays) {
-      message("Converting UniProt IDs to gene symbols for: ", assay)
-      id_map <- .convert_uniprot_to_symbol(sig_features)
-      sig_features <- id_map$hgnc_symbol[!is.na(id_map$hgnc_symbol)]
-      
-      if (length(sig_features) == 0) {
-        message("No valid gene symbols found after UniProt conversion for ", assay, ". Skipping...")
-        next
-      }
-      
-      # Convert full tested feature list to gene symbols if background is enabled
-      if (universe_background && !is.null(tested_features)) {
-        tested_features <- .convert_uniprot_to_symbol(tested_features)$hgnc_symbol
-      }
-    }
-    
-    # **Handle miRNA Assays (Get Target Genes)**
-    if (!is.null(mirna_assays) && assay %in% mirna_assays) {
-      message("Retrieving target genes for miRNAs in: ", assay)
-      sig_features <- .get_mirna_targets(sig_features)
-      
-      if (length(sig_features) == 0) {
-        message("No validated miRNA targets found for ", assay, ". Skipping...")
-        next
-      }
-    }
-    
-    # **Ensure valid genes for enrichment**
-    if (length(sig_features) == 0) {
-      message("No valid gene symbols found for ", assay, ". Skipping enrichment...")
-      next
-    }
-    
-    # **Run GO Enrichment**
-    message("Running GO enrichment for ", assay, " (", ontology, ")")
-    enrich_res <- tryCatch(
-      enrichGO(
-        gene = sig_features, 
-        OrgDb = orgdb, 
-        keyType = keytype,
-        ont = ontology, 
-        universe = if (is.null(tested_features) || !universe_background) NULL else tested_features,
-        pAdjustMethod = p_adjust_method, 
-        pvalueCutoff = pvalue_cutoff, 
-        qvalueCutoff = qvalue_cutoff
-      ),
-      error = function(e) {
-        message("GO enrichment failed for ", assay, ": ", e$message)
-        return(NULL)
-      }
-    )
-    
-    # **Store results if enrichment was successful**
-    if (!is.null(enrich_res) && nrow(enrich_res@result) > 0) {
-      enrichment_results[[assay]] <- enrich_res@result
-    } else {
-      message("No significant enrichment results for ", assay, ".")
-    }
-  }
   
-  # **Store results in metadata**
-  metadata(expOmicSet)$factor_feature_enrichment <- enrichment_results
-  message("Factor-based functional enrichment analysis completed.")
-  return(expOmicSet)
+  mirna_df <- factor_res |>
+    filter(exp_name %in% mirna_assays) |>
+    (\(df) split(df,df$exp_name))() |>
+    map(~ .get_mirna_targets(.x |> 
+                               pull(feature))) |>
+    bind_rows(.id="exp_name") |>
+    inner_join(factor_res,
+               by=c("source_genesymbol"="feature",
+                    "exp_name")) |>
+    dplyr::select(-source_genesymbol) |>
+    dplyr::rename(feature=target_genesymbol)
+  
+  
+  
+  prot_df <- .convert_uniprot_to_symbol(factor_res |>
+                                          filter(exp_name %in% proteomics_assays) |>
+                                          pull(feature)) |>
+    inner_join(factor_res,
+               by=c("uniprot_gn_id"="feature")) |>
+    dplyr::select(-uniprot_gn_id) |>
+    dplyr::rename(feature=hgnc_symbol)
+  
+  
+  factor_res_mapped <- factor_res |>
+    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
+    bind_rows(mirna_df,prot_df)
+  
+  
+  universe_per_assay <- as.list(unique(factor_res$exp_name)) |>
+    map( ~
+           {df <- data.frame(all_features=
+                               experiments(expOmicSet)[[.x]] |>
+                               rownames(),
+                             exp_name=.x)
+           
+           if (.x %in% mirna_assays) {
+             all_targets <- .get_mirna_targets(df$all_features) |>
+               pull(target_genesymbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              exp_name=.x)
+           } else if (.x %in% proteomics_assays){
+             all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
+               pull(hgnc_symbol)
+             
+             df <- data.frame(all_features=all_targets,
+                              exp_name=.x)
+           }else{
+             df <- df
+           }
+           return(df)}
+    ) |>
+    bind_rows()
+  
+  
+  enrich_res <- factor_res_mapped |>
+    (\(df) split(df,df$exp_name))() |>
+    map(~ {
+      message("Working on: ",unique(.x$exp_name))
+      enrich <- enrichGO(
+        gene = .x$feature,
+        OrgDb = OrgDb,
+        keyType = keyType,
+        ont = ont,
+        universe = universe_per_assay |>
+          filter(exp_name==unique(.x$exp_name)) |>
+          pull(all_features),
+        pAdjustMethod = pAdjustMethod,
+        pvalueCutoff = pvalueCutoff,
+        qvalueCutoff = qvalueCutoff
+      
+      )
+    })
+  
+  
+  enrich_df <- enrich_res |>
+    map(~ {
+      if(!is.null(.x)){
+        enrich <- .x@result
+      } else{
+        enrich <- NULL
+      }
+    }) |>
+    bind_rows(.id="exp_name")
+  
+  return(enrich_df)
 }
 
 # --- Summarize Go Enrichment ---------------------
@@ -499,14 +756,14 @@
         enrichment_results[[assay]] |>
           filter(p.adjust < p_adjust_threshold) |>  # Apply p.adjust threshold
           dplyr::select(ID, Description, p.adjust, geneID) |>
-          mutate(assay_name = assay)
+          mutate(exp_name = assay)
       } else {
         NULL
       }
     }) |> 
     bind_rows() |> 
     separate_rows(geneID, sep = "/") |> 
-    group_by(ID, Description, assay_name) |> 
+    group_by(ID, Description, exp_name) |> 
     reframe(
       genes = paste(unique(geneID), collapse = ", "), 
       num_genes = n_distinct(geneID),  # Count of unique genes per omic
@@ -515,7 +772,7 @@
       .groups = "drop"
     ) |> 
     group_by(ID, Description) |> 
-    mutate(n_omics = n_distinct(assay_name)) |>  # Calculate before using it
+    mutate(n_omics = n_distinct(exp_name)) |>  # Calculate before using it
     mutate(
       all_genes = paste(unique(genes), collapse = ", "), 
       shared_genes = if (dplyr::first(n_omics) > 1) {
@@ -581,9 +838,9 @@
   # Filter by p.adjust threshold
   enriched_df <- enrichment_df |>
     filter(p.adjust < p_adjust_threshold) |>
-    dplyr::select(ID, Description, p.adjust, geneID, category, assay_name) |>
+    dplyr::select(ID, Description, p.adjust, geneID, category, exp_name) |>
     separate_rows(geneID, sep = "/") |>  # Split gene lists into separate rows
-    group_by(ID, Description, category, assay_name) |> 
+    group_by(ID, Description, category, exp_name) |> 
     reframe(
       genes = paste(unique(geneID), collapse = ", "), 
       num_genes = n_distinct(geneID),  # Count of unique genes per omic-assay
@@ -592,7 +849,7 @@
       .groups = "drop"
     ) |> 
     group_by(ID, Description, category) |> 
-    mutate(n_omics = n_distinct(assay_name)) |>  # Count how many omics report the GO term
+    mutate(n_omics = n_distinct(exp_name)) |>  # Count how many omics report the GO term
     mutate(
       all_genes = paste(unique(genes), collapse = ", "), 
       shared_genes = if (dplyr::first(n_omics) > 1) {

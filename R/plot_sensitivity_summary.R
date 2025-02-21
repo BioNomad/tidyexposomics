@@ -11,6 +11,10 @@ plot_sensitivity_summary <- function(
   require(ggridges)
   require(patchwork)
   
+  if(!"sensitivity_analysis" %in% names(expOmicSet@metadata)){
+    stop("Please run `run_sensitivity_analysis()` first.")
+  }
+  
   sensitivity_sum <- expOmicSet@metadata$sensitivity_analysis$feature_stability |>
     group_by(exp_name) |> 
     dplyr::summarise(n=n()) |> 
