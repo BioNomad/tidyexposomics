@@ -20,7 +20,10 @@ multiomics_integration <- function(expOmicSet,
   }
   
   if(scale){
-    expOmicSet <- scale_multiassay(expOmicSet)
+    expOmicSet_mo <- scale_multiassay(expOmicSet)
+  }
+  else{
+    expOmicSet_mo <- expOmicSet
   }
   
   message("Running multi-omics integration using ", method, "...")
@@ -32,7 +35,7 @@ multiomics_integration <- function(expOmicSet,
     message("Applying MOFA+ integration...")
     
     # Create MOFA object from the MultiAssayExperiment
-    mofa <- create_mofa(expOmicSet)
+    mofa <- create_mofa(expOmicSet_mo)
     
     # Set MOFA options
     model_opts <- get_default_model_options(mofa)
@@ -60,8 +63,12 @@ multiomics_integration <- function(expOmicSet,
     
     # Run NIPALS MCIA on the MultiAssayExperiment
     set.seed(42)  # Ensure reproducibility
-    result <- nipals_multiblock(expOmicSet, col_preproc_method = "colprofile",
-                                num_PCs = n_factors, tol = 1e-12, plots = "none")
+    result <- nipals_multiblock(
+      expOmicSet_mo,
+      col_preproc_method = "colprofile",
+      num_PCs = n_factors,
+      tol = 1e-12, 
+      plots = "none")
     
   }
   

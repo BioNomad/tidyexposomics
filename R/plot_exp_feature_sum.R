@@ -26,10 +26,10 @@ plot_pop_exposures <- function(
   }
   
   exp_feature_cor_df |> 
-      group_by(exposure,assay_name) |>
-      dplyr::reframe(n_assay_name=length(assay_name)) |>
+      group_by(exposure,exp_name) |>
+      dplyr::reframe(n_exp_name=length(exp_name)) |>
       group_by(exposure) |>
-      mutate(total=sum(n_assay_name)) |>
+      mutate(total=sum(n_exp_name)) |>
       ungroup() |>
       filter(exposure %in% c(
         exp_feature_cor_df |>
@@ -39,9 +39,9 @@ plot_pop_exposures <- function(
           pull(exposure)
       )) |>
       ggplot(aes(
-        x=n_assay_name,
+        x=n_exp_name,
         y=fct_reorder(exposure, total),
-        fill=assay_name
+        fill=exp_name
       ))+
       geom_bar(stat = "identity",alpha=0.7) +
       scale_fill_npg()+
@@ -188,19 +188,19 @@ plot_omic_assoc <- function(
   }
   
   exp_feature_cor_df |> 
-      tabyl(assay_name) |>
+      tabyl(exp_name) |>
       ggplot(aes(
         x=n,
-        y=reorder(assay_name,n),
-        fill=assay_name
+        y=reorder(exp_name,n),
+        fill=exp_name
       ))+
       geom_bar(stat = "identity",alpha=0.7) +
       geom_segment(aes(
         x = n,
         xend = n,
-        y = as.numeric(reorder(assay_name, n)) - 0.45,
-        yend = as.numeric(reorder(assay_name, n)) + 0.45,
-        color = assay_name,
+        y = as.numeric(reorder(exp_name, n)) - 0.45,
+        yend = as.numeric(reorder(exp_name, n)) + 0.45,
+        color = exp_name,
       ), size = 1) +
       scale_fill_npg()+
       scale_color_npg()+

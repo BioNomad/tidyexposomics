@@ -28,7 +28,8 @@ aw_dataset_cv2_filt <- aw_dataset_cv2_filt |>
     fev1fvc_category == "Moderate" ~ "Moderate",
     fev1fvc_category == "Severe" ~ "Severe"
   )) |>
-  mutate(fev1fvc_category=factor(fev1fvc_category,levels=c("Unobstructed","Moderate","Severe"))) |> 
+  mutate(fev1fvc_category=factor(fev1fvc_category,
+                                 levels=c("Unobstructed","Moderate","Severe"))) |> 
   mutate(age_scaled=as.numeric(scale(age))) |> 
   mutate(sex=female) |> 
   mutate(sex=factor(sex,levels=c("female","male"))) |>
@@ -175,7 +176,7 @@ expom |>
 
 expom@metadata[["differential_abundance"]] |>
   filter(adj.P.Val<0.05 & abs(logFC) > log2(1.5)) |> 
-  janitor::tabyl(assay_name) |> 
+  janitor::tabyl(exp_name) |> 
   arrange(desc(n))
 
 # --- Sensitivity Analysis --------------
@@ -187,7 +188,7 @@ expom <- expom |>
   scaling_methods = c("none"),
   min_counts_range = c(1,5),
   min_proportion_range = c(0.1,0.5),
-  covariates_to_remove = c("age" , "sex" , "race")
+  covariates_to_remove = "age" #c("age" , "sex" , "race")
 )
 
 expom |> 
@@ -256,11 +257,50 @@ expom |>
   plot_shared_exp_features()
 
 # --- Functional Enrichment --------------
-expom <- expom |> 
-  exposure_category_functional_enrichment(
-    cor_df = "degs",
-    mirna_assays = c("cd4_mirna", "cd16_mirna"), 
-    uniprot_assays = c("protein"))
+# expom <- expom |> 
+#   exposure_category_functional_enrichment(
+#     cor_df = "degs",
+#     mirna_assays = c("cd4_mirna", "cd16_mirna"), 
+#     uniprot_assays = c("protein"))
+
+a <- expom |> 
+  run_functional_enrichment(
+    geneset = "deg_exp_cor",
+    proteomics_assays = "Serum Proteomics",
+    mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA"),
+    pval_threshold = 0.05,
+    logfc_threshold = log2(1.5))
+
+a |> 
+  plot_exp_enrichment(geneset = "deg_exp_cor")
+
+# a <- expom |> 
+#   .da_exposure_functional_enrichment(
+#     proteomics_assays = "Serum Proteomics",
+#     mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA"),
+#     pval_threshold = 0.05,
+#     logfc_threshold = log2(1.5)
+#   )
+# 
+# b <- expom |> 
+#   .da_functional_enrichment(
+#     proteomics_assays = "Serum Proteomics",
+#     mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA"),
+#     pval_threshold = 0.05,
+#     logfc_threshold = log2(1.5)
+#   )
+# 
+# c <- expom |> 
+#   .factor_exposure_functional_enrichment(
+#     proteomics_assays = "Serum Proteomics",
+#     mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA")
+#   )
+# 
+# d <- expom |> 
+#   .factor_functional_enrichment(
+#     proteomics_assays = "Serum Proteomics",
+#     mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA")
+#   )
 
 
 # --- TODO ---------------------------

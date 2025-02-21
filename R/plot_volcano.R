@@ -18,13 +18,13 @@ plot_volcano <- function(
   
   if(plot_n_sig){
     exp_sum <- expOmicSet@metadata$differential_abundance |> 
-      group_by(assay_name) |> 
+      group_by(exp_name) |> 
       summarise(total = n(),
                 total_significant = sum(
                   !!sym(pval_col) < pval_thresh & 
                     abs(!!sym(logFC_col)) > logFC_thresh)) |> 
-      mutate(assay_name_plot=paste(
-        assay_name,
+      mutate(exp_name_plot=paste(
+        exp_name,
         "\n",
         " (",
         total_significant,
@@ -34,22 +34,22 @@ plot_volcano <- function(
         sep=""))
   } else {
     exp_sum <- expOmicSet@metadata$differential_abundance |> 
-      group_by(assay_name) |> 
+      group_by(exp_name) |> 
       summarise(total = n(),
                 total_significant = sum(
                   !!sym(pval_col) < pval_thresh & 
                     abs(!!sym(logFC_col)) > logFC_thresh)) |> 
-      mutate(assay_name_plot=assay_name)
+      mutate(exp_name_plot=exp_name)
   }
     
   
     expOmicSet@metadata$differential_abundance |> 
     inner_join(exp_sum,
-               by = "assay_name") |>
+               by = "exp_name") |>
     arrange(desc(total)) |> 
-    mutate(assay_name_plot=factor(
-      assay_name_plot,
-      levels=unique(assay_name_plot))) |>
+    mutate(exp_name_plot=factor(
+      exp_name_plot,
+      levels=unique(exp_name_plot))) |>
     mutate(direction=case_when(
       !!sym(logFC_col) > logFC_thresh &
         !!sym(pval_col) <  pval_thresh ~ "Upregulated",
@@ -76,7 +76,7 @@ plot_volcano <- function(
       "Downregulated" = "blue4",
       "Not-Significant" = "grey55"
     ))+
-    facet_grid(. ~ assay_name_plot)+
+    facet_grid(. ~ exp_name_plot)+
     theme(strip.text = element_text(face = "bold.italic"),
           plot.title = element_text(face = "bold.italic"))+
     labs(
