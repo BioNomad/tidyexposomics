@@ -50,7 +50,7 @@ run_differential_abundance <- function(
   
   # Save results in metadata if available
   if (nrow(final_results) > 0) {
-    metadata(expOmicSet)$differential_abundance <- final_results |> drop_na()
+    metadata(expOmicSet)$differential_abundance <- final_results
   } else {
     warning("No differential abundance results found across assays.")
   }

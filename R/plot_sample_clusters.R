@@ -2,6 +2,15 @@ plot_sample_clusters <- function(
     expOmicSet,
     cols_of_interest=NULL
 ){
+  require(ggpubr)
+  require(patchwork)
+  require(broom)
+  require(tidyverse)
+  require(grid)
+  require(gridExtra)
+  require(ComplexHeatmap)
+  require(MultiAssayExperiment)
+  require(SummarizedExperiment)
   
   if(!"sample_clustering" %in% names(expOmicSet@metadata)){
     stop("Please run `cluster_samples()` first")
@@ -9,8 +18,9 @@ plot_sample_clusters <- function(
   
   if(is.null(cols_of_interest)){
     cols_of_interest <- colnames(expOmicSet)
+  } else{
+    cols_of_interest <- cols_of_interest[cols_of_interest %in% colnames(colData(expOmicSet))]
   }
-  
   
   # add in sample group to the colData
   meta <- expOmicSet |> 

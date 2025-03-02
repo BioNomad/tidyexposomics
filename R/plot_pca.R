@@ -6,9 +6,13 @@ plot_pca <- function(
     
 ){
   require(tidyverse)
+  require(ggfortify)
   require(ggpubr)
   require(ggsci)
   require(ggrepel)
+  require(factoextra)
+  require(patchwork)
+  
   
   # grab data
   dat <- expOmicSet@metadata$pca$pca_df |> 

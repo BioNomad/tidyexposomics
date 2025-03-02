@@ -91,6 +91,18 @@ pca_analysis <- function(expOmicSet) {
     print("No outliers detected.")
   }
   
+  # add in PCs for samples to the colData
+  col_data <- colData(expOmicSet) |> 
+    as.data.frame() |> 
+    (\(df){df$id_to_map=rownames(df);df})() |> 
+    left_join(pca_sample$x |> 
+                as.data.frame() |>
+                (\(df){df$id_to_map=rownames(df);df})(),
+              by="id_to_map") |> 
+    column_to_rownames("id_to_map")
+    
+  colData(expOmicSet) <- col_data
+  
   # Store results
   metadata(expOmicSet)$pca <- list(
     pca_df = tibble(dat),

@@ -1,7 +1,9 @@
 plot_normality_sum <- function(
     expOmicSet
 ){
-  
+  require(ggpubr)
+  require(tidyverse)
+  require(ggsci)
   norm_df <- expOmicSet@metadata$normality$norm_df
   
   # Create normality plot

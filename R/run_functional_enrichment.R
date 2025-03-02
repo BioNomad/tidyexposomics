@@ -13,7 +13,8 @@ run_functional_enrichment <- function(
     fun = "enrichGO",
     OrgDb = 'org.Hs.eg.db',
     keyType = "SYMBOL",
-    ont = "BP"
+    ont = "BP",
+    clustering_approach = "diana"
 ){
   
   if(geneset == "deg"){
@@ -80,11 +81,35 @@ run_functional_enrichment <- function(
     stop("Invalid geneset. Choose from 'deg', 'deg_cor', 'factor_exp_cor', or 'factor'.")
   }
   
-  # create a list with the results
-  enrich_res_lst <- list(enrich_res)
-  names(enrich_res_lst) <- geneset
+  message("Determining Number of GO Term Clusters...")
   
-  expOmicSet@metadata$functional_enrichment <- enrich_res_lst
+  # determine go groups
+  go_groups <- enrich_res |>
+    (\(df) split(df,df$Description) )() |>
+    map(~.x |>
+          pull(geneID) |>
+          paste(collapse ="/") |>
+          str_split("/") |>
+          unlist() |>
+          str_trim() |>
+          unique()) |>
+    .get_pairwise_overlaps() |>
+    dplyr::select(source,target,jaccard) |>
+    pivot_wider(names_from = "target",
+                values_from = "jaccard") |>
+    column_to_rownames("source") |>
+    as.matrix() |>
+    .cluster_mat(clustering_approach = clustering_approach) |>
+    (\(x) df=data.frame(
+      Description=names(x),
+      go_group=as.numeric(x)))()
+  
+  # create a list with the results
+  enrich_res_lst <- list(
+    enrich_res=enrich_res,
+    go_groups=go_groups)
+  
+  expOmicSet@metadata$functional_enrichment[[geneset]] <- enrich_res_lst
   
   return(expOmicSet)
 }
