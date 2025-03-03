@@ -1,11 +1,12 @@
 correlate_exposures_with_factors <- function(
-    expOmicSet,
+    expomicset,
     exposure_cols = NULL,  
     correlation_method = "spearman",
     correlation_cutoff = 0.3,        
     cor_pval_column = "p.value",      
     pval_cutoff = 0.05,
-    batch_size = 1500  
+    batch_size = 1500,
+    action = "add"
 ) {
   require(tidyverse)
   require(MultiAssayExperiment)
@@ -13,13 +14,13 @@ correlate_exposures_with_factors <- function(
   message("Starting correlation analysis between factor features and exposures...")
   
   # Extract factor-contributing features
-  factor_features <- metadata(expOmicSet)$top_factor_features
+  factor_features <- metadata(expomicset)$top_factor_features
   if (is.null(factor_features)) {
     stop("No factor features found in metadata.")
   }
   
   # Get numeric exposure variables
-  numeric_exposures <- colnames(colData(expOmicSet))
+  numeric_exposures <- colnames(colData(expomicset))
   if (!is.null(exposure_cols)) {
     numeric_exposures <- intersect(numeric_exposures, exposure_cols)
   }
@@ -46,7 +47,7 @@ correlate_exposures_with_factors <- function(
     }
     
     # Extract and update SummarizedExperiment
-    se <- .update_assay_colData(expOmicSet, experiment_name)
+    se <- .update_assay_colData(expomicset, experiment_name)
     
     # **Filter SummarizedExperiment to Selected Features**
     se <- se[rownames(se) %in% selected_features, , drop = FALSE]
@@ -104,16 +105,23 @@ correlate_exposures_with_factors <- function(
   
   combined_results <- bind_rows(correlation_results) |> 
     mutate(FDR = p.adjust(p.value, method = "fdr")) |> 
-    left_join(expOmicSet@metadata$var_info,
+    left_join(expomicset@metadata$var_info,
               by=c("exposure"="variable"))
   
   if (nrow(combined_results) == 0) {
     warning("No significant correlations found in any experiment.")
-    return(expOmicSet)
+    return(expomicset)
   }
   
-  # Save to metadata
-  metadata(expOmicSet)$omics_exposure_factor_correlation <- combined_results
+  if(action == "add") {
+    # Save to metadata
+    metadata(expomicset)$omics_exposure_factor_correlation <- combined_results
+    return(expomicset)
+  } else if (action == "get") {
+    return(combined_results)
+  } else {
+    stop("Invalid action specified. Use 'add' or 'get'.")
+  }
   message("Factor feature-exposure correlation analysis completed.")
-  return(expOmicSet)
+  
 }

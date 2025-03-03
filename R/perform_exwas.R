@@ -1,15 +1,16 @@
-perform_exwas <- function(expOmicSet, 
+perform_exwas <- function(expomicset, 
                           exposures, 
                           outcome,
                           covariates = NULL,
                           family = "gaussian",
-                          correction_method = "fdr") {
+                          correction_method = "fdr",
+                          action="add") {
   library(tidyverse)
   library(broom)
   
   # Extract and preprocess colData
   message("Extracting exposure data...")
-  data <- colData(expOmicSet)  |> 
+  data <- colData(expomicset)  |> 
     as.data.frame() |> 
     mutate_if(is.numeric, ~ scale(.))  
   
@@ -64,15 +65,24 @@ perform_exwas <- function(expOmicSet,
   results_df <- results_df |>
     dplyr::select(exposure, depend, estimate, std.error, statistic, p.value, p_adjusted, everything()) |> 
     dplyr::rename("outcome" = "depend") |> 
-    left_join(metadata(expOmicSet)$var_info,
+    left_join(metadata(expomicset)$var_info,
               by = c("exposure" = "variable"))
   
-  # Save results in metadata
-  message("Saving results to expOmicSet metadata...")
-  metadata(expOmicSet)$exwas <- list(
-    results_df=results_df,
-    covariates=covariates)
-  
   message("ExWAS analysis completed.")
-  return(expOmicSet)
+  
+  if(action=="add"){
+    # Save results in metadata
+    metadata(expomicset)$exwas <- list(
+      results_df=results_df,
+      covariates=covariates)
+    
+    return(expomicset)
+  }else if (action=="get"){
+    return(list(
+      results_df=results_df,
+      covariates=covariates
+    ))
+  }else{
+    stop("Invalid action. Use 'add' or 'get'.")
+  }
 }

@@ -1,11 +1,13 @@
-transform_exposure <- function(expOmicSet, transform_method = "best") {
+transform_exposure <- function(
+    expomicset, 
+    transform_method = "best") {
   require(tidyverse)
   require(broom)
   require(ggpubr)
   require(ggsci)
   
   # Extract variables to transform from normality metadata
-  variables_to_transform <- metadata(expOmicSet)$normality$norm_df$exposure
+  variables_to_transform <- metadata(expomicset)$normality$norm_df$exposure
   
   if (is.null(variables_to_transform) || length(variables_to_transform) == 0) {
     stop("Please run `check_normality` before transforming the exposure data.")
@@ -31,7 +33,7 @@ transform_exposure <- function(expOmicSet, transform_method = "best") {
     message("Evaluating the best transformation method including no transformation.")
     
     # Separate numeric and non-numeric columns
-    col_data <- colData(expOmicSet) |> as.data.frame()
+    col_data <- colData(expomicset) |> as.data.frame()
     numeric_data <- col_data |> dplyr::select(all_of(variables_to_transform))
     non_numeric_data <- col_data |> dplyr::select(-all_of(variables_to_transform))
     
@@ -75,13 +77,13 @@ transform_exposure <- function(expOmicSet, transform_method = "best") {
     # Update colData with the best transformation
     transformed_numeric <- transformations[[best_transformation]]
     updated_col_data <- bind_cols(non_numeric_data, transformed_numeric)
-    colData(expOmicSet) <- DataFrame(updated_col_data)
+    colData(expomicset) <- DataFrame(updated_col_data)
     
     # only save the results for the chosen transformation
     norm_results <- norm_results |> filter(transformation == best_transformation)
     
     # Save results
-    metadata(expOmicSet)$transformation <- list(
+    metadata(expomicset)$transformation <- list(
       norm_df = norm_results,
       norm_summary = norm_summary
     )
@@ -91,7 +93,7 @@ transform_exposure <- function(expOmicSet, transform_method = "best") {
     message("Applying the ", transform_method, " transformation.")
     
     # Separate numeric and non-numeric columns
-    col_data <- colData(expOmicSet) |> as.data.frame()
+    col_data <- colData(expomicset) |> as.data.frame()
     numeric_data <- col_data |> dplyr::select(all_of(variables_to_transform))
     non_numeric_data <- col_data |> dplyr::select(-all_of(variables_to_transform))
     
@@ -100,7 +102,7 @@ transform_exposure <- function(expOmicSet, transform_method = "best") {
     
     # Combine with non-numeric columns
     updated_col_data <- bind_cols(non_numeric_data, transformed_numeric)
-    colData(expOmicSet) <- DataFrame(updated_col_data)
+    colData(expomicset) <- DataFrame(updated_col_data)
     
     # Perform Shapiro-Wilk test
     norm_results <- transformed_numeric |>
@@ -109,10 +111,10 @@ transform_exposure <- function(expOmicSet, transform_method = "best") {
       mutate(exposure = colnames(transformed_numeric))
     
     # Save results
-    metadata(expOmicSet)$transformation <- list(
+    metadata(expomicset)$transformation <- list(
       norm_df = norm_results
     )
   }
   
-  return(expOmicSet)
+  return(expomicset)
 }

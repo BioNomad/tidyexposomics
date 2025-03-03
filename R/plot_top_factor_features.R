@@ -1,15 +1,15 @@
 plot_top_factor_features <- function(
-    expOmicSet,
+    expomicset,
     top_n=5){
   
-  if(!"integration_results" %in% names(expOmicSet@metadata)){
+  if(!"integration_results" %in% names(expomicset@metadata)){
     stop("Please run `multiomics_integration()` first.")
   }
   
-  if(expOmicSet@metadata$integration_results$method == "MOFA"){
-    df <- MOFA2::get_weights(expOmicSet@metadata$integration_results$result) |> 
+  if(expomicset@metadata$integration_results$method == "MOFA"){
+    df <- MOFA2::get_weights(expomicset@metadata$integration_results$result) |> 
       map2(
-        names(MOFA2::get_weights(expOmicSet@metadata$integration_results$result)),
+        names(MOFA2::get_weights(expomicset@metadata$integration_results$result)),
         ~.x|> 
           as.data.frame() |>
           rownames_to_column("feature") |> 
@@ -48,10 +48,10 @@ plot_top_factor_features <- function(
         color="Experiment"
       )
     
-  }else if(expOmicSet@metadata$integration_results$method == "MCIA"){
-    df <- expOmicSet@metadata$integration_results$result@block_loadings |> 
+  }else if(expomicset@metadata$integration_results$method == "MCIA"){
+    df <- expomicset@metadata$integration_results$result@block_loadings |> 
       map2(
-        names(expOmicSet@metadata$integration_results$result@block_loadings),
+        names(expomicset@metadata$integration_results$result@block_loadings),
         ~.x|> 
           as.data.frame() |>
           rownames_to_column("feature") |> 

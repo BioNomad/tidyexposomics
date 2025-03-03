@@ -1,8 +1,9 @@
 identify_relevant_factors <- function(
-    expOmicSet, 
+    expomicset, 
     outcome_var, 
     categorical = FALSE, 
-    p_thresh = 0.05) {
+    p_thresh = 0.05,
+    action = "add") {
   require(Hmisc)
   require(stats)
   require(broom)
@@ -13,7 +14,7 @@ identify_relevant_factors <- function(
   message("Extracting factors from integration results...")
   
   # Get integration results
-  integration_results <- expOmicSet@metadata$integration_results
+  integration_results <- expomicset@metadata$integration_results
   method_used <- integration_results$method
   
   # Extract factors based on integration method
@@ -32,7 +33,7 @@ identify_relevant_factors <- function(
   }
   
   # Extract outcome variable from colData
-  outcome_data <- colData(expOmicSet) |> 
+  outcome_data <- colData(expomicset) |> 
     as.data.frame()
   outcome_data <- outcome_data[, outcome_var, drop = FALSE]
   
@@ -82,9 +83,14 @@ identify_relevant_factors <- function(
   for (i in 1:nrow(results)) {
     message(paste0("Factor: ", results$factor[i], ", p-value: ", round(results$p.value[i],digits = 3)))
   }
-  
-  # Store significant factors in metadata
-  expOmicSet@metadata$significant_factors <- results
-  
-  return(expOmicSet)
+  if (action=="add"){
+    # Store significant factors in metadata
+    expomicset@metadata$significant_factors <- results
+    
+    return(expomicset)
+  }else if (action =="get"){
+    return(results)
+  }else{
+    stop("Invalid action specified. Use 'add' or 'get'.")
+  }
 }

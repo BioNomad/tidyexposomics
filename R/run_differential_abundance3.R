@@ -1,12 +1,13 @@
 run_differential_abundance <- function(
-    expOmicSet,
+    expomicset,
     formula,
     abundance_col = "counts",
     minimum_counts = 10,
     minimum_proportion = 0.3,
     method = "limma_voom",
     contrasts = NULL,
-    scaling_method = "none"
+    scaling_method = "none",
+    action="add"
 ) {
   require(tidybulk)
   require(MultiAssayExperiment)
@@ -17,12 +18,12 @@ run_differential_abundance <- function(
   # Initialize a data frame to store results
   da_results_df <- list()
   
-  # Iterate through assays in expOmicSet
-  for (exp_name in names(experiments(expOmicSet))) {
+  # Iterate through assays in expomicset
+  for (exp_name in names(experiments(expomicset))) {
     message("Processing assay: ", exp_name)
     
     # Update assay with colData
-    assay <- .update_assay_colData(expOmicSet, exp_name)
+    assay <- .update_assay_colData(expomicset, exp_name)
     
     # Run differential analysis using `.run_se_differential_abundance`
     res <- .run_se_differential_abundance(
@@ -48,13 +49,15 @@ run_differential_abundance <- function(
   # Combine results across assays
   final_results <- bind_rows(da_results_df)
   
-  # Save results in metadata if available
-  if (nrow(final_results) > 0) {
-    metadata(expOmicSet)$differential_abundance <- final_results
-  } else {
-    warning("No differential abundance results found across assays.")
-  }
-  
   message("Differential abundance testing completed.")
-  return(expOmicSet)
+  
+  if(action == "add") {
+    metadata(expomicset)$differential_abundance <- final_results
+    return(expomicset)
+  } else if (action == "get") {
+    return(final_results)
+  } else {
+    stop("Invalid action specified. Use 'add' or 'get'.")
+  }
+  return(expomicset)
 }

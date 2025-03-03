@@ -1,5 +1,5 @@
 ---
-title: "tidyexposomics: integrated exposure-omics analysis powered by the tidyverse"
+title: "tidyexposomics: integrated exposure-omics analysis powered by tidy principles"
 author:
 - name: "Jason Laird"
   affiliation: "Department of Environmental Health and Engineering, Johns Hopkins University"
@@ -51,7 +51,7 @@ Exposure to environmental factors is a major determinant of health and disease. 
 
 The `tidyexposomics` package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. We structure our commands to fit into the `tidyverse` framework, where commands are designed to be simplified and intuitive. Here we provide functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
 
-```{r echo = FALSE, message=FALSE, fig.align='center', fig.cap='tidyexposomics pipeline overview. Exposure and omics data are stored in a MultiAssayExperiment. Data then undergo quality cotnrol, sample and exposure associations, differential abundance analysis, multi-omics integration, and functional enrichment analysis. The pipeline is designed to be flexible and modular, allowing users to customize their analysis.',}
+```{r echo = FALSE, message=FALSE, out.width="150%",fig.align='center', fig.cap='tidyexposomics pipeline overview. Exposure and omics data are stored in a MultiAssayExperiment. Data then undergo quality cotnrol, sample and exposure associations, differential abundance analysis, multi-omics integration, and functional enrichment analysis. The pipeline is designed to be flexible and modular, allowing users to customize their analysis.',}
 knitr::include_graphics("../inst/overview.png")
 ```
 
@@ -103,8 +103,8 @@ fdata <- list(
   "Serum Adductomics" = adduct_fdata
 )
 
-# Create the expOmicSet object
-expom <- expOmicSet(
+# Create the expomicset object
+expom <- create_expomicset(
   var_info = des,
   exposure = aw_dataset_cv2_filt,
   omics = omics_list,
@@ -118,12 +118,12 @@ expom <- expOmicSet(
 Oftentimes when collecting data, there are missing values. The `filter_missing` function is used to filter out variables with too many missing values. The `na_thresh` argument is used to set the threshold for missing values. For example, if `na_thresh = 20`, then any variable with more than 20% missing values will be removed.
 
 ```{r,eval=FALSE}
+# Filter out variables with too many missing values
 expom_qc <- expom |> 
-  # Filter out variables with too many missing values
   filter_missing(na_thresh = 20)
 ```
 
-```{r,warning=FALSE,message=FALSE,fig.width=7,fig.height=4,out.width="80%",fig.align='center'}
+```{r,warning=FALSE,message=FALSE,fig.width=6,fig.height=4,out.width="90%",fig.align='center'}
 # Check the number of missing values
 expom_qc |> 
   plot_missing_summary(threshold = 20)
@@ -149,14 +149,14 @@ To identify the spread of the data, we can perform a principal component analysi
 
 
 ```{r,eval=FALSE}
-# Perform PCA analysis
+# Perform principal component analysis
 expom_qc <- expom_qc |> 
     pca_analysis() 
 ```
 
 
-```{r,warning=FALSE,message=FALSE,fig.align='center',fig.width=10,fig.height=8}
-# Plot Principal Component Analysis
+```{r,warning=FALSE,message=FALSE,fig.align='center',fig.width=9,fig.height=7}
+# Plot principal component analysis results
 expom_qc |> 
   plot_pca()
 ```
@@ -178,9 +178,9 @@ expom_qc <- expom_qc |>
   transform_exposure(transform_method = "best") 
 ```
 
-```{r,warning=FALSE,message=FALSE}
-# expom_qc |> 
-#   plot_normality_sum()
+```{r,warning=FALSE,message=FALSE,fig.width=5,fig.height=4}
+expom_qc |>
+  plot_normality_sum()
 ```
 
 # Sample-Exposure Association
@@ -196,7 +196,7 @@ expom_sample_exp <- expom_qc |>
                   clustering_approach = "diana")
 ```
 
-```{r,message=FALSE,warning=FALSE,fig.height=5,fig.width=11,out.width="110%"}
+```{r,message=FALSE,warning=FALSE,fig.height=5,fig.width=11,out.width="170%"}
 # Plot sample clusters
 expom_sample_exp |> 
   plot_sample_clusters(
@@ -256,7 +256,7 @@ expom_da <- expom_sample_exp |>
     scaling_method = "none")
 ```
 
-```{r,warning=FALSE,message=FALSE,fig.height=5,fig.width=11,fig.align='center'}
+```{r,warning=FALSE,message=FALSE,fig.height=8,fig.width=6,fig.align='center'}
 expom_da |> 
   plot_volcano()
 ```
@@ -292,12 +292,18 @@ We note that transcriptomic assays have the greatest number of differentially ab
 
 ## Multi-Omics Integration
 
-While differential abundance analysis per omic can deliver insights into how each omic is associated with a particular outcome, we may want to leverage methods which integrate multiple omics layers. The `multiomics_integration` function is used to integrate multiple omics layers. Here we use the `MCIA` method to integrate omics layers. 
+While differential abundance analysis per omic can deliver insights into how each omic is associated with a particular outcome, we may want to leverage methods which integrate multiple omics layers. The `multiomics_integration` function is used to integrate multiple omics layers. Here we use the `MCIA` method to integrate omics layers. We can then use `plot_factor_summary()` to visualize which omics contribute most to which factors. 
+
 
 ```{r,eval=FALSE}
 # Perform Multi-Omics Integration
 expom_multi <- expom_da |> 
   multiomics_integration(method = "MCIA") 
+```
+
+```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=6,fig.align='center'}
+expom_multi |> 
+    plot_factor_summary()
 ```
 
 ## Factor Analysis
@@ -334,7 +340,7 @@ expom_multi <- expom_multi |>
 
 We can plot the results of the exposure-omics association analysis using the `plot_exp_feature_assoc_summary` function. 
 
-```{r,message=FALSE,warning=FALSE,fig.height=6,fig.width=14,fig.align='center'}
+```{r,message=FALSE,warning=FALSE,fig.height=8,fig.width=10,fig.align='center'}
 expom_multi |> 
   plot_exp_feature_assoc_summary()
 ```
@@ -358,8 +364,8 @@ expom_enrich <- expom_multi |>
 
 We can plot our results using the `plot_exp_enrich_dotplot` function. 
 
-```{r,fig.width=10,fig.height=10}
-# Plot Functional Enrichment Results
+```{r,fig.width=9,fig.height=11}
+# Plot functional enrichment results
 expom_enrich |> 
     plot_exp_enrich_dotplot(geneset = "deg_exp_cor")
 ```
@@ -367,5 +373,5 @@ You'll notice that enrichment terms are organized into groups. These groups are 
 
 ## Refernces
 
-1. https://pubmed.ncbi.nlm.nih.gov/16103423/
-2. https://academic.oup.com/exposome/article/4/1/osae001/7574628
+1.	Wild, C. P. Complementing the genome with an ‘exposome’: the outstanding challenge of environmental exposure measurement in molecular epidemiology. Cancer Epidemiol. Biomarkers Prev. 14, 1847–1850 (2005).
+2.	Chung, M. K. et al. Decoding the exposome: data science methodologies and implications in exposome-wide association studies (ExWASs). Exposome 4, osae001 (2024).

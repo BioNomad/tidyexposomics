@@ -1,10 +1,10 @@
 plot_normality_sum <- function(
-    expOmicSet
+    expomicset
 ){
   require(ggpubr)
   require(tidyverse)
   require(ggsci)
-  norm_df <- expOmicSet@metadata$normality$norm_df
+  norm_df <- expomicset@metadata$normality$norm_df
   
   # Create normality plot
   norm_plot <- table(norm_df$p.value > 0.05) |>
@@ -38,7 +38,7 @@ plot_normality_sum <- function(
       subtitle = "Shapiro-Wilk Test"
     )
   
-  transform_plot <- expOmicSet@metadata$transformation$norm_summary |> 
+  transform_plot <- expomicset@metadata$transformation$norm_summary |> 
     mutate(max_normal=ifelse(normal==max(normal),1,0)) |> 
     dplyr::select(transformation, normal,not_normal,max_normal) |>
     pivot_longer(cols = -c(transformation,max_normal),

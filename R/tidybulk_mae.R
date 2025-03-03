@@ -24,18 +24,18 @@ pivot_sample <- function(x, ...) {
 # .update_assay_colData(expom_qc,"Serum Proteomics") |> pivot_sample()
 # 
 # 
-pivot_feature <- function(expOmicSet){
+pivot_feature <- function(expomicset){
   # Load required libraries
   require(MultiAssayExperiment)
   require(tidyverse)
   require(tidybulk)
 
-  res <- lapply(names(experiments(expOmicSet)),function(exp_name){
-    exp <- .update_assay_colData(expOmicSet,exp_name) |>
+  res <- lapply(names(experiments(expomicset)),function(exp_name){
+    exp <- .update_assay_colData(expomicset,exp_name) |>
       pivot_transcript()
   })
 
-  names(res) <- names(experiments(expOmicSet))
+  names(res) <- names(experiments(expomicset))
 
   res <- res |>
     bind_rows(.id=".exp_name")
@@ -44,59 +44,67 @@ pivot_feature <- function(expOmicSet){
 # 
 # expom_enrich |> pivot_feature()
 # 
+# --- dplyr util: detect_target -------------
+# library(MultiAssayExperiment)
+# library(tibble)
+# library(dplyr)
+# library(tidyr)
+# 
 # detect_target <- function(.data, ...) {
-#   # Extract filtering condition as an expression
 #   args_expr <- substitute(list(...))[-1]
-#   
-#   # Extract just column names (ignoring the expression part)
 #   args <- sapply(args_expr, function(x) as.character(x[[2]]), USE.NAMES = FALSE)
-#   
-#   # Convert colData() and rowData() to tibbles for proper column name detection
+# 
 #   col_data_tbl <- as_tibble(colData(.data), rownames = ".sample")
 #   col_data_cols <- colnames(col_data_tbl)
-#   
+# 
 #   row_data_tbls <- lapply(experiments(.data), function(exp) as_tibble(rowData(exp), rownames = ".feature"))
 #   row_data_cols <- unique(unlist(lapply(row_data_tbls, colnames)))
-#   
-#   # Determine where the column exists
+# 
+#   assay_cols <- unique(unlist(lapply(experiments(.data), function(exp) names(assays(exp)))))
+# 
 #   if (all(args %in% col_data_cols)) {
 #     return("colData")
-#   } else if (all(args %in% row_data_cols)) {
+#   } else if (all(args %in% c(row_data_cols, assay_cols))) {
 #     return("rowData")
 #   } else {
-#     stop("Error: Specified columns do not exist in colData or rowData.")
+#     stop("Error: Specified columns do not exist in colData, rowData, or Assays.")
 #   }
 # }
 # 
-# 
+# # --- dplyr util: filter -------------
 # filter.MultiAssayExperiment <- function(.data, ...) {
 #   target <- detect_target(.data, ...)
-#   
+# 
 #   if (target == "colData") {
-#     # Convert rownames into `.sample` before filtering
 #     coldata_tbl <- as_tibble(colData(.data), rownames = ".sample")
-#     
-#     # Apply filtering
 #     coldata_filtered <- coldata_tbl |> filter(...)
-#     
-#     # Match samples based on `.sample` column
 #     matching_samples <- coldata_filtered$.sample
 #     .data <- .data[, matching_samples, drop = FALSE]
-#     
 #   } else if (target == "rowData") {
-#     # Subset rowData() across all experiments
 #     new_experiments <- lapply(experiments(.data), function(exp) {
 #       rowdata_tbl <- as_tibble(rowData(exp), rownames = ".feature")
-#       
+# 
+#       # Convert assay data to long format
+#       assay_dfs <- lapply(names(assays(exp)), function(assay_name) {
+#         assay_matrix <- assays(exp)[[assay_name]]
+# 
+#         # Convert matrix to tibble
+#         assay_df <- as_tibble(assay_matrix, rownames = ".feature") |>
+#           pivot_longer(-.feature, names_to = ".sample", values_to = assay_name) 
+# 
+#         return(assay_df)
+#       })
+# 
+#       assay_tbl <- reduce(assay_dfs, left_join, by = c(".feature", ".sample"))
+#       combined_tbl <- left_join(rowdata_tbl, assay_tbl, by = ".feature")
+# 
 #       # Apply filtering
-#       rowdata_filtered <- rowdata_tbl |> filter(...)
+#       rowdata_filtered <- combined_tbl |> filter(...)
 #       matching_features <- rowdata_filtered$.feature
-#       
-#       # Subset experiment based on features
+# 
 #       exp[matching_features, , drop = FALSE]
 #     })
-#     
-#     # Recreate the MultiAssayExperiment with filtered experiments
+# 
 #     .data <- MultiAssayExperiment(
 #       experiments = new_experiments,
 #       colData = colData(.data),
@@ -104,9 +112,10 @@ pivot_feature <- function(expOmicSet){
 #       metadata = metadata(.data)
 #     )
 #   }
-#   
+# 
 #   return(.data)
 # }
+
 # 
 # 
 # 
@@ -121,12 +130,12 @@ pivot_feature <- function(expOmicSet){
 
 
 
-# tidybulk_mae <- function(expOmicSet) {
+# tidybulk_mae <- function(expomicset) {
 #   library(MultiAssayExperiment)
 #   library(tidybulk)
 #   library(dbplyr)
 #   library(dplyr)
-#   res <- lapply(names(experiments(expOmicSet)),
+#   res <- lapply(names(experiments(expomicset)),
 #                 function(name){
 #                   res=.update_assay_colData(a,name) |> 
 #                     tidybulk();
@@ -134,30 +143,30 @@ pivot_feature <- function(expOmicSet){
 #                   return(res)})
 # }
 
-
-tidybulk_mae <- function(expOmicSet) {
-  library(MultiAssayExperiment)
-  library(tidybulk)
-  library(dplyr)
-  library(dbplyr)
-  
-  results_env <- new.env()  # Store references in an environment
-  
-  for (name in names(experiments(expOmicSet))) {
-    message("Processing: ", name)
-    
-    # Process each experiment
-    res <- .update_assay_colData(expOmicSet, name) |> tidybulk()
-    
-    # Store reference
-    results_env[[name]] <- res
-    
-    # Remove intermediate object & free memory
-    rm(res)
-    gc()
-  }
-  
-  return(results_env)  # Return environment with references
-}
+# 
+# tidybulk_mae <- function(expomicset) {
+#   library(MultiAssayExperiment)
+#   library(tidybulk)
+#   library(dplyr)
+#   library(dbplyr)
+#   
+#   results_env <- new.env()  # Store references in an environment
+#   
+#   for (name in names(experiments(expomicset))) {
+#     message("Processing: ", name)
+#     
+#     # Process each experiment
+#     res <- .update_assay_colData(expomicset, name) |> tidybulk()
+#     
+#     # Store reference
+#     results_env[[name]] <- res
+#     
+#     # Remove intermediate object & free memory
+#     rm(res)
+#     gc()
+#   }
+#   
+#   return(results_env)  # Return environment with references
+# }
 
 #x=a |> tidybulk_mae()

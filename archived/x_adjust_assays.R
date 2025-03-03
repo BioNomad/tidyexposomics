@@ -1,5 +1,5 @@
 adjust_assays <- function(
-    expOmicSet, 
+    expomicset, 
     outcome, 
     covariates, 
     minimum_counts = 0,
@@ -14,11 +14,11 @@ adjust_assays <- function(
   message("Adjusting assays...")
   adjusted_experiments <- list()
   
-  for (assay_name in names(experiments(expOmicSet))) {
+  for (assay_name in names(experiments(expomicset))) {
     message("Processing assay: ", assay_name)
     
     # Update colData for the assay
-    assay <- .update_assay_colData(expOmicSet, assay_name)
+    assay <- .update_assay_colData(expomicset, assay_name)
     
     # Create batch variable in colData
     coldata <- as.data.frame(colData(assay))
@@ -53,22 +53,22 @@ adjust_assays <- function(
       adjust_abundance(as.formula(paste("~", paste(outcome, " + batch", sep = ""))), 
                        method = "combat")
     
-    # Remove colData from assay to keep expOmicSet central colData as the primary source
+    # Remove colData from assay to keep expomicset central colData as the primary source
     colData(assay) <- NULL
     
     # Save adjusted assay
     adjusted_experiments[[assay_name]] <- assay
   }
   
-  # Update experiments in the expOmicSet
-  experiments(expOmicSet) <- ExperimentList(adjusted_experiments)
+  # Update experiments in the expomicset
+  experiments(expomicset) <- ExperimentList(adjusted_experiments)
   
   message("Adjusted variation due to: ", paste(covariates, collapse = ", "))
-  return(expOmicSet)
+  return(expomicset)
 }
 
 
-# adjust_assays <- function(expOmicSet, outcome, covariates) {
+# adjust_assays <- function(expomicset, outcome, covariates) {
 #   require(tidybulk)
 #   require(MultiAssayExperiment)
 #   require(tidyverse)
@@ -76,16 +76,16 @@ adjust_assays <- function(
 #   # Initialize a list to store adjusted experiments
 #   adjusted_experiments <- list()
 #   
-#   # Iterate through all assays in the expOmicSet
+#   # Iterate through all assays in the expomicset
 #   message("Adjusting assays...")
-#   for (assay_name in names(experiments(expOmicSet))) {
+#   for (assay_name in names(experiments(expomicset))) {
 #     message("Processing assay: ", assay_name)
 #     
-#     assay <- experiments(expOmicSet)[[assay_name]]
+#     assay <- experiments(expomicset)[[assay_name]]
 #     
 #     # Extract colData for the assay's samples
 #     assay_samples <- colnames(assay)
-#     global_coldata <- as.data.frame(colData(expOmicSet))
+#     global_coldata <- as.data.frame(colData(expomicset))
 #     coldata <- global_coldata[rownames(global_coldata) %in% assay_samples, , drop = FALSE]
 #     
 #     # Ensure the sample order matches
@@ -121,11 +121,11 @@ adjust_assays <- function(
 #     adjusted_experiments[[assay_name]] <- assay
 #   }
 #   
-#   # Update experiments in the expOmicSet
-#   experiments(expOmicSet) <- ExperimentList(adjusted_experiments)
+#   # Update experiments in the expomicset
+#   experiments(expomicset) <- ExperimentList(adjusted_experiments)
 #   
 #   message("Adjusted variation due to: ", paste(covariates, collapse = ", "))
-#   return(expOmicSet)
+#   return(expomicset)
 # }
 
 

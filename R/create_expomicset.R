@@ -1,4 +1,4 @@
-expOmicSet <- function(var_info, exposure, omics, row_data = NULL) {
+create_expomicset <- function(var_info, exposure, omics, row_data = NULL) {
   require(MultiAssayExperiment)
   
   # Validate inputs

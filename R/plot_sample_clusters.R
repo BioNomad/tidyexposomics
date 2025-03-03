@@ -1,5 +1,5 @@
 plot_sample_clusters <- function(
-    expOmicSet,
+    expomicset,
     cols_of_interest=NULL
 ){
   require(ggpubr)
@@ -12,25 +12,25 @@ plot_sample_clusters <- function(
   require(MultiAssayExperiment)
   require(SummarizedExperiment)
   
-  if(!"sample_clustering" %in% names(expOmicSet@metadata)){
+  if(!"sample_clustering" %in% names(expomicset@metadata)){
     stop("Please run `cluster_samples()` first")
   }
   
   if(is.null(cols_of_interest)){
-    cols_of_interest <- colnames(expOmicSet)
+    cols_of_interest <- colnames(expomicset)
   } else{
-    cols_of_interest <- cols_of_interest[cols_of_interest %in% colnames(colData(expOmicSet))]
+    cols_of_interest <- cols_of_interest[cols_of_interest %in% colnames(colData(expomicset))]
   }
   
   # add in sample group to the colData
-  meta <- expOmicSet |> 
+  meta <- expomicset |> 
     colData() |> 
     as.data.frame() |> 
     rownames_to_column("id_to_map") |>
     left_join(
       data.frame(
-        id_to_map = names(expOmicSet@metadata$sample_clustering$sample_groups),
-        cluster = as.vector(expOmicSet@metadata$sample_clustering$sample_groups)
+        id_to_map = names(expomicset@metadata$sample_clustering$sample_groups),
+        cluster = as.vector(expomicset@metadata$sample_clustering$sample_groups)
       ),
       by="id_to_map"
     ) |> 
@@ -98,7 +98,7 @@ plot_sample_clusters <- function(
   
   wrap_plots(lollipop_plot,
              grid.grabExpr(
-               draw(expOmicSet@metadata$sample_clustering$heatmap)))+
+               draw(expomicset@metadata$sample_clustering$heatmap)))+
     plot_layout(widths = c(1,3))
   
 }

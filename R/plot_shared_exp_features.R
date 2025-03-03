@@ -1,5 +1,5 @@
 plot_shared_exp_features <- function(
-    expOmicSet, 
+    expomicset, 
     geneset = "degs",
     cutoff = 10) {
   require(igraph)
@@ -7,21 +7,21 @@ plot_shared_exp_features <- function(
   require(tidyverse)
   
   if(geneset=="degs"){
-    if(!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_deg_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_deg_correlation
     
   }else if(geneset=="factors"){
-    if(!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_factors()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_factor_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_factor_correlation
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
   
-  df <- expOmicSet@metadata$omics_exposure_deg_correlation
+  df <- expomicset@metadata$omics_exposure_deg_correlation
   
   exp_feature_cor_lst <- split(
     exp_feature_cor_df, 
@@ -35,7 +35,7 @@ plot_shared_exp_features <- function(
     arrange(num_shared)
   
   # Vertex Information
-  vertex_df <- expOmicSet@metadata$var_info %>%
+  vertex_df <- expomicset@metadata$var_info %>%
     filter(variable %in% c(
       exp_shared_feature_df$source,
       exp_shared_feature_df$target))

@@ -1,7 +1,8 @@
-multiomics_integration <- function(expOmicSet,
+multiomics_integration <- function(expomicset,
                                    method = "MCIA",
                                    n_factors = 10,
-                                   scale=TRUE) {
+                                   scale=TRUE,
+                                   action="add") {
   require(MultiAssayExperiment)
   require(SummarizedExperiment)
   require(tidyverse)
@@ -15,15 +16,15 @@ multiomics_integration <- function(expOmicSet,
     stop("Invalid method. Choose from 'MOFA' or 'MCIA'.")
   }
   
-  if(length(experiments(expOmicSet)) < 2){
+  if(length(experiments(expomicset)) < 2){
     stop("Multi-Omics Integration requires at least two assays in the MultiAssayExperiment object.")
   }
   
   if(scale){
-    expOmicSet_mo <- scale_multiassay(expOmicSet)
+    expomicset_mo <- scale_multiassay(expomicset)
   }
   else{
-    expOmicSet_mo <- expOmicSet
+    expomicset_mo <- expomicset
   }
   
   message("Running multi-omics integration using ", method, "...")
@@ -35,7 +36,7 @@ multiomics_integration <- function(expOmicSet,
     message("Applying MOFA+ integration...")
     
     # Create MOFA object from the MultiAssayExperiment
-    mofa <- create_mofa(expOmicSet_mo)
+    mofa <- create_mofa(expomicset_mo)
     
     # Set MOFA options
     model_opts <- get_default_model_options(mofa)
@@ -64,7 +65,7 @@ multiomics_integration <- function(expOmicSet,
     # Run NIPALS MCIA on the MultiAssayExperiment
     set.seed(42)  # Ensure reproducibility
     result <- nipals_multiblock(
-      expOmicSet_mo,
+      expomicset_mo,
       col_preproc_method = "colprofile",
       num_PCs = n_factors,
       tol = 1e-12, 
@@ -72,11 +73,20 @@ multiomics_integration <- function(expOmicSet,
     
   }
   
-  # Store results in MultiAssayExperiment metadata
-  expOmicSet@metadata$integration_results <- list(
-    method = method,
-    result = result
-  )
-  
-  return(expOmicSet)
+  if(action=="add"){
+    # Store results in MultiAssayExperiment metadata
+    expomicset@metadata$integration_results <- list(
+      method = method,
+      result = result
+    )
+    
+    return(expomicset)
+  }else if (action=="get"){
+    return(list(
+      method = method,
+      result = result
+    ))
+  }else{
+    stop("Invalid action. Choose from 'add' or 'get'.")
+  }
 }

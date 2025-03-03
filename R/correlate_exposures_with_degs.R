@@ -1,5 +1,5 @@
 correlate_exposures_with_degs <- function(
-    expOmicSet,
+    expomicset,
     exposure_cols = NULL,
     robust = TRUE,
     correlation_method = "spearman",
@@ -10,7 +10,8 @@ correlate_exposures_with_degs <- function(
     deg_pval_col = "adj.P.Val",  
     deg_logfc_col = "logFC",  
     deg_pval_thresh = 0.05,  
-    deg_logfc_thresh = log2(1.5)  
+    deg_logfc_thresh = log2(1.5),
+    action="add"
 ) {
   require(tidyverse)
   require(MultiAssayExperiment)
@@ -18,14 +19,14 @@ correlate_exposures_with_degs <- function(
   message("Starting correlation analysis between DEGs and exposures...")
   
   # Extract and filter DEGs
-  da_results <- metadata(expOmicSet)$differential_abundance
+  da_results <- metadata(expomicset)$differential_abundance
   if (is.null(da_results)) {
     stop("No differential abundance results found in metadata.")
   }
   
   # Stop if robust is true but sensitivity analysis was not run
   if(robust){
-    if(!"sensitivity_analysis" %in% names(expOmicSet@metadata)){
+    if(!"sensitivity_analysis" %in% names(expomicset@metadata)){
       stop("Please run `run_sensitivity_analysis()` first.")
     }
   }
@@ -39,7 +40,7 @@ correlate_exposures_with_degs <- function(
   }
   
   # Get numeric exposure variables
-  numeric_exposures <- colnames(colData(expOmicSet))
+  numeric_exposures <- colnames(colData(expomicset))
   if (!is.null(exposure_cols)) {
     numeric_exposures <- intersect(numeric_exposures, exposure_cols)
   }
@@ -56,8 +57,8 @@ correlate_exposures_with_degs <- function(
     
     if(robust){
       # Extract relevant robust DEGs for this assay
-      selected_features <- expOmicSet@metadata$sensitivity_analysis$feature_stability |> 
-        filter(stability_score > expOmicSet@metadata$sensitivity_analysis$score_thresh) |>
+      selected_features <- expomicset@metadata$sensitivity_analysis$feature_stability |> 
+        filter(stability_score > expomicset@metadata$sensitivity_analysis$score_thresh) |>
         filter(exp_name == experiment_name) |> 
         pull(feature) |>
         unique()
@@ -76,7 +77,7 @@ correlate_exposures_with_degs <- function(
     }
     
     # Extract and update SummarizedExperiment
-    se <- .update_assay_colData(expOmicSet, experiment_name)
+    se <- .update_assay_colData(expomicset, experiment_name)
     
     # **Filter SummarizedExperiment to Selected Features**
     se <- se[rownames(se) %in% selected_features, , drop = FALSE]
@@ -133,16 +134,22 @@ correlate_exposures_with_degs <- function(
   
   combined_results <- bind_rows(correlation_results) |> 
     mutate(FDR = p.adjust(p.value, method = "fdr")) |> 
-    left_join(expOmicSet@metadata$var_info,
+    left_join(expomicset@metadata$var_info,
               by=c("exposure"="variable"))
   
   if (nrow(combined_results) == 0) {
     warning("No significant correlations found in any experiment.")
-    return(expOmicSet)
+    return(expomicset)
   }
   
-  # Save to metadata
-  metadata(expOmicSet)$omics_exposure_deg_correlation <- combined_results
+  if(action=="add"){
+    # Save to metadata
+    metadata(expomicset)$omics_exposure_deg_correlation <- combined_results
+    return(expomicset)
+  }else if (action =="get"){
+    return(combined_results)
+  }else{
+    stop("Invalid action specified. Use 'add' or 'get'.")
+  }
   message("DEG-exposure correlation analysis completed.")
-  return(expOmicSet)
 }

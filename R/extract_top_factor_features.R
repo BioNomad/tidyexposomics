@@ -1,9 +1,10 @@
 extract_top_factor_features <- function(
-    expOmicSet, 
+    expomicset, 
     factors, 
     method = "percentile", 
     percentile = 0.9, 
-    threshold = 0.3) {
+    threshold = 0.3,
+    action = "add") {
   require(dplyr)
   require(tidyr)
   require(purrr)
@@ -11,7 +12,7 @@ extract_top_factor_features <- function(
   message("Extracting top contributing features for specified factors...")
   
   # Get integration results
-  integration_results <- metadata(expOmicSet)$integration_results
+  integration_results <- metadata(expomicset)$integration_results
   method_used <- integration_results$method
   
   # Extract factor loadings based on method
@@ -89,12 +90,17 @@ extract_top_factor_features <- function(
                   exp_name) |>
     distinct()
   
-  # Store selected features
-  metadata(expOmicSet)$top_factor_features <- filtered_features
-  
   message("Selected ",
           nrow(filtered_features), 
           " features contributing to specified factors.")
   
-  return(expOmicSet)
+  if(action=="add"){
+    # Store selected features
+    metadata(expomicset)$top_factor_features <- filtered_features
+    return(expomicset)
+  }else if (action=="get"){
+    return(filtered_features)
+  }else{
+    stop("Invalid action. Choose 'add' or 'get'.")
+  }
 }

@@ -1,17 +1,17 @@
 remove_sample_outliers <- function(
-    expOmicSet,
+    expomicset,
     outliers=NULL
 ){
   
-  if(!"pca" %in% names(expOmicSet@metadata)){
+  if(!"pca" %in% names(expomicset@metadata)){
     stop("PCA not performed on the data. Please run 'pca_analysis' first.")
   }
   if(is.null(outliers)){
-    outliers <-  expOmicSet@metadata$pca$outliers
+    outliers <-  expomicset@metadata$pca$outliers
   } else{
     outliers <- outliers
   }
   message("Removing outliers: ", paste(outliers, collapse=", "))
-  expOmicSet <- expOmicSet[,!colnames(expOmicSet) %in% outliers]
-  return(expOmicSet)
+  expomicset <- expomicset[,!colnames(expomicset) %in% outliers]
+  return(expomicset)
 }

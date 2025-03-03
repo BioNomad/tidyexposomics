@@ -1,8 +1,8 @@
 plot_sensitivity_summary <- function(
-    expOmicSet,
+    expomicset,
     title="Distribution of Stability Scores"){
   
-  if(!"sensitivity_analysis" %in% names(expOmicSet@metadata)){
+  if(!"sensitivity_analysis" %in% names(expomicset@metadata)){
     stop("Please run `run_sensitivity_analysis` first.")
   }
   
@@ -11,11 +11,11 @@ plot_sensitivity_summary <- function(
   require(ggridges)
   require(patchwork)
   
-  if(!"sensitivity_analysis" %in% names(expOmicSet@metadata)){
+  if(!"sensitivity_analysis" %in% names(expomicset@metadata)){
     stop("Please run `run_sensitivity_analysis()` first.")
   }
   
-  sensitivity_sum <- expOmicSet@metadata$sensitivity_analysis$feature_stability |>
+  sensitivity_sum <- expomicset@metadata$sensitivity_analysis$feature_stability |>
     group_by(exp_name) |> 
     dplyr::summarise(n=n()) |> 
     arrange(desc(n)) 
@@ -46,9 +46,9 @@ plot_sensitivity_summary <- function(
          #x = paste("No. of Differentially", "Abundant Features",sep="\n")
          ) 
   
-  score_thresh <- expOmicSet@metadata$sensitivity_analysis$score_thresh
+  score_thresh <- expomicset@metadata$sensitivity_analysis$score_thresh
   
-  sensitivity_ridgeplot <- expOmicSet@metadata$sensitivity_analysis$feature_stability |>
+  sensitivity_ridgeplot <- expomicset@metadata$sensitivity_analysis$feature_stability |>
     left_join(sensitivity_sum, by="exp_name") |>
     ggplot(aes(
       x=stability_score,

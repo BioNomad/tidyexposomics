@@ -1,17 +1,17 @@
 # --- Plot Functional Enrichment DotPlot: Exp:Feature Correlation ------
 plot_exp_enrich_dotplot <- function(
-    expOmicSet,
+    expomicset,
     geneset,
     top_n=5,
     n_per_group=5
 ){
 
-  if(!"functional_enrichment" %in% names(expOmicSet@metadata)){
+  if(!"functional_enrichment" %in% names(expomicset@metadata)){
     stop("Please run `run_functional_enrichment` first.")
   }
 
-  go_group_df <- expOmicSet@metadata$functional_enrichment[[geneset]]$enrich_res |>
-    left_join(expOmicSet@metadata$functional_enrichment[[geneset]]$go_groups,
+  go_group_df <- expomicset@metadata$functional_enrichment[[geneset]]$enrich_res |>
+    left_join(expomicset@metadata$functional_enrichment[[geneset]]$go_groups,
               by="Description")
 
   go_group_df |>

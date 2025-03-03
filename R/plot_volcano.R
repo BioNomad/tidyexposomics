@@ -1,5 +1,5 @@
 plot_volcano <- function(
-    expOmicSet,
+    expomicset,
     pval_col = "adj.P.Val",
     pval_thresh = 0.05,
     logFC_col = "logFC",
@@ -7,17 +7,18 @@ plot_volcano <- function(
     plot_n_sig = TRUE,
     xlab = expression(Log[2]*"FC"),
     ylab = expression(-Log[10]*"P"),
-    title = "Volcano Plot of Differential Abundance"
+    title = "Volcano Plot of Differential Abundance",
+    nrow=2
 ){
   require(tidyverse)
   require(ggpubr)
   
-  if(!"differential_abundance" %in% names(expOmicSet@metadata)){
+  if(!"differential_abundance" %in% names(expomicset@metadata)){
     stop("Please run `run_differential_abundance()` first.")
   }
   
   if(plot_n_sig){
-    exp_sum <- expOmicSet@metadata$differential_abundance |> 
+    exp_sum <- expomicset@metadata$differential_abundance |> 
       group_by(exp_name) |> 
       summarise(total = n(),
                 total_significant = sum(
@@ -33,7 +34,7 @@ plot_volcano <- function(
         ")",
         sep=""))
   } else {
-    exp_sum <- expOmicSet@metadata$differential_abundance |> 
+    exp_sum <- expomicset@metadata$differential_abundance |> 
       group_by(exp_name) |> 
       summarise(total = n(),
                 total_significant = sum(
@@ -43,7 +44,7 @@ plot_volcano <- function(
   }
     
   
-    expOmicSet@metadata$differential_abundance |> 
+    expomicset@metadata$differential_abundance |> 
     inner_join(exp_sum,
                by = "exp_name") |>
     arrange(desc(total)) |> 
@@ -76,7 +77,7 @@ plot_volcano <- function(
       "Downregulated" = "blue4",
       "Not-Significant" = "grey55"
     ))+
-    facet_grid(. ~ exp_name_plot)+
+    facet_wrap(. ~ exp_name_plot,nrow=nrow)+
     theme(strip.text = element_text(face = "bold.italic"),
           plot.title = element_text(face = "bold.italic"))+
     labs(

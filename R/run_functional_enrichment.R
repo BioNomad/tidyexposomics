@@ -1,5 +1,5 @@
 run_functional_enrichment <- function(
-    expOmicSet,
+    expomicset,
     geneset, # deg, factor, deg_exp_cor,factor_exp_cor
     proteomics_assays = NULL, 
     mirna_assays = NULL,
@@ -14,11 +14,12 @@ run_functional_enrichment <- function(
     OrgDb = 'org.Hs.eg.db',
     keyType = "SYMBOL",
     ont = "BP",
-    clustering_approach = "diana"
+    clustering_approach = "diana",
+    action="add"
 ){
   
   if(geneset == "deg"){
-    enrich_res <- expOmicSet |> 
+    enrich_res <- expomicset |> 
       .da_functional_enrichment(
         proteomics_assays = proteomics_assays, 
         mirna_assays = mirna_assays,
@@ -35,7 +36,7 @@ run_functional_enrichment <- function(
         ont = ont
       )
   } else if (geneset == "deg_exp_cor"){
-    enrich_res <- expOmicSet |> 
+    enrich_res <- expomicset |> 
       .da_exposure_functional_enrichment(
         proteomics_assays = proteomics_assays, 
         mirna_assays = mirna_assays,
@@ -52,7 +53,7 @@ run_functional_enrichment <- function(
         ont = ont
       )
   } else if (geneset == "factor_exp_cor"){
-    enrich_res <- expOmicSet |> 
+    enrich_res <- expomicset |> 
       .factor_exposure_functional_enrichment(
         proteomics_assays = proteomics_assays, 
         mirna_assays = mirna_assays,
@@ -65,7 +66,7 @@ run_functional_enrichment <- function(
         ont = ont
       )
   } else if (geneset == "factor"){
-    enrich_res <- expOmicSet |> 
+    enrich_res <- expomicset |> 
       .factor_functional_enrichment(
         proteomics_assays = proteomics_assays, 
         mirna_assays = mirna_assays,
@@ -109,7 +110,13 @@ run_functional_enrichment <- function(
     enrich_res=enrich_res,
     go_groups=go_groups)
   
-  expOmicSet@metadata$functional_enrichment[[geneset]] <- enrich_res_lst
-  
-  return(expOmicSet)
+  if(action=="add"){
+    expomicset@metadata$functional_enrichment[[geneset]] <- enrich_res_lst
+    
+    return(expomicset)
+  }else if (action=="get"){
+    return(enrich_res_lst)
+  }else{
+    stop("Invalid action. Choose from 'add' or 'get'.")
+  }
 }

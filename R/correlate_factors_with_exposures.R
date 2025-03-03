@@ -1,4 +1,7 @@
-correlate_factors_with_exposures <- function(expOmicSet, exposures) {
+correlate_factors_with_exposures <- function(
+    expomicset, 
+    exposures,
+    action="add") {
   require(Hmisc)
   require(tidyverse)
   require(reshape2)
@@ -6,7 +9,7 @@ correlate_factors_with_exposures <- function(expOmicSet, exposures) {
   message("Extracting factors from integration results...")
   
   # Get integration results
-  integration_results <- expOmicSet@metadata$integration_results
+  integration_results <- expomicset@metadata$integration_results
   method_used <- integration_results$method
   
   # Extract factors based on integration method
@@ -25,7 +28,7 @@ correlate_factors_with_exposures <- function(expOmicSet, exposures) {
   }
   
   # Extract exposures from colData
-  exp_data <- colData(expOmicSet)[, exposures, drop = FALSE]
+  exp_data <- colData(expomicset)[, exposures, drop = FALSE]
   
   # Ensure numeric data only
   factors <- as.data.frame(factors) %>% mutate_all(as.numeric)
@@ -68,8 +71,13 @@ correlate_factors_with_exposures <- function(expOmicSet, exposures) {
   
   message("Correlation analysis complete. Storing results...")
   
-  # Store results in metadata
-  expOmicSet@metadata$factor_exposure_correlations <- meta_cor_df
-  
-  return(expOmicSet)
+  if(action=="add"){
+    # Store results in metadata
+    expomicset@metadata$factor_exposure_correlations <- meta_cor_df
+    return(expomicset)
+  }else if (action=="get"){
+    return(meta_cor_df)
+  }else{
+    
+  }
 }

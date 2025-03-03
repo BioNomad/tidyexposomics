@@ -1,5 +1,5 @@
 plot_pca <- function(
-    expOmicSet,
+    expomicset,
     feature_col = "#00a9b2",
     sample_col = "#8a4f77",
     sample_outlier_col = "firebrick"
@@ -15,10 +15,10 @@ plot_pca <- function(
   
   
   # grab data
-  dat <- expOmicSet@metadata$pca$pca_df |> 
+  dat <- expomicset@metadata$pca$pca_df |> 
     as.data.frame()
-  pca_feature <- expOmicSet@metadata$pca$pca_feature
-  pca_sample <- expOmicSet@metadata$pca$pca_sample
+  pca_feature <- expomicset@metadata$pca$pca_feature
+  pca_sample <- expomicset@metadata$pca$pca_sample
   
   # capitalize exposure for plot
   dat <- dat |> 
@@ -45,7 +45,7 @@ plot_pca <- function(
   )
   
   # Define outliers
-  outlier_samples <- expOmicSet@metadata$pca$outliers
+  outlier_samples <- expomicset@metadata$pca$outliers
   
   # PCA sample scatter plot
   pca_plot_sample <- autoplot(pca_sample, colour = sample_col) +

@@ -1,14 +1,14 @@
 # --- Update Assay ColData ------
-.update_assay_colData <- function(expOmicSet, exp_name) {
+.update_assay_colData <- function(expomicset, exp_name) {
   require(MultiAssayExperiment)
   require(tidyverse)
   
   # Retrieve the assay
-  assay <- experiments(expOmicSet)[[exp_name]]
+  assay <- experiments(expomicset)[[exp_name]]
   
   # Extract colData for the assay's samples
   assay_samples <- colnames(assay)
-  global_coldata <- as.data.frame(colData(expOmicSet))
+  global_coldata <- as.data.frame(colData(expomicset))
   coldata <- global_coldata[rownames(global_coldata) %in% assay_samples, , drop = FALSE]
   
   # Ensure the sample order matches
@@ -125,7 +125,7 @@
     arrange(desc(stability_score))
   
   # Store results in metadata
-  # metadata(expOmicSet)$feature_stability_df <- feature_stability_df
+  # metadata(expomicset)$feature_stability_df <- feature_stability_df
   
   message("Feature stability analysis completed.")
   return(feature_stability_df)
@@ -237,7 +237,7 @@
 }
 # --- Differential Abundance Exposure Functional Enrichment ------------
 .da_exposure_functional_enrichment <- function(
-    expOmicSet,
+    expomicset,
     proteomics_assays = NULL, 
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
@@ -257,16 +257,16 @@
   require(org.Hs.eg.db)
   
   
-  if (!"differential_abundance" %in% names(expOmicSet@metadata)) {
+  if (!"differential_abundance" %in% names(expomicset@metadata)) {
     stop("Please run `run_differential_abundance() first.`")
   }
   
-  if (!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)) {
+  if (!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)) {
     stop("Please run `correlate_exposures_with_degs() first.`")
   }
   
-  da_res <- expOmicSet@metadata$differential_abundance
-  da_cor_res <- expOmicSet@metadata$omics_exposure_deg_correlation
+  da_res <- expomicset@metadata$differential_abundance
+  da_cor_res <- expomicset@metadata$omics_exposure_deg_correlation
   
   da_res_cor_merged <- da_res |>
     filter(!!sym(pval_col) < pval_threshold) |>
@@ -313,7 +313,7 @@
   universe_per_assay <- as.list(unique(da_res_cor_merged$exp_name)) |>
     map( ~
            {df <- data.frame(all_features=
-                               experiments(expOmicSet)[[.x]] |>
+                               experiments(expomicset)[[.x]] |>
                                rownames(),
                              exp_name=.x)
            
@@ -373,7 +373,7 @@
 
 # --- Differential Abundance Functional Enrichment ------------
 .da_functional_enrichment <- function(
-    expOmicSet,
+    expomicset,
     proteomics_assays = NULL, 
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
@@ -393,11 +393,11 @@
   require(org.Hs.eg.db)
   
   
-  if (!"differential_abundance" %in% names(expOmicSet@metadata)) {
+  if (!"differential_abundance" %in% names(expomicset@metadata)) {
     stop("Please run `run_differential_abundance() first.`")
   }
   
-  da_res <- expOmicSet@metadata$differential_abundance |>
+  da_res <- expomicset@metadata$differential_abundance |>
     filter(!!sym(pval_col) < pval_threshold) |>
     filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
     mutate(direction=ifelse(logFC>0,"up","down")) |>
@@ -440,7 +440,7 @@
   universe_per_assay <- as.list(unique(da_res$exp_name)) |>
     map( ~
            {df <- data.frame(all_features=
-                               experiments(expOmicSet)[[.x]] |>
+                               experiments(expomicset)[[.x]] |>
                                rownames(),
                              exp_name=.x)
            
@@ -500,7 +500,7 @@
 
 # --- Factor Feature Exposure Functional Enrichment ----------
 .factor_exposure_functional_enrichment <- function(
-    expOmicSet,
+    expomicset,
     proteomics_assays = NULL, 
     mirna_assays = NULL,
     pAdjustMethod = "fdr",
@@ -516,16 +516,16 @@
   require(org.Hs.eg.db)
   
   
-  if (!"top_factor_features" %in% names(expOmicSet@metadata)) {
+  if (!"top_factor_features" %in% names(expomicset@metadata)) {
     stop("Please run `extract_top_factor_features() first.`")
   }
   
-  if (!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)) {
+  if (!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)) {
     stop("Please run `correlate_exposures_with_factors() first.`")
   }
   
-  factor_res <- expOmicSet@metadata$top_factor_features
-  factor_cor_res <- expOmicSet@metadata$omics_exposure_factor_correlation
+  factor_res <- expomicset@metadata$top_factor_features
+  factor_cor_res <- expomicset@metadata$omics_exposure_factor_correlation
   
   factor_res_cor_merged <- factor_res |>
     dplyr::select(feature,
@@ -566,7 +566,7 @@
   universe_per_assay <- as.list(unique(factor_res_cor_merged$exp_name)) |>
     map( ~
            {df <- data.frame(all_features=
-                               experiments(expOmicSet)[[.x]] |>
+                               experiments(expomicset)[[.x]] |>
                                rownames(),
                              exp_name=.x)
            
@@ -626,7 +626,7 @@
 
 # --- Factor Feature Functional Enrichment ------------
 .factor_functional_enrichment <- function(
-    expOmicSet,
+    expomicset,
     proteomics_assays = NULL, 
     mirna_assays = NULL,
     pAdjustMethod = "fdr",
@@ -641,11 +641,11 @@
   require(org.Hs.eg.db)
   
   
-  if (!"top_factor_features" %in% names(expOmicSet@metadata)) {
+  if (!"top_factor_features" %in% names(expomicset@metadata)) {
     stop("Please run `extract_top_factor_features() first.`")
   }
   
-  factor_res <- expOmicSet@metadata$top_factor_features |>
+  factor_res <- expomicset@metadata$top_factor_features |>
     dplyr::select(feature,
                   exp_name) 
   
@@ -681,7 +681,7 @@
   universe_per_assay <- as.list(unique(factor_res$exp_name)) |>
     map( ~
            {df <- data.frame(all_features=
-                               experiments(expOmicSet)[[.x]] |>
+                               experiments(expomicset)[[.x]] |>
                                rownames(),
                              exp_name=.x)
            

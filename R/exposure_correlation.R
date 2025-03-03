@@ -1,7 +1,8 @@
 exposure_correlation <- function(
-    expOmicSet, 
+    expomicset, 
     exposure_cols=NULL,
-    threshold = 0.3) {
+    threshold = 0.3,
+    action = "add") {
   library(tidyverse)
   library(ggplot2)
   library(ComplexHeatmap)
@@ -10,7 +11,7 @@ exposure_correlation <- function(
   message("Characterizing exposure variables")
   
   # Extract and preprocess colData
-  exposure_data <- colData(expOmicSet) |>
+  exposure_data <- colData(expomicset) |>
     as.data.frame() |>
     select_if(~ !all(. == .[1]))  # Keep columns with more than one unique value
   
@@ -84,12 +85,12 @@ exposure_correlation <- function(
   # Combine all correlations
   all_corr <- bind_rows(num_num_corr, num_cat_corr, cat_cat_corr) |>
     mutate(abs_correlation = abs(correlation)) |>
-    inner_join(expOmicSet@metadata$var_info |>
+    inner_join(expomicset@metadata$var_info |>
                  as.data.frame() |>
                  dplyr::select(variable, category) |>
                  dplyr::rename(category_1 = category),
                by = c("var1" = "variable")) |>
-    inner_join(expOmicSet@metadata$var_info |>
+    inner_join(expomicset@metadata$var_info |>
                  as.data.frame() |>
                  dplyr::select(variable, category) |>
                  dplyr::rename(category_2 = category),
@@ -113,14 +114,24 @@ exposure_correlation <- function(
     facet_grid(category_2 ~ category_1, scales = "free", space = "free") +
     labs(fill = "Abs.(Correlation)")
   
-  # Save results and heatmap in metadata
-  metadata(expOmicSet)$exposure_correlation <- list(
-    correlation_table = all_corr,
-    filtered_table = filtered_corr,
-    heatmap = heatmap
-  )
-  
-  return(expOmicSet)
+  if(action=="add"){
+    # Save results and heatmap in metadata
+    metadata(expomicset)$exposure_correlation <- list(
+      correlation_table = all_corr,
+      filtered_table = filtered_corr,
+      heatmap = heatmap
+    )
+    
+    return(expomicset)
+  }else if (action=="get"){
+    return(list(
+      correlation_table = all_corr,
+      filtered_table = filtered_corr,
+      heatmap = heatmap
+    ))
+  }else{
+    stop("Invalid action. Use 'add' or 'get'.")
+  }
 }
 
 

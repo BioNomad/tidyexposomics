@@ -1,16 +1,16 @@
 plot_exposure_corr <- function(
-    expOmicSet, 
+    expomicset, 
     correlation_cutoff = 0.3) {
   require(igraph)
   require(ggraph)
   require(tidyverse)
   
   # Extract and filter relevant data
-  correlation_data <- expOmicSet@metadata$exposure_correlation$filtered_table %>%
+  correlation_data <- expomicset@metadata$exposure_correlation$filtered_table %>%
     filter(abs_correlation >= correlation_cutoff) 
   
   # Vertex Information
-  vertex_df <- expOmicSet@metadata$var_info %>%
+  vertex_df <- expomicset@metadata$var_info %>%
     filter(variable %in% c(correlation_data$var1, correlation_data$var2))
   
   # Create igraph object

@@ -1,15 +1,15 @@
 plot_missing_summary <- function(
-    expOmicSet,
+    expomicset,
     threshold=20){
   require(tidyverse)
   require(ggpubr)
   require(ggsci)
   
   # Plot missing data summary
-  qc_res <- expOmicSet@metadata$na_qc
+  qc_res <- expomicset@metadata$na_qc
   
   # loop through each omic and determine which layers have missing data
-  missing_data <- imap(expOmicSet@metadata$na_qc, ~ {
+  missing_data <- imap(expomicset@metadata$na_qc, ~ {
     #df <- .x$vars_to_exclude_omics_sum
     df <- .x$all_var_sum |> 
       filter(pct_miss>threshold)
@@ -30,7 +30,7 @@ plot_missing_summary <- function(
     summarise(missingness = n()) 
   
   # add in other assay names and say their missingness is 0
-  exp_names <- expOmicSet@metadata$na_qc |> names()
+  exp_names <- expomicset@metadata$na_qc |> names()
   missing_data <- missing_data |> 
     bind_rows(
       data.frame(

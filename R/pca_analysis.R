@@ -1,4 +1,6 @@
-pca_analysis <- function(expOmicSet) {
+pca_analysis <- function(
+    expomicset,
+    action="add") {
   require(tidyverse)
   require(ggfortify)
   require(ggpubr)
@@ -11,9 +13,9 @@ pca_analysis <- function(expOmicSet) {
   # Identify common samples across all data
   message("Identifying common samples...")
   
-  common_samples <- rownames(colData(expOmicSet))
-  for (omics_name in names(experiments(expOmicSet))) {
-    common_samples <- intersect(common_samples, colnames(experiments(expOmicSet)[[omics_name]]))
+  common_samples <- rownames(colData(expomicset))
+  for (omics_name in names(experiments(expomicset))) {
+    common_samples <- intersect(common_samples, colnames(experiments(expomicset)[[omics_name]]))
   }
   
   if (length(common_samples) == 0) {
@@ -23,7 +25,7 @@ pca_analysis <- function(expOmicSet) {
   # Subset colData to common samples
   message("Subsetting exposure data...")
   
-  exposure_data <- colData(expOmicSet)[common_samples, ] |>
+  exposure_data <- colData(expomicset)[common_samples, ] |>
     as.data.frame() |>
     dplyr::select(where(is.numeric)) |>
     t() |>
@@ -33,8 +35,8 @@ pca_analysis <- function(expOmicSet) {
   # Subset omics data to common samples
   message("Subsetting omics data...")
   
-  omics_data <- lapply(names(experiments(expOmicSet)), function(omics_name) {
-    assays(experiments(expOmicSet)[[omics_name]])[[1]][, common_samples, drop = FALSE] |>
+  omics_data <- lapply(names(experiments(expomicset)), function(omics_name) {
+    assays(experiments(expomicset)[[omics_name]])[[1]][, common_samples, drop = FALSE] |>
       as.data.frame() |>
       transform(category = omics_name)
   }) |>
@@ -92,7 +94,7 @@ pca_analysis <- function(expOmicSet) {
   }
   
   # add in PCs for samples to the colData
-  col_data <- colData(expOmicSet) |> 
+  col_data <- colData(expomicset) |> 
     as.data.frame() |> 
     (\(df){df$id_to_map=rownames(df);df})() |> 
     left_join(pca_sample$x |> 
@@ -101,15 +103,26 @@ pca_analysis <- function(expOmicSet) {
               by="id_to_map") |> 
     column_to_rownames("id_to_map")
     
-  colData(expOmicSet) <- col_data
+  colData(expomicset) <- col_data
   
-  # Store results
-  metadata(expOmicSet)$pca <- list(
-    pca_df = tibble(dat),
-    pca_feature = pca_feature,
-    pca_sample = pca_sample,
-    outliers = rownames(pca_sample$x)[outliers]
-  )
-  
-  return(expOmicSet)
+  if(action=="add"){
+    # Store results
+    metadata(expomicset)$pca <- list(
+      pca_df = tibble(dat),
+      pca_feature = pca_feature,
+      pca_sample = pca_sample,
+      outliers = rownames(pca_sample$x)[outliers]
+    )
+    
+    return(expomicset)
+  }else if (action=="get"){
+    return(list(
+      pca_df = tibble(dat),
+      pca_feature = pca_feature,
+      pca_sample = pca_sample,
+      outliers = rownames(pca_sample$x)[outliers]
+    ))
+  }else{
+    stop("Invalid action. Use 'add' or 'get'.")
+  }
 }

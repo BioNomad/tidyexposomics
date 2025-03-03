@@ -1,7 +1,7 @@
 
 # Function for frequently associated exposures
 plot_pop_exposures <- function(
-    expOmicSet,
+    expomicset,
     geneset = "degs",
     top_n = 15) {
   require(tidyverse)
@@ -11,16 +11,16 @@ plot_pop_exposures <- function(
   require(ggpubr)
   
   if(geneset=="degs"){
-    if(!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_deg_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_deg_correlation
     
   }else if(geneset=="factors"){
-    if(!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_factors()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_factor_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_factor_correlation
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
@@ -57,7 +57,7 @@ plot_pop_exposures <- function(
 
 # Function for frequently associated features
 plot_pop_features <- function(
-    expOmicSet,
+    expomicset,
     geneset = "degs",
     top_n = 15) {
   require(tidyverse)
@@ -67,16 +67,16 @@ plot_pop_features <- function(
   require(ggpubr)
   
   if(geneset=="degs"){
-    if(!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_deg_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_deg_correlation
     
   }else if(geneset=="factors"){
-    if(!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_factors()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_factor_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_factor_correlation
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
@@ -113,7 +113,7 @@ plot_pop_features <- function(
 
 # Function for exposure category associations
 plot_exp_assoc <- function(
-    expOmicSet,
+    expomicset,
     geneset = "degs") {
   require(tidyverse)
   require(janitor)
@@ -122,16 +122,16 @@ plot_exp_assoc <- function(
   require(ggpubr)
   
   if(geneset=="degs"){
-    if(!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_deg_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_deg_correlation
     
   }else if(geneset=="factors"){
-    if(!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_factors()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_factor_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_factor_correlation
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
@@ -164,7 +164,7 @@ plot_exp_assoc <- function(
 
 # Function for omic associations
 plot_omic_assoc <- function(
-    expOmicSet,
+    expomicset,
     geneset = "degs") {
   require(tidyverse)
   require(janitor)
@@ -173,16 +173,16 @@ plot_omic_assoc <- function(
   require(ggpubr)
   
   if(geneset=="degs"){
-    if(!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_deg_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_deg_correlation
     
   }else if(geneset=="factors"){
-    if(!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_factors()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_factor_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_factor_correlation
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
@@ -215,7 +215,7 @@ plot_omic_assoc <- function(
 
 
 plot_exp_feature_assoc_summary <- function(
-    expOmicSet,
+    expomicset,
     geneset = "degs",
     top_n = 15) {
   require(tidyverse)
@@ -225,44 +225,44 @@ plot_exp_feature_assoc_summary <- function(
   require(ggpubr)
   
   if(geneset=="degs"){
-    if(!"omics_exposure_deg_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_deg_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_deg_correlation
     
   }else if(geneset=="factors"){
-    if(!"omics_exposure_factor_correlation" %in% names(expOmicSet@metadata)){
+    if(!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)){
       stop("Please run `correlate_exposures_with_factors()` first.")
     }
-    exp_feature_cor_df <- expOmicSet@metadata$omics_exposure_factor_correlation
+    exp_feature_cor_df <- expomicset@metadata$omics_exposure_factor_correlation
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
   
-  pop_exposures <- plot_pop_exposures(expOmicSet,
+  pop_exposures <- plot_pop_exposures(expomicset,
                                       geneset = geneset,
                                       top_n)
-  pop_features <- plot_pop_features(expOmicSet,
+  pop_features <- plot_pop_features(expomicset,
                                     geneset = geneset,
                                     top_n)
-  exp_assoc <- plot_exp_assoc(expOmicSet,
+  exp_assoc <- plot_exp_assoc(expomicset,
                               geneset = geneset)
-  omic_assoc <- plot_omic_assoc(expOmicSet,
+  omic_assoc <- plot_omic_assoc(expomicset,
                                 geneset = geneset)
   
   # Combine using patchwork
-  (omic_assoc / exp_assoc) | (pop_features) | (pop_exposures)
+  ((pop_features/exp_assoc)+plot_layout(heights = c(3,1)) )| ((pop_exposures/omic_assoc)+plot_layout(heights = c(3,1)))
 }
 
 # require(janitor)
-# pop_exposures <- expOmicSet@metadata$omics_exposure_deg_correlation |>
+# pop_exposures <- expomicset@metadata$omics_exposure_deg_correlation |>
 #   group_by(exposure,assay_name) |>
 #   dplyr::reframe(n_assay_name=length(assay_name)) |>
 #   group_by(exposure) |>
 #   mutate(total=sum(n_assay_name)) |>
 #   ungroup() |>
 #   filter(exposure %in% c(
-#     expOmicSet@metadata$omics_exposure_deg_correlation |>
+#     expomicset@metadata$omics_exposure_deg_correlation |>
 #       tabyl(exposure) |>
 #       arrange(desc(n)) |>
 #       slice_head(n=15) |>
@@ -285,14 +285,14 @@ plot_exp_feature_assoc_summary <- function(
 #   )
 # pop_exposures
 # 
-# pop_features <- expOmicSet@metadata$omics_exposure_deg_correlation |>
+# pop_features <- expomicset@metadata$omics_exposure_deg_correlation |>
 #   group_by(feature,category) |>
 #   dplyr::reframe(n_category=length(category)) |>
 #   group_by(feature) |>
 #   mutate(total=sum(n_category)) |>
 #   ungroup() |>
 #   filter(feature %in% c(
-#     expOmicSet@metadata$omics_exposure_deg_correlation |>
+#     expomicset@metadata$omics_exposure_deg_correlation |>
 #       tabyl(feature) |>
 #       arrange(desc(n)) |>
 #       slice_head(n=15) |>
@@ -315,7 +315,7 @@ plot_exp_feature_assoc_summary <- function(
 #   )
 # pop_features
 # 
-# exp_assoc <- expOmicSet@metadata$omics_exposure_deg_correlation |> 
+# exp_assoc <- expomicset@metadata$omics_exposure_deg_correlation |> 
 #   tabyl(category) |> 
 #   ggplot(aes(
 #     x=n,
@@ -342,7 +342,7 @@ plot_exp_feature_assoc_summary <- function(
 # 
 # exp_assoc
 # 
-# omic_assoc <- expOmicSet@metadata$omics_exposure_deg_correlation |> 
+# omic_assoc <- expomicset@metadata$omics_exposure_deg_correlation |> 
 #   tabyl(assay_name) |> 
 #   ggplot(aes(
 #     x=n,
@@ -370,9 +370,9 @@ plot_exp_feature_assoc_summary <- function(
 # 
 # (omic_assoc/ exp_assoc)|pop_features|pop_exposures
 # 
-# .plot_circular_bar(expOmicSet@metadata$omics_exposure_deg_correlation |> tabyl(category),"category","n")
+# .plot_circular_bar(expomicset@metadata$omics_exposure_deg_correlation |> tabyl(category),"category","n")
 # 
-# .plot_circular_bar(expOmicSet@metadata$omics_exposure_deg_correlation |> tabyl(assay_name),"assay_name","n")
+# .plot_circular_bar(expomicset@metadata$omics_exposure_deg_correlation |> tabyl(assay_name),"assay_name","n")
 
 
 

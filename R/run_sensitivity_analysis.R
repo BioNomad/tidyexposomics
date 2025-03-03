@@ -1,5 +1,5 @@
 run_sensitivity_analysis <- function(
-    expOmicSet,
+    expomicset,
     base_formula,  
     abundance_col = "counts",
     methods = c("limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
@@ -13,7 +13,8 @@ run_sensitivity_analysis <- function(
     cross_validation = FALSE,  
     k_folds = 5,
     score_thresh=NULL,
-    score_quantile=0.1
+    score_quantile=0.1,
+    action="add"
 ) {
   require(tidybulk)
   require(MultiAssayExperiment)
@@ -56,11 +57,11 @@ run_sensitivity_analysis <- function(
                     " | Min Counts: ", min_counts, 
                     " | Min Proportion: ", min_prop)
             
-            # Iterate over each experiment in expOmicSet
-            for (exp_name in names(experiments(expOmicSet))) {
+            # Iterate over each experiment in expomicset
+            for (exp_name in names(experiments(expomicset))) {
               message("Processing experiment: ", exp_name)
               
-              exp <- .update_assay_colData(expOmicSet, exp_name)
+              exp <- .update_assay_colData(expomicset, exp_name)
               
               # Skip if too few features
               features_to_test <- exp |> 
@@ -138,13 +139,24 @@ run_sensitivity_analysis <- function(
     message(exp_name, ": ", n_above,"/", n)
   }
   
-  # Store results in metadata
-  metadata(expOmicSet)$sensitivity_analysis <- list(
-    sensitivity_df = sensitivity_df,
-    feature_stability = feature_stability_df,
-    score_thresh = score_thresh
-  )
-  
   message("Sensitivity analysis completed.")
-  return(expOmicSet)
+  
+  if(action =="add"){
+    # Store results in metadata
+    metadata(expomicset)$sensitivity_analysis <- list(
+      sensitivity_df = sensitivity_df,
+      feature_stability = feature_stability_df,
+      score_thresh = score_thresh
+    )
+    return(expomicset)
+  }else if (action=="get"){
+    return(list(
+      sensitivity_df = sensitivity_df,
+      feature_stability = feature_stability_df,
+      score_thresh = score_thresh
+    ))
+  }else{
+    stop("Invalid action. Use 'add' or 'get'.")
+  }
+  
 }

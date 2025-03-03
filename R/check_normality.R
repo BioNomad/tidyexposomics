@@ -1,4 +1,5 @@
-check_normality <- function(expOmicSet) {
+check_normality <- function(expomicset,
+                            action="add") {
   require(tidyverse)
   require(broom)
   require(ggpubr)
@@ -7,7 +8,7 @@ check_normality <- function(expOmicSet) {
   message("Checking Normality Using Shapiro-Wilk Test")
   
   # Extract numeric exposure data from colData
-  exposure_data <- colData(expOmicSet) |>
+  exposure_data <- colData(expomicset) |>
     as.data.frame() |>
     select_if(is.numeric) |>
     select_if(function(x) !all(x == x[1]))  # Remove constant columns
@@ -67,11 +68,17 @@ check_normality <- function(expOmicSet) {
   message(ifelse(is.na(num_not_normal), 0, num_not_normal),
           " Exposure Variables are NOT Normally Distributed")
   
-  # Save results in expOmicSet
-  metadata(expOmicSet)$normality <- list(
-    norm_df = norm_df,
-    norm_plot = norm_plot
-  )
-  
-  return(expOmicSet)
+  if(action=="add"){
+    # Add normality results to expomicset metadata
+    metadata(expomicset)$normality <- list(
+      norm_df = norm_df,
+      norm_plot = norm_plot
+    )
+    return(expomicset)
+  } else if (action=="get"){
+    # Return normality results
+    return(list(norm_df = norm_df, norm_plot = norm_plot))
+  } else {
+    stop("Invalid action. Use 'add' to add results to expomicset or 'get' to return results.")
+  }
 }

@@ -1,21 +1,25 @@
 plot_factor_summary <- function(
-    expOmicSet
+    expomicset
     ){
-  
-  if(!"integration_results" %in% names(expOmicSet@metadata)){
+  require(MOFA2)
+  require(nipalsMCIA)
+  require(tidyverse)
+  require(ggpubr)
+  require(ggsci)
+  if(!"integration_results" %in% names(expomicset@metadata)){
     stop("Please run `multiomics_integration()` first.")
   }
   
-  if(expOmicSet@metadata$integration_results$method == "MOFA"){
+  if(expomicset@metadata$integration_results$method == "MOFA"){
     factor_contrib_plot <- plot_variance_explained(
-      expOmicSet@metadata$integration_results$result,
+      expomicset@metadata$integration_results$result,
       x="view",
       y="factor")+
       rotate_x_text(angle = 45)
     
-  }else if(expOmicSet@metadata$integration_results$method == "MCIA"){
+  }else if(expomicset@metadata$integration_results$method == "MCIA"){
     factor_contrib_plot <- block_weights_heatmap(
-      expOmicSet@metadata$integration_results$result)
+      expomicset@metadata$integration_results$result)
   }else{
     stop("Method not supported.")
   }

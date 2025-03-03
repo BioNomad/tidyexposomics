@@ -1,8 +1,9 @@
-cluster_samples <- function(expOmicSet, 
+cluster_samples <- function(expomicset, 
                             exposure_cols = NULL,  # Character vector of `colData` columns to cluster
                             dist_method = NULL, 
                             cluster_method = "ward.D", 
-                            clustering_approach = "diana") {
+                            clustering_approach = "diana",
+                            action = "add") {
   require(tidyverse)
   require(ComplexHeatmap)
   require(circlize)
@@ -21,13 +22,13 @@ cluster_samples <- function(expOmicSet,
   }
   
   # Ensure selected exposure columns exist in colData
-  available_variables <- intersect(exposure_cols, colnames(colData(expOmicSet)))
+  available_variables <- intersect(exposure_cols, colnames(colData(expomicset)))
   if (length(available_variables) == 0) {
     stop("None of the specified `exposure_cols` are available in `colData`. Clustering cannot proceed.")
   }
   
   # Extract numeric exposure data for clustering
-  exposure_data <- colData(expOmicSet) |> 
+  exposure_data <- colData(expomicset) |> 
     as.data.frame() |> 
     dplyr::select(all_of(available_variables))
   
@@ -117,12 +118,24 @@ cluster_samples <- function(expOmicSet,
     col = colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
   )
   
-  # Save clustering results in metadata
-  metadata(expOmicSet)$sample_clustering <- list(
-    sample_cluster = sample_cluster,
-    sample_groups = sample_groups,
-    heatmap = heatmap
-  )
+  if (action == "add") {
+    # Save clustering results in metadata
+    metadata(expomicset)$sample_clustering <- list(
+      sample_cluster = sample_cluster,
+      sample_groups = sample_groups,
+      heatmap = heatmap
+    )
+    return(expomicset)
+  } else if (action == "get") {
+    return(list(
+      sample_cluster = sample_cluster,
+      sample_groups = sample_groups,
+      heatmap = heatmap
+    ))
+  } else {
+    stop("Invalid action specified. Use 'add' or 'get'.")
+  }
+  
   # ta=HeatmapAnnotation(df=expom@metadata$sample_clustering$a |> 
   #                        as.data.frame() |> 
   #                        t() |> 
@@ -166,6 +179,4 @@ cluster_samples <- function(expOmicSet,
   #     col = colorRamp2(c(-2, 0, 2), c("blue", "white", "red")),
   #     top_annotation = ta
   #   )
-  
-  return(expOmicSet)
 }

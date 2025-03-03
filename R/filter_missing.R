@@ -1,4 +1,4 @@
-# filter_missing <- function(expOmicSet, 
+# filter_missing <- function(expomicset, 
 #                            na_thresh = 20, 
 #                            na_plot_thresh = 5) {
 #   require(naniar)
@@ -14,15 +14,15 @@
 #   }
 #   
 #   # Handle metadata (colData)
-#   exposure <- as.data.frame(colData(expOmicSet))
+#   exposure <- as.data.frame(colData(expomicset))
 #   col_exclude <- get_vars_to_exclude(exposure, na_thresh)
-#   colData(expOmicSet) <- as(colData(expOmicSet)[
-#     , !colnames(colData(expOmicSet)) %in% 
+#   colData(expomicset) <- as(colData(expomicset)[
+#     , !colnames(colData(expomicset)) %in% 
 #       col_exclude$to_exclude, drop = FALSE], 
 #     "DataFrame")
 #   
 #   # QC plot for metadata
-#   metadata(expOmicSet)$na_qc <- list(
+#   metadata(expomicset)$na_qc <- list(
 #     exposure = list(
 #       vars_to_exclude_exposure_sum = col_exclude$summary %>% filter(pct_miss > na_thresh),
 #       na_exposure_qc_plot = naniar::gg_miss_var(
@@ -35,8 +35,8 @@
 #   message("Filtered metadata variables: ", paste(col_exclude$to_exclude, collapse = ", "))
 #   
 #   # Handle omics experiments
-#   for (omics_name in names(experiments(expOmicSet))) {
-#     experiment <- experiments(expOmicSet)[[omics_name]]
+#   for (omics_name in names(experiments(expomicset))) {
+#     experiment <- experiments(expomicset)[[omics_name]]
 #     original_assay <- assays(experiment)[[1]]
 #     
 #     # Transpose and convert assay to data.frame for processing
@@ -55,10 +55,10 @@
 #     colData(experiment) <- filtered_colData_exp
 #     experiment <- experiment[!rownames(experiment) %in% row_exclude$to_exclude,]
 #     
-#     experiments(expOmicSet)[[omics_name]] <- experiment
+#     experiments(expomicset)[[omics_name]] <- experiment
 #     
 #     # QC plot for omics data
-#     metadata(expOmicSet)$na_qc[[omics_name]] <- list(
+#     metadata(expomicset)$na_qc[[omics_name]] <- list(
 #       vars_to_exclude_omics_sum = row_exclude$summary %>% filter(pct_miss > na_thresh),
 #       na_omics_qc_plot = naniar::gg_miss_var(assay_data %>% dplyr::select(all_of(row_exclude$to_exclude)))
 #     )
@@ -66,11 +66,11 @@
 #     message("Filtered rows with high missingness in ", omics_name, ": ", length(row_exclude$to_exclude))
 #   }
 #   
-#   return(expOmicSet)
+#   return(expomicset)
 # }
 
 
-filter_missing <- function(expOmicSet, 
+filter_missing <- function(expomicset, 
                            na_thresh = 20, 
                            na_plot_thresh = 5) {
   require(naniar)
@@ -86,15 +86,15 @@ filter_missing <- function(expOmicSet,
   }
   
   # Handle metadata (colData)
-  exposure <- as.data.frame(colData(expOmicSet))
+  exposure <- as.data.frame(colData(expomicset))
   col_exclude <- get_vars_to_exclude(exposure, na_thresh)
-  colData(expOmicSet) <- as(colData(expOmicSet)[
-    , !colnames(colData(expOmicSet)) %in% 
+  colData(expomicset) <- as(colData(expomicset)[
+    , !colnames(colData(expomicset)) %in% 
       col_exclude$to_exclude, drop = FALSE], 
     "DataFrame")
   
   # QC plot for metadata
-  metadata(expOmicSet)$na_qc <- list(
+  metadata(expomicset)$na_qc <- list(
     exposure = list(
       vars_to_exclude_exposure_sum = col_exclude$summary %>% filter(pct_miss > na_thresh),
       all_var_sum = col_exclude$summary %>% filter(pct_miss > 0),
@@ -108,8 +108,8 @@ filter_missing <- function(expOmicSet,
   message("Filtered metadata variables: ", paste(col_exclude$to_exclude, collapse = ", "))
   
   # Handle omics experiments
-  for (omics_name in names(experiments(expOmicSet))) {
-    experiment <- experiments(expOmicSet)[[omics_name]]
+  for (omics_name in names(experiments(expomicset))) {
+    experiment <- experiments(expomicset)[[omics_name]]
     original_assay <- assays(experiment)[[1]]
     
     # Transpose and convert assay to data.frame for processing
@@ -121,10 +121,10 @@ filter_missing <- function(expOmicSet,
     # Filter rows with high missingness
     experiment <- experiment[!rownames(experiment) %in% row_exclude$to_exclude,]
 
-    experiments(expOmicSet)[[omics_name]] <- experiment
+    experiments(expomicset)[[omics_name]] <- experiment
     
     # QC plot for omics data
-    metadata(expOmicSet)$na_qc[[omics_name]] <- list(
+    metadata(expomicset)$na_qc[[omics_name]] <- list(
       vars_to_exclude_omics_sum = row_exclude$summary %>% filter(pct_miss > na_thresh),
       all_var_sum = row_exclude$summary %>% filter(pct_miss > 0),
       na_omics_qc_plot = naniar::gg_miss_var(assay_data %>% dplyr::select(all_of(row_exclude$to_exclude)))
@@ -133,6 +133,6 @@ filter_missing <- function(expOmicSet,
     message("Filtered rows with high missingness in ", omics_name, ": ", length(row_exclude$to_exclude))
   }
   
-  return(expOmicSet)
+  return(expomicset)
 }
 

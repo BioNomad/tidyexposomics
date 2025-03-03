@@ -1,4 +1,4 @@
-impute_missing <- function(expOmicSet,
+impute_missing <- function(expomicset,
                            exposure_impute_method = "median",
                            omics_impute_method = "knn") {
   require(naniar)
@@ -43,25 +43,25 @@ impute_missing <- function(expOmicSet,
   }
   
   # Identify datasets with missing data
-  to_impute <- names(Filter(function(x) x[["all_var_sum"]] %>% nrow() > 1, expOmicSet@metadata$na_qc))
+  to_impute <- names(Filter(function(x) x[["all_var_sum"]] %>% nrow() > 1, expomicset@metadata$na_qc))
   
   omics_to_impute <- setdiff(to_impute, "exposure")
   
   # Impute exposure data if needed
   if ("exposure" %in% to_impute) {
     message("Imputing missing exposure data using ", exposure_impute_method)
-    imputed_exposure <- impute_exposure(as.data.frame(colData(expOmicSet)), exposure_impute_method)
-    colData(expOmicSet) <- as(imputed_exposure, "DataFrame")
+    imputed_exposure <- impute_exposure(as.data.frame(colData(expomicset)), exposure_impute_method)
+    colData(expomicset) <- as(imputed_exposure, "DataFrame")
   }
   
   # Impute omics data if needed
   for (omics_name in omics_to_impute) {
     message("Imputing missing omics data for ", omics_name, " using ", omics_impute_method)
-    experiment <- experiments(expOmicSet)[[omics_name]]
+    experiment <- experiments(expomicset)[[omics_name]]
     assay_data <- assays(experiment)[[1]]
     assays(experiment)[[1]] <- impute_omics(as.data.frame(assay_data), omics_impute_method)
-    experiments(expOmicSet)[[omics_name]] <- experiment
+    experiments(expomicset)[[omics_name]] <- experiment
   }
   
-  return(expOmicSet)
+  return(expomicset)
 }

@@ -1,16 +1,16 @@
 plot_exp_outcome_association <- function(
-    expOmicSet,
+    expomicset,
     filter_col = "p.value",
     filter_thresh = 0.05){
   
-  if(!"exwas" %in% names(expOmicSet@metadata)){
+  if(!"exwas" %in% names(expomicset@metadata)){
     stop("Please run `perform_exwas()` first.")
   }
   
-  exwas <- expOmicSet@metadata$exwas$results_df |> 
+  exwas <- expomicset@metadata$exwas$results_df |> 
     filter(!!sym(filter_col) < filter_thresh)
   
-  covariates <- expOmicSet@metadata$exwas$covariates
+  covariates <- expomicset@metadata$exwas$covariates
   
   # create forest plot of significant associations
   exwas  |> 
