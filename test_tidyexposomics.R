@@ -13,49 +13,29 @@ invisible(lapply(
 # --- Load Data ---------------------------
 load("./data/expom.RData")
 
-# TODO: check s2809 - manually coding as male based on gene exp of Y chr genes
-aw_dataset_cv2_filt <- aw_dataset_cv2_filt |> 
-  mutate(female=case_when(
-    aw_id == "s2809" ~ "male",
-    .default=female
-  )) |> 
-  mutate(race=case_when(
-    black=="black" ~ "black",
-    black=="non-black" ~ "non_black",
-  )) |> 
-  mutate(fev1fvc_category=case_when(
-    fev1fvc_category == "Normal" ~ "Unobstructed",
-    fev1fvc_category == "Moderate" ~ "Moderate",
-    fev1fvc_category == "Severe" ~ "Severe"
-  )) |>
-  mutate(fev1fvc_category=factor(fev1fvc_category,
-                                 levels=c("Unobstructed","Moderate","Severe"))) |> 
-  mutate(age_scaled=as.numeric(scale(age))) |> 
-  mutate(sex=female) |> 
-  mutate(sex=factor(sex,levels=c("female","male"))) |>
-  mutate(race=factor(race,levels=c("non_black","black")))
-
-# protein is low variance, rescaling
-prot_abd_log <- prot_abd |> 
-  (\(x) log2(x+1))() |> 
-  as.data.frame()
-
-prot_abd_unnorm <- prot_abd |> 
-  (\(x) 2^x)()
-
 omics_list <- list(
   "CD16+ Monocyte RNA" = cd16_rna,
   "CD4+ T-cell RNA" = cd4_rna,
   "CD4+ T-cell miRNA"= cd4_mirna,
   "CD16+ Monocyte miRNA" = cd16_mirna,
-  "Serum Proteomics" = prot_abd_unnorm
+  "Serum Proteomics" = prot_abd_unnorm,
+  "Serum Adductomics" = adduct
+)
+
+fdata <- list(
+  "CD16+ Monocyte RNA" = cd16_rna_fdata,
+  "CD4+ T-cell RNA" = cd4_rna_fdata,
+  "CD4+ T-cell miRNA"= cd4_mirna_fdata,
+  "CD16+ Monocyte miRNA" = cd16_mirna_fdata,
+  "Serum Proteomics" = prot_fdata,
+  "Serum Adductomics" = adduct_fdata
 )
 
 expom <- expOmicSet(
   var_info = des,
   exposure = aw_dataset_cv2_filt,
   omics = omics_list,
-  row_data = NULL)
+  row_data = fdata)
 
 # option if you have one omic
 # expom <- expOmicSet(
@@ -72,8 +52,7 @@ exp_vars <- expom@metadata$var_info |>
             c("allergen_results",
               "chemical",
               "indoor_pollution",
-              "Allergens",
-              "smoke_exposure")) |> 
+              "Allergens")) |> 
   pull(variable)
 
 exp_vars <- c(exp_vars[exp_vars %in% colnames(colData(expom))])
@@ -272,7 +251,7 @@ a <- expom |>
     logfc_threshold = log2(1.5))
 
 a |> 
-  plot_exp_enrichment(geneset = "deg_exp_cor")
+  plot_exp_enrich_dotplot(geneset = "deg_exp_cor")
 
 # a <- expom |> 
 #   .da_exposure_functional_enrichment(

@@ -1,0 +1,290 @@
+[2025-02-19 13:55:45] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] Reading JSON from `C:\Users\Jason\AppData\Local\Cache\OmnipathR/cache.json` (encoding: UTF-8).
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-19 13:55:45] [INFO]    [OmnipathR] Initialized cache: `C:\Users\Jason\AppData\Local\Cache\OmnipathR`.
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2025-02-19 13:55:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-20 14:21:01] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2025-02-20 14:21:01] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2025-02-20 14:21:01] [TRACE]   [OmnipathR] Cache file path: C:\Users\Jason\AppData\Local\Cache\OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2025-02-20 14:21:02] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-02-20 14:21:02] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-02-20 14:21:02] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2025-02-20 14:21:02] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 14:21:02] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 14:21:02] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 14:21:02] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 14:29:58] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 14:29:58] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 14:29:58] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 14:29:58] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:22:56] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:22:56] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:22:56] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:22:56] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:23:09] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:23:09] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:23:09] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:23:09] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:23:18] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:23:18] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:23:18] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:23:19] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:24:02] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:24:02] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:24:02] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:24:03] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:24:43] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:24:43] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:24:43] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:24:44] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:33:10] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:33:10] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:33:10] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:33:10] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:33:10] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:33:10] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:33:10] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:33:10] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:35:22] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:35:22] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:35:22] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:35:23] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:35:23] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:35:23] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:35:23] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:35:23] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:37:38] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:38] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:37:38] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:38] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:37:38] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:38] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:37:38] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:38] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:37:49] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:49] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:37:49] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:50] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:37:50] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:50] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:37:50] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:37:50] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:05] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:05] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:05] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:05] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:05] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:05] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:25] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:25] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:25] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:25] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:25] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:25] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:25] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:26] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:36] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:36] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:36] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:36] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:36] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:36] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:36] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:37] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:50] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:50] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:50] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:51] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:38:51] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:51] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:38:51] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:38:51] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:42:13] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:42:13] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:42:13] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:42:13] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:42:56] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:42:56] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:42:56] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:42:56] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:42:56] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:42:56] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:42:56] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:42:57] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:43:19] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:43:19] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:43:19] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:43:20] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:43:20] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:43:20] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:43:20] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:43:20] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:44:08] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:08] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:44:08] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:08] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:44:09] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:09] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:44:09] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:09] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:44:39] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:39] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:44:39] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:39] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:44:39] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:39] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:44:39] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:44:40] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:46:02] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:02] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:46:02] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:02] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:46:02] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:02] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:46:02] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:03] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:46:18] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:18] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:46:18] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:18] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:46:18] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:18] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:46:18] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:19] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:46:37] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:37] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:46:37] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:37] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:46:37] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:37] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:46:37] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:46:37] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:47:53] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:47:53] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:47:53] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:47:53] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:47:53] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:47:53] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:47:53] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:47:53] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:48:30] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:30] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:48:30] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:30] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:48:30] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:30] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:48:30] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:31] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:48:53] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:53] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:48:53] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:53] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:48:53] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:53] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:48:53] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:48:53] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:49:12] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:12] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:49:12] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:13] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:49:13] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:13] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:49:13] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:13] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:49:22] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:22] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:49:22] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:22] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:49:22] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:22] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:49:22] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:22] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:49:29] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:29] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:49:29] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:29] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 15:49:29] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:29] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 15:49:29] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 15:49:29] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:01:13] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:01:13] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:01:13] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:01:13] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:04:52] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:04:52] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:04:52] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:04:52] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:04:52] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:04:52] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:04:52] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:04:53] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:05:41] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:05:41] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:05:41] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:05:41] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:05:42] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:05:42] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:05:42] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:05:42] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:06:09] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:06:09] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:06:09] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:06:09] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:06:09] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:06:09] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:06:09] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:06:10] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:25:14] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:25:14] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:25:14] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:25:15] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:25:15] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:25:15] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:25:15] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:25:15] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:25:27] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:25:27] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:25:27] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:25:27] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:28:40] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:40] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:28:40] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:40] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:28:40] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:40] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:28:40] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:41] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:28:43] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:43] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:28:43] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:44] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:28:44] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:44] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:28:44] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:28:44] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:34:26] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:26] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:34:26] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:27] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:34:27] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:27] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:34:27] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:27] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:34:29] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:29] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:34:29] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:30] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-20 16:34:30] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:30] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-20 16:34:30] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-20 16:34:30] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.

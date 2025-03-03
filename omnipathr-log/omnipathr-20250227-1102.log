@@ -1,0 +1,34 @@
+[2025-02-27 11:02:58] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2025-02-27 11:02:58] [TRACE]   [OmnipathR] Reading JSON from `C:\Users\Jason\AppData\Local\Cache\OmnipathR/cache.json` (encoding: UTF-8).
+[2025-02-27 11:02:58] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-27 11:02:58] [INFO]    [OmnipathR] Initialized cache: `C:\Users\Jason\AppData\Local\Cache\OmnipathR`.
+[2025-02-27 11:02:58] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2025-02-27 11:02:58] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-27 11:02:58] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2025-02-27 11:02:58] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-27 11:02:59] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2025-02-27 11:02:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-27 11:02:59] [TRACE]   [OmnipathR] Reading JSON from `C:/Users/Jason/AppData/Local/R/win-library/4.4/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2025-02-27 11:02:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-02-27 21:08:24] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2025-02-27 21:08:24] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2025-02-27 21:08:24] [TRACE]   [OmnipathR] Cache file path: C:\Users\Jason\AppData\Local\Cache\OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2025-02-27 21:08:25] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-02-27 21:08:25] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-02-27 21:08:25] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2025-02-27 21:08:25] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:08:25] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-27 21:08:25] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:08:26] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-27 21:08:26] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:08:26] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-27 21:08:26] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:08:26] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-27 21:09:28] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:09:28] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-27 21:09:28] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:09:28] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
+[2025-02-27 21:09:28] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:09:28] [TRACE]   [OmnipathR] Loaded data from RDS `C:\Users\Jason\AppData\Local\Cache\OmnipathR/41c8055b20002c0dbf8ddf485403332479b715a1-1.rds`.
+[2025-02-27 21:09:28] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=mirnatarget&organisms=9606&fields=sources,references,curation_effort&license=academic`
+[2025-02-27 21:09:29] [SUCCESS] [OmnipathR] Loaded 11118 interactions from cache.
