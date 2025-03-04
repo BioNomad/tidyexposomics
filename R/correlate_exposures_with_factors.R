@@ -1,3 +1,34 @@
+#' Correlate Exposures with Factor-Contributing Features
+#'
+#' This function correlates selected exposure variables from `colData` with factor-contributing features across assays in an `expomicset` object. It supports batch processing for large datasets.
+#'
+#' @param expomicset a `MultiAssayExperiment` object containing factor-contributing features in its metadata.
+#' @param exposure_cols a character vector specifying the column names in `colData` to be used for correlation. If `NULL`, all numeric variables are used.
+#' @param correlation_method a character string specifying the correlation method (`"spearman"`, `"pearson"`, or `"kendall"`). Defaults to `"spearman"`.
+#' @param correlation_cutoff a numeric threshold for the absolute correlation coefficient to retain results. Defaults to `0.3`.
+#' @param cor_pval_column a character string specifying the column name for correlation p-values. Defaults to `"p.value"`.
+#' @param pval_cutoff a numeric threshold for filtering correlations based on p-value. Defaults to `0.05`.
+#' @param batch_size an integer specifying the number of features processed per batch. Defaults to `1500`.
+#' @param action a character string. Can be `"add"` or `"get"`. `"add"` stores the correlation results in `metadata(expomicset)`, while `"get"` returns the results.
+#'
+#' @return If `action = "add"`, returns the modified `expomicset` with correlation results in its metadata.
+#' If `action = "get"`, returns the correlation results.
+#'
+#' @details
+#' Factor-contributing features are extracted from metadata and correlated with selected exposure variables. Results are batch-processed, and false discovery rate (FDR) correction is applied. If `action = "add"`, results are stored in `metadata(expomicset)`, otherwise, they are returned as a data frame.
+#'
+#' @import tidyverse MultiAssayExperiment
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   # Perform factor-exposure correlation and store results
+#'   expom <- expom |> 
+#'       correlate_exposures_with_factors(
+#'       exposure_cols = c("var1", "var2"),
+#'       action = "add")
+#' }
+
 correlate_exposures_with_factors <- function(
     expomicset,
     exposure_cols = NULL,  
@@ -14,13 +45,13 @@ correlate_exposures_with_factors <- function(
   message("Starting correlation analysis between factor features and exposures...")
   
   # Extract factor-contributing features
-  factor_features <- metadata(expomicset)$top_factor_features
+  factor_features <- MultiAssayExperiment::metadata(expomicset)$top_factor_features
   if (is.null(factor_features)) {
     stop("No factor features found in metadata.")
   }
   
   # Get numeric exposure variables
-  numeric_exposures <- colnames(colData(expomicset))
+  numeric_exposures <- colnames(MultiAssayExperiment::colData(expomicset))
   if (!is.null(exposure_cols)) {
     numeric_exposures <- intersect(numeric_exposures, exposure_cols)
   }
@@ -35,8 +66,8 @@ correlate_exposures_with_factors <- function(
     
     # Extract relevant factor features for this assay
     selected_features <- factor_features |> 
-      filter(exp_name == experiment_name) |> 
-      pull(feature) |> 
+      dplyr::filter(exp_name == experiment_name) |> 
+      dplyr::pull(feature) |> 
       unique()
     
     if (length(selected_features) == 0) {
@@ -98,15 +129,16 @@ correlate_exposures_with_factors <- function(
     }
     
     if (length(batch_results) > 0) {
-      correlation_results[[experiment_name]] <- bind_rows(batch_results) |> 
-        mutate(exp_name = experiment_name) 
+      correlation_results[[experiment_name]] <- dplyr::bind_rows(batch_results) |> 
+        dplyr::mutate(exp_name = experiment_name) 
     }
   }
   
-  combined_results <- bind_rows(correlation_results) |> 
-    mutate(FDR = p.adjust(p.value, method = "fdr")) |> 
-    left_join(expomicset@metadata$var_info,
-              by=c("exposure"="variable"))
+  combined_results <- dplyr::bind_rows(correlation_results) |> 
+    dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |> 
+    dplyr::left_join(
+      MultiAssayExperiment::metadata(expomicset)$var_info,
+      by=c("exposure"="variable"))
   
   if (nrow(combined_results) == 0) {
     warning("No significant correlations found in any experiment.")
@@ -115,7 +147,7 @@ correlate_exposures_with_factors <- function(
   
   if(action == "add") {
     # Save to metadata
-    metadata(expomicset)$omics_exposure_factor_correlation <- combined_results
+    MultiAssayExperiment::metadata(expomicset)$omics_exposure_factor_correlation <- combined_results
     return(expomicset)
   } else if (action == "get") {
     return(combined_results)

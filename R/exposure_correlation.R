@@ -3,15 +3,15 @@ exposure_correlation <- function(
     exposure_cols=NULL,
     threshold = 0.3,
     action = "add") {
-  library(tidyverse)
-  library(ggplot2)
-  library(ComplexHeatmap)
-  library(circlize)
+  require(tidyverse)
+  require(ggplot2)
+  require(ComplexHeatmap)
+  require(circlize)
   
   message("Characterizing exposure variables")
   
   # Extract and preprocess colData
-  exposure_data <- colData(expomicset) |>
+  exposure_data <- MultiAssayExperiment::colData(expomicset) |>
     as.data.frame() |>
     select_if(~ !all(. == .[1]))  # Keep columns with more than one unique value
   
@@ -20,77 +20,103 @@ exposure_correlation <- function(
   } else {
     exposure_cols <- intersect(exposure_cols, colnames(exposure_data))
     exposure_data <- exposure_data |>
-      select(all_of(exposure_cols))
+      dplyr::select(dplyr::all_of(exposure_cols))
   }
   
   # Identify categorical and numeric columns
   categorical_vars <- exposure_data |>
-    select_if(is.character) |>
+    dplyr::select_if(is.character) |>
     colnames()
   numeric_vars <- exposure_data |>
-    select_if(is.numeric) |>
+    dplyr::select_if(is.numeric) |>
     colnames()
   
   # Generate combinations of numeric-categorical and categorical-categorical
-  num_cat_combinations <- expand.grid(numeric_vars, categorical_vars) |>
+  num_cat_combinations <- expand.grid(
+    numeric_vars, 
+    categorical_vars) |>
     setNames(c("var1", "var2")) |>
-    mutate(across(everything(), as.character)) |>
-    mutate(var1 = pmin(var1, var2), var2 = pmax(var1, var2)) |>
-    filter(var1 != var2) |>
-    distinct()
+    dplyr::mutate(dplyr::across(
+      dplyr::everything(), 
+      as.character)) |>
+    dplyr::mutate(var1 = pmin(var1, var2), 
+                  var2 = pmax(var1, var2)) |>
+    dplyr::filter(var1 != var2) |>
+    dplyr::distinct()
   
   cat_cat_combinations <- expand.grid(categorical_vars, categorical_vars) |>
     setNames(c("var1", "var2")) |>
-    mutate(across(everything(), as.character)) |>
-    mutate(var1 = pmin(var1, var2), var2 = pmax(var1, var2)) |>
-    filter(var1 != var2) |>
-    distinct()
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::everything(), 
+        as.character)) |>
+    dplyr::mutate(var1 = pmin(var1, var2), 
+                  var2 = pmax(var1, var2)) |>
+    dplyr::filter(var1 != var2) |>
+    dplyr::distinct()
   
   message("Calculating Numeric-numeric correlations")
   
   # Numeric-to-numeric correlations
   num_num_corr <- cor(exposure_data |>
-                        dplyr::select(all_of(numeric_vars)),
+                        dplyr::select(
+                          dplyr::all_of(numeric_vars)),
                       method = "pearson") |>
     as.data.frame() |>
-    rownames_to_column("var1") |>
-    pivot_longer(-var1, names_to = "var2", values_to = "correlation") |>
-    mutate(var1 = pmin(var1, var2), var2 = pmax(var1, var2)) |>
-    filter(var1 != var2) |>
-    distinct()
+    dplyr::rownames_to_column("var1") |>
+    dplyr::pivot_longer(-var1, 
+                        names_to = "var2",
+                        values_to = "correlation") |>
+    dplyr::mutate(var1 = pmin(var1, var2),
+                  var2 = pmax(var1, var2)) |>
+    dplyr::filter(var1 != var2) |>
+    dplyr::distinct()
   
   message("Calculating Numeric-categorical and Categorical-categorical correlations")
   # Numeric-to-categorical correlations (R-squared from lm)
   num_cat_corr <- num_cat_combinations |>
-    mutate(correlation = map2_dbl(var1, var2, ~ {
+    dplyr::mutate(correlation = purrr::map2_dbl(
+      var1, var2, ~ {
       num_var <- if (is.numeric(exposure_data[[.x]])) exposure_data[[.x]] else exposure_data[[.y]]
       cat_var <- if (is.character(exposure_data[[.x]])) exposure_data[[.x]] else exposure_data[[.y]]
       lm_result <- lm(num_var ~ cat_var)
       summary(lm_result)$r.squared |> replace_na(NA)
     })) |>
-    filter(!is.na(correlation))
+    dplyr::filter(!is.na(correlation))
   
   
   message("Calculating Categorical-categorical correlations")
+  
   # Categorical-to-categorical correlations (Cramer's V)
   cat_cat_corr <- cat_cat_combinations |>
-    mutate(correlation = map2_dbl(var1, var2, ~ {
-      table_data <- table(exposure_data[[.x]], exposure_data[[.y]])
+    dplyr::mutate(correlation = purrr::map2_dbl(
+      var1,
+      var2, ~ {
+      table_data <- table(
+        exposure_data[[.x]], 
+        exposure_data[[.y]])
       if (any(rowSums(table_data) == 0) || any(colSums(table_data) == 0)) return(NA)
+      
+      # Perform chi-squared test with simulation
       chi2 <- chisq.test(table_data, simulate.p.value = TRUE)
-      sqrt(chi2$statistic / sum(table_data) / min(nrow(table_data) - 1, ncol(table_data) - 1))
+      
+      # Calculate Cramer's V
+      sqrt(chi2$statistic / sum(table_data) / min(nrow(table_data) - 1,
+                                                  ncol(table_data) - 1))
     })) |>
-    filter(!is.na(correlation))
+    dplyr::filter(!is.na(correlation))
   
   # Combine all correlations
-  all_corr <- bind_rows(num_num_corr, num_cat_corr, cat_cat_corr) |>
-    mutate(abs_correlation = abs(correlation)) |>
-    inner_join(expomicset@metadata$var_info |>
+  all_corr <- dplyr::bind_rows(num_num_corr,
+                               num_cat_corr,
+                               cat_cat_corr) |>
+    dplyr::mutate(abs_correlation = abs(correlation)) |>
+    dplyr::inner_join(MultiAssayExperiment::metadata(expomicset)$var_info |>
                  as.data.frame() |>
                  dplyr::select(variable, category) |>
                  dplyr::rename(category_1 = category),
                by = c("var1" = "variable")) |>
-    inner_join(expomicset@metadata$var_info |>
+    dplyr::inner_join(MultiAssayExperiment::metadata(expomicset)$var_info |>
                  as.data.frame() |>
                  dplyr::select(variable, category) |>
                  dplyr::rename(category_2 = category),
@@ -98,10 +124,14 @@ exposure_correlation <- function(
   
   # Filter correlations by threshold
   filtered_corr <- all_corr |>
-    filter(abs_correlation > threshold)
+    dplyr::filter(abs_correlation > threshold)
   
   # Generate heatmap
-  heatmap <- ggplot(filtered_corr, aes(x = var1, y = var2, fill = abs_correlation)) +
+  heatmap <- filtered_corr |> 
+    ggplot(aes(
+      x = var1,
+      y = var2,
+      fill = abs_correlation)) +
     geom_tile() +
     scale_fill_gradient(low = "white", high = "magenta4") +
     theme_void() +
@@ -116,7 +146,7 @@ exposure_correlation <- function(
   
   if(action=="add"){
     # Save results and heatmap in metadata
-    metadata(expomicset)$exposure_correlation <- list(
+    MultiAssayExperiment::metadata(expomicset)$exposure_correlation <- list(
       correlation_table = all_corr,
       filtered_table = filtered_corr,
       heatmap = heatmap

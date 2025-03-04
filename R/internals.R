@@ -1,14 +1,15 @@
 # --- Update Assay ColData ------
-.update_assay_colData <- function(expomicset, exp_name) {
+.update_assay_colData <- function(expomicset, 
+                                  exp_name) {
   require(MultiAssayExperiment)
   require(tidyverse)
   
   # Retrieve the assay
-  assay <- experiments(expomicset)[[exp_name]]
+  assay <- MultiAssayExperiment::experiments(expomicset)[[exp_name]]
   
   # Extract colData for the assay's samples
   assay_samples <- colnames(assay)
-  global_coldata <- as.data.frame(colData(expomicset))
+  global_coldata <- as.data.frame(MultiAssayExperiment::colData(expomicset))
   coldata <- global_coldata[rownames(global_coldata) %in% assay_samples, , drop = FALSE]
   
   # Ensure the sample order matches
@@ -21,7 +22,7 @@
   }
   
   # Update colData in the assay
-  colData(assay) <- DataFrame(coldata)
+  MultiAssayExperiment::colData(assay) <- S4Vectors::DataFrame(coldata)
   
   return(assay)
 }
@@ -30,8 +31,8 @@
 # --- Run Differential Abundance Analysis ------
 
 .run_se_differential_abundance <- function(
-    exp,  # SummarizedExperiment object
-    formula,  # Model formula
+    se,  
+    formula,  
     abundance_col = "counts",
     method = "limma_voom",
     scaling_method = "none",
@@ -46,10 +47,10 @@
   if (!is.null(contrasts)) {
     res_list <- list()
     for (contrast in contrasts) {
-      contrast_results <- exp |>
-        identify_abundant(minimum_counts = min_counts,
+      contrast_results <- se |>
+        tidybulk::identify_abundant(minimum_counts = min_counts,
                           minimum_proportion = min_proportion) |>
-        test_differential_abundance(
+        tidybulk::test_differential_abundance(
           formula,
           .abundance = !!sym(abundance_col),
           method = method,
@@ -58,12 +59,12 @@
         )
       
       # Extract results
-      res <- as.data.frame(elementMetadata(contrast_results))
+      res <- as.data.frame(S4Vectors::elementMetadata(contrast_results))
       colnames(res) <- gsub("__.*", "", colnames(res))
       
       # Add metadata
       res <- res |> 
-        mutate(
+        dplyr::mutate(
           feature = rownames(contrast_results),
           contrast = contrast,
           method = method,
@@ -74,12 +75,12 @@
       
       res_list[[contrast]] <- res
     }
-    return(bind_rows(res_list))
+    return(dplyr::bind_rows(res_list))
   } else {
-    contrast_results <- exp |>
-      identify_abundant(minimum_counts = min_counts,
+    contrast_results <- se |>
+      tidybulk::identify_abundant(minimum_counts = min_counts,
                         minimum_proportion = min_proportion) |>
-      test_differential_abundance(
+      tidybulk::test_differential_abundance(
         formula,
         .abundance = !!sym(abundance_col),
         method = method,
@@ -87,12 +88,12 @@
       )
     
     # Extract results
-    res <- as.data.frame(elementMetadata(contrast_results))
+    res <- as.data.frame(S4Vectors::elementMetadata(contrast_results))
     colnames(res) <- gsub("__.*", "", colnames(res))
     
     # Add metadata
     res <- res |> 
-      mutate(
+      dplyr::mutate(
         feature = rownames(contrast_results),
         contrast = all.vars(formula)[1],
         method = method,
@@ -118,14 +119,12 @@
   
   # Identify significant features in each test setting
   feature_stability_df <- sensitivity_df |>
-    filter(!!sym(pval_col) < pval_threshold,
+    dplyr::filter(!!sym(pval_col) < pval_threshold,
            abs(!!sym(logfc_col)) > logFC_threshold) |>
-    group_by(feature, exp_name) |>
-    dplyr::summarize(stability_score = n(), .groups = "drop") |>
-    arrange(desc(stability_score))
-  
-  # Store results in metadata
-  # metadata(expomicset)$feature_stability_df <- feature_stability_df
+    dplyr::group_by(feature, exp_name) |>
+    dplyr::summarize(stability_score = n(),
+                     .groups = "drop") |>
+    dplyr::arrange(desc(stability_score))
   
   message("Feature stability analysis completed.")
   return(feature_stability_df)
@@ -134,8 +133,8 @@
 # --- Correlate Se with colData --------
 
 .correlate_se_with_coldata <- function(
-    se,  # SummarizedExperiment object
-    exposure_cols,  # Character vector of colData columns for correlation
+    se,  
+    exposure_cols,  
     correlation_method = "spearman",
     correlation_cutoff = 0.0,
     cor_pval_column = "p.value",
@@ -148,7 +147,9 @@
   message("Performing correlation analysis on summarized experiment...")
   
   # Ensure colData has the specified exposures
-  exposure_data <- colData(se) |> as.data.frame()
+  exposure_data <- MultiAssayExperiment::colData(se) |> 
+    as.data.frame()
+  
   numeric_exposures <- intersect(colnames(exposure_data), exposure_cols)
   
   if (length(numeric_exposures) == 0) {
@@ -156,7 +157,9 @@
   }
   
   # Extract assay data
-  assay_data <- assays(se)[[1]] |> t() |> as.data.frame()
+  assay_data <- SummarizedExperiment::assays(se)[[1]] |>
+    t() |> 
+    as.data.frame()
   
   # Ensure colData and assay samples match
   common_samples <- intersect(rownames(assay_data), rownames(exposure_data))
@@ -171,38 +174,43 @@
   
   # Merge into a single dataframe for correlation
   merged_data <- assay_data |> 
-    rownames_to_column("id") |> 
-    inner_join(exposure_data |> rownames_to_column("id"), by = "id") |> 
-    column_to_rownames("id")
+    dplyr::rownames_to_column("id") |> 
+    dplyr::inner_join(
+      exposure_data |> 
+        rownames_to_column("id"),
+      by = "id") |> 
+    dplyr::column_to_rownames("id")
   
   # Perform correlation analysis
   message("Running Spearman correlation analysis...")
-  correlation_matrix <- merged_data |> as.matrix() |> Hmisc::rcorr(type = correlation_method)
+  correlation_matrix <- merged_data |>
+    as.matrix() |> 
+    Hmisc::rcorr(type = correlation_method)
   
   # Convert correlation and p-values to tidy format
   correlation_df <- correlation_matrix$r |> 
     as.data.frame() |> 
-    rownames_to_column("feature") |> 
-    melt(id.vars = "feature") |> 
+    dplyr::rownames_to_column("feature") |> 
+    reshape2::melt(id.vars = "feature") |> 
     `colnames<-`(c("feature", "exposure", "correlation"))
   
   pvalue_df <- correlation_matrix$P |> 
     as.data.frame() |> 
-    rownames_to_column("feature") |> 
-    melt(id.vars = "feature") |> 
+    dplyr::rownames_to_column("feature") |> 
+    reshape2::melt(id.vars = "feature") |> 
     `colnames<-`(c("feature", "exposure", "p.value"))
   
   # Merge correlation results
-  correlation_results <- inner_join(correlation_df,
-                                    pvalue_df, 
-                                    by = c("feature", "exposure")) |> 
-    filter(!(abs(correlation) > 1)) |>  # Remove perfect correlations
-    filter(abs(correlation) > correlation_cutoff) |>  # Apply correlation threshold
-    mutate(FDR = p.adjust(p.value, method = "fdr")) |>  # Adjust p-values
-    filter(!!sym(cor_pval_column) < pval_cutoff) |>  # Apply p-value cutoff
-    arrange(desc(abs(correlation))) |>  # Sort by strongest correlations 
-    filter(feature %in% rownames(se)) |>  # Filter to features in SummarizedExperiment
-    filter(exposure %in% numeric_exposures)  # Filter to valid exposures
+  correlation_results <- correlation_df |> 
+    dplyr::inner_join(pvalue_df, 
+                      by = c("feature", "exposure")) |> 
+    dplyr::filter(!(abs(correlation) > 1)) |>  
+    dplyr::filter(abs(correlation) > correlation_cutoff) |>  
+    dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |> 
+    dplyr::filter(!!sym(cor_pval_column) < pval_cutoff) |>  
+    dplyr::arrange(desc(abs(correlation))) |>   
+    dplyr::filter(feature %in% rownames(se)) |>  
+    dplyr::filter(exposure %in% numeric_exposures)  
   
   message("Correlation analysis completed.")
   
@@ -212,8 +220,9 @@
 
 .convert_uniprot_to_symbol <- function(uniprot_ids) {
   require(biomaRt)
-  mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-  gene_map <- getBM(attributes = c("uniprot_gn_id", "hgnc_symbol"),
+  mart <- biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  gene_map <- biomaRt::getBM(
+    attributes = c("uniprot_gn_id", "hgnc_symbol"),
                     filters = "uniprot_gn_id",
                     values = uniprot_ids,
                     mart = mart)
@@ -257,37 +266,38 @@
   require(org.Hs.eg.db)
   
   
-  if (!"differential_abundance" %in% names(expomicset@metadata)) {
+  if (!"differential_abundance" %in% names(MultiAssayExperiment::metadata(expomicset))) {
     stop("Please run `run_differential_abundance() first.`")
   }
   
-  if (!"omics_exposure_deg_correlation" %in% names(expomicset@metadata)) {
+  if (!"omics_exposure_deg_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))) {
     stop("Please run `correlate_exposures_with_degs() first.`")
   }
   
-  da_res <- expomicset@metadata$differential_abundance
-  da_cor_res <- expomicset@metadata$omics_exposure_deg_correlation
+  da_res <- MultiAssayExperiment::metadata(expomicset)$differential_abundance
+  da_cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation
   
   da_res_cor_merged <- da_res |>
-    filter(!!sym(pval_col) < pval_threshold) |>
-    filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
-    mutate(direction=ifelse(logFC>0,"up","down")) |>
+    dplyr::filter(!!sym(pval_col) < pval_threshold) |>
+    dplyr::filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
+    dplyr::mutate(direction=ifelse(logFC>0,"up","down")) |>
     dplyr::select(feature,
                   exp_name,
                   direction) |>
-    inner_join(da_cor_res,
+    dplyr::inner_join(da_cor_res,
                by=c("feature",
                     "exp_name"))
   
   
   mirna_df <- da_res_cor_merged |>
-    filter(exp_name %in% mirna_assays) |>
+    dplyr::filter(exp_name %in% mirna_assays) |>
     (\(df) split(df,df$exp_name))() |>
-    map(~ .get_mirna_targets(.x |> 
-                               pull(feature)) |>
-          mutate(direction="down")) |>
-    bind_rows(.id="exp_name") |>
-    inner_join(da_res_cor_merged |>
+    purrr:map(~ .get_mirna_targets(
+      .x |> 
+                               dplyr::pull(feature)) |>
+          dplyr::mutate(direction="down")) |>
+    dplyr::bind_rows(.id="exp_name") |>
+    dplyr::inner_join(da_res_cor_merged |>
                  dplyr::select(-direction),
                by=c("source_genesymbol"="feature",
                     "exp_name")) |>
@@ -297,35 +307,36 @@
   
   
   prot_df <- .convert_uniprot_to_symbol(da_res_cor_merged |>
-                                          filter(exp_name %in% proteomics_assays) |>
-                                          pull(feature)) |>
-    inner_join(da_res_cor_merged,
+                                          dplyr::filter(exp_name %in% proteomics_assays) |>
+                                          dplyr::pull(feature)) |>
+    dplyr::inner_join(da_res_cor_merged,
                by=c("uniprot_gn_id"="feature")) |>
     dplyr::select(-uniprot_gn_id) |>
     dplyr::rename(feature=hgnc_symbol)
   
   
   da_res_cor_merged_mapped <- da_res_cor_merged |>
-    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
-    bind_rows(mirna_df,prot_df)
+    dplyr::filter(!exp_name %in% 
+                    c(mirna_assays,proteomics_assays)) |>
+    dplyr::bind_rows(mirna_df,prot_df)
   
   
   universe_per_assay <- as.list(unique(da_res_cor_merged$exp_name)) |>
-    map( ~
+    purrr::map( ~
            {df <- data.frame(all_features=
-                               experiments(expomicset)[[.x]] |>
+                               MultiAssayExperiment::experiments(expomicset)[[.x]] |>
                                rownames(),
                              exp_name=.x)
            
            if (.x %in% mirna_assays) {
              all_targets <- .get_mirna_targets(df$all_features) |>
-               pull(target_genesymbol)
+               dplyr::pull(target_genesymbol)
              
              df <- data.frame(all_features=all_targets,
                               exp_name=.x)
            } else if (.x %in% proteomics_assays){
              all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
-               pull(hgnc_symbol)
+               dplyr::pull(hgnc_symbol)
              
              df <- data.frame(all_features=all_targets,
                               exp_name=.x)
@@ -334,14 +345,14 @@
            }
            return(df)}
     ) |>
-    bind_rows()
+    dplyr::bind_rows()
   
   
   enrich_res <- da_res_cor_merged_mapped |>
     (\(df) split(df,df$exp_name))() |>
-    map(~ {
+    purrr::map(~ {
       message("Working on: ",unique(.x$exp_name))
-      enrich <- compareCluster(
+      enrich <- clusterProfiler::compareCluster(
         feature~direction+category,
         data = .x,
         fun = fun,
@@ -397,10 +408,10 @@
     stop("Please run `run_differential_abundance() first.`")
   }
   
-  da_res <- expomicset@metadata$differential_abundance |>
-    filter(!!sym(pval_col) < pval_threshold) |>
-    filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
-    mutate(direction=ifelse(logFC>0,"up","down")) |>
+  da_res <- MultiAssayExperiment::metadata(expomicset)$differential_abundance |>
+    dplyr::filter(!!sym(pval_col) < pval_threshold) |>
+    dplyr::filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
+    dplyr::mutate(direction=ifelse(logFC>0,"up","down")) |>
     dplyr::select(feature,
                   exp_name,
                   direction) 
@@ -409,11 +420,12 @@
   mirna_df <- da_res |>
     filter(exp_name %in% mirna_assays) |>
     (\(df) split(df,df$exp_name))() |>
-    map(~ .get_mirna_targets(.x |> 
-                               pull(feature)) |>
-          mutate(direction="down")) |>
-    bind_rows(.id="exp_name") |>
-    inner_join(da_res |>
+    purrr::map(~ .get_mirna_targets(
+      .x |> 
+        dplyr::pull(feature)) |>
+          dplyr::mutate(direction="down")) |>
+    dplyr::bind_rows(.id="exp_name") |>
+    dplyr::inner_join(da_res |>
                  dplyr::select(-direction),
                by=c("source_genesymbol"="feature",
                     "exp_name")) |>
@@ -424,35 +436,35 @@
   
   prot_df <- .convert_uniprot_to_symbol(
     da_res |>
-      filter(exp_name %in% proteomics_assays) |>
-      pull(feature)) |>
-    inner_join(da_res,
+      dplyr::filter(exp_name %in% proteomics_assays) |>
+      dplyr::pull(feature)) |>
+    dplyr::inner_join(da_res,
                by=c("uniprot_gn_id"="feature")) |>
     dplyr::select(-uniprot_gn_id) |>
     dplyr::rename(feature=hgnc_symbol)
   
   
   da_res_mapped <- da_res |>
-    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
-    bind_rows(mirna_df,prot_df)
+    dplyr::filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
+    dplyr::bind_rows(mirna_df,prot_df)
   
   
   universe_per_assay <- as.list(unique(da_res$exp_name)) |>
-    map( ~
+    purrr::map( ~
            {df <- data.frame(all_features=
-                               experiments(expomicset)[[.x]] |>
+                               MultiAssayExperiment::experiments(expomicset)[[.x]] |>
                                rownames(),
                              exp_name=.x)
            
            if (.x %in% mirna_assays) {
              all_targets <- .get_mirna_targets(df$all_features) |>
-               pull(target_genesymbol)
+               dplyr::pull(target_genesymbol)
              
              df <- data.frame(all_features=all_targets,
                               exp_name=.x)
            } else if (.x %in% proteomics_assays){
              all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
-               pull(hgnc_symbol)
+               dplyr::pull(hgnc_symbol)
              
              df <- data.frame(all_features=all_targets,
                               exp_name=.x)
@@ -461,14 +473,14 @@
            }
            return(df)}
     ) |>
-    bind_rows()
+    dplyr::bind_rows()
   
   
   enrich_res <- da_res_mapped |>
     (\(df) split(df,df$exp_name))() |>
     map(~ {
       message("Working on: ",unique(.x$exp_name))
-      enrich <- compareCluster(
+      enrich <- clusterProfiler::compareCluster(
         feature~direction,
         data = .x,
         fun = fun,
@@ -476,8 +488,8 @@
         keyType = keyType,
         ont = ont,
         universe = universe_per_assay |>
-          filter(exp_name==unique(.x$exp_name)) |>
-          pull(all_features),
+          dplyr::filter(exp_name==unique(.x$exp_name)) |>
+          dplyr::pull(all_features),
         pAdjustMethod = pAdjustMethod,
         pvalueCutoff = pvalueCutoff,
         qvalueCutoff = qvalueCutoff
@@ -486,14 +498,14 @@
   
   
   enrich_df <- enrich_res |>
-    map(~ {
+    purrr::map(~ {
       if(!is.null(.x)){
         enrich <- .x@compareClusterResult
       } else{
         enrich <- NULL
       }
     }) |>
-    bind_rows(.id="exp_name")
+    dplyr::bind_rows(.id="exp_name")
   
   return(enrich_df)
 }

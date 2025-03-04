@@ -18,24 +18,26 @@ extract_top_factor_features <- function(
   # Extract factor loadings based on method
   if (method_used == "MOFA") {
     message("Using MOFA+ factor loadings...")
-    loadings <- get_weights(integration_results$result)  
+    loadings <- MOFA2::get_weights(integration_results$result)  
   } else if (method_used == "MCIA") {
     message("Using MCIA block loadings...")
-    loadings <- integration_results$result@block_loadings  
+    loadings <- nipalsMCIA::integration_results$result@block_loadings  
   } else {
     stop("Unsupported integration method: ", method_used)
   }
   
   # Convert factor loadings to long format
   loadings_df <- loadings |> 
-    map2(names(loadings), \(df, exp_name) {
+    purrr::map2(names(loadings),
+                \(df, exp_name) {
       df <- as.data.frame(df)  
       df$exp_name <- exp_name  
       df$feature <- rownames(df)  
       rownames(df) <- NULL  
       return(df) 
-    }) |> bind_rows() |> 
-    pivot_longer(
+    }) |> 
+    dplyr::bind_rows() |> 
+    dplyr::pivot_longer(
       -c(feature, exp_name),
       names_to = "factor",
       values_to = "loading")
@@ -43,11 +45,11 @@ extract_top_factor_features <- function(
   # Ensure factor names are treated as characters and match MCIA format
   factors <- as.character(factors)
   loadings_df <- loadings_df |>
-    mutate(factor = as.character(factor))
+    dplyr::mutate(factor = as.character(factor))
   
   # Filter for user-specified factors
   loadings_df <- loadings_df |> 
-    filter(factor %in% factors)
+    dplyr::filter(factor %in% factors)
   
   # Apply thresholding method
   if (method == "percentile") {
@@ -57,7 +59,7 @@ extract_top_factor_features <- function(
       "%)...")
     
     factor_thresholds <- loadings_df |> 
-      group_by(factor) |> 
+      dplyr::group_by(factor) |> 
       dplyr::summarize(
         threshold = quantile(abs(loading),
                              percentile,
@@ -68,7 +70,7 @@ extract_top_factor_features <- function(
       "Applying raw threshold-based filtering (>|",
       threshold,
       "|)...")
-    factor_thresholds <- tibble(
+    factor_thresholds <- dplyr::tibble(
       factor = unique(loadings_df$factor),
       threshold = threshold)
   } else {
@@ -83,7 +85,7 @@ extract_top_factor_features <- function(
   
   # Apply filtering
   filtered_features <- loadings_df |> 
-    filter(abs(loading) > threshold) |> 
+    dplyr::filter(abs(loading) > threshold) |> 
     dplyr::select(feature,
                   factor,
                   loading,
@@ -96,7 +98,7 @@ extract_top_factor_features <- function(
   
   if(action=="add"){
     # Store selected features
-    metadata(expomicset)$top_factor_features <- filtered_features
+    MultiAssayExperiment::metadata(expomicset)$top_factor_features <- filtered_features
     return(expomicset)
   }else if (action=="get"){
     return(filtered_features)

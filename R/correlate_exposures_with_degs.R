@@ -1,3 +1,4 @@
+
 correlate_exposures_with_degs <- function(
     expomicset,
     exposure_cols = NULL,
@@ -19,28 +20,28 @@ correlate_exposures_with_degs <- function(
   message("Starting correlation analysis between DEGs and exposures...")
   
   # Extract and filter DEGs
-  da_results <- metadata(expomicset)$differential_abundance
+  da_results <- MultiAssayExperiment::metadata(expomicset)$differential_abundance
   if (is.null(da_results)) {
     stop("No differential abundance results found in metadata.")
   }
   
   # Stop if robust is true but sensitivity analysis was not run
   if(robust){
-    if(!"sensitivity_analysis" %in% names(expomicset@metadata)){
+    if(!"sensitivity_analysis" %in% names(MultiAssayExperiment::metadata(expomicset))){
       stop("Please run `run_sensitivity_analysis()` first.")
     }
   }
   
   da_results <- da_results |> 
-    filter(!!sym(deg_pval_col) < deg_pval_thresh,
-           abs(!!sym(deg_logfc_col)) > deg_logfc_thresh)
+    dplyr::filter(!!sym(deg_pval_col) < deg_pval_thresh,
+                  abs(!!sym(deg_logfc_col)) > deg_logfc_thresh)
   
   if (nrow(da_results) == 0) {
     stop("No DEGs meet the specified p-value and logFC thresholds.")
   }
   
   # Get numeric exposure variables
-  numeric_exposures <- colnames(colData(expomicset))
+  numeric_exposures <- colnames(MultiAssayExperiment::colData(expomicset))
   if (!is.null(exposure_cols)) {
     numeric_exposures <- intersect(numeric_exposures, exposure_cols)
   }
@@ -57,17 +58,17 @@ correlate_exposures_with_degs <- function(
     
     if(robust){
       # Extract relevant robust DEGs for this assay
-      selected_features <- expomicset@metadata$sensitivity_analysis$feature_stability |> 
-        filter(stability_score > expomicset@metadata$sensitivity_analysis$score_thresh) |>
-        filter(exp_name == experiment_name) |> 
-        pull(feature) |>
+      selected_features <- MulitAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |> 
+        dplyr::filter(stability_score > MulitAssayExperiment::metadata(expomicset)$sensitivity_analysis$score_thresh) |>
+        dplyr::filter(exp_name == experiment_name) |> 
+        dplyr::pull(feature) |>
         unique()
       
     }else{
       # Extract relevant DEGs for this assay
       selected_features <- da_results |> 
-        filter(exp_name == experiment_name) |> 
-        pull(feature) |> 
+        dplyr::filter(exp_name == experiment_name) |> 
+        dplyr::pull(feature) |> 
         unique()
     }
     
@@ -127,15 +128,15 @@ correlate_exposures_with_degs <- function(
     }
     
     if (length(batch_results) > 0) {
-      correlation_results[[experiment_name]] <- bind_rows(batch_results) |> 
-        mutate(exp_name = experiment_name)
+      correlation_results[[experiment_name]] <- dplyr::bind_rows(batch_results) |> 
+        dplyr::mutate(exp_name = experiment_name)
     }
   }
   
-  combined_results <- bind_rows(correlation_results) |> 
-    mutate(FDR = p.adjust(p.value, method = "fdr")) |> 
-    left_join(expomicset@metadata$var_info,
-              by=c("exposure"="variable"))
+  combined_results <- dplyr::bind_rows(correlation_results) |> 
+    dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |> 
+    dplyr::left_join(MultiAssayExperiment::metadata(expomicset)$var_info,
+                     by=c("exposure"="variable"))
   
   if (nrow(combined_results) == 0) {
     warning("No significant correlations found in any experiment.")
@@ -144,7 +145,7 @@ correlate_exposures_with_degs <- function(
   
   if(action=="add"){
     # Save to metadata
-    metadata(expomicset)$omics_exposure_deg_correlation <- combined_results
+    MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation <- combined_results
     return(expomicset)
   }else if (action =="get"){
     return(combined_results)

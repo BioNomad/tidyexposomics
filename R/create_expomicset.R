@@ -43,8 +43,8 @@ create_expomicset <- function(var_info, exposure, omics, row_data = NULL) {
     function(data, row_meta) {
       sample_order <- sort(colnames(data))  # Enforce ordered sample names
       data <- data[, sample_order, drop = FALSE]  # Reorder columns
-      SummarizedExperiment(
-        assays = SimpleList(counts = data),
+      SummarizedExperiment::SummarizedExperiment(
+        assays = S4Vectors::SimpleList(counts = data),
         rowData = row_meta
       )
     },
@@ -55,9 +55,9 @@ create_expomicset <- function(var_info, exposure, omics, row_data = NULL) {
   
   # Create MultiAssayExperiment without enforcing sample consistency
   message("Creating MultiAssayExperiment object...")
-  mae <- MultiAssayExperiment(
+  mae <- MultiAssayExperiment::MultiAssayExperiment(
     experiments = experiments,
-    colData = DataFrame(exposure),  # Keep all exposure samples without filtering
+    colData = S4Vectors::DataFrame(exposure),  # Keep all exposure samples without filtering
     metadata = list(var_info = var_info)
   )
   
