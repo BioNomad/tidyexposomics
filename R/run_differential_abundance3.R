@@ -23,11 +23,11 @@ run_differential_abundance <- function(
     message("Processing assay: ", exp_name)
     
     # Update assay with colData
-    assay <- .update_assay_colData(expomicset, exp_name)
+    exp <- .update_assay_colData(expomicset, exp_name)
     
     # Run differential analysis using `.run_se_differential_abundance`
     res <- .run_se_differential_abundance(
-      exp = assay,
+      se = exp,
       formula = formula,
       abundance_col = abundance_col,
       method = method,

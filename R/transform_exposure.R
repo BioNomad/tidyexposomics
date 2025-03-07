@@ -49,9 +49,11 @@ transform_exposure <- function(
     norm_results <- lapply(names(transformations), function(name) {
       transformed <- transformations[[name]]
       transformed |>
-        apply(2, function(x) shapiro.test(x) |> broom::tidy()) |>
+        apply(2, function(x) shapiro.test(x) |> 
+                broom::tidy()) |>
         (\(x) do.call(rbind, x))() |>
-        mutate(transformation = name, exposure = colnames(transformed))
+        mutate(transformation = name, 
+               exposure = colnames(transformed))
     }) |>
       bind_rows()
     
@@ -106,9 +108,13 @@ transform_exposure <- function(
     
     # Perform Shapiro-Wilk test
     norm_results <- transformed_numeric |>
-      apply(2, function(x) shapiro.test(x) |> broom::tidy()) |>
+      select_if(~ length(unique(na.omit(.))) >= 3) |> 
+      apply(2, function(x) shapiro.test(x) |> 
+              broom::tidy()) |>
       (\(x) do.call(rbind, x))() |>
       mutate(exposure = colnames(transformed_numeric))
+    
+    
     
     # Save results
     metadata(expomicset)$transformation <- list(

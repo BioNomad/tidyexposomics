@@ -1,6 +1,7 @@
 run_functional_enrichment <- function(
     expomicset,
     geneset, # deg, factor, deg_exp_cor,factor_exp_cor
+    feature_col = "feature",
     proteomics_assays = NULL, 
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
@@ -39,6 +40,7 @@ run_functional_enrichment <- function(
     enrich_res <- expomicset |> 
       .da_exposure_functional_enrichment(
         proteomics_assays = proteomics_assays, 
+        feature_col = feature_col,
         mirna_assays = mirna_assays,
         pval_col = pval_col,
         pval_threshold = pval_threshold,

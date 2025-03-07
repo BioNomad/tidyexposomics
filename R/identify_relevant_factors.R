@@ -23,7 +23,7 @@ identify_relevant_factors <- function(
     factors <- MOFA2::get_factors(integration_results$result)[[1]]
   } else if (method_used == "MCIA") {
     message("Detected MCIA results, extracting global scores...")
-    factors <- nipalsMCIA::integration_results$result@global_scores
+    factors <- integration_results$result@global_scores
   } else {
     stop("Unsupported integration method: ", method_used)
   }
@@ -56,10 +56,10 @@ identify_relevant_factors <- function(
   # Merge factors and outcome into a single data frame
   merged <- factors |> 
     as.data.frame() |> 
-    dplyr::rownames_to_column("id") |> 
+    tibble::rownames_to_column("id") |> 
     dplyr::inner_join(outcome_data |> 
                  as.data.frame() |> 
-                 dplyr::rownames_to_column("id"),
+                 tibble::rownames_to_column("id"),
                by = "id")
   
   message("Running correlation or Kruskal-Wallis test...")

@@ -21,7 +21,7 @@ extract_top_factor_features <- function(
     loadings <- MOFA2::get_weights(integration_results$result)  
   } else if (method_used == "MCIA") {
     message("Using MCIA block loadings...")
-    loadings <- nipalsMCIA::integration_results$result@block_loadings  
+    loadings <- integration_results$result@block_loadings  
   } else {
     stop("Unsupported integration method: ", method_used)
   }
@@ -37,7 +37,7 @@ extract_top_factor_features <- function(
       return(df) 
     }) |> 
     dplyr::bind_rows() |> 
-    dplyr::pivot_longer(
+    tidyr::pivot_longer(
       -c(feature, exp_name),
       names_to = "factor",
       values_to = "loading")

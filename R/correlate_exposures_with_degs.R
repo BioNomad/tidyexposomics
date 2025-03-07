@@ -58,8 +58,8 @@ correlate_exposures_with_degs <- function(
     
     if(robust){
       # Extract relevant robust DEGs for this assay
-      selected_features <- MulitAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |> 
-        dplyr::filter(stability_score > MulitAssayExperiment::metadata(expomicset)$sensitivity_analysis$score_thresh) |>
+      selected_features <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |> 
+        dplyr::filter(stability_score > MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$score_thresh) |>
         dplyr::filter(exp_name == experiment_name) |> 
         dplyr::pull(feature) |>
         unique()

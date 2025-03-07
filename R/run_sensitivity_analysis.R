@@ -85,7 +85,7 @@ run_sensitivity_analysis <- function(
               
               # Call helper function
               res <- .run_se_differential_abundance(
-                exp = exp,
+                se = exp,
                 formula = formula,
                 abundance_col = abundance_col,
                 method = method,
