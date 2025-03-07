@@ -57,7 +57,41 @@ aw_chem <- read_excel("~/jhu/projects/exposomePilot/data/AWs_Chem_copy_w_counts.
   mutate(across(ends_with("cr"),as.numeric)) %>% 
   mutate(across(ends_with("sg"),as.numeric)) 
 
-aw_dataset_cv2 <- read_excel("~/jhu/projects/exposomePilot/data/Exposome_aw_dataset.xlsx",sheet = "CV2")
+# urine metals
+aw_urine_metals <- read_excel(
+  "~/jhu/projects/exposomePilot/data/Exposure final results.xlsx",
+  sheet = "Urine") |> 
+  dplyr::select(-`...2`) |> 
+  # remove top two rows
+  (\(df){df=df[-c(1,2),];df})() |> 
+  mutate(id=gsub("AW-","",`...1`)) |> 
+  filter(!grepl("DISC",id)) |> 
+  # replace <LOD with NA
+  mutate(across(everything(),~ifelse(.=="<LOD",NA,.))) |> 
+  dplyr::select(-`...1`) |> 
+  (\(df){names(df)=paste0("urine_",names(df));df})() |> 
+  mutate_all(as.numeric) |> 
+  mutate(urine_id=as.character(urine_id))
+
+# serum metals
+aw_serum_metals <- read_excel(
+  "~/jhu/projects/exposomePilot/data/Exposure final results.xlsx",
+  sheet = "Serum") |> 
+  dplyr::select(-`...2`) |> 
+  # remove top two rows
+  (\(df){df=df[-c(1,2),];df})() |> 
+  mutate(id=gsub("AW-","",`...1`)) |> 
+  filter(!grepl("DISC",id)) |> 
+  # replace <LOD with NA
+  mutate(across(everything(),~ifelse(.=="<LOD",NA,.))) |> 
+  dplyr::select(-c(`...1`,`Dilution factor in total`,`...20`,`NOTES (urine samples use)`)) |> 
+  (\(df){names(df)=paste0("serum_",names(df));df})() |> 
+  mutate_all(as.numeric) |> 
+  mutate(serum_id=as.character(serum_id))
+  
+aw_dataset_cv2 <- read_excel(
+  "~/jhu/projects/exposomePilot/data/Exposome_aw_dataset.xlsx",
+  sheet = "CV2") 
 
 # filter columns where more than X percent of the data are NA
 # Function to filter columns with more than 20% NA values
@@ -88,6 +122,12 @@ aw_dataset_cv2_filt <- aw_dataset_cv2 %>%
   left_join(.,
             aw_chem,
             by="id") %>% 
+  left_join(.,
+            aw_urine_metals,
+            by=c("id"="urine_id")) %>%
+  left_join(.,
+            aw_serum_metals,
+            by=c("id"="serum_id")) %>%
   filter_na_columns(., threshold = 0.2) %>% 
   # https://www.aafp.org/pubs/afp/issues/2014/0301/p359.html
   mutate(fev1fvc_category=case_when(
@@ -139,7 +179,9 @@ aw_dataset_cv2_filt <- aw_dataset_cv2 %>%
   mutate(age_scaled=as.numeric(scale(age))) |> 
   mutate(sex=female) |> 
   mutate(sex=factor(sex,levels=c("female","male"))) |>
-  mutate(race=factor(race,levels=c("non_black","black")))
+  mutate(race=factor(race,levels=c("non_black","black"))) |> 
+  mutate(height=gli_height/100) |>
+  mutate(fev_height=pftprefev1best/(height^2))
 
 
 # --- RNA ----------
@@ -285,7 +327,8 @@ prot <- readxl::read_excel("~/jhu/projects/exposomePilot/data/proteomics.xlsx")
 
 prot_fdata <- prot[,1:2] %>% 
   as.data.frame() %>% 
-  `row.names<-`(.$Protein.Group)
+  `row.names<-`(.$Protein.Group) |> 
+  mutate(gene=Genes)
 rownames(prot_fdata) <- prot_fdata$Protein.Group
 
 prot_abd <- prot %>% dplyr::select(
@@ -343,7 +386,8 @@ adduct_fdata <- adduct_long |>
   dplyr::select(IonIntQuant_key,Protein_ID,
                 Gene_name,residue,mean_mass,
                 annotation) |> 
-  distinct()
+  distinct() |> 
+  mutate(gene=Gene_name)
 
 rownames(adduct_fdata) <- adduct_fdata$IonIntQuant_key
 
@@ -370,3 +414,4 @@ save(
   adduct_fdata,
   
   file = "~/jhu/projects/tidyexposomics/data/expom.RData")
+

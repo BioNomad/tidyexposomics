@@ -1,7 +1,22 @@
 # --- Load Data ---------------------------
-load("../data/expom.RData")
-load("../data/exp_vars.RData")
-load("../data/all_vars.RData")
+load("./data/expom.RData")
+load("./data/exp_vars.RData")
+load("./data/all_vars.RData")
+invisible(lapply(
+  list.files(path = "~/jhu/projects/tidyexposomics/R/",
+             pattern="*.R",full.names = TRUE),
+  source))
+
+all_vars <- des |> filter(category!="spirometry") |> pull(variable)
+
+exp_vars <- des |> filter(category %in% c(
+  "urin_metal",
+  "serum_metal",
+  "indoor_pollution",
+  "allergen_results",
+  "chemical"
+)) |> 
+  pull(variable)
 
 omics_list <- list(
   "CD16+ Monocyte RNA" = cd16_rna,
@@ -21,7 +36,7 @@ fdata <- list(
   "Serum Adductomics" = adduct_fdata
 )
 
-expom <- expOmicSet(
+expom <- create_expomicset(
   var_info = des,
   exposure = aw_dataset_cv2_filt,
   omics = omics_list,
@@ -40,7 +55,7 @@ expom_qc <- expom |>
   pca_analysis() |> 
   
   # Check Variable Normality
-  check_normality() |> 
+  check_normality() 
   
   # Transform Variables 
   transform_exposure(transform_method = "best") 
@@ -52,13 +67,14 @@ expom_sample_exp <- expom_qc |>
   
   # Perform ExWAS Analysis
   perform_exwas(
-    outcome = "pftfev1fvc_actual",
+    outcome = "fev_height",
     exposures = all_vars[
-      !all_vars %in% c("pftfev1fvc_actual",
+      !all_vars %in% c("fev_height",
                        "age",
                        "sex",
-                       "race")],
-    covariates = c("age","sex","race")) 
+                       "race",
+                       "smoking")],
+    covariates = c("age","sex","race","smoking")) 
 
 expom_da <- expom_sample_exp |> 
   # Perform Differential Abundance Analysis
@@ -68,8 +84,9 @@ expom_da <- expom_sample_exp |>
     contrasts = c("pftfev1fvc_actual - (Intercept)"),
     minimum_counts = 1,
     minimum_proportion = 0.1,
-    scaling_method = "none") |> 
-  
+    scaling_method = "none") 
+
+expom_da <- expom_da |> 
   # Perform Sensitivity Analysis
   run_sensitivity_analysis(
     base_formula = ~ pftfev1fvc_actual + age + sex + race, 
@@ -91,7 +108,9 @@ expom_multi <- expom_da |>
   extract_top_factor_features(factors = "V3", 
                               method = "percentile",
                               percentile = 0.95,
-                              threshold = 0.3) |> 
+                              threshold = 0.3) 
+
+expom_multi <- expom_multi |> 
   
   # Identify DEGs that correlate with exposures
   correlate_exposures_with_degs(exposure_cols = exp_vars) |> 
@@ -104,7 +123,7 @@ expom_enrich <- expom_multi |>
   # Perform Functional Enrichment Analysis
   run_functional_enrichment(
     geneset = "deg_exp_cor",
-    proteomics_assays = "Serum Proteomics",
+    feature_col = "gene",
     mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA"),
     pval_threshold = 0.05,
     logfc_threshold = log2(1.5))
