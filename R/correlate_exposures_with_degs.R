@@ -3,6 +3,7 @@ correlate_exposures_with_degs <- function(
     expomicset,
     exposure_cols = NULL,
     robust = TRUE,
+    score_thresh = NULL,
     correlation_method = "spearman",
     correlation_cutoff = 0.3,        
     cor_pval_column = "p.value",      
@@ -58,11 +59,28 @@ correlate_exposures_with_degs <- function(
     
     if(robust){
       # Extract relevant robust DEGs for this assay
-      selected_features <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |> 
-        dplyr::filter(stability_score > MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$score_thresh) |>
-        dplyr::filter(exp_name == experiment_name) |> 
-        dplyr::pull(feature) |>
-        unique()
+      # selected_features <- MultiAssayExperiment::metadata(
+      #   expomicset)$sensitivity_analysis$feature_stability |> 
+      #   dplyr::filter(stability_score > MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$score_thresh) |>
+      #   dplyr::filter(exp_name == experiment_name) |> 
+      #   dplyr::pull(feature) |>
+      #   unique()
+      # 
+      if(!is.null(score_thresh)){
+        selected_features <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |> 
+          dplyr::filter(stability_score > score_thresh) |>
+          dplyr::filter(exp_name == experiment_name) |> 
+          dplyr::pull(feature) |>
+          unique()
+      } else{
+        score_thresh <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$score_thresh
+        
+        selected_features <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |> 
+          dplyr::filter(stability_score > score_thresh) |>
+          dplyr::filter(exp_name == experiment_name) |> 
+          dplyr::pull(feature) |>
+          unique()
+      }
       
     }else{
       # Extract relevant DEGs for this assay

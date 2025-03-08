@@ -37,7 +37,6 @@ knitr::opts_chunk$set(echo = TRUE)
 load("../data/expom.RData")
 load("../data/exp_vars.RData")
 load("../data/all_vars.RData")
-load("../data/expom_complete.RData")
 invisible(lapply(
   list.files(path = "~/jhu/projects/tidyexposomics/R/",
              pattern="*.R",full.names = TRUE),
@@ -371,7 +370,7 @@ expom_enrich |>
 ```
 You'll notice that enrichment terms are organized into groups. These groups are based on the Jaccard similarity of genes. We then provide the top 5 groups of enrichment terms based on a score calculated as the mean of the negative Log~10~ of the p-value multiplied by the number of genes in the term. Here we that while allergens are broadly associated with all of the top enrichment term groups, chemicals and indoor pollutants are only consistently associated with RNA splicing.
 
-## Refernces
+## References
 
 1.	Wild, C. P. Complementing the genome with an ‘exposome’: the outstanding challenge of environmental exposure measurement in molecular epidemiology. Cancer Epidemiol. Biomarkers Prev. 14, 1847–1850 (2005).
 2.	Chung, M. K. et al. Decoding the exposome: data science methodologies and implications in exposome-wide association studies (ExWASs). Exposome 4, osae001 (2024).

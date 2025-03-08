@@ -275,3 +275,172 @@ b <- a |>
   map(~ map(.x, ~ t(.x))) |> 
   map(~ map(.x, ~ prcomp(.x)$x[,1])) |> 
   map(~ do.call(cbind, .x))
+
+# --- Testing GO Group PCA ----
+
+a <- MultiAssayExperiment::metadata(expom_enrich)$functional_enrichment |> 
+  pluck("deg_exp_cor") |> 
+  pluck("enrich_res") |> 
+  inner_join(
+    MultiAssayExperiment::metadata(expom_enrich)$functional_enrichment |> 
+      pluck("deg_exp_cor") |> 
+      pluck("go_groups"), 
+    by = "Description") |> 
+  mutate(go_group=paste("Group",go_group,sep="_")) |> 
+  filter(!grepl("miRNA",exp_name))
+
+b <- a |>
+  #filter(go_group %in% c("Group_2")) |> 
+  dplyr::select(exp_name, Cluster, go_group) |> 
+  distinct() |> 
+  pmap(function(exp_name, Cluster, go_group) {
+    
+    # Filter enrichment results
+    df_filt <- a |> 
+      filter(exp_name == !!exp_name,
+             Cluster == !!Cluster, 
+             go_group == !!go_group)
+    
+    # Get genes per GO group
+    genes_per_go_group <- df_filt |> 
+      pull(geneID) |> 
+      str_split("/") |> 
+      unlist() |> 
+      unique()
+    
+    # Get top 3 GO term descriptions
+    top_terms <- df_filt |> 
+      dplyr::pull(Description) |> 
+      unique() |> 
+      head(3) |> 
+      paste(collapse = "; ")
+    
+    # If there are less than 10 genes, skip
+    if(length(genes_per_go_group) < 10) {
+      message(paste("Skipping", exp_name, Cluster, go_group, "- not enough genes"))
+      return(NULL)
+    }
+    
+    # Update assay and colData
+    exp <- .update_assay_colData(expom_enrich, exp_name)
+    
+    # Get assay data
+    assay <- assay(exp)
+    
+    # Filter assay for selected genes
+    assay_filt <- assay[rownames(assay) %in% genes_per_go_group, , drop = FALSE]
+    
+    # Ensure assay_filt has at least 2 features and variance
+    if (nrow(assay_filt) < 2 || all(apply(assay_filt, 1, var) == 0)) {
+      message(paste("Skipping", exp_name, Cluster, go_group, "- insufficient variance in features"))
+      return(NULL)
+    }
+    
+    # Transpose to make samples rows
+    assay_filt <- t(assay_filt)
+    
+    # Apply log transformation to stabilize variance
+    assay_filt <- log2(assay_filt + 1)
+    
+    # Perform PCA safely
+    pca_res <- prcomp(assay_filt, scale. = TRUE)
+    
+    # Create output dataframe
+    pca_res_df <- data.frame(
+      PC_exp_mat = pca_res$x[,1],
+      id_to_map = rownames(pca_res$x)
+    )
+    
+    # Rename PC1 column to indicate the source
+    names(pca_res_df) <- c(paste("PC", exp_name, Cluster, go_group, sep="/"), "id_to_map")
+    
+    # Create dataframe for genes and terms
+    pca_genes_terms_df <- data.frame(
+      term = paste("PC", exp_name, Cluster, go_group, sep="/"),
+      top_terms = top_terms,
+      genes = paste(genes_per_go_group, collapse = ","),
+    )
+    
+    return(list(pca_res_df=pca_res_df,
+                pca_genes_terms_df=pca_genes_terms_df))
+  })
+
+c=b[unlist(purrr:::map(b,~{!is.null(.x)}))]
+
+# d=purrr::reduce(c,inner_join, by = "id_to_map") |> 
+#   inner_join(colData(expom_enrich) |>
+#                as.data.frame() |> 
+#                dplyr::select(fev_height) |> 
+#                rownames_to_column("id_to_map"),
+#              by = "id_to_map") |> 
+#   column_to_rownames("id_to_map")
+
+# # correlate data
+# cor_res <- cor(d, use = "pairwise.complete.obs") |> 
+#   as.data.frame() |> 
+#   rownames_to_column("var1") |> 
+#   pivot_longer(-var1, names_to = "var2", values_to = "correlation") |> 
+#   filter(!is.na(correlation),
+#          var1 != var2) |> 
+#   #mutate(correlation=abs(correlation)) |> 
+#   arrange(correlation) |>
+#   filter(var1=="fev_height")
+  
+# filter list to just the pca_res_df
+c_pca_res_df <- purrr::map(c,~.x$pca_res_df)
+
+# filter list to just the pca_genes_terms_df
+c_pca_genes_terms_df <- purrr::map(c,~.x$pca_genes_terms_df) |> 
+  bind_rows()
+
+
+e <- purrr::reduce(c_pca_res_df,inner_join, by = "id_to_map") |> 
+  inner_join(colData(expom_enrich) |>
+               as.data.frame() |> 
+               dplyr::select(fev_height,age,sex,race,smoking) |> 
+               rownames_to_column("id_to_map"),
+             by = "id_to_map") |> 
+  column_to_rownames("id_to_map")
+
+#colnames(e) <- gsub(" |\\+|\\.|\\-","_",colnames(e))
+
+pc_cols <- colnames(e)[grepl("PC/",colnames(e))]
+
+e <- e |> 
+  mutate(across(c(pc_cols,fev_height), ~ as.numeric(scale(.x))))
+
+pc_assoc_res <- purrr::map(
+  pc_cols,
+  function(pc_col) {
+    # Create a placeholder column
+    e$placeholder_col <- e[[pc_col]]
+      
+    model <- glm(
+      as.formula(paste("fev_height ~ placeholder_col+age+sex+race+smoking")),data = e)
+    
+    return(broom::tidy(model) |> 
+             mutate(term=ifelse(term=="placeholder_col",pc_col,term)))
+  }
+) |> 
+  bind_rows() |> 
+  filter(grepl("PC/",term)) |> 
+  inner_join(c_pca_genes_terms_df, by = c("term"="term")) 
+
+
+# gam_assoc_res <- purrr::map(
+#   pc_cols,
+#   function(pc_col) {
+#     
+#     # Create a placeholder column
+#     e$placeholder_col <- e[[pc_col]]
+#     
+#     model <- gam(
+#       as.formula(paste("fev_height ~ s(placeholder_col) + age + sex + race")), # s() applies a smooth function
+#       data = e,
+#       method = "REML"
+#     )
+#     return(broom::tidy(model) |> 
+#              mutate(term=ifelse(term=="s(placeholder_col)",pc_col,term)))
+#   }
+# ) |> 
+#   bind_rows()

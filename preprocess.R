@@ -373,12 +373,12 @@ prot_abd_unnorm <- prot_abd |>
 adduct_long <- readRDS("~/jhu/projects/exposomePilot/data/Adductomics/FennaExposome_long.rds")
 
 adduct <- adduct_long |> 
-  dplyr::select(IonIntQuant_key,Subject,ProtNorm_IonIntensity) |> 
+  dplyr::select(IonIntQuant_key,Subject,Raw_IonIntensity) |> 
   mutate(Subject=paste("s",Subject,sep="")) |> 
   filter(Subject %in% aw_dataset_cv2_filt$aw_id) |> 
   pivot_wider(
     names_from = Subject,
-    values_from = ProtNorm_IonIntensity
+    values_from = Raw_IonIntensity
   ) |> 
   column_to_rownames("IonIntQuant_key") 
 

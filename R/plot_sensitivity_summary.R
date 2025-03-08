@@ -1,5 +1,6 @@
 plot_sensitivity_summary <- function(
     expomicset,
+    stability_score_thresh = NULL,
     title="Distribution of Stability Scores"){
   
   if(!"sensitivity_analysis" %in% names(expomicset@metadata)){
@@ -46,7 +47,11 @@ plot_sensitivity_summary <- function(
          #x = paste("No. of Differentially", "Abundant Features",sep="\n")
          ) 
   
-  score_thresh <- expomicset@metadata$sensitivity_analysis$score_thresh
+  if(is.null(stability_score_thresh)){
+    stability_score_thresh <- expomicset@metadata$sensitivity_analysis$score_thresh
+  } else{
+    stability_score_thresh <- stability_score_thresh
+  }
   
   sensitivity_ridgeplot <- expomicset@metadata$sensitivity_analysis$feature_stability |>
     left_join(sensitivity_sum, by="exp_name") |>
@@ -57,7 +62,7 @@ plot_sensitivity_summary <- function(
     geom_density_ridges()+
     scale_fill_npg()+
     theme_minimal()+
-    geom_vline(xintercept=score_thresh,
+    geom_vline(xintercept=stability_score_thresh,
                linetype="dashed",
                color="grey55")+
     theme(plot.title = element_text(face = "bold.italic"),
@@ -67,6 +72,22 @@ plot_sensitivity_summary <- function(
          y="",
          title = title)
   
+  sensitivity_sum <- expomicset@metadata$sensitivity_analysis$feature_stability |>
+    group_by(exp_name) |>
+    dplyr::summarise(
+      n_above=length(stability_score[stability_score>12]),
+      total=n()) |> 
+    arrange(desc(total))
+  
+  message("Number of Features with Stability Score > ",stability_score_thresh,":")
+  for(i in 1:nrow(sensitivity_sum)){
+    message(
+      sensitivity_sum$exp_name[i],
+      ": ",
+      sensitivity_sum$n_above[i],
+      " / ",
+      sensitivity_sum$total[i])
+  }
   
   return((sensitivity_ridgeplot|sensitivity_bar)+plot_layout(widths = c(3,1)))
 }
