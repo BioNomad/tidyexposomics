@@ -49,40 +49,42 @@ expom_qc <- expom |>
   filter_missing(na_thresh = 20) |>
   
   # Impute missing values
-  impute_missing(
+  run_impute_missing(
     exposure_impute_method = "median",
     omics_impute_method = "median") |> 
   
   # Principal component analysis
-  pca_analysis() |> 
+  run_pca_analysis() |> 
   
   # Check Variable Normality
-  check_normality() 
+  run_normality_check() 
   
   # Transform Variables 
-  transform_exposure(transform_method = "best") 
+expom_qc <- expom_qc |> 
+  transform_exposure(transform_method = "best",
+                     cols_of_interest = exp_vars) 
 
 # --- Sample Clustering and ExWAS Analysis ----
 expom_sample_exp <- expom_qc |> 
   # Sample Clustering
-  cluster_samples(exposure_cols = exp_vars,
-                  clustering_approach = "diana") |> 
+  run_cluster_samples(exposure_cols = exp_vars,
+                  clustering_approach = "dynamic") |> 
   
   # Perform ExWAS Analysis
-  perform_exwas(
+  associate_exposure_outcome(
     outcome = "fev_height",
     exposures = all_vars[
       !all_vars %in% c("fev_height",
                        "age",
                        "sex",
                        "race")],
-    covariates = c("age","sex","race",)) 
+    covariates = c("age","sex","race")) 
 
 # Plot Sample Clustering Results
 expom_sample_exp |> plot_sample_clusters(cols_of_interest = exp_vars)
 
 # Plot ExWAS Results
-expom_sample_exp |> plot_exp_outcome_association(filter_col = "p.value",filter_thresh = 0.1)
+expom_sample_exp |> plot_associate_exposure_outcome(filter_col = "p.value",filter_thresh = 0.1)
 
 # --- Differential Abundance Analysis ----
 expom_da <- expom_sample_exp |> 
@@ -110,55 +112,70 @@ expom_da <- expom_da |>
     min_proportion_range = c(0.1,0.3),
     covariates_to_remove = c("age" , "sex" , "race")) 
 
-expom_da |> plot_sensitivity_summary()
+# Plot sensitivity analysis results
+expom_da |> plot_sensitivity_summary(stability_score_thresh = 12)
 
 # --- Multi-Omics Integration --------------------
 expom_multi <- expom_da |> 
   # Perform Multi-Omics Integration
-  multiomics_integration(method = "MCIA") |> 
+  run_multiomics_integration(method = "MCIA") |> 
   
   # Identify factors that correlate with the outcome
-  identify_relevant_factors(outcome_var = "fev_height", 
+  associate_factor_outcome(outcome_var = "fev_height", 
                             categorical = FALSE,
                             p_thresh = 1) 
 
+# Extract top features that contribute to a factor
 expom_multi <- expom_multi |> 
   extract_top_factor_features(factors = "V6", 
                               method = "percentile",
                               percentile = 0.95,
                               threshold = 0.3) 
 
+# Plot multi-omics factor summary
 expom_multi |> plot_factor_summary()
 
 # --- Exposure-Omic Correlation Analysis --------------------
 expom_multi <- expom_multi |> 
   
   # Identify DEGs that correlate with exposures
-  correlate_exposures_with_degs(exposure_cols = exp_vars,
+  correlate_exposures_degs(exposure_cols = exp_vars,
                                 robust = TRUE,
                                 score_thresh = 12) |> 
   
   # Identify DEGs that correlate with factors
-  correlate_exposures_with_factors(exposure_cols = exp_vars) 
+  correlate_exposures_factors(exposure_cols = exp_vars) 
 
 # Plot Exposure-Omic Correlation Results
-expom_multi |> plot_exp_feature_assoc_summary()
+expom_multi |> plot_bar_correlate_summary()
 
 # Plot Shared Feature Correlations Between Exposures
-expom_multi |> plot_shared_exp_features(geneset = "degs")
+expom_multi |> plot_circos_exposure_shared_features(geneset = "degs")
 
 # --- Functional Enrichment Analysis --------------------
 expom_enrich <- expom_multi |> 
   # Perform Functional Enrichment Analysis
-  run_functional_enrichment(
+  run_enrichment(
     geneset = "deg_exp_cor",
     feature_col = "gene",
     mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA"),
     pval_threshold = 0.05,
     logfc_threshold = log2(1.5))
 
+expom_enrich <- expom_enrich |> 
+  # Identify GO Groups that correlate with the outcome
+  associate_go_outcome(
+    geneset = "deg_exp_cor",
+    outcome = "fev_height",
+    mirna_assays = c("CD4+ T-cell miRNA","CD16+ Monocyte miRNA"),
+    covariates = c("age","sex","race")
+  )
+
+# Plot GO Group Eigengene, Outcome Association
+expom_enrich |> plot_associate_go_outcome(direction_filter = "down",filter_thresh = 0.15)
+
 # Plot Functional Enrichment Results
-expom_enrich |> plot_exp_enrich_dotplot(geneset = "deg_exp_cor")
+expom_enrich |> plot_dotplot_enrichment(geneset = "deg_exp_cor",go_groups=c("3","8","28","6","5","20","11","29","18","16","17"))
 
 # --- Test Functionality -------------------
 expom_enrich |> pivot_sample()
