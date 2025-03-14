@@ -11,6 +11,10 @@ The `tidyexposomics` package is designed to facilitate the integration of exposu
 
 <img src="./inst/overview.png" alt="drawing" width="600" align="center"/>
 
+<p align="center" width="100%">
+    <img width="60%" src="./inst/overview.png"> 
+</p>
+
 ## Installation
 
 You can install the development version of `tidyexposomics` from GitHub with:
