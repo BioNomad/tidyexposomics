@@ -38,4 +38,4 @@ We provide functionality to either add results to the existing object storing th
 
 `tidyexposomics` tutorials and documentation can be found at:
 
-[LINK TO bE INSERTED LATER]
+[LINK TO BE INSERTED LATER]
