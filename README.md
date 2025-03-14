@@ -33,3 +33,9 @@ To make the package more user-friendly, we have named our functions to be more i
 - `filter_*`, `transform_*`, `extract_*`, and `pivot_*` Data pre-processing steps
 
 We provide functionality to either add results to the existing object storing the omics/exposure data or to return the direct results using the get option. We suggest adding results, as we also include a run_bibliography function to generate a bibliography of the workflow. This is useful for keeping track of the pipeline steps.
+
+## Tutorial
+
+`tidyexposomics` tutorials and documentation can be found at:
+
+[LINK TO bE INSERTED LATER]
