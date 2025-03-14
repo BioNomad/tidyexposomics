@@ -2,12 +2,12 @@
     "sortOrder": [
         {
             "columnIndex": 4,
-            "ascending": false
+            "ascending": true
         },
         {
             "columnIndex": 2,
-            "ascending": true
+            "ascending": false
         }
     ],
-    "path": "~/jhu/projects/tidyexposomics"
+    "path": "~/jhu/projects/tidyexposomics/vignettes"
 }
