@@ -4,8 +4,14 @@ author: Jason Laird
 date: "Compiled: `r format(Sys.time(), '%B %d, %Y')`"
 output:
   BiocStyle::html_document:
-    toc_float: true
+    dev: "jpeg"
+    df_print: kable
+    fig_retina: 1
+    self_contained: yes
+    number_sections: FALSE
     toc_depth: 3
+    toc_float: TRUE
+    css: styles.css
 vignette: >
   %\VignetteIndexEntry{tidyexposomics: integrated exposure-omics analysis powered by the tidyverse}
   %\VignetteEngine{knitr::rmarkdown}

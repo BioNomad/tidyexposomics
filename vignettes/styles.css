@@ -1,5 +1,44 @@
 body {
-  font-size: 14px;  /* Adjust size as needed */
+  font-size: 15px;
 }
 
+h1 {
+  color: rgb(30,12,31);
+  font-size: 26px;
+}
 
+.title {
+  margin-right: 200px;
+  color: rgb(30,12,31);
+}
+
+h2 {
+  color: rgb(30,12,31);
+  font-size: 22px;
+}
+
+.main-container {
+  max-width: 65% !important;
+  margin: auto;
+}
+
+hr {
+  color: #71255A;
+}
+
+.tocify {
+    left: 100px !important; /* Adjust this value as needed */
+}
+
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+    background-color: #71255A;
+}
+
+.watermark {
+  opacity: 0.2;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  font-size: 500%;
+  color: #71255A;
+}

@@ -1,3 +1,42 @@
+#' Extract Top Contributing Features for Factors
+#'
+#' Identifies the most influential features for specified factors using MOFA+ or MCIA 
+#' integration results. Features are selected based on either a percentile cutoff 
+#' or an absolute loading threshold.
+#'
+#' @param expomicset A `MultiAssayExperiment` object containing integration results.
+#' @param factors A character vector specifying the factors of interest.
+#' @param method A character string specifying the feature selection method (`"percentile"` or `"threshold"`). Default is `"percentile"`.
+#' @param percentile A numeric value between 0 and 1 indicating the percentile threshold for feature selection when `method = "percentile"`. Default is `0.9`.
+#' @param threshold A numeric value specifying the absolute loading cutoff for feature selection when `method = "threshold"`. Default is `0.3`.
+#' @param action A character string indicating whether to return results (`"get"`) or add them to metadata (`"add"`). Default is `"add"`.
+#'
+#' @details
+#' The function extracts factor loadings from `metadata(expomicset)`, applies filtering based on 
+#' the selected method, and identifies top contributing features for each specified factor. 
+#' Features can be selected using:
+#' - **Percentile-based filtering** (`method = "percentile"`): Selects features with absolute loadings above a specified percentile.
+#' - **Threshold-based filtering** (`method = "threshold"`): Selects features with absolute loadings exceeding a fixed value.
+#'
+#' @return If `action = "add"`, returns the modified `expomicset` with selected features stored in metadata.
+#' If `action = "get"`, returns a data frame containing:
+#' \item{feature}{The selected feature contributing to the factor.}
+#' \item{factor}{The factor to which the feature contributes.}
+#' \item{loading}{The factor loading value of the feature.}
+#' \item{exp_name}{The experiment from which the feature originated.}
+#'
+#' @examples
+#' \dontrun{
+#' results <- extract_top_factor_features(
+#'   expomicset = expom,
+#'   factors = c("Factor1", "Factor2"),
+#'   method = "percentile",
+#'   percentile = 0.9,
+#'   action = "get"
+#' )
+#' }
+#'
+#' @export
 extract_top_factor_features <- function(
     expomicset, 
     factors, 
@@ -5,14 +44,11 @@ extract_top_factor_features <- function(
     percentile = 0.9, 
     threshold = 0.3,
     action = "add") {
-  require(dplyr)
-  require(tidyr)
-  require(purrr)
   
   message("Extracting top contributing features for specified factors...")
   
   # Get integration results
-  integration_results <- metadata(expomicset)$integration_results
+  integration_results <- MultiAssayExperiment::metadata(expomicset)$integration_results
   method_used <- integration_results$method
   
   # Extract factor loadings based on method
@@ -70,7 +106,7 @@ extract_top_factor_features <- function(
       "Applying raw threshold-based filtering (>|",
       threshold,
       "|)...")
-    factor_thresholds <- dplyr::tibble(
+    factor_thresholds <- tibble::tibble(
       factor = unique(loadings_df$factor),
       threshold = threshold)
   } else {
@@ -78,8 +114,8 @@ extract_top_factor_features <- function(
   }
   
   # Merge computed thresholds with loadings
-  loadings_df <- left_join(
-    loadings_df, 
+  loadings_df <- loadings_df |> 
+    dplyr::left_join(
     factor_thresholds, 
     by = "factor")
   
@@ -90,7 +126,7 @@ extract_top_factor_features <- function(
                   factor,
                   loading,
                   exp_name) |>
-    distinct()
+    dplyr::distinct()
   
   message("Selected ",
           nrow(filtered_features), 

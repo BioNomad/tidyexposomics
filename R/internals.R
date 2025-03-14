@@ -1,9 +1,15 @@
 # --- Update Assay ColData ------
+
+#' Update Assay colData in a MultiAssayExperiment
+#'
+#' Synchronizes the sample metadata (`colData`) of a specific assay with the global `colData`
+#' from a `MultiAssayExperiment` object.
+#'
+#' @keywords internal
+#' @noRd
 .update_assay_colData <- function(expomicset, 
                                   exp_name) {
-  require(MultiAssayExperiment)
-  require(tidyverse)
-  
+
   # Retrieve the assay
   assay <- MultiAssayExperiment::experiments(expomicset)[[exp_name]]
   
@@ -27,9 +33,47 @@
   return(assay)
 }
 
-
+# --- Scale MultiAssayExperiment Assays --------
+#' Scale Assays in a MultiAssayExperiment
+#'
+#' Standardizes each assay in a `MultiAssayExperiment` object using Z-score scaling.
+#'
+#' @keywords internal
+#' @noRd
+.scale_multiassay <- function(expomicset) {
+  
+  message("Scaling each assay in MultiAssayExperiment...")
+  
+  # Apply scaling to each assay
+  scaled_experiments <- lapply(MultiAssayExperiment::experiments(expomicset),
+                               function(assay_obj) {
+    if (inherits(assay_obj, "SummarizedExperiment")) {
+      assay_mat <- SummarizedExperiment::assay(assay_obj)
+      scaled_mat <- scale(assay_mat)  # Standardize (Z-score)
+      SummarizedExperiment::assay(assay_obj) <- scaled_mat
+      return(assay_obj)
+    } else if (is.matrix(assay_obj)) {
+      return(scale(assay_obj))  # Directly scale matrices
+    } else {
+      stop("Unsupported assay type. Only SummarizedExperiment and matrices are supported.")
+    }
+  })
+  
+  # Create a new MultiAssayExperiment with scaled data
+  scaled_expomicset <- MultiAssayExperiment::MultiAssayExperiment(
+    experiments = scaled_experiments, 
+    colData = MultiAssayExperiment::colData(expomicset),
+    metadata = MultiAssayExperiment::metadata(expomicset))
+  
+  return(scaled_expomicset)
+}
 # --- Run Differential Abundance Analysis ------
-
+#' Run Differential Abundance Analysis on a SummarizedExperiment
+#'
+#' Performs differential abundance analysis using `tidybulk`, with optional contrast testing.
+#'
+#' @keywords internal
+#' @noRd
 .run_se_differential_abundance <- function(
     se,  
     formula,  
@@ -40,13 +84,13 @@
     min_proportion = 0.3,
     contrasts = NULL
 ) {
-  require(tidybulk)
-  require(tidyverse)
-  
-  # --- Run differential expression analysis -----
+
+  # Check for contrast input
   if (!is.null(contrasts)) {
     res_list <- list()
     for (contrast in contrasts) {
+      
+      # Run differential abundance analysis
       contrast_results <- se |>
         tidybulk::identify_abundant(minimum_counts = min_counts,
                           minimum_proportion = min_proportion) |>
@@ -78,8 +122,9 @@
     return(dplyr::bind_rows(res_list))
   } else {
     contrast_results <- se |>
-      tidybulk::identify_abundant(minimum_counts = min_counts,
-                        minimum_proportion = min_proportion) |>
+      tidybulk::identify_abundant(
+        minimum_counts = min_counts,
+        minimum_proportion = min_proportion) |>
       tidybulk::test_differential_abundance(
         formula,
         .abundance = !!sym(abundance_col),
@@ -107,6 +152,12 @@
 }
 
 # --- Calculate Feature Stability -------
+#' Calculate Feature Stability Across Sensitivity Conditions
+#'
+#' Computes a stability score for features based on their significance across multiple sensitivity tests.
+#'
+#' @keywords internal
+#' @noRd
 .calculate_feature_stability <- function(sensitivity_df, 
                                          pval_col = "adj.P.Val",
                                          logfc_col = "logFC",
@@ -131,7 +182,12 @@
 }
 
 # --- Correlate Se with colData --------
-
+#' Correlate SummarizedExperiment Features with Exposure Variables
+#'
+#' Computes correlations between assay features and exposure variables using Spearman or other correlation methods.
+#'
+#' @keywords internal
+#' @noRd
 .correlate_se_with_coldata <- function(
     se,  
     exposure_cols,  
@@ -147,7 +203,7 @@
   message("Performing correlation analysis on summarized experiment...")
   
   # Ensure colData has the specified exposures
-  exposure_data <- MultiAssayExperiment::colData(se) |> 
+  exposure_data <- SummarizedExperiment::colData(se) |> 
     as.data.frame()
   
   numeric_exposures <- intersect(colnames(exposure_data), exposure_cols)
@@ -177,7 +233,7 @@
     tibble::rownames_to_column("id") |> 
     dplyr::inner_join(
       exposure_data |> 
-        rownames_to_column("id"),
+        tibble::rownames_to_column("id"),
       by = "id") |> 
     tibble::column_to_rownames("id")
   
@@ -216,39 +272,34 @@
   
   return(correlation_results)
 }
-# --- Convert Uniprot to Symbol ------
-
-.convert_uniprot_to_symbol <- function(uniprot_ids) {
-  require(biomaRt)
-  mart <- biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-  gene_map <- biomaRt::getBM(
-    attributes = c("uniprot_gn_id", "hgnc_symbol"),
-                    filters = "uniprot_gn_id",
-                    values = uniprot_ids,
-                    mart = mart)
-  return(gene_map)
-}
 
 # --- Get miRNA Targets ----------
-
+#' Retrieve miRNA Target Genes from Omnipath
+#'
+#' Queries the Omnipath database to extract target genes for specified miRNAs.
+#'
+#' @keywords internal
+#' @noRd
 .get_mirna_targets <- function(mirnas) {
-  # approach using multimir
-  # targets <- get_multimir(org = "hsa", mirna = mirnas, table = "validated")
-  # return(targets@data$target_symbol)
-  
   # pull omnipath database
-  require(OmnipathR)
   mirna_db <- OmnipathR::import_mirnatarget_interactions()
   mirna_targets <- mirna_db |>
     dplyr::filter(source_genesymbol %in% mirnas) |>
     dplyr::select(source_genesymbol,target_genesymbol)
   return(mirna_targets)
 }
+
 # --- Differential Abundance Exposure Functional Enrichment ------------
+#' Perform Functional Enrichment Analysis on Differentially Abundant Features
+#'
+#' Conducts enrichment analysis for differentially abundant features correlated with exposures,
+#' integrating miRNA target mapping and pathway annotation.
+#'
+#' @keywords internal
+#' @noRd
 .da_exposure_functional_enrichment <- function(
     expomicset,
     feature_col="feature",
-    proteomics_assays = NULL, 
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
     pval_threshold = 0.05,
@@ -261,23 +312,22 @@
     OrgDb = 'org.Hs.eg.db',
     keyType = "SYMBOL",
     ont = "BP") {
-  require(clusterProfiler)
-  require(biomaRt)
-  require(tidyverse)
-  require(org.Hs.eg.db)
   
-  
+  # Check for differential abundance results
   if (!"differential_abundance" %in% names(MultiAssayExperiment::metadata(expomicset))) {
     stop("Please run `run_differential_abundance() first.`")
   }
   
+  # Check for correlation results
   if (!"omics_exposure_deg_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))) {
     stop("Please run `correlate_exposures_with_degs() first.`")
   }
   
+  # Extract differential abundance and correlation results
   da_res <- MultiAssayExperiment::metadata(expomicset)$differential_abundance
   da_cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation
   
+  # Filter and merge results based on p-value and logFC thresholds
   da_res_cor_merged <- da_res |>
     dplyr::filter(!!sym(pval_col) < pval_threshold) |>
     dplyr::filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
@@ -292,6 +342,7 @@
     dplyr::mutate(feature_col=!!sym(feature_col)) 
   
   if (!is.null(mirna_assays)){
+    # Retrieve miRNA target genes and merge with differential abundance results
     mirna_df <- da_res_cor_merged |>
       dplyr::filter(exp_name %in% mirna_assays) |>
       (\(df) split(df,df$exp_name))() |>
@@ -307,56 +358,39 @@
       dplyr::select(-source_genesymbol) |>
       dplyr::rename(feature_col=target_genesymbol)
     
+    # Combine results with miRNA target df
     da_res_cor_merged_mapped <- da_res_cor_merged |>
       dplyr::filter(!exp_name %in% 
-                      c(mirna_assays,proteomics_assays)) |>
+                      c(mirna_assays)) |>
       dplyr::bind_rows(mirna_df)
   } else{
     da_res_cor_merged_mapped <- da_res_cor_merged
   }
   
-  
-  
-  # prot_df <- .convert_uniprot_to_symbol(da_res_cor_merged |>
-  #                                         dplyr::filter(exp_name %in% proteomics_assays) |>
-  #                                         dplyr::pull(feature_col)) |>
-  #   dplyr::inner_join(da_res_cor_merged,
-  #              by=c("uniprot_gn_id"=feature_col)) |>
-  #   dplyr::select(-uniprot_gn_id) |>
-  #   dplyr::rename(feature_col=hgnc_symbol)
-  
-  
-  # da_res_cor_merged_mapped <- da_res_cor_merged |>
-  #   dplyr::filter(!exp_name %in% 
-  #                   c(mirna_assays,proteomics_assays)) |>
-  #   dplyr::bind_rows(mirna_df,prot_df)
-  
-  
+  # Establish the universe of features for each assay
   universe_per_assay <- as.list(unique(da_res_cor_merged$exp_name)) |>
     purrr::map( ~
            {
            if (.x %in% mirna_assays) {
+             # Retrieve features for each assay
              df <- data.frame(all_features=
                                 MultiAssayExperiment::experiments(expomicset)[[.x]] |>
                                 rownames(),
                               exp_name=.x)
              
+             # Get miRNA target genes
              all_targets <- .get_mirna_targets(df$all_features) |>
                dplyr::pull(target_genesymbol)
              
+             # Create a dataframe with target genes and other features
              df <- data.frame(all_features=all_targets,
                               exp_name=.x)
-           } else if (.x %in% proteomics_assays){
-             all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
-               dplyr::pull(hgnc_symbol)
-             
-             df <- data.frame(all_features=all_targets,
-                              exp_name=.x)
-           }else{
+           } else{
+             # Extract features for universe based on feature_col
              df <- data.frame(all_features=
                                 MultiAssayExperiment::experiments(expomicset)[[.x]] |>
-                                pivot_transcript() |> 
-                                mutate(feature=.feature) |> 
+                                tidybulk::pivot_transcript() |> 
+                                dplyr::mutate(feature=.feature) |> 
                                 dplyr::pull(!!sym(feature_col)),
                               exp_name=.x)
            }
@@ -365,7 +399,7 @@
     dplyr::bind_rows() 
                  
   
-  
+  # Perform functional enrichment analysis using compareCluster
   enrich_res <- da_res_cor_merged_mapped |>
     (\(df) split(df,df$exp_name))() |>
     purrr::map(~ {
@@ -378,8 +412,8 @@
         keyType = keyType,
         ont = ont,
         universe = universe_per_assay |>
-          filter(exp_name==unique(.x$exp_name)) |>
-          pull(all_features),
+          dplyr::filter(exp_name==unique(.x$exp_name)) |>
+          dplyr::pull(all_features),
         pAdjustMethod = pAdjustMethod,
         pvalueCutoff = pvalueCutoff,
         qvalueCutoff = qvalueCutoff
@@ -401,10 +435,16 @@
 }
 
 # --- Differential Abundance Functional Enrichment ------------
+#' Perform Functional Enrichment Analysis on Differentially Abundant Features
+#'
+#' Conducts pathway enrichment analysis for differentially abundant features,
+#' integrating miRNA target mapping when applicable.
+#'
+#' @keywords internal
+#' @noRd
 .da_functional_enrichment <- function(
     expomicset,
     feature_col="feature",
-    proteomics_assays = NULL, 
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
     pval_threshold = 0.05,
@@ -422,11 +462,12 @@
   require(tidyverse)
   require(org.Hs.eg.db)
   
-  
+  # Check for differential abundance results
   if (!"differential_abundance" %in% names(expomicset@metadata)) {
     stop("Please run `run_differential_abundance() first.`")
   }
   
+  # Filter and merge results based on p-value and logFC thresholds
   da_res <- MultiAssayExperiment::metadata(expomicset)$differential_abundance |>
     dplyr::filter(!!sym(pval_col) < pval_threshold) |>
     dplyr::filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
@@ -438,6 +479,7 @@
     dplyr::mutate(feature_col=!!sym(feature_col))
   
   if (!is.null(mirna_assays)) {
+    # Retrieve miRNA target genes and merge with differential abundance results
     mirna_df <- da_res |>
       filter(exp_name %in% mirna_assays) |>
       (\(df) split(df,df$exp_name))() |>
@@ -453,10 +495,7 @@
       dplyr::select(-source_genesymbol) |>
       dplyr::rename(feature_col=target_genesymbol)
     
-    # da_res_mapped <- da_res |>
-    #   dplyr::filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
-    #   dplyr::bind_rows(mirna_df,prot_df)
-    
+    # Combine results with miRNA target df
     da_res_mapped <- da_res |>
       dplyr::filter(!exp_name %in% c(mirna_assays)) |>
       dplyr::bind_rows(mirna_df)
@@ -464,40 +503,26 @@
     da_res_mapped <- da_res 
   }
   
-  # prot_df <- .convert_uniprot_to_symbol(
-  #   da_res |>
-  #     dplyr::filter(exp_name %in% proteomics_assays) |>
-  #     dplyr::pull(feature)) |>
-  #   dplyr::inner_join(da_res,
-  #              by=c("uniprot_gn_id"="feature")) |>
-  #   dplyr::select(-uniprot_gn_id) |>
-  #   dplyr::rename(feature=hgnc_symbol)
-  
-  
 
-  
-  
   universe_per_assay <- as.list(unique(da_res_cor_merged$exp_name)) |>
     purrr::map( ~
                   {
                     if (.x %in% mirna_assays) {
+                      # Retrieve features for each assay
                       df <- data.frame(all_features=
                                          MultiAssayExperiment::experiments(expomicset)[[.x]] |>
                                          rownames(),
                                        exp_name=.x)
                       
+                      # Get miRNA target genes
                       all_targets <- .get_mirna_targets(df$all_features) |>
                         dplyr::pull(target_genesymbol)
                       
+                      # Create a dataframe with target genes and other features
                       df <- data.frame(all_features=all_targets,
                                        exp_name=.x)
-                    } else if (.x %in% proteomics_assays){
-                      all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
-                        dplyr::pull(hgnc_symbol)
-                      
-                      df <- data.frame(all_features=all_targets,
-                                       exp_name=.x)
-                    }else{
+                    } else{
+                      # Extract features for universe based on feature_col
                       df <- data.frame(all_features=
                                          MultiAssayExperiment::experiments(expomicset)[[.x]] |>
                                          pivot_transcript() |> 
@@ -509,7 +534,7 @@
     ) |>
     dplyr::bind_rows() 
   
-  
+  # Perform functional enrichment analysis using compareCluster
   enrich_res <- da_res_mapped |>
     (\(df) split(df,df$exp_name))() |>
     map(~ {
@@ -545,10 +570,16 @@
 }
 
 # --- Factor Feature Exposure Functional Enrichment ----------
+#' Perform Functional Enrichment Analysis on Factor-Associated Features
+#'
+#' Conducts enrichment analysis for top factor-contributing features correlated with exposures,
+#' integrating miRNA target mapping when applicable.
+#'
+#' @keywords internal
+#' @noRd
 .factor_exposure_functional_enrichment <- function(
     expomicset,
-    feature_col="feature",
-    proteomics_assays = NULL, 
+    feature_col="feature", 
     mirna_assays = NULL,
     pAdjustMethod = "fdr",
     pvalueCutoff = 0.05,
@@ -557,100 +588,101 @@
     OrgDb = 'org.Hs.eg.db',
     keyType = "SYMBOL",
     ont = "BP") {
-  require(clusterProfiler)
-  require(biomaRt)
-  require(tidyverse)
-  require(org.Hs.eg.db)
-  
-  
-  if (!"top_factor_features" %in% names(expomicset@metadata)) {
+
+  # Check for top factor features and correlation results
+  if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset))) {
     stop("Please run `extract_top_factor_features() first.`")
   }
   
-  if (!"omics_exposure_factor_correlation" %in% names(expomicset@metadata)) {
+  if (!"omics_exposure_factor_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))) {
     stop("Please run `correlate_exposures_with_factors() first.`")
   }
   
-  factor_res <- expomicset@metadata$top_factor_features
-  factor_cor_res <- expomicset@metadata$omics_exposure_factor_correlation
+  # Extract factor results and correlation results
+  factor_res <- MultiAssayExperiment::metadata(expomicset)$top_factor_features
+  factor_cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_factor_correlation
   
+  # Filter and merge results based on p-value and logFC thresholds
   factor_res_cor_merged <- factor_res |>
     dplyr::select(feature,
                   exp_name) |>
-    inner_join(factor_cor_res,
+    dplyr::inner_join(factor_cor_res,
                by=c("feature",
-                    "exp_name"))
+                    "exp_name")) |> 
+    dplyr::inner_join(pivot_feature(expomicset),
+               by=c("feature"=".feature",
+                    "exp_name"=".exp_name")) |> 
+    dplyr::mutate(feature_col=!!sym(feature_col)) 
   
+  if(!is.null(mirna_assays)){
+    # Retrieve miRNA target genes and merge with factor results
+    mirna_df <- factor_res_cor_merged |>
+      dplyr::filter(exp_name %in% mirna_assays) |>
+      (\(df) split(df,df$exp_name))() |>
+      map(~ .get_mirna_targets(
+        .x |> 
+          dplyr::pull(feature))) |>
+      dplyr::bind_rows(.id="exp_name") |>
+      dplyr::inner_join(factor_res_cor_merged,
+                 by=c("source_genesymbol"="feature",
+                      "exp_name")) |>
+      dplyr::select(-source_genesymbol) |>
+      dplyr::rename(feature=target_genesymbol)
+    
+    # Combine results with miRNA target df
+    factor_res_cor_merged_mapped <- factor_res_cor_merged |>
+      dplyr::filter(!exp_name %in% c(mirna_assays)) |>
+      dplyr::bind_rows(mirna_df)
+  }else{
+    factor_res_cor_merged_mapped <- factor_res_cor_merged
+  }
   
-  mirna_df <- factor_res_cor_merged |>
-    filter(exp_name %in% mirna_assays) |>
-    (\(df) split(df,df$exp_name))() |>
-    map(~ .get_mirna_targets(.x |> 
-                               pull(feature))) |>
-    bind_rows(.id="exp_name") |>
-    inner_join(factor_res_cor_merged,
-               by=c("source_genesymbol"="feature",
-                    "exp_name")) |>
-    dplyr::select(-source_genesymbol) |>
-    dplyr::rename(feature=target_genesymbol)
-  
-  
-  
-  prot_df <- .convert_uniprot_to_symbol(factor_res_cor_merged |>
-                                          filter(exp_name %in% proteomics_assays) |>
-                                          pull(feature)) |>
-    inner_join(factor_res_cor_merged,
-               by=c("uniprot_gn_id"="feature")) |>
-    dplyr::select(-uniprot_gn_id) |>
-    dplyr::rename(feature=hgnc_symbol)
-  
-  
-  factor_res_cor_merged_mapped <- factor_res_cor_merged |>
-    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
-    bind_rows(mirna_df,prot_df)
-  
-  
+  # Establish the universe of features for each assay
   universe_per_assay <- as.list(unique(factor_res_cor_merged$exp_name)) |>
-    map( ~
-           {df <- data.frame(all_features=
-                               experiments(expomicset)[[.x]] |>
-                               rownames(),
-                             exp_name=.x)
-           
-           if (.x %in% mirna_assays) {
-             all_targets <- .get_mirna_targets(df$all_features) |>
-               pull(target_genesymbol)
-             
-             df <- data.frame(all_features=all_targets,
-                              exp_name=.x)
-           } else if (.x %in% proteomics_assays){
-             all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
-               pull(hgnc_symbol)
-             
-             df <- data.frame(all_features=all_targets,
-                              exp_name=.x)
-           }else{
-             df <- df
-           }
-           return(df)}
+    purrr::map( ~
+                  {
+                    if (.x %in% mirna_assays) {
+                      # Retrieve features for each assay
+                      df <- data.frame(all_features=
+                                         MultiAssayExperiment::experiments(expomicset)[[.x]] |>
+                                         rownames(),
+                                       exp_name=.x)
+                      
+                      # Get miRNA target genes
+                      all_targets <- .get_mirna_targets(df$all_features) |>
+                        dplyr::pull(target_genesymbol)
+                      
+                      # Create a dataframe with target genes and other features
+                      df <- data.frame(all_features=all_targets,
+                                       exp_name=.x)
+                    } else{
+                      # Extract features for universe based on feature_col
+                      df <- data.frame(all_features=
+                                         MultiAssayExperiment::experiments(expomicset)[[.x]] |>
+                                         tidybulk::pivot_transcript() |> 
+                                         dplyr::mutate(feature=.feature) |> 
+                                         dplyr::pull(!!sym(feature_col)),
+                                       exp_name=.x)
+                    }
+                    return(df)}
     ) |>
-    bind_rows()
+    dplyr::bind_rows()
   
-  
+  # Perform functional enrichment analysis using compareCluster
   enrich_res <- factor_res_cor_merged_mapped |>
     (\(df) split(df,df$exp_name))() |>
     map(~ {
       message("Working on: ",unique(.x$exp_name))
       enrich <- compareCluster(
-        feature~category,
+        feature_col~category,
         data = .x,
         fun = fun,
         OrgDb = OrgDb,
         keyType = keyType,
         ont = ont,
         universe = universe_per_assay |>
-          filter(exp_name==unique(.x$exp_name)) |>
-          pull(all_features),
+          dplyr::filter(exp_name==unique(.x$exp_name)) |>
+          dplyr::pull(all_features),
         pAdjustMethod = pAdjustMethod,
         pvalueCutoff = pvalueCutoff,
         qvalueCutoff = qvalueCutoff
@@ -672,9 +704,16 @@
 }
 
 # --- Factor Feature Functional Enrichment ------------
+#' Perform Functional Enrichment Analysis on Factor-Associated Features
+#'
+#' Conducts Gene Ontology (GO) enrichment analysis for top factor-contributing features, 
+#' integrating miRNA target mapping when applicable.
+#'
+#' @keywords internal
+#' @noRd
 .factor_functional_enrichment <- function(
     expomicset,
-    proteomics_assays = NULL, 
+    feature_col="feature",
     mirna_assays = NULL,
     pAdjustMethod = "fdr",
     pvalueCutoff = 0.05,
@@ -682,88 +721,87 @@
     OrgDb = 'org.Hs.eg.db',
     keyType = "SYMBOL",
     ont = "BP") {
-  require(clusterProfiler)
-  require(biomaRt)
-  require(tidyverse)
-  require(org.Hs.eg.db)
   
-  
-  if (!"top_factor_features" %in% names(expomicset@metadata)) {
+  # Check for top factor features and correlation results
+  if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset))) {
     stop("Please run `extract_top_factor_features() first.`")
   }
   
-  factor_res <- expomicset@metadata$top_factor_features |>
+  # Extract factor results
+  factor_res <- MultiAssayExperiment::metadata(expomicset)$top_factor_features |>
     dplyr::select(feature,
-                  exp_name) 
+                  exp_name) |> 
+    dplyr::inner_join(pivot_feature(expomicset),
+               by=c("feature"=".feature",
+                    "exp_name"=".exp_name")) |> 
+    dplyr::mutate(feature_col=!!sym(feature_col)) 
   
+  if(!is.null(mirna_assays)){
+    # Retrieve miRNA target genes and merge with factor results
+    mirna_df <- factor_res |>
+      filter(exp_name %in% mirna_assays) |>
+      (\(df) split(df,df$exp_name))() |>
+      map(~ .get_mirna_targets(
+        .x |> 
+          dplyr::pull(feature))) |>
+      dplyr::bind_rows(.id="exp_name") |>
+      dplyr::inner_join(factor_res,
+                 by=c("source_genesymbol"="feature",
+                      "exp_name")) |>
+      dplyr::select(-source_genesymbol) |>
+      dplyr::rename(feature=target_genesymbol)
+    
+    # Combine results with miRNA target df
+    factor_res <- factor_res |>
+      dplyr::filter(!exp_name %in% c(mirna_assays)) |>
+      dplyr::bind_rows(mirna_df)
+  }else{
+    factor_res <- factor_res
+  }
   
-  mirna_df <- factor_res |>
-    filter(exp_name %in% mirna_assays) |>
-    (\(df) split(df,df$exp_name))() |>
-    map(~ .get_mirna_targets(.x |> 
-                               pull(feature))) |>
-    bind_rows(.id="exp_name") |>
-    inner_join(factor_res,
-               by=c("source_genesymbol"="feature",
-                    "exp_name")) |>
-    dplyr::select(-source_genesymbol) |>
-    dplyr::rename(feature=target_genesymbol)
-  
-  
-  
-  prot_df <- .convert_uniprot_to_symbol(factor_res |>
-                                          filter(exp_name %in% proteomics_assays) |>
-                                          pull(feature)) |>
-    inner_join(factor_res,
-               by=c("uniprot_gn_id"="feature")) |>
-    dplyr::select(-uniprot_gn_id) |>
-    dplyr::rename(feature=hgnc_symbol)
-  
-  
-  factor_res_mapped <- factor_res |>
-    filter(!exp_name %in% c(mirna_assays,proteomics_assays)) |>
-    bind_rows(mirna_df,prot_df)
-  
-  
+  # Establish the universe of features for each assay
   universe_per_assay <- as.list(unique(factor_res$exp_name)) |>
-    map( ~
-           {df <- data.frame(all_features=
-                               experiments(expomicset)[[.x]] |>
-                               rownames(),
-                             exp_name=.x)
-           
-           if (.x %in% mirna_assays) {
-             all_targets <- .get_mirna_targets(df$all_features) |>
-               pull(target_genesymbol)
-             
-             df <- data.frame(all_features=all_targets,
-                              exp_name=.x)
-           } else if (.x %in% proteomics_assays){
-             all_targets <- .convert_uniprot_to_symbol(df$all_features) |>
-               pull(hgnc_symbol)
-             
-             df <- data.frame(all_features=all_targets,
-                              exp_name=.x)
-           }else{
-             df <- df
-           }
-           return(df)}
+    purrr::map( ~
+                  {
+                    if (.x %in% mirna_assays) {
+                      # Retrieve features for each assay
+                      df <- data.frame(all_features=
+                                         MultiAssayExperiment::experiments(expomicset)[[.x]] |>
+                                         rownames(),
+                                       exp_name=.x)
+                      
+                      # Get miRNA target genes
+                      all_targets <- .get_mirna_targets(df$all_features) |>
+                        dplyr::pull(target_genesymbol)
+                      
+                      # Create a dataframe with target genes and other features
+                      df <- data.frame(all_features=all_targets,
+                                       exp_name=.x)
+                    } else{
+                      df <- data.frame(all_features=
+                                         MultiAssayExperiment::experiments(expomicset)[[.x]] |>
+                                         tidybulk::pivot_transcript() |> 
+                                         dplyr::mutate(feature=.feature) |> 
+                                         dplyr::pull(!!sym(feature_col)),
+                                       exp_name=.x)
+                    }
+                    return(df)}
     ) |>
-    bind_rows()
+    dplyr::bind_rows()
   
-  
-  enrich_res <- factor_res_mapped |>
+  # Perform functional enrichment analysis using compareCluster
+  enrich_res <- factor_res |>
     (\(df) split(df,df$exp_name))() |>
     map(~ {
       message("Working on: ",unique(.x$exp_name))
       enrich <- enrichGO(
-        gene = .x$feature,
+        gene = .x$feature_col,
         OrgDb = OrgDb,
         keyType = keyType,
         ont = ont,
         universe = universe_per_assay |>
-          filter(exp_name==unique(.x$exp_name)) |>
-          pull(all_features),
+          dplyr::filter(exp_name==unique(.x$exp_name)) |>
+          dplyr::pull(all_features),
         pAdjustMethod = pAdjustMethod,
         pvalueCutoff = pvalueCutoff,
         qvalueCutoff = qvalueCutoff
@@ -785,140 +823,13 @@
   return(enrich_df)
 }
 
-# --- Summarize Go Enrichment ---------------------
-.summarize_go_enrichment <- function(enrichment_results, p_adjust_threshold = 0.05) {
-  require(tidyverse)
-  
-  if (length(enrichment_results) == 0) {
-    stop("No enrichment results available for summarization.")
-  }
-  
-  message("Summarizing GO enrichment results...")
-  
-  # Convert enrichment list to a tidy dataframe
-  enriched_df <- names(enrichment_results) |> 
-    map(~ {
-      assay <- .x
-      if (!is.null(enrichment_results[[assay]]) && nrow(enrichment_results[[assay]]) > 0) {
-        enrichment_results[[assay]] |>
-          filter(p.adjust < p_adjust_threshold) |>  # Apply p.adjust threshold
-          dplyr::select(ID, Description, p.adjust, geneID) |>
-          mutate(exp_name = assay)
-      } else {
-        NULL
-      }
-    }) |> 
-    bind_rows() |> 
-    separate_rows(geneID, sep = "/") |> 
-    group_by(ID, Description, exp_name) |> 
-    reframe(
-      genes = paste(unique(geneID), collapse = ", "), 
-      num_genes = n_distinct(geneID),  # Count of unique genes per omic
-      min_p_adj = min(p.adjust, na.rm = TRUE),
-      max_p_adj = max(p.adjust, na.rm = TRUE),
-      .groups = "drop"
-    ) |> 
-    group_by(ID, Description) |> 
-    mutate(n_omics = n_distinct(exp_name)) |>  # Calculate before using it
-    mutate(
-      all_genes = paste(unique(genes), collapse = ", "), 
-      shared_genes = if (dplyr::first(n_omics) > 1) {
-        shared_list <- Reduce(intersect, strsplit(unique(genes), ", "))
-        if (length(shared_list) == 0) NA_character_ else paste(shared_list, collapse = ", ")
-      } else {
-        NA_character_
-      },
-      num_shared_genes = ifelse(is.na(shared_genes), 0, length(unique(unlist(strsplit(shared_genes, ", "))))),
-      num_all_genes = n_distinct(unlist(strsplit(all_genes, ", "))),
-      category = case_when(
-        n_omics == 1 ~ "Unique",
-        n_omics > 1 ~ "Shared"
-      )
-    ) |> ungroup()
-  
-  message("GO enrichment summary completed.")
-  
-  return(enriched_df)
-}
-# --- Plot Pie Chart ----------------
-.plot_circular_bar <- function(data, category_col, count_col) {
-  data |> 
-    mutate(
-      fraction = !!sym(count_col) / sum(!!sym(count_col)),  # Compute percentages
-      ymax = cumsum(fraction),  # Top of each rectangle
-      ymin = c(0, head(ymax, n = -1)),  # Bottom of each rectangle
-      labelPosition = (ymax+ymin)/2,  # Midpoint for labels
-      label = paste0(!!sym(category_col),":", " ", !!sym(count_col))  # Label formatting
-    ) |> 
-    ggplot(aes(
-      ymax = ymax,
-      ymin = ymin,
-      xmax = 4, 
-      xmin = 3,
-      fill = !!sym(category_col)
-    )) +
-    geom_rect(alpha=0.8) +
-    geom_label_repel(
-      x = 2, aes(y = labelPosition, 
-                 label = label
-                 #color = !!sym(category_col)
-                 ), 
-      size = 4,
-      fill = "white",
-      color="black") +
-    scale_fill_cosmic()+
-    coord_polar(theta = "y") +
-    xlim(c(-1, 4)) +
-    theme_void() +
-    theme(legend.position = "none")
-}
-# --- Summarize Exposure Enrichment Results -----------------------
-.summarize_exposure_enrichment <- function(enrichment_df, p_adjust_threshold = 0.05) {
-  require(tidyverse)
-  
-  if (nrow(enrichment_df) == 0) {
-    stop("No enrichment results available for summarization.")
-  }
-  
-  message("Summarizing GO enrichment results...")
-  
-  # Filter by p.adjust threshold
-  enriched_df <- enrichment_df |>
-    filter(p.adjust < p_adjust_threshold) |>
-    dplyr::select(ID, Description, p.adjust, geneID, category, exp_name) |>
-    separate_rows(geneID, sep = "/") |>  # Split gene lists into separate rows
-    group_by(ID, Description, category, exp_name) |> 
-    reframe(
-      genes = paste(unique(geneID), collapse = ", "), 
-      num_genes = n_distinct(geneID),  # Count of unique genes per omic-assay
-      min_p_adj = min(p.adjust, na.rm = TRUE),
-      max_p_adj = max(p.adjust, na.rm = TRUE),
-      .groups = "drop"
-    ) |> 
-    group_by(ID, Description, category) |> 
-    mutate(n_omics = n_distinct(exp_name)) |>  # Count how many omics report the GO term
-    mutate(
-      all_genes = paste(unique(genes), collapse = ", "), 
-      shared_genes = if (dplyr::first(n_omics) > 1) {
-        shared_list <- Reduce(intersect, strsplit(unique(genes), ", "))
-        if (length(shared_list) == 0) NA_character_ else paste(shared_list, collapse = ", ")
-      } else {
-        NA_character_
-      },
-      num_shared_genes = ifelse(is.na(shared_genes), 0, length(unique(unlist(strsplit(shared_genes, ", "))))),
-      num_all_genes = n_distinct(unlist(strsplit(all_genes, ", "))),
-      category_status = case_when(
-        n_omics == 1 ~ "Unique",
-        n_omics > 1 ~ "Shared"
-      )
-    ) |> ungroup()
-  
-  message("GO enrichment summary completed.")
-  
-  return(enriched_df)
-}
 # --- Pairwise Overlaps -------------
-
+#' Compute Pairwise Overlaps Between Sets
+#'
+#' Calculates pairwise overlaps, Jaccard indices, and shared elements for a list of unique sets.
+#'
+#' @keywords internal
+#' @noRd
 .get_pairwise_overlaps <- function(sets) {
   # credit for most of the code:
   # https://blog.jdblischak.com/posts/pairwise-overlaps/
@@ -987,29 +898,30 @@
   return(result)
 }
 # --- Cluster Matrix ------------------
-.cluster_mat <- function(data_matrix, dist_method = NULL, cluster_method = "ward.D", clustering_approach = "gap") {
-  require(tidyverse)
-  require(ComplexHeatmap)
-  require(circlize)
-  require(cluster)  # For silhouette scores
-  require(vegan)  # For Gower's distance
-  require(FactoMineR)  # For handling categorical data
-  require(factoextra)
-  require(dynamicTreeCut)
-  require(densityClust)
+#' Perform Hierarchical Clustering on a Data Matrix
+#'
+#' Clusters samples using various distance metrics and clustering approaches to determine optimal cluster numbers.
+#'
+#' @keywords internal
+#' @noRd
+.cluster_mat <- function(
+    data_matrix, 
+    dist_method = NULL, 
+    cluster_method = "ward.D",
+    clustering_approach = "gap") {
   
   # Determine appropriate distance metric
   if (is.null(dist_method)) {
     if (all(sapply(data_matrix, is.numeric))) {
-      dist_method <- "euclidean"  # Continuous data
+      dist_method <- "euclidean"  
     } else {
-      dist_method <- "gower"  # Mixed data types
+      dist_method <- "gower"  
     }
   }
   
   # Compute distance matrix
   sample_dist <- if (dist_method == "gower") {
-    daisy(data_matrix, metric = "gower")
+    cluster::daisy(data_matrix, metric = "gower")
   } else {
     dist(data_matrix, method = dist_method)
   }
@@ -1017,28 +929,44 @@
   # Function to determine optimal k based on the selected clustering approach
   determine_k <- function(dist_matrix, cluster_method) {
     if (clustering_approach == "diana") {
-      sample_cluster <- diana(as.dist(dist_matrix))
+      
+      # Determine optimal k using the height difference method
+      sample_cluster <- cluster::diana(as.dist(dist_matrix))
       height_diffs <- diff(sample_cluster$height)
       cutoff_index <- which.max(height_diffs)
       return(length(sample_cluster$height) - cutoff_index)
       
     } else if (clustering_approach == "gap") {
-      gap_stat <- clusGap(as.matrix(dist_matrix), FUN = hcut, K.max = 20, B = 50)
-      return(maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"]))
+      
+      # Determine optimal k using the gap statistic
+      gap_stat <- cluster::clusGap(as.matrix(dist_matrix), FUN = hcut, K.max = 20, B = 50)
+      return(cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"]))
       
     } else if (clustering_approach == "elbow") {
-      fviz_nbclust(as.matrix(dist_matrix), FUN = hcut, method = "wss")
-      return(3)  # Adjust manually if needed
+      
+      # Determine optimal k using the elbow method
+      wss_plot <- factoextra::fviz_nbclust(as.matrix(dist_matrix), FUN = hcut, method = "wss")
+      
+      # Identify the first significant drop and ensure it's a number we can use
+      k_optimal <- which.min(diff(diff(wss_plot$data$y))) + 1  
+      if (is.na(k_optimal) || k_optimal < 2) k_optimal <- 3 
+      return(k_optimal)
       
     } else if (clustering_approach == "dynamic") {
-      sample_cluster <- hclust(as.dist(dist_matrix), method = cluster_method)
-      cut_clusters <- cutreeDynamic(dendro = as.dendrogram(sample_cluster), distM = as.matrix(dist_matrix), deepSplit = 2)
-      return(length(unique(cut_clusters)))
+      
+    # Determine optimal k using dynamic tree cut
+     sample_cluster <- hclust(as.dist(dist_matrix), method = cluster_method)
+      cut_clusters <- dynamicTreeCut::cutreeDynamic(
+        dendro = sample_cluster, 
+        distM = as.matrix(as.dist(dist_matrix)), 
+        deepSplit = 2)
+      return(length(unique(cut_clusters)))  
       
     } else if (clustering_approach == "density") {
-      dclust <- densityClust(dist_matrix, gaussian = TRUE)
-      dclust <- findClusters(dclust, rho = 0.3, delta = 0.5)
-      return(max(dclust$clusters))
+      # Determine optimal k using density-based clustering
+      dclust <- densityClust::densityClust(as.dist(dist_matrix), gaussian = TRUE)
+      dclust <- densityClust::findClusters(dclust, rho = quantile(dclust$rho, 0.90), delta = quantile(dclust$delta, 0.90))
+      return(length(unique(dclust$clusters)))  
       
     } else {
       stop("Invalid clustering approach selected.")
@@ -1057,178 +985,3 @@
   
   return(sample_groups)
 }
-# --- Pathway Mediation Analysis ----------
-library(mediation)
-library(tidyverse)
-
-.perform_omic_go_mediation <- function(
-    expom_enrich, 
-    geneset,
-    exposure_data, 
-    exposure,
-    outcome,
-    covariates) {
-  
-  # Extract enrichment results and GO group mappings
-  enrich_res <- expom_enrich@metadata[["functional_enrichment"]][[geneset]][["enrich_res"]]
-  go_groups <- expom_enrich@metadata[["functional_enrichment"]][[geneset]][["go_groups"]]
-  
-  # Extract unique omic layers and GO groups
-  omic_layers <- unique(enrich_res$exp_name)
-  go_group_ids <- unique(go_groups$go_group)
-  
-  results_list <- list()  # Store mediation results
-  
-  for (omic in omic_layers) {
-    # Subset enrichment results for the current omic layer
-    omic_enrich <- enrich_res %>% filter(exp_name == omic)
-    
-    for (go_group in go_group_ids) {
-      
-      # Get the GO terms associated with this GO group
-      go_terms <- go_groups %>% filter(go_group == go_group) %>% pull(Description)
-      
-      # Get genes for this GO group
-      go_genes <- omic_enrich %>%
-        filter(Description %in% go_terms) %>%
-        pull(geneID) %>%
-        str_split("/") %>%  # Split gene lists
-        unlist() %>%
-        unique()
-      
-      # Extract corresponding omic data
-      if (!(omic %in% names(experiments(expom_enrich)))) next  # Skip if omic data not found
-      exp_omic <- .update_assay_colData(expom_enrich, omic)
-      omic_data <- assay(exp_omic)
-      
-      # Subset omic data to include only relevant genes
-      omic_data_filtered <- omic_data[rownames(omic_data) %in% go_genes, , drop = FALSE]
-      if (nrow(omic_data_filtered) < 2) next  # Skip if not enough genes
-      
-      # Transpose so samples are rows, features are columns
-      omic_matrix <- t(omic_data_filtered)
-      omic_matrix <- scale(omic_matrix)  # Standardize
-      
-      # Perform PCA
-      pca_res <- prcomp(omic_matrix, center = TRUE, scale. = TRUE)
-      PC1_scores <- pca_res$x[, 1]  # Extract PC1
-      
-      # Merge PC1 with exposure and outcome data
-      PC1_df <- data.frame(id_to_map = rownames(omic_matrix), PC1 = PC1_scores)
-      merged_data <- exposure_data %>%
-        rownames_to_column(var = "id_to_map") %>%
-        inner_join(PC1_df, by = "id_to_map") 
-      
-      # Run Mediation Analysis
-      model_total <- lm(
-        as.formula(paste(outcome,"~",exposure,"+",
-                         paste(covariates,collapse = "+"))), 
-        data = merged_data)
-
-      model_mediator <- lm(
-        as.formula(paste("PC1 ~",exposure,"+",
-                         paste(covariates,collapse = "+"))), 
-        data = merged_data)
- 
-      model_outcome <- lm(
-        as.formula(paste(outcome, "~ PC1 + ",exposure,"+",
-                         paste(covariates,collapse = "+"))), 
-        data = merged_data)
-      
-      med_res <- mediate(
-        model_mediator, 
-        model_outcome, 
-        treat = "exposure", 
-        mediator = "PC1", 
-        boot = TRUE, 
-        sims = 100)
-      
-      # Store results
-      results_list[[paste0(omic, "_GO", go_group)]] <- summary(med_res)
-    }
-  }
-  
-  return(results_list)
-}
-# --- Run Mediation Analysis ---------
-library(mediation)
-
-.run_mediation <- function(data,
-                           outcome,
-                           exposure,
-                           mediator,
-                           covariates,
-                           sims = 1000) {
-  
-  # Check if mediator is numeric
-  if (!is.numeric(data[[mediator]])) {
-    stop("Error: Mediator must be numeric.")
-  }
-  
-  # Drop rows with missing values in relevant columns
-  data <- data |> 
-    dplyr::select(all_of(
-      c(outcome, exposure, mediator, covariates))) |> 
-    drop_na() |> 
-    mutate_if(is.numeric, ~ as.numeric(scale(.x)))  |> 
-    mutate_if(is.character,~ as.factor(.))
-  
-  # Explicitly add in mediator and exposure
-  data <- data |> 
-    mutate(
-    exposure_var = .data[[exposure]],
-    mediator_var = .data[[mediator]]
-  )
-  
-  # Check that exposure and mediator have more than one unique value
-  if (length(unique(data[[exposure]])) <= 1) {
-    stop("Error: Exposure variable must have more than one unique value.")
-  }
-  
-  if (length(unique(data[[mediator]])) <= 1) {
-    stop("Error: Mediator variable must have more than one unique value.")
-  }
-  print(as.formula(
-    paste(outcome, "~ exposure_var + mediator_var +", paste(covariates, collapse = "+"))
-  ))
-  
-  print(as.formula(
-    paste("mediator_var ~ exposure_var +", paste(covariates, collapse = "+"))
-  ))
-  # Fit mediator model (mediator ~ exposure + covariates)
-  mediator_model <- lm(
-    as.formula(
-    paste("mediator_var ~ exposure_var +", paste(covariates, collapse = "+"))
-  ),
-  data = data)
-  
-  # Fit outcome model (outcome ~ exposure + mediator + covariates)
-  outcome_model <- lm(as.formula(
-    paste(outcome, "~ exposure_var + mediator_var +", paste(covariates, collapse = "+"))
-  ), data = data)
-  
-  return(list(mediator_model,outcome_model))
-  
-  # Run mediation analysis
-  # med_res <- mediate(mediator_model, 
-  #                    outcome_model, 
-  #                    treat = "exposure_var",
-  #                    mediator = "mediator_var", 
-  #                    boot = TRUE,
-  #                    sims = sims)
-  # 
-  # # Print summary
-  # print(summary(med_res))
-  
-  # Return mediation results as a named list
-  #return(list(
-  #   ACME = med_res$d0,  # Average Causal Mediation Effect
-  #   ADE = med_res$z0,   # Average Direct Effect
-  #   Total_Effect = med_res$tau.coef,
-  #   Proportion_Mediated = med_res$n0
-  # ))
-}
-
-# --- Test DA Functional Enrichment ------------
-
-# --- Next Function --------

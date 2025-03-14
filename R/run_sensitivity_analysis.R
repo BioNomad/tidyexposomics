@@ -1,3 +1,56 @@
+#' Perform Sensitivity Analysis for Differential Abundance
+#'
+#' Runs differential abundance testing across multiple models, statistical methods, 
+#' scaling approaches, and filtering criteria to assess feature stability.
+#'
+#' @param expomicset A `MultiAssayExperiment` object containing omics and exposure data.
+#' @param base_formula A formula specifying the base model for differential abundance analysis.
+#' @param abundance_col A character string specifying the assay column to use for abundance values. Default is `"counts"`.
+#' @param methods A character vector of methods for differential abundance testing (e.g., `"limma_voom"`, `"DESeq2"`, `"edgeR_quasi_likelihood"`).
+#' @param scaling_methods A character vector of normalization methods to apply (e.g., `"none"`, `"TMM"`, `"quantile"`).
+#' @param min_counts_range A numeric vector of minimum count thresholds to test. Default is `c(1, 5, 10)`.
+#' @param min_proportion_range A numeric vector of minimum sample proportion thresholds to test. Default is `c(0.1, 0.2, 0.3)`.
+#' @param contrasts A character vector specifying contrasts for the differential analysis. Default is `NULL`.
+#' @param covariates_to_remove A character vector of covariates to iteratively remove from the model for sensitivity testing. Default is `NULL`.
+#' @param score_thresh A numeric value specifying a fixed threshold for feature stability. If `NULL`, it is determined based on `score_quantile`.
+#' @param score_quantile A numeric value specifying the quantile threshold for determining stable features. Default is `0.1`.
+#' @param action A character string specifying whether to store (`"add"`) or return (`"get"`) the results. Default is `"add"`.
+#'
+#' @details
+#' This function:
+#' - Iterates over multiple **model specifications** by removing covariates.
+#' - Tests different **differential abundance methods** (`limma_voom`, `DESeq2`, `edgeR_quasi_likelihood`).
+#' - Evaluates **scaling approaches** (`none`, `TMM`, `quantile`).
+#' - Filters features based on **minimum count** and **sample proportion** thresholds.
+#' - **Calculates feature stability**, measuring how often a feature is identified across conditions.
+#' - Determines a **stability threshold** using either `score_thresh` or the `score_quantile`.
+#' - **Output Handling**:
+#'   - `"add"`: Stores results in `metadata(expomicset)$sensitivity_analysis`.
+#'   - `"get"`: Returns a list containing the sensitivity results.
+#'
+#' @return A `MultiAssayExperiment` object with sensitivity analysis results added to metadata (if `action = "add"`) or a list with:
+#' \item{sensitivity_df}{A dataframe of differential abundance results across all tested conditions.}
+#' \item{feature_stability}{A dataframe summarizing stability scores for each feature.}
+#' \item{score_thresh}{The threshold used for stable feature selection.}
+#'
+#' @examples
+#' \dontrun{
+#' expom <- run_sensitivity_analysis(
+#'   expomicset = expom,
+#'   base_formula = ~ condition + batch,
+#'   methods = c("limma_voom", "DESeq2"),
+#'   min_counts_range = c(5, 10),
+#'   action = "add"
+#' )
+#'
+#' sensitivity_results <- run_sensitivity_analysis(
+#'   expomicset = expom,
+#'   base_formula = ~ condition + batch,
+#'   action = "get"
+#' )
+#' }
+#'
+#' @export
 run_sensitivity_analysis <- function(
     expomicset,
     base_formula,  
@@ -8,18 +61,11 @@ run_sensitivity_analysis <- function(
     min_proportion_range = c(0.1, 0.2, 0.3),
     contrasts = NULL,  
     covariates_to_remove = NULL,  
-    resampling = TRUE,  
-    resampling_iterations = 50,
-    cross_validation = FALSE,  
-    k_folds = 5,
     score_thresh=NULL,
     score_quantile=0.1,
     action="add"
 ) {
-  require(tidybulk)
-  require(MultiAssayExperiment)
-  require(tidyverse)
-  
+
   message("Running sensitivity analysis for differential abundance...")
   
   # Extract all terms in the base model
@@ -58,18 +104,18 @@ run_sensitivity_analysis <- function(
                     " | Min Proportion: ", min_prop)
             
             # Iterate over each experiment in expomicset
-            for (exp_name in names(experiments(expomicset))) {
+            for (exp_name in names(MultiAssayExperiment::experiments(expomicset))) {
               message("Processing experiment: ", exp_name)
               
               exp <- .update_assay_colData(expomicset, exp_name)
               
               # Skip if too few features
               features_to_test <- exp |> 
-                identify_abundant(minimum_counts = min_counts,
+                tidybulk::identify_abundant(minimum_counts = min_counts,
                                   minimum_proportion = min_prop) |>
-                elementMetadata() |> 
+                S4Vectors::elementMetadata() |> 
                 as.data.frame() |>  
-                filter(.abundant == TRUE) |> 
+                dplyr::filter(.abundant == TRUE) |> 
                 nrow()
               
               if (features_to_test < 2) {
@@ -80,7 +126,7 @@ run_sensitivity_analysis <- function(
               # If DESeq2 is used, ensure integer values
               if (method == "DESeq2" && !all(assay(exp) == floor(assay(exp)))) {
                 message("Detected non-integer values for DESeq2 in ", exp_name, ". Rounding to nearest integer...")
-                assay(exp, abundance_col) <- round(assay(exp, abundance_col), 0)
+                SummarizedExperiment::assay(exp, abundance_col) <- round(SummarizedExperiment::assay(exp, abundance_col), 0)
               }
               
               # Call helper function
@@ -97,8 +143,11 @@ run_sensitivity_analysis <- function(
               
               # Append results
               if (!is.null(res)) {
-                res <- res |> mutate(model = model_name, exp_name = exp_name)
-                sensitivity_df <- bind_rows(sensitivity_df, res)
+                res <- res |> 
+                  dplyr::mutate(model = model_name, 
+                                exp_name = exp_name)
+                sensitivity_df <- sensitivity_df |> 
+                  dplyr::bind_rows(res)
               }
             }
           }
@@ -122,7 +171,7 @@ run_sensitivity_analysis <- function(
   }
   
   sum <- feature_stability_df |> 
-    group_by(exp_name) |>
+    dplyr::group_by(exp_name) |>
     dplyr::reframe(
       n_above=sum(stability_score>score_thresh),
       n=n())
@@ -131,11 +180,11 @@ run_sensitivity_analysis <- function(
   message("-----------------------------------------")
   for(exp_name in unique(feature_stability_df$exp_name)){
     n_above  <- sum |> 
-      filter(exp_name==!!exp_name) |>
-      pull(n_above);
+      dplyr::filter(exp_name==!!exp_name) |>
+      dplyr::pull(n_above);
     n <- sum |> 
-      filter(exp_name==!!exp_name) |>
-      pull(n);
+      dplyr::filter(exp_name==!!exp_name) |>
+      dplyr::pull(n);
     message(exp_name, ": ", n_above,"/", n)
   }
   
@@ -143,7 +192,7 @@ run_sensitivity_analysis <- function(
   
   if(action =="add"){
     # Store results in metadata
-    metadata(expomicset)$sensitivity_analysis <- list(
+    MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis <- list(
       sensitivity_df = sensitivity_df,
       feature_stability = feature_stability_df,
       score_thresh = score_thresh
