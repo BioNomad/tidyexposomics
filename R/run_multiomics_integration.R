@@ -41,35 +41,35 @@ run_multiomics_integration <- function(expomicset,
                                    n_factors = 10,
                                    scale=TRUE,
                                    action="add") {
-  
-  if(length(experiments(expomicset)) < 2){
+
+  if(length(MultiAssayExperiment::experiments(expomicset)) < 2){
     stop("Multi-Omics Integration requires at least two assays in the MultiAssayExperiment object.")
   }
-  
+
   if(scale){
     expomicset_mo <- .scale_multiassay(expomicset)
   }
   else{
     expomicset_mo <- expomicset
   }
-  
+
   message("Running multi-omics integration using ", method, "...")
-  
+
   result <- NULL
-  
+
   # MOFA integration
   if (method == "MOFA") {
     message("Applying MOFA+ integration...")
-    
+
     # Create MOFA object from the MultiAssayExperiment
     mofa <- MOFA2::create_mofa(expomicset_mo)
-    
+
     # Set MOFA options
     model_opts <- MOFA2::get_default_model_options(mofa)
     model_opts$num_factors <- n_factors
     data_opts <- MOFA2::get_default_data_options(mofa)
     train_opts <- MOFA2::get_default_training_options(mofa)
-    
+
     # Prepare & train MOFA model
     mofa <- MOFA2::prepare_mofa(
       object = mofa,
@@ -77,37 +77,37 @@ run_multiomics_integration <- function(expomicset,
       model_options = model_opts,
       training_options = train_opts
     )
-    
+
     outfile = file.path(tempdir(), "mofa_model.hdf5")
     mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
-    
+
     # Load trained MOFA model
     result <- MOFA2::load_model(outfile)
-    
-    # NIPALS MCIA INTEGRATION 
+
+    # NIPALS MCIA INTEGRATION
   } else if (method == "MCIA") {
     message("Applying MCIA with NIPALS...")
-    
+
     # Run NIPALS MCIA on the MultiAssayExperiment
-    
+
     result <- nipalsMCIA::nipals_multiblock(
       expomicset_mo,
       col_preproc_method = "colprofile",
       num_PCs = n_factors,
-      tol = 1e-12, 
+      tol = 1e-12,
       plots = "none")
-    
+
   } else{
     stop("Invalid method. Choose from 'MOFA' or 'MCIA'.")
   }
-  
+
   if(action=="add"){
     # Store results in MultiAssayExperiment metadata
-    metadata(expomicset)$integration_results <- list(
+    MultiAssayExperiment::metadata(expomicset)$integration_results <- list(
       method = method,
       result = result
     )
-    
+
     return(expomicset)
   }else if (action=="get"){
     return(list(

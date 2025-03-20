@@ -8,7 +8,7 @@
 #' @param filter_thresh A numeric value specifying the threshold for filtering significant associations. Default is `0.05`.
 #'
 #' @details
-#' The function extracts ExWAS results from `metadata(expomicset)$exwas$results_df`, 
+#' The function extracts ExWAS results from `metadata(expomicset)$exwas$results_df`,
 #' filters based on `filter_col` and `filter_thresh`, and generates a forest plot of effect sizes.
 #' Associations are color-coded as upregulated (red), downregulated (blue), or non-significant (grey).
 #'
@@ -25,29 +25,29 @@ plot_associate_exposure_outcome <- function(
     filter_col = "p.value",
     filter_thresh = 0.05){
   require(ggplot2)
-  
+
   # Check if the required metadata is present
   if(!"exwas" %in% names(MultiAssayExperiment::metadata(expomicset))){
     stop("Please run `perform_exwas()` first.")
   }
-  
+
   # Extract the results dataframe and filter based on the specified column and threshold
-  exwas <- MultiAssayExperiment::metadata(expomicset)$exwas$results_df |> 
+  exwas <- MultiAssayExperiment::metadata(expomicset)$exwas$results_df |>
     dplyr::filter(!!sym(filter_col) < filter_thresh)
-  
+
   covariates <- MultiAssayExperiment::metadata(expomicset)$exwas$covariates
-  
+
   # Create forest plot of significant associations
-  exwas  |> 
+  exwas  |>
     dplyr::mutate(direction=case_when(
       estimate>0 & !!sym(filter_col) < filter_thresh ~ "up",
       estimate<0 & !!sym(filter_col) < filter_thresh ~ "down",
       .default = "ns"
-    )) |> 
-    ggplot(aes(x = estimate, 
+    )) |>
+    ggplot(aes(x = estimate,
                y = reorder(term,estimate),
                color = direction)) +
-    geom_vline(xintercept = 0, 
+    geom_vline(xintercept = 0,
                linetype = "dashed") +
     geom_errorbarh(aes(
       xmin = estimate-std.error,
@@ -59,8 +59,8 @@ plot_associate_exposure_outcome <- function(
                alpha=0.5) +
     theme_bw() +
     scale_color_manual(values = c(
-      "up" = "red3",
-      "down" = "blue4",
+      "up" = "#8E0152",
+      "down" = "#006666",
       "ns" = "grey55"
     ))+
     theme(legend.position = "none",
@@ -71,6 +71,6 @@ plot_associate_exposure_outcome <- function(
       title = "Exposure-Outcome Associations",
       subtitle = paste("Covariates: ",paste(covariates, collapse = ", "))
       )
-      
+
 }
 

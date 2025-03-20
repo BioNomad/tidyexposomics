@@ -26,35 +26,35 @@
 plot_top_factor_features <- function(
     expomicset,
     top_n=5){
-  
+
   require(ggplot2)
-  
+
   # Check to see if multiomics integration results are available
   if(!"integration_results" %in% names(MultiAssayExperiment::metadata(expomicset))){
     stop("Please run `multiomics_integration()` first.")
   }
-  
+
   if(MultiAssayExperiment::metadata(expomicset)$integration_results$method == "MOFA"){
     # Grab top MOFA features per factor
-    df <- MOFA2::get_weights(MultiAssayExperiment::metadata(expomicset)$integration_results$result) |> 
+    df <- MOFA2::get_weights(MultiAssayExperiment::metadata(expomicset)$integration_results$result) |>
       purrr::map2(
         names(MOFA2::get_weights(MultiAssayExperiment::metadata(expomicset)$integration_results$result)),
-        ~.x|> 
+        ~.x|>
           as.data.frame() |>
-          tibble::rownames_to_column("feature") |> 
+          tibble::rownames_to_column("feature") |>
           tidyr::pivot_longer(-feature,
                        names_to="factor",
-                       values_to="loading") |> 
-          dplyr::mutate(abs_loading=abs(loading)) |> 
-          dplyr::mutate(exp_name=.y)) |> 
-      dplyr::bind_rows() |> 
+                       values_to="loading") |>
+          dplyr::mutate(abs_loading=abs(loading)) |>
+          dplyr::mutate(exp_name=.y)) |>
+      dplyr::bind_rows() |>
       dplyr::group_by(factor) |>
-      dplyr::arrange(dplyr::desc(abs_loading)) |> 
-      dplyr::slice_head(n=5) |> 
+      dplyr::arrange(dplyr::desc(abs_loading)) |>
+      dplyr::slice_head(n=5) |>
       dplyr::mutate(feature=gsub("_.*","",feature))
-    
+
     # Create a plot of top features per factor
-    features_per_factor_plot <- df |> 
+    features_per_factor_plot <- df |>
       ggplot(aes(
         x=abs_loading,
         y=reorder(feature,abs_loading),
@@ -63,41 +63,41 @@ plot_top_factor_features <- function(
       geom_point(shape=18,
                  size=5,
                  alpha=0.5) +
-      geom_segment(aes(x=0, 
-                       xend=abs_loading, 
-                       y=feature, 
+      geom_segment(aes(x=0,
+                       xend=abs_loading,
+                       y=feature,
                        yend=feature),
                    color="grey55")+
       theme_bw()+
       theme(strip.text = element_text(face="bold.italic"))+
       facet_grid(factor~., scales="free_y")+
-      ggsci::scale_color_npg()+
+      ggsci::scale_color_aaas()+
       labs(
         x="Absolute loading",
         y="",
         color="Experiment"
       )
-    
+
   }else if(MultiAssayExperiment::metadata(expomicset)$integration_results$method == "MCIA"){
     # Grab top MCIA features per factor
-    df <- MultiAssayExperiment::metadata(expomicset)$integration_results$result@block_loadings |> 
+    df <- MultiAssayExperiment::metadata(expomicset)$integration_results$result@block_loadings |>
       purrr::map2(
         names(MultiAssayExperiment::metadata(expomicset)$integration_results$result@block_loadings),
-        ~.x|> 
+        ~.x|>
           as.data.frame() |>
-          tibble::rownames_to_column("feature") |> 
+          tibble::rownames_to_column("feature") |>
           tidyr::pivot_longer(-feature,
-                       names_to="factor", 
-                       values_to="loading") |> 
-          dplyr::mutate(abs_loading=abs(loading)) |> 
-          dplyr::mutate(exp_name=.y)) |> 
-      dplyr::bind_rows() |> 
+                       names_to="factor",
+                       values_to="loading") |>
+          dplyr::mutate(abs_loading=abs(loading)) |>
+          dplyr::mutate(exp_name=.y)) |>
+      dplyr::bind_rows() |>
       dplyr::group_by(factor) |>
-      dplyr::arrange(dplyr::desc(abs_loading)) |> 
+      dplyr::arrange(dplyr::desc(abs_loading)) |>
       dplyr::slice_head(n=top_n)
-    
+
     # Create a plot of top features per factor
-    features_per_factor_plot <- df |> 
+    features_per_factor_plot <- df |>
       ggplot(aes(
         x=abs_loading,
         y=reorder(feature,abs_loading),
@@ -106,9 +106,9 @@ plot_top_factor_features <- function(
       geom_point(shape=18,
                  size=5,
                  alpha=0.5) +
-      geom_segment(aes(x=0, 
-                       xend=abs_loading, 
-                       y=feature, 
+      geom_segment(aes(x=0,
+                       xend=abs_loading,
+                       y=feature,
                        yend=feature),
                    color="grey55")+
       theme_bw()+
@@ -120,10 +120,10 @@ plot_top_factor_features <- function(
         y="",
         color="Experiment"
       )
-    
+
   }else{
     stop("Method not supported.")
   }
   return(features_per_factor_plot)
-  
+
 }

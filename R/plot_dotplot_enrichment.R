@@ -1,6 +1,6 @@
 #' Plot Dotplot of Functional Enrichment Results
 #'
-#' Generates a dotplot visualization of enriched gene ontology (GO) terms 
+#' Generates a dotplot visualization of enriched gene ontology (GO) terms
 #' across different experimental categories.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing functional enrichment results.
@@ -10,15 +10,15 @@
 #' @param go_groups A character vector specifying specific GO groups to include. If `NULL`, selects the top `top_n` groups based on enrichment score.
 #'
 #' @details
-#' This function extracts functional enrichment results from `metadata(expomicset)$functional_enrichment`, 
-#' selects the most significant GO terms based on `-log10(p.adjust) * Count`, 
+#' This function extracts functional enrichment results from `metadata(expomicset)$functional_enrichment`,
+#' selects the most significant GO terms based on `-log10(p.adjust) * Count`,
 #' and visualizes them in a dotplot.
 #'
 #' - The x-axis represents experimental categories.
 #' - The y-axis represents enriched GO terms.
 #' - Dot size indicates the number of genes in the GO term.
 #' - Dot color represents statistical significance (`-log10(p.adjust)`).
-#' 
+#'
 #' The function allows filtering by predefined `go_groups` or selecting the top `top_n` groups automatically.
 #'
 #' @return A `ggplot` object displaying a dotplot of enriched GO terms.
@@ -37,13 +37,13 @@ plot_dotplot_enrichment <- function(
     go_groups=NULL
 ){
   require(ggplot2)
-  
+
   if(!"functional_enrichment" %in% names(MultiAssayExperiment::metadata(expomicset))){
     stop("Please run `run_functional_enrichment` first.")
   }
 
   go_group_df <- MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]]
-  
+
   if(!is.null(go_groups)){
     go_group_df <- go_group_df |>
       dplyr::filter(go_group %in% go_groups)
@@ -75,7 +75,7 @@ plot_dotplot_enrichment <- function(
                base_size = 10) +
     facet_grid(go_group~category, space ="free",scales = "free") +
     ggpubr::rotate_x_text(angle=45)+
-    scale_color_gradient(low="thistle1",high="magenta4") +
+    scale_color_gradient(low="thistle1",high="#8E0152") +
     theme(strip.text.x = element_text(face = "bold.italic",angle=90),
           strip.text.y = element_text(face="bold.italic",angle=0))+
     labs(

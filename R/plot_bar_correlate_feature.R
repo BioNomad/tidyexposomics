@@ -1,14 +1,14 @@
 #' Plot Omics Feature Associations
 #'
-#' Generates a bar plot visualizing the number of significant associations between 
+#' Generates a bar plot visualizing the number of significant associations between
 #' omics features and exposures across different assays.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing exposure-feature correlation results.
-#' @param geneset A character string indicating the type of features to use. 
+#' @param geneset A character string indicating the type of features to use.
 #' Options are `"degs"` (differentially expressed genes) or `"factors"` (latent factors). Default is `"degs"`.
 #'
 #' @details
-#' The function extracts correlation results from `metadata(expomicset)`, 
+#' The function extracts correlation results from `metadata(expomicset)`,
 #' groups features by assay, and visualizes the number of significant associations.
 #' The color represents different assay types.
 #'
@@ -24,14 +24,14 @@ plot_bar_correlate_feature <- function(
     expomicset,
     geneset = "degs") {
   require(ggplot2)
-  
+
   if(geneset=="degs"){
     # Check if the metadata contains the required data
     if(!"omics_exposure_deg_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
     exp_feature_cor_df <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation
-    
+
   }else if(geneset=="factors"){
     # Check if the metadata contains the required data
     if(!"omics_exposure_factor_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))){
@@ -41,8 +41,8 @@ plot_bar_correlate_feature <- function(
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
-  
-  exp_feature_cor_df |> 
+
+  exp_feature_cor_df |>
     janitor::tabyl(exp_name) |>
     ggplot(aes(
       x=n,
@@ -57,8 +57,8 @@ plot_bar_correlate_feature <- function(
       yend = as.numeric(reorder(exp_name, n)) + 0.45,
       color = exp_name,
     ), size = 1) +
-    ggsci::scale_fill_npg()+
-    ggsci::scale_color_npg()+
+    ggsci::scale_fill_aaas()+
+    ggsci::scale_color_aaas()+
     ggpubr::theme_pubr(legend="none",base_size = 10)+
     theme(plot.title = element_text(face = "bold.italic"))+
     labs(
