@@ -66,7 +66,7 @@ run_sensitivity_analysis <- function(
     pval_threshold = 0.05,
     logFC_threshold = log2(1.5),
     score_thresh=NULL,
-    score_quantile=0.1,
+    score_quantile=0.9,
     action="add"
 ) {
 
@@ -165,8 +165,7 @@ run_sensitivity_analysis <- function(
   feature_stability_df <- sensitivity_df |>
     .calculate_feature_stability(pval_col = pval_col,
                                  logfc_col = logfc_col,
-                                 pval_threshold = pval_threshold,
-                                 logFC_threshold = logFC_threshold)
+                                 pval_threshold = pval_threshold)
 
 
   if(is.null(score_thresh)){

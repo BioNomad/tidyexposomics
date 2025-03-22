@@ -28,7 +28,7 @@
 #' - Uses `.cluster_mat()` to determine GO term clusters using the selected `clustering_approach`.
 #' - Stores results in `metadata(expomicset)$functional_enrichment[[geneset]]` when `action="add"`.
 #'
-#' @return If `action="add"`, returns the updated `expomicset`.  
+#' @return If `action="add"`, returns the updated `expomicset`.
 #' If `action="get"`, returns a `data.frame` with enrichment results, including:
 #' \item{Description}{GO term description.}
 #' \item{geneID}{Gene set associated with the GO term.}
@@ -47,7 +47,7 @@
 #' @export
 run_enrichment <- function(
     expomicset,
-    geneset, 
+    geneset,
     feature_col = "feature",
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
@@ -64,9 +64,9 @@ run_enrichment <- function(
     clustering_approach = "diana",
     action="add"
 ){
-  
+
   if(geneset == "deg"){
-    enrich_res <- expomicset |> 
+    enrich_res <- expomicset |>
       .da_functional_enrichment(
         mirna_assays = mirna_assays,
         pval_col = pval_col,
@@ -81,7 +81,7 @@ run_enrichment <- function(
         ont = ont
       )
   } else if (geneset == "deg_exp_cor"){
-    enrich_res <- expomicset |> 
+    enrich_res <- expomicset |>
       .da_exposure_functional_enrichment(
         feature_col = feature_col,
         mirna_assays = mirna_assays,
@@ -98,7 +98,7 @@ run_enrichment <- function(
         ont = ont
       )
   } else if (geneset == "factor_exp_cor"){
-    enrich_res <- expomicset |> 
+    enrich_res <- expomicset |>
       .factor_exposure_functional_enrichment(
         mirna_assays = mirna_assays,
         pAdjustMethod = pAdjustMethod,
@@ -110,8 +110,8 @@ run_enrichment <- function(
         ont = ont
       )
   } else if (geneset == "factor"){
-    enrich_res <- expomicset |> 
-      .factor_functional_enrichment( 
+    enrich_res <- expomicset |>
+      .factor_functional_enrichment(
         mirna_assays = mirna_assays,
         pAdjustMethod = pAdjustMethod,
         pvalueCutoff = pvalueCutoff,
@@ -123,9 +123,20 @@ run_enrichment <- function(
   } else {
     stop("Invalid geneset. Choose from 'deg', 'deg_cor', 'factor_exp_cor', or 'factor'.")
   }
-  
+
+  # Exit early if no enrichment was found
+  if (is.null(enrich_res) || nrow(enrich_res) == 0) {
+    warning("No enrichment results found for geneset '", geneset, "'. Skipping GO term clustering.")
+    if (action == "add") {
+      MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]] <- enrich_res
+      return(expomicset)
+    } else {
+      return(enrich_res)
+    }
+  }
+
   message("Determining Number of GO Term Clusters...")
-  
+
   # determine go groups
   go_groups <- enrich_res |>
     (\(df) split(df,df$Description) )() |>
@@ -146,16 +157,28 @@ run_enrichment <- function(
     (\(x) df=data.frame(
       Description=names(x),
       go_group=as.numeric(x)))()
-  
-  enrich_res <- enrich_res |> 
+
+  if (is.null(go_groups) || nrow(go_groups) == 0 || !"Description" %in% colnames(go_groups)) {
+    warning("GO clustering failed — no Description terms or clusters found.")
+    enrich_res$go_group <- NA_character_
+    if (action == "add") {
+      MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]] <- enrich_res
+      return(expomicset)
+    } else {
+      return(enrich_res)
+    }
+  }
+
+
+  enrich_res <- enrich_res |>
     dplyr::inner_join(
-      go_groups, 
-      by = "Description") |> 
-    dplyr::mutate(go_group=paste("Group", go_group, sep="_")) 
-  
+      go_groups,
+      by = "Description") |>
+    dplyr::mutate(go_group=paste("Group", go_group, sep="_"))
+
   if(action=="add"){
     MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]] <- enrich_res
-    
+
     return(expomicset)
   }else if (action=="get"){
     return(enrich_res)
