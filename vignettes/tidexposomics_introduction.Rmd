@@ -35,7 +35,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 # Load data
-load("../data/expom_completed_pipeline.RData")
+load("~/jhu/projects/useful_functions/expom.RData")
 invisible(lapply(
   list.files(path = "~/jhu/projects/tidyexposomics/R/",
              pattern="*.R",full.names = TRUE),
@@ -97,30 +97,30 @@ We use the MultiAssayExperiment object to store the exposure and omics data. The
 
 # Create list of omics data frames
 omics_list <- list(
-  "CD16+ Monocyte RNA" = cd16_rna,
-  "CD4+ T-cell RNA" = cd4_rna,
-  "CD4+ T-cell miRNA"= cd4_mirna,
-  "CD16+ Monocyte miRNA" = cd16_mirna,
-  "Serum Proteomics" = prot_abd_unnorm,
-  "Serum Adductomics" = adduct
+  "Gene Expression" = exp,
+  "Metabolomics" = met,
+  "Proteomics" = prot
 )
 
 # Create list of omics row data data frames
 fdata <- list(
-  "CD16+ Monocyte RNA" = cd16_rna_fdata,
-  "CD4+ T-cell RNA" = cd4_rna_fdata,
-  "CD4+ T-cell miRNA"= cd4_mirna_fdata,
-  "CD16+ Monocyte miRNA" = cd16_mirna_fdata,
-  "Serum Proteomics" = prot_fdata,
-  "Serum Adductomics" = adduct_fdata
+  "Gene Expression" = exp_fdata,
+  "Metabolomics" = met_fdata,
+  "Proteomics" = prot_fdata
 )
 
 # Create the expomicset object
 expom <- create_expomicset(
   var_info = des,
-  exposure = aw_dataset_cv2_filt,
+  exposure = meta,
   omics = omics_list,
   row_data = fdata)
+
+# Define our exposure variables
+exp_vars <- des |> 
+  filter(grepl("exposure|chemical",category,ignore.case = TRUE)) |> 
+  pull(variable) |> 
+  as.character()
 ```
 
 # Quality Control
@@ -133,13 +133,13 @@ Oftentimes when collecting data, there are missing values. The `filter_missing` 
 ```{r,eval=FALSE}
 # Filter out variables with too many missing values
 expom_qc <- expom |> 
-  filter_missing(na_thresh = 20)
+  filter_missing(na_thresh = 1)
 ```
 
 ```{r,warning=FALSE,message=FALSE,fig.width=6,fig.height=4,out.width="70%",fig.align='center'}
 # Check the number of missing values
 expom_qc |> 
-  plot_missing_summary(threshold = 20)
+  plot_missing_summary(threshold = 1)
 ```
 
 Here we see that the Serum adducts have the highest number of missing values, followed by the exposure data.
@@ -179,7 +179,7 @@ Here we see have two sample outliers, and that most variation is captured in the
 ```{r,eval=FALSE}
 # Filter out sample outliers
 expom_qc <- expom_qc |> 
-  filter_sample_outliers(outliers = c("s937","s331"))
+  filter_sample_outliers(outliers = c("s210","s516","s1231","s495","s1281"))
 ```
 
 
@@ -195,13 +195,15 @@ expom_qc <- expom_qc |>
   run_normality_check(action = "add") |> 
   
   # Transform variables 
-  transform_exposure(transform_method = "best",
+  transform_exposure(transform_method = "log2",
                      cols_of_interest = exp_vars) 
 ```
 
-```{r,warning=FALSE,message=FALSE,fig.width=5,fig.height=4}
+```{r,warning=FALSE,message=FALSE,fig.width=4,fig.height=4}
 expom_qc |>
-  plot_normality_summary()
+  plot_normality_summary(
+    transformed = TRUE
+  )
 ```
 
 # Sample-Exposure Association
@@ -219,7 +221,7 @@ expom_sample_exp <- expom_qc |>
                   action = "add") 
 ```
 
-```{r,message=FALSE,warning=FALSE,fig.height=6,fig.width=10,out.width="170%"}
+```{r,message=FALSE,warning=FALSE,fig.height=8,fig.width=12,out.width="170%"}
 # Plot sample clusters
 expom_sample_exp |> 
   plot_sample_clusters(cols_of_interest = exp_vars)
@@ -236,17 +238,18 @@ The `perform_exwas` function is used to perform ExWAS analysis. The `outcome` ar
 # Perform ExWAS Analysis
 expom_sample_exp <- expom_sample_exp |> 
   associate_exposure_outcome(
-    outcome = "fev_height",
-    exposures = all_vars[
-      !all_vars %in% c("fev_height",
-                       "age",
-                       "sex",
-                       "race")],
-    covariates = c("age","sex","race"),
-    action = "add")
+    outcome = "hs_asthma",
+    exposures = exp_vars[
+      !exp_vars %in% c("hs_asthma",
+                       "hs_child_age",
+                       "e3_sex")],
+    covariates = c("hs_child_age",
+                       "e3_sex"),
+    action = "add",
+    family = "binomial")
 ```
 
-```{r,warning=FALSE,message=FALSE,fig.height=5,fig.width=4,fig.align='center',out.width="60%"}
+```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=4.5,fig.align='center',out.width="60%"}
 expom_sample_exp |> 
   plot_associate_exposure_outcome()
 ```
@@ -264,21 +267,21 @@ We also provide functionality to test for differentially abundant features assoc
 # Run differential abundance analysis
 expom_da <- expom_sample_exp |> 
   run_differential_abundance(
-    formula = ~ fev_height + age + sex + race,
+    formula = ~ hs_asthma + hs_child_age + e3_sex,
     method = "limma_voom",
-    contrasts = c("fev_height - (Intercept)"),
     minimum_counts = 1,
     minimum_proportion = 0.1,
     scaling_method = "none",
     action = "add") 
 ```
 
-```{r,warning=FALSE,message=FALSE,fig.height=6,fig.width=6,fig.align='center'}
+```{r,warning=FALSE,message=FALSE,fig.height=4,fig.width=7,fig.align='center'}
 # Plot Differential Abundance Results
 expom_da |> 
   plot_volcano(
-    logFC_thresh = log2(2),
-    pval_thresh = 0.05)
+    logFC_thresh = log2(1),
+    pval_thresh = 0.05,
+    nrow = 1)
 ```
 
 We note that CD16+ monocyte RNA has the greatest number of differentially abundant features, followed byCD4+ T-cell RNA, serum proteomics, serum adductomics, then CD16+ monocyte miRNA, CD4+ T-cell miRNA.
@@ -287,24 +290,26 @@ We note that CD16+ monocyte RNA has the greatest number of differentially abunda
 
 Depending on pre-processing steps, the results of the differential abundance analysis may vary. The `sensitivity_analysis` function is used to perform a sensitivity analysis to determine the robustness of the results. Here we determine if a feature is still differentially abundant if different minimum values, proportions, scaling methods are used, and the inclusion of covariates.
 
-```{r,eval=FALSE}
+```{r,eval=FALSE,message=FALSE}
 # Perform Sensitivity Analysis
 expom_da <- expom_da |> 
   run_sensitivity_analysis(
-    base_formula = ~ fev_height + age + sex + race, 
-    contrasts = c("fev_height - (Intercept)"),
+    base_formula = ~ hs_asthma + hs_child_age + e3_sex, 
     methods = c("limma_voom"),
     scaling_methods = c("none"),
     min_counts_range = c(1,5),
     min_proportion_range = c(0.1,0.3),
-    covariates_to_remove = c("age" , "sex" , "race"),
+    covariates_to_remove = c("hs_child_age" , "e3_sex"),
+    pval_col = "adj.P.Val",
+    logfc_col = "logFC",
+    pval_threshold = 0.05,
     action = "add") 
 ```
 
-```{r,warning=FALSE,message=FALSE,out.width='80%',fig.align='center'}
+```{r,warning=FALSE,message=FALSE,out.width='80%',fig.align='center',fig.width=8,fig.height=3}
 # Plot sensitivity analysis results
 expom_da |> 
-  plot_sensitivity_summary(stability_score_thresh = 12)
+  plot_sensitivity_summary(stability_score_thresh = 0.95)
 ```
 
 We note that transcriptomic assays have the greatest number of differentially abundant features and higher stability scores, here the sum of the number of times the feature was differentially abundant under different conditions
@@ -324,7 +329,7 @@ expom_multi <- expom_da |>
                              action = "add") 
 ```
 
-```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=6,fig.align='center'}
+```{r,warning=FALSE,message=FALSE,fig.height=2,fig.width=6,fig.align='center'}
 # Plot multi-omics factor summary
 expom_multi |> 
   plot_factor_summary()
@@ -337,20 +342,21 @@ These methods are designed to identify factors that we can then associate with a
 ```{r,warning=FALSE,message=FALSE}
 # Identify factors that correlate with the outcome
 expom_multi <- expom_multi |> 
-  associate_factor_outcome(outcome_var = "fev_height", 
-                            categorical = FALSE,
+  associate_factor_outcome(outcome = "hs_asthma", 
+                           covariates = c("hs_child_age" , "e3_sex"),
                             p_thresh = 1,
+                           family = "binomial",
                            action = "add") 
 ```
+
 We see that the third factor is associated with FEV1/FVC. Factors have loading scores which indicate the strength of the association between the factor and the features. Here we can extract the top features, those in the 95th percentile, associated with our factor of interest.  
 
 ```{r,warning=FALSE,message=FALSE}
 # Extract top features that contribute to a factor
 expom_multi <- expom_multi |> 
-  extract_top_factor_features(factors = "V6", 
+  extract_top_factor_features(factors = "V5", 
                               method = "percentile",
                               percentile = 0.95,
-                              threshold = 0.3,
                               action = "add") 
 ```
 # Exposure-Omics Association
@@ -364,8 +370,12 @@ Now we have the option to correlate either the top factor features, or different
 # Correlate top differentially abundant features with exposures
 expom_multi <- expom_multi |> 
   correlate_exposures_degs(exposure_cols = exp_vars,
-                                robust = TRUE,
-                                score_thresh = 12,
+                           robust = TRUE,
+                           score_thresh = 0.95,
+                           deg_logfc_thresh = log2(1),
+                           deg_pval_thresh = 0.05,
+                           correlation_cutoff = 0.01,
+                           pval_cutoff = 0.1,
                            action = "add")
 ```
 
@@ -378,10 +388,10 @@ expom_multi |>
 
 Here we note that transcriptomic features have a greater number of associations with exposures. Among exposures, we see that allergens have the greatest number of associations with features - although we note that there are more allergen variables than other exposure categories. So we include the number of features associated with each the top exposure, and the number of exposures associated with the top features. It may also be useful to identify which exposures are correlated with similar molecular features.
 
-```{r,fig.width=8,fig.height=7,message=FALSE,warning=FALSE}
+```{r,fig.width=10,fig.height=7,message=FALSE,warning=FALSE}
 # Plot Shared Feature Correlations Between Exposures
 expom_multi |> 
-  plot_circos_exposure_shared_features(geneset = "degs")
+  plot_circos_exposure_shared_features(geneset = "degs",cutoff =0)
 ```
 
 
@@ -396,16 +406,21 @@ expom_enrich <- expom_multi |>
   run_enrichment(
     geneset = "deg_exp_cor",
     feature_col = "gene",
-    mirna_assays = c("CD16+ Monocyte miRNA","CD4+ T-cell miRNA"),
+    clustering_approach = "dynamic",
     pval_threshold = 0.05,
-    logfc_threshold = log2(1.5),
+    pvalueCutoff = 0.1,
+    pAdjustMethod = "none",
+    qvalueCutoff = 1,
+    logfc_threshold = log2(1),
     action="add")
 ```
 
 ```{r,fig.width=9,fig.height=10}
 # Plot functional enrichment results
 expom_enrich |> 
-    plot_dotplot_enrichment(geneset = "deg_exp_cor")
+    plot_dotplot_enrichment(geneset = "deg_exp_cor",
+                            top_n = 5,
+                            n_per_group = 5)
 ```
 You'll notice that enrichment terms are organized into groups by omic layer, the exposure category these features are associated with, and the Jaccard similarity of the Go term genesets. We then provide the top 5 groups of enrichment terms based on a score calculated as the mean of the negative Log~10~ of the p-value multiplied by the number of genes in the term. Here we that while allergens and chemicals are broadly associated with all of the top enrichment term groups, while indoor air pollutants and serum metals are more specifically associated with RNA splicing and mitochondrial energetics. We also provide additional functionality to prioritze GO groups driven by a particular exposure or omic layer. To accomplish this we filter the GO groups by the omic layer and exposure category. Then we collect the genes driving the association and calculate the eigengene, or first principal component, of the GO group. We then associate the eigengene with the outcome variable.
 
@@ -414,9 +429,10 @@ You'll notice that enrichment terms are organized into groups by omic layer, the
 expom_enrich <- expom_enrich |> 
   associate_go_outcome(
     geneset = "deg_exp_cor",
-    outcome = "fev_height",
-    mirna_assays = c("CD4+ T-cell miRNA","CD16+ Monocyte miRNA"),
-    covariates = c("age","sex","race"),
+    outcome = "hs_asthma",
+    covariates = c("hs_child_age" , "e3_sex"),
+    feature_col = "gene",
+    family = "binomial",
     action = "add"
   )
 ```
@@ -425,8 +441,8 @@ expom_enrich <- expom_enrich |>
 # Plot GO Group Eigengene, Outcome Association
 expom_enrich |> 
   plot_associate_go_outcome(
-    direction_filter = "down",
-    filter_thresh = 0.2)
+    direction_filter = "up",
+    filter_thresh = 0.9)
 ```
 
 Here you'll note that GO group 40, 14, 23, and 32 eigengenes are negatively associated our outcome variable of interest FEV1/height^2^, across multiple categories, meaning that variation in these GO groups is associated with worse lung function. You'll also note that these groups appear to largely be driven by associations with allergens and chemicals in CD16+ Monocytes.We can now re-plot our dotplot to investigate what the biological functions associated with these GO groups.
@@ -436,7 +452,7 @@ Here you'll note that GO group 40, 14, 23, and 32 eigengenes are negatively asso
 expom_enrich |> 
   plot_dotplot_enrichment(
     geneset = "deg_exp_cor",
-    go_groups = c("Group_40","Group_14","Group_23","Group_32"))
+    go_groups = c("Group_1","Group_3","Group_6","Group_7"))
 ```
 
 While some of the GO groups remain the same, we do see that groups associated with chromatin remodeling and telomere maintenance are now prioritized. 
