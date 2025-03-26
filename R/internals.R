@@ -161,8 +161,7 @@
 .calculate_feature_stability <- function(sensitivity_df,
                                          pval_col = "adj.P.Val",
                                          logfc_col = "logFC",
-                                         pval_threshold = 0.05,
-                                         logFC_threshold = log2(1.5)) {
+                                         pval_threshold = 0.05) {
   # Extract sensitivity analysis results
   sensitivity_df <- sensitivity_df
 
@@ -182,26 +181,26 @@
     summarise(
       # Stability Score (Weighted: Frequency × Effect Size Consistency)
       # FDR-adjusted significance frequency
-      presence_rate = mean(p_adjusted < 0.05, na.rm = TRUE),
+      presence_rate = mean(!!sym(pval_col) < 0.05, na.rm = TRUE),
       # Ensures stability considers effect size
-      effect_consistency = 1 / (1 + (sd(logFC, na.rm = TRUE) / mean(abs(logFC), na.rm = TRUE))),
+      effect_consistency = 1 / (1 + (sd(!!sym(logfc_col), na.rm = TRUE) / mean(abs(!!sym(logfc_col)), na.rm = TRUE))),
       # Weighted score
       stability_score = presence_rate * effect_consistency,  # Weighted score
 
       # Effect Size Variability
-      sd_logFC = sd(logFC, na.rm = TRUE),
+      sd_logFC = sd(!!sym(logfc_col), na.rm = TRUE),
       # Robust alternative to SD
-      iqr_logFC = IQR(logFC, na.rm = TRUE),
+      iqr_logFC = IQR(!!sym(logfc_col), na.rm = TRUE),
 
       # Sign Flip Frequency (How often logFC changes sign)
-      sign_flip_freq = mean(sign(logFC) != sign(mean(logFC, na.rm = TRUE)), na.rm = TRUE),
+      sign_flip_freq = mean(sign(!!sym(logfc_col)) != sign(mean(!!sym(logfc_col), na.rm = TRUE)), na.rm = TRUE),
 
       # p-value Variability (SD of log-transformed p-values)
       # Adding small offset to avoid log(0)
-      sd_log_p = sd(log10(p_adjusted + 1e-10), na.rm = TRUE),
+      sd_log_p = sd(log10(!!sym(pval_col) + 1e-10), na.rm = TRUE),
 
       # Coefficient of Variation (CV) for Relative Variability
-      cv_logFC = sd(logFC, na.rm = TRUE) / abs(mean(logFC, na.rm = TRUE))
+      cv_logFC = sd(!!sym(logfc_col), na.rm = TRUE) / abs(mean(!!sym(logfc_col), na.rm = TRUE))
     )
 
   message("Feature stability analysis completed.")
