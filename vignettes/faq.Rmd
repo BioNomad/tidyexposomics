@@ -1,0 +1,25 @@
+---
+title: "FAQ"
+output: html_document
+---
+
+What is a MultiAssayExperiment and why use it?
+
+The `MultiAssayExperiment` is a container that lets us store multiple types of omics data linked by sample metadata.
+
+---
+
+What's the difference between `run_*` and `associate_*` functions?
+
+- `run_*`: Executes a multi-step or complex analysis pipeline
+- `associate_*`: Fits a model or correlation between variables
+
+---
+
+How is the stability score calculated?
+
+Stability scores reflect the reproducibility of differential abundance results across different preprocessing pipelines. A score of 1 means it's always detected, and 0 means never.
+
+What is an eigengene?
+
+An eigengene is a representative gene expression profile for a module of co-expressed genes. It summarizes the module's expression pattern and is used in network analysis.

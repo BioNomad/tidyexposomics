@@ -42,3 +42,30 @@ hr {
   font-size: 500%;
   color: #71255A;
 }
+
+.navbar {
+  background-color: #1e0c1f !important;
+  border-color: #1e0c1f !important;
+}
+
+#nav {
+  background-color: #1e0c1f !important;
+  border-color: #1e0c1f !important;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .dropdown-item,
+.navbar .nav-item .nav-link,
+.navbar .navbar-text {
+  color: #ffffff !important;
+}
+
+/* Optional: make text stay white on hover or when active */
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .nav-item.active .nav-link,
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  color: #ffffff !important;
+}

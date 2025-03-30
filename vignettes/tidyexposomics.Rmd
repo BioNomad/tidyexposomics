@@ -1,9 +1,5 @@
 ---
-title: "tidyexposomics: integrated exposure-omics analysis powered by tidy principles"
-author:
-- name: "Jason Laird^1^"
-  affiliation: "1. Department of Environmental Health and Engineering, Johns Hopkins University"
-date: "`r format(Sys.time(), '%B %d, %Y')`"
+title: "Introduction to tidyexposomics"
 header-includes:
    - \usepackage{amsmath}
    - \usepackage{amsfonts}
@@ -14,14 +10,13 @@ output:
     toc_float: true
     self_contained: yes
     highlight: pygments
-    css: styles.css
 vignette: >
   %\VignetteIndexEntry{tidyexposomics: integrated exposure-omics analysis powered by the tidyverse}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-<img src="../inst/logo.png" height="180" style="position:absolute;top:30px;right:0px;"/>
+
 
 ```{r, echo=FALSE}
 # htmltools::img(src = knitr::image_uri(file.path("../inst/logo.png")), 
@@ -35,7 +30,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 # Load data
-load("~/jhu/projects/useful_functions/expom.RData")
+#load("~/jhu/projects/useful_functions/expom.RData")
+load("../data/expom_complete.RData")
 invisible(lapply(
   list.files(path = "~/jhu/projects/tidyexposomics/R/",
              pattern="*.R",full.names = TRUE),
@@ -43,15 +39,12 @@ invisible(lapply(
 ```
 
 
-# Introduction
-<hr>
-
 Exposure to environmental factors is a major determinant of health and disease. The exposome is a term that represents the totality of environmental exposures that drive disease and overall health [(Wild et al. 2005)](https://pubmed.ncbi.nlm.nih.gov/16103423/). To tackle the daunting task of characterizing the relationship between a multiplicity of exposures and disease outcomes, epidemiological studies have moved towards exposure wide association studies (ExWAS) where sets of exposures are associated with an outcome [(Chung et al. 2024)](https://academic.oup.com/exposome/article/4/1/osae001/7574628). The advent of high-throughput technologies has enabled profiling of several layers of biological information. These layers too can be integrated to better understand the relationship between exposures and disease outcomes.
 
 The `tidyexposomics` package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. We structure our commands to fit into the `tidyverse` framework, where commands are designed to be simplified and intuitive. Here we provide functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
 
 ```{r echo = FALSE, message=FALSE, out.width="120%",fig.align='center', fig.cap='**tidyexposomics pipeline overview.** Exposure and omics data are stored in a MultiAssayExperiment. Data then undergo quality cotnrol, sample and exposure associations, differential abundance analysis, multi-omics integration, and functional enrichment analysis. The pipeline is designed to be flexible and modular, allowing users to customize their analysis.',}
-knitr::include_graphics("../inst/overview.png")
+knitr::include_graphics("./overview.png")
 ```
 
 # Installation
@@ -77,12 +70,12 @@ We provide functionality to either `add` results to the existing object storing 
 # Loading Data
 <hr>
 
-To get started we need to load the data. The `expOmicSet` function is used to create a MultiAssayExperiment object that contains the exposure and omics data. As a quick introduction, a MultiAssayExperiment object is a container for storing multiple assays (e.g., omics data) and their associated metadata:
+To get started we need to load the data. The `create_expomicset` function is used to create a MultiAssayExperiment object that contains the exposure and omics data. As a quick introduction, a MultiAssayExperiment object is a container for storing multiple assays (e.g., omics data) and their associated metadata:
 
 
-```{r xxx, echo = FALSE, message=FALSE,out.width='60%', fig.align='center', fig.cap='**Overview of the MultiAssayExperiment Object Structure.** Subject level data is captured within the `colData` of the MultiAssayExperiment. Observations are stored within `experiments` slots in the MultiAssayExperiment and `sampleMap` is used to link the data ( [MultiAssay Special Interest Group 2024](https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) ).'}
+```{r , echo = FALSE, message=FALSE,out.width='60%', fig.align='center', fig.cap='**Overview of the MultiAssayExperiment Object Structure.** Subject level data is captured within the `colData` of the MultiAssayExperiment. Observations are stored within `experiments` slots in the MultiAssayExperiment and `sampleMap` is used to link the data ( [MultiAssay Special Interest Group 2024](https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) ).'}
 
-knitr::include_graphics("../inst/mae.png")
+knitr::include_graphics("./mae.png")
 ```
 
 We use the MultiAssayExperiment object to store the exposure and omics data. The `create_expomicset` function takes several arguments:
@@ -94,6 +87,9 @@ We use the MultiAssayExperiment object to store the exposure and omics data. The
 
 
 ```{r,eval=FALSE}
+# Load Libraries
+library(tidyverse)
+library(tidyexposomics)
 
 # Create list of omics data frames
 omics_list <- list(
@@ -174,7 +170,7 @@ expom_qc |>
   plot_pca()
 ```
 
-Here we see have two sample outliers, and that most variation is captured in the first two principal components for both features and samples. We can filter out these samples using the `filter_sample_outliers` function. 
+Here we see have a few sample outliers, and that most variation is captured in the first two principal components for both features and samples. We can filter out these samples using the `filter_sample_outliers` function. 
 
 ```{r,eval=FALSE}
 # Filter out sample outliers
@@ -211,7 +207,7 @@ expom_qc |>
 
 ## Sample Clustering
 
-The `run_cluster_samples` function is used to cluster samples based on the exposure data. The `clustering_approach` argument is used to set the clustering approach. The `clustering_approach` can be set to `diana`, `gap`, or `elbow`. 
+The `run_cluster_samples` function is used to cluster samples based on the exposure data. The `clustering_approach` argument is used to set the clustering approach to automatically identify clusters. Here we use the `dynamic` approach, which uses a dynamic tree cut method to identify clusters. The `action` argument is set to `add` to add the clustering results to the existing object.
 
 ```{r,eval=FALSE}
 # Sample clustering
@@ -227,12 +223,12 @@ expom_sample_exp |>
   plot_sample_clusters(cols_of_interest = exp_vars)
 ```
 
-Here we see two clusters, largely driven by levels of Immunoglobulin E.
+Here we see seven clusters, largely driven by particulate matter and chemical exposure.
 
 
 ## ExWAS Association
 
-The `perform_exwas` function is used to perform ExWAS analysis. The `outcome` argument is used to set the outcome variable. The `exposures` argument is used to set the exposures of interest. The `covariates` argument is used to set the covariates to adjust for.
+The `perform_exwas` function is used to perform ExWAS analysis. The `outcome` argument is used to set the outcome variable. The `exposures` argument is used to set the exposures of interest. The `covariates` argument is used to set the covariates to adjust for. The family argument is used to set the type of model to use. Here we use a binomial model as our outcome variable is binary (i.e., asthma status). The `action` argument is set to `add` to add the results to the existing object.
 
 ```{r,eval=FALSE}
 # Perform ExWAS Analysis
@@ -254,7 +250,7 @@ expom_sample_exp |>
   plot_associate_exposure_outcome()
 ```
 
-Here we see that urinary copper and eosinophil levels are associated with FEV1/height^2 after adjusting for age, sex, and race.
+Here we see that particulate matter levels are associated with asthma status after adjusting for age and sex.
 
 # Differential Abundance
 <hr>
@@ -284,11 +280,10 @@ expom_da |>
     nrow = 1)
 ```
 
-We note that CD16+ monocyte RNA has the greatest number of differentially abundant features, followed byCD4+ T-cell RNA, serum proteomics, serum adductomics, then CD16+ monocyte miRNA, CD4+ T-cell miRNA.
-
 ## Sensitivity Analysis
 
-Depending on pre-processing steps, the results of the differential abundance analysis may vary. The `sensitivity_analysis` function is used to perform a sensitivity analysis to determine the robustness of the results. Here we determine if a feature is still differentially abundant if different minimum values, proportions, scaling methods are used, and the inclusion of covariates.
+Depending on pre-processing steps, the results of the differential abundance analysis may vary. The `sensitivity_analysis` function is used to perform a sensitivity analysis to determine the robustness of the results. Here we determine if a feature is still differentially abundant if different minimum values, proportions, scaling methods are used, and the inclusion of covariates. We then define a stability score based on the number of times a feature is found to be differentially abundant under different conditions as well as the consistency of the effect size. A stability score of 1 indicates that the feature is always found to be differentially abundant, while a stability score of 0 indicates that the feature is never found to be differentially abundant. 
+
 
 ```{r,eval=FALSE,message=FALSE}
 # Perform Sensitivity Analysis
@@ -312,7 +307,6 @@ expom_da |>
   plot_sensitivity_summary(stability_score_thresh = 0.95)
 ```
 
-We note that transcriptomic assays have the greatest number of differentially abundant features and higher stability scores, here the sum of the number of times the feature was differentially abundant under different conditions
 
 # Multi-Omics Integration
 <hr>
@@ -337,7 +331,7 @@ expom_multi |>
 
 ## Factor Analysis
 
-These methods are designed to identify factors that we can then associate with an outcome variable. Here we will use the `associate_factor_outcome` function to identify factors that are associated with FEV1/FVC. 
+These methods are designed to identify factors that we can then associate with an outcome variable. Here we will use the `associate_factor_outcome` function to identify factors that are associated with asthma status. 
 
 ```{r,warning=FALSE,message=FALSE}
 # Identify factors that correlate with the outcome
@@ -347,6 +341,23 @@ expom_multi <- expom_multi |>
                             p_thresh = 1,
                            family = "binomial",
                            action = "add") 
+```
+
+```
+Extracting factors from integration results...
+Detected MCIA results, extracting global scores...
+Associating Outcome and Factors...
+Factors with significant association with outcome:
+Factor: V1, p-value: 0.777
+Factor: V2, p-value: 0.618
+Factor: V3, p-value: 0.805
+Factor: V4, p-value: 0.986
+Factor: V5, p-value: 0.003
+Factor: V6, p-value: 0.326
+Factor: V7, p-value: 0.089
+Factor: V8, p-value: 0.901
+Factor: V9, p-value: 0.085
+Factor: V10, p-value: 0.557
 ```
 
 We see that the third factor is associated with FEV1/FVC. Factors have loading scores which indicate the strength of the association between the factor and the features. Here we can extract the top features, those in the 95th percentile, associated with our factor of interest.  
@@ -359,19 +370,22 @@ expom_multi <- expom_multi |>
                               percentile = 0.95,
                               action = "add") 
 ```
+
+
 # Exposure-Omics Association
 <hr>
 
 ## Exposure-Omics Association
 
-Now we have the option to correlate either the top factor features, or differentially abundant features with exposures. Here we will correlate the top differentially abundant features with exposures. 
+Now we have the option to correlate either the top factor features, or differentially abundant features with exposures. Here we will correlate the top differentially abundant features with exposures. Setting `robust` to `TRUE` will use features with a stability score over `score_thresh`. We can also set thresholds for the differential expression log fold change and p-value to filter the results. The `correlation_cutoff` is used to set the minimum correlation score, while the `pval_cutoff` is used to set the maximum p-value for the association. 
+
 
 ```{r,eval=FALSE}
 # Correlate top differentially abundant features with exposures
 expom_multi <- expom_multi |> 
   correlate_exposures_degs(exposure_cols = exp_vars,
                            robust = TRUE,
-                           score_thresh = 0.95,
+                           score_thresh = 0.73,
                            deg_logfc_thresh = log2(1),
                            deg_pval_thresh = 0.05,
                            correlation_cutoff = 0.01,
@@ -386,7 +400,7 @@ expom_multi |>
   plot_bar_correlate_summary()
 ```
 
-Here we note that transcriptomic features have a greater number of associations with exposures. Among exposures, we see that allergens have the greatest number of associations with features - although we note that there are more allergen variables than other exposure categories. So we include the number of features associated with each the top exposure, and the number of exposures associated with the top features. It may also be useful to identify which exposures are correlated with similar molecular features.
+Here we note that transcriptomic features have a greater number of associations with exposures. Among exposures, we see that outdoor exposures have the greatest number of associations with features. It may also be useful to identify which exposures are correlated with similar molecular features.
 
 ```{r,fig.width=10,fig.height=7,message=FALSE,warning=FALSE}
 # Plot Shared Feature Correlations Between Exposures
@@ -422,7 +436,17 @@ expom_enrich |>
                             top_n = 5,
                             n_per_group = 5)
 ```
-You'll notice that enrichment terms are organized into groups by omic layer, the exposure category these features are associated with, and the Jaccard similarity of the Go term genesets. We then provide the top 5 groups of enrichment terms based on a score calculated as the mean of the negative Log~10~ of the p-value multiplied by the number of genes in the term. Here we that while allergens and chemicals are broadly associated with all of the top enrichment term groups, while indoor air pollutants and serum metals are more specifically associated with RNA splicing and mitochondrial energetics. We also provide additional functionality to prioritze GO groups driven by a particular exposure or omic layer. To accomplish this we filter the GO groups by the omic layer and exposure category. Then we collect the genes driving the association and calculate the eigengene, or first principal component, of the GO group. We then associate the eigengene with the outcome variable.
+
+You'll notice that enrichment terms are organized into groups by omic layer, the exposure category these features are associated with, and the Jaccard similarity of the Go term genesets. We then provide the top 5 groups of enrichment terms based on a score calculated as the mean of the negative Log~10~ of the p-value multiplied by the number of genes in the term. Here we see that that outdoor exposures and chemicals are broadly associated with all of the top enrichment term groups. 
+
+We also provide additional functionality to prioritze GO groups driven by a particular exposure or omic layer. To accomplish this we filter the GO groups by the omic layer and exposure category. Then we collect the genes driving the association and calculate the eigengene, or first principal component, of the GO group. We then associate the eigengene with the outcome variable. The `associate_go_outcome` function has several options:
+
+- `geneset` is used to specify the geneset to use for the association.
+- `outcome` is used to specify the outcome variable to associate with.
+- `covariates` is used to specify the covariates to adjust for.
+- `feature_col` is used to specify the column in the geneset to use for the association.
+- `family` is used to specify the type of model to use for the association. Here we use a binomial model as our outcome variable is binary (i.e., asthma status).
+
 
 ```{r,eval=FALSE}
 # Identify GO Groups that correlate with the outcome
@@ -437,7 +461,7 @@ expom_enrich <- expom_enrich |>
   )
 ```
 
-```{r,fig.width=7,fig.height=4,warning=FALSE,message=FALSE}
+```{r,fig.width=6,fig.height=3,warning=FALSE,message=FALSE}
 # Plot GO Group Eigengene, Outcome Association
 expom_enrich |> 
   plot_associate_go_outcome(
@@ -445,17 +469,17 @@ expom_enrich |>
     filter_thresh = 0.9)
 ```
 
-Here you'll note that GO group 40, 14, 23, and 32 eigengenes are negatively associated our outcome variable of interest FEV1/height^2^, across multiple categories, meaning that variation in these GO groups is associated with worse lung function. You'll also note that these groups appear to largely be driven by associations with allergens and chemicals in CD16+ Monocytes.We can now re-plot our dotplot to investigate what the biological functions associated with these GO groups.
+Here you'll note that GO groups 2 and 4 eigengenes are positively associated with asthma status, across multiple categories, meaning that variation in these GO groups is associated with asthma status. We can now re-plot our dotplot to investigate what the biological functions associated with these GO groups.
 
-```{r,fig.width=9,fig.height=10}
+```{r,fig.width=9,fig.height=8}
 # Plot GO Group Exposures
 expom_enrich |> 
   plot_dotplot_enrichment(
     geneset = "deg_exp_cor",
-    go_groups = c("Group_1","Group_3","Group_6","Group_7"))
+    go_groups = c("Group_2","Group_4"))
 ```
 
-While some of the GO groups remain the same, we do see that groups associated with chromatin remodeling and telomere maintenance are now prioritized. 
+While some of the GO groups remain the same, we do see that groups associated with PI3K signalling are now prioritized. 
 
 
 ## References
