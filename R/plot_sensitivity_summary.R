@@ -44,7 +44,7 @@ plot_sensitivity_summary <- function(
   # Get the sensitivity scores
   sensitivity_sum <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |>
     dplyr::group_by(exp_name) |>
-    dplyr::summarise(n=n()) |>
+    dplyr::summarise(n=dplyr::n()) |>
     dplyr::arrange(desc(n))
 
   # Create a bar chart of the number of features per assay
@@ -58,8 +58,8 @@ plot_sensitivity_summary <- function(
     geom_segment(aes(
       x = n,
       xend = n,
-      y = as.numeric(fct_reorder(exp_name, n)) - 0.45,
-      yend = as.numeric(fct_reorder(exp_name, n)) + 0.45,
+      y = as.numeric(forcats::fct_reorder(exp_name, n)) - 0.45,
+      yend = as.numeric(forcats::fct_reorder(exp_name, n)) + 0.45,
       color = exp_name,
     ), size = 1) +
     ggsci::scale_fill_aaas()+
@@ -105,7 +105,7 @@ plot_sensitivity_summary <- function(
     dplyr::group_by(exp_name) |>
     dplyr::summarise(
       n_above=length(stability_score[stability_score>stability_score_thresh]),
-      total=n()) |>
+      total=dplyr::n()) |>
     dplyr::arrange(desc(total))
 
   message("Number of Features with Stability Score > ",stability_score_thresh,":")

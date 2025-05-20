@@ -39,7 +39,7 @@ plot_associate_exposure_outcome <- function(
 
   # Create forest plot of significant associations
   exwas  |>
-    dplyr::mutate(direction=case_when(
+    dplyr::mutate(direction=dplyr::case_when(
       estimate>0 & !!sym(filter_col) < filter_thresh ~ "up",
       estimate<0 & !!sym(filter_col) < filter_thresh ~ "down",
       .default = "ns"

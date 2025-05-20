@@ -70,7 +70,7 @@ plot_sample_clusters <- function(
     MultiAssayExperiment::colData() |>
     as.data.frame() |>
     dplyr::select(cols_of_interest) |>
-    mutate_all(~as.numeric(.)) |>
+    dplyr::mutate_all(~as.numeric(.)) |>
     tibble::rownames_to_column("Sample") |>
     dplyr::inner_join(
       data.frame(

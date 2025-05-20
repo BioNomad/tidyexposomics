@@ -54,7 +54,7 @@ plot_missing_summary <- function(
   }) |>
     dplyr::bind_rows() |>
     dplyr::group_by(exp_name) |>
-    dplyr::summarise(missingness = n())
+    dplyr::summarise(missingness = dplyr::n())
 
   # add in other assay names and say their missingness is 0
   exp_names <- MultiAssayExperiment::metadata(expomicset)$na_qc |>
@@ -65,7 +65,7 @@ plot_missing_summary <- function(
       data.frame(
         exp_name = exp_names[!exp_names %in% missing_data$exp_name],
         missingness = 0)) |>
-    dplyr::mutate(exp_name=case_when(
+    dplyr::mutate(exp_name=dplyr::case_when(
       exp_name == "exposure" ~ "Exposure",
       .default = exp_name
     )) |>
@@ -80,8 +80,8 @@ plot_missing_summary <- function(
     geom_segment(aes(
       x = missingness,
       xend = missingness,
-      y = as.numeric(fct_reorder(exp_name, missingness)) - 0.45,
-      yend = as.numeric(fct_reorder(exp_name, missingness)) + 0.45,
+      y = as.numeric(forcats::fct_reorder(exp_name, missingness)) - 0.45,
+      yend = as.numeric(forcats::fct_reorder(exp_name, missingness)) + 0.45,
       color = exp_name,
     ), size = 1) +
     ggsci::scale_fill_aaas()+

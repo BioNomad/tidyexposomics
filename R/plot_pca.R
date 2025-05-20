@@ -52,7 +52,7 @@ plot_pca <- function(
 
   # capitalize exposure for plot
   dat <- dat |>
-    dplyr::mutate(category = case_when(
+    dplyr::mutate(category = dplyr::case_when(
     category == "exposure" ~ "Exposure",
     .default = category
   ))
