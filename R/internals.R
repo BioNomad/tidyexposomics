@@ -32,7 +32,40 @@
 
   return(assay)
 }
+# --- Log2 MultiAssayExperiment Assays --------
+#' Log2 Transform Assays in a MultiAssayExperiment
+#'
+#' Applies log2 transformation to each assay in a `MultiAssayExperiment` object.
+#'
+#' @keywords internal
+#' @noRd
+.log2_multiassay <- function(expomicset) {
 
+  message("Log2-Transforming each assay in MultiAssayExperiment...")
+
+  # Apply log2 transformation to each assay
+  log2_experiments <- lapply(MultiAssayExperiment::experiments(expomicset),
+                             function(assay_obj) {
+                               if (inherits(assay_obj, "SummarizedExperiment")) {
+                                 assay_mat <- SummarizedExperiment::assay(assay_obj)
+                                 log2_mat <- log2(assay_mat + 1)  # Log2 transformation
+                                 SummarizedExperiment::assay(assay_obj) <- log2_mat
+                                 return(assay_obj)
+                               } else if (is.matrix(assay_obj)) {
+                                 return(log2(assay_obj + 1))  # Directly log2 transform matrices
+                               } else {
+                                 stop("Unsupported assay type. Only SummarizedExperiment and matrices are supported.")
+                               }
+                             })
+
+  log2_expomicset <- MultiAssayExperiment::MultiAssayExperiment(
+    experiments = log2_experiments,
+    colData = MultiAssayExperiment::colData(expomicset),
+    metadata = MultiAssayExperiment::metadata(expomicset))
+
+
+  return(log2_expomicset)
+}
 # --- Scale MultiAssayExperiment Assays --------
 #' Scale Assays in a MultiAssayExperiment
 #'
@@ -40,9 +73,14 @@
 #'
 #' @keywords internal
 #' @noRd
-.scale_multiassay <- function(expomicset) {
+.scale_multiassay <- function(expomicset,log2=FALSE) {
 
   message("Scaling each assay in MultiAssayExperiment...")
+
+  # Check if log2 transformation is needed
+  if (log2){
+    expomicset <- .log2_multiassay(expomicset)
+  }
 
   # Apply scaling to each assay
   scaled_experiments <- lapply(MultiAssayExperiment::experiments(expomicset),
@@ -66,6 +104,45 @@
     metadata = MultiAssayExperiment::metadata(expomicset))
 
   return(scaled_expomicset)
+}
+# --- Get Top Variant Features ---------------
+#' Get Top Variant Features
+#'
+#' Extracts the top features based on variance from a `MultiAssayExperiment` object.
+#'
+#' @keywords internal
+#' @noRd
+.top_var_multiassay <- function(expomicset,
+                                  n = 1000,
+                                  assay_name = NULL) {
+
+  #expomicset <- .log2_multiassay(expomicset)
+
+  # Grab the top n features based on variance
+  top_var_experiments <- lapply(MultiAssayExperiment::experiments(expomicset),
+                               function(assay_obj) {
+                                 if (inherits(assay_obj, "SummarizedExperiment")) {
+                                   assay_mat <- SummarizedExperiment::assay(assay_obj)
+                                   feature_variance <- apply(assay_mat, 1, var) |>
+                                     sort() |>
+                                     tail(n=n) |>
+                                     names()
+
+
+                                   return(feature_variance)
+                                 } else if (is.matrix(assay_obj)) {
+
+                                   return(apply(assay_obj, 1, var) |>
+                                            sort() |>
+                                            tail(n=n) |>
+                                            names())  # Directly scale matrices
+                                 } else {
+                                   stop("Unsupported assay type. Only SummarizedExperiment and matrices are supported.")
+                                 }
+                               })
+
+
+  return(top_var_experiments)
 }
 # --- Run Differential Abundance Analysis ------
 #' Run Differential Abundance Analysis on a SummarizedExperiment
@@ -181,7 +258,7 @@
     summarise(
       # Stability Score (Weighted: Frequency × Effect Size Consistency)
       # FDR-adjusted significance frequency
-      presence_rate = mean(!!sym(pval_col) < 0.05, na.rm = TRUE),
+      presence_rate = mean(!!sym(pval_col) < pval_threshold, na.rm = TRUE),
       # Ensures stability considers effect size
       effect_consistency = 1 / (1 + (sd(!!sym(logfc_col), na.rm = TRUE) / mean(abs(!!sym(logfc_col)), na.rm = TRUE))),
       # Weighted score
@@ -934,7 +1011,10 @@
     data_matrix,
     dist_method = NULL,
     cluster_method = "ward.D",
-    clustering_approach = "gap") {
+    clustering_approach = "gap",
+    gap_stat_k_max = 20,
+    gap_stat_B = 50,
+    density_quantile = 0.90) {
 
   # Determine appropriate distance metric
   if (is.null(dist_method)) {
@@ -965,7 +1045,7 @@
     } else if (clustering_approach == "gap") {
 
       # Determine optimal k using the gap statistic
-      gap_stat <- cluster::clusGap(as.matrix(dist_matrix), FUN = hcut, K.max = 20, B = 50)
+      gap_stat <- cluster::clusGap(as.matrix(dist_matrix), FUN = hcut, K.max = gap_stat_k_max, B = gap_stat_B)
       return(cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"]))
 
     } else if (clustering_approach == "elbow") {
@@ -991,7 +1071,7 @@
     } else if (clustering_approach == "density") {
       # Determine optimal k using density-based clustering
       dclust <- densityClust::densityClust(as.dist(dist_matrix), gaussian = TRUE)
-      dclust <- densityClust::findClusters(dclust, rho = quantile(dclust$rho, 0.90), delta = quantile(dclust$delta, 0.90))
+      dclust <- densityClust::findClusters(dclust, rho = quantile(dclust$rho, density_quantile), delta = quantile(dclust$delta, density_quantile))
       return(length(unique(dclust$clusters)))
 
     } else {
