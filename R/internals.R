@@ -1091,3 +1091,155 @@
 
   return(sample_groups)
 }
+# --- TidyGraph to Data Frame -------------
+#' Convert TidyGraph Object to Data Frame
+#'
+#' Converts a TidyGraph object to a data frame format for easier manipulation and analysis.
+#'
+#' @keywords internal
+#' @noRd
+.tidygraph_to_df <- function(tg) {
+  require(tidygraph)
+  require(dplyr)
+
+  merged_df <- tg |>
+    # Grab edge attributes
+    tidygraph::activate(edges) |>
+    tidygraph::as_tibble() |>
+
+    # Join with node attributes
+    dplyr::left_join(
+      tg |>
+        tidygraph::activate(nodes) |>
+        tidygraph::as_tibble() |>
+        dplyr::mutate(from = dplyr::row_number()),
+      by = "from"
+    ) |>
+
+    # Rename columns for clarity
+    dplyr::rename(from_name = name) |>
+
+    # Join with node attributes again for the target node
+    dplyr::left_join(
+      tg |>
+        tidygraph::activate(nodes) |>
+        tidygraph::as_tibble() |>
+        dplyr::mutate(to = dplyr::row_number()),
+      by = "to"
+    ) |>
+
+    # Rename columns for clarity
+    dplyr::rename(to_name = name)
+
+  return(merged_df)
+}
+# --- Summarize Graph ----------
+#' Summarize Graph Attributes
+#'
+#' Generates a summary of graph attributes including number of nodes, edges, components, diameter, mean distance, and modularity.
+#'
+#' @keywords internal
+#' @noRd
+.summarize_graph <- function(g) {
+  tibble::tibble(
+    "No. of Nodes" = g |> igraph::gorder(),
+    "No. of Edges" = g |> igraph::gsize(),
+    "No. of Components" = g |> igraph::count_components(),
+    "Diameter" = g |> igraph::diameter(),
+    "Mean Distance" = g|> igraph::mean_distance(),
+    "Modularity" = g |>
+      tidygraph::as_tbl_graph() |>
+      tidygraph::activate(nodes) |>
+      dplyr::mutate(community = tidygraph::group_louvain()) |>
+      tidygraph::with_graph(tidygraph::graph_modularity(community))
+  )
+}
+# --- Build Network Plot -------------------
+#' Build Network Plot
+#'
+#' Generates a network plot using ggraph, with options for node color, labels, and facetting.
+#'
+#' @keywords internal
+#' @noRd
+.build_ggraph_plot <- function(g,
+                               node_color_var,
+                               node_colors,
+                               label,
+                               facet_var,
+                               include_stats,
+                               fg_text_colour,
+                               foreground,
+                               alpha,
+                               size_lab,
+                               color_lab) {
+  require(ggplot2)
+  require(tidygraph)
+
+  if(!is.null(node_color_var)){
+    p <- g |>
+      mutate(centrality = tidygraph::centrality_degree()) |>
+      ggraph(layout = 'kk') +
+      geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
+      geom_node_point(aes(size = centrality, color = !!sym(node_color_var))) +
+      theme_graph(fg_text_colour = fg_text_colour) +
+      labs(size = size_lab,
+           color = color_lab)
+  } else {
+    p <- g |>
+      mutate(centrality = tidygraph::centrality_degree()) |>
+      ggraph(layout = 'kk') +
+      geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
+      geom_node_point(aes(size = centrality)) +
+      theme_graph(fg_text_colour = fg_text_colour) +
+      labs(size = size_lab)
+  }
+
+  if(!is.null(node_colors)) {
+    p <- p + scale_color_manual(values = node_colors)
+  } else {
+    n_colors <- g |>
+      tidygraph::activate(nodes) |>
+      tidygraph::as_tibble() |>
+      dplyr::pull(group) |>
+      unique() |>
+      length()
+    p <- p + scale_color_manual(values = ggpubr::get_palette("npg",n_colors))
+  }
+
+  if (!is.null(facet_var)) {
+    p <- p +
+      ggh4x::facet_grid2(
+        as.formula(paste("~", facet_var)),
+        scales = "free_x",
+        space = "free_x",
+        strip = ggh4x::strip_themed(
+          background_x = ggh4x::elem_list_rect(
+            fill = scales::alpha(foreground, alpha = alpha)
+          )
+        )
+      ) +
+      theme(strip.text.x = element_text(face = "bold.italic"))
+  }
+
+  if (label) {
+    p <- p + geom_node_label(aes(label = label), repel = TRUE)
+  }
+
+  if (include_stats) {
+    summary_info <- .summarize_graph(g)
+    label_text <- paste0(
+      "Nodes: ", summary_info$`No. of Nodes`,
+      " | Edges: ", summary_info$`No. of Edges`,
+      " | Components: ", summary_info$`No. of Components`,
+      " | Diameter: ", summary_info$Diameter,
+      " | Mean Distance: ", round(summary_info$`Mean Distance`, 2),
+      " | Modularity: ", round(summary_info$Modularity, 3)
+    )
+
+    p <- p +
+      labs(caption = label_text) +
+      theme(plot.caption = element_text(face = "italic"))
+  }
+
+  return(p)
+}

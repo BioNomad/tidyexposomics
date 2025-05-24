@@ -182,7 +182,7 @@ run_sensitivity_analysis <- function(
       n_above=sum(stability_score>score_thresh),
       n=n())
 
-  message("Number of features above threshold of ", score_thresh, ":")
+  message("Number of features above threshold of ", round(score_thresh,digits = 2), ":")
   message("-----------------------------------------")
   for(exp_name in unique(feature_stability_df$exp_name)){
     n_above  <- sum |>

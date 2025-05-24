@@ -60,7 +60,7 @@ associate_all_outcome <- function(expomicset,
   } else{
     # Select all features if top_n_omics is not provided
     selected_features <- lapply(
-      experiments(log_2_omics),
+      MultiAssayExperiment::experiments(log_2_omics),
       function(x) {
         rownames(x)
       }
@@ -74,16 +74,16 @@ associate_all_outcome <- function(expomicset,
   )
 
   # Extract scaled omics data
-  omics_df <- lapply(names(experiments(scaled_omics)),function(name){
+  omics_df <- lapply(names(MultiAssayExperiment::experiments(scaled_omics)),function(name){
     # Extract omics data
-    se=experiments(scaled_omics)[[name]]
+    se=MultiAssayExperiment::experiments(scaled_omics)[[name]]
 
     # Filter omics data based on selected features
     se=se[rownames(se) %in% selected_features[[name]],]
 
     # Convert assay data to data frame
     df=se |>
-      assay() |>
+      SummarizedExperiment::assay() |>
       t() |>
       as.data.frame()
     names(df)=
@@ -92,7 +92,7 @@ associate_all_outcome <- function(expomicset,
 
     # Create a unique identifier for each row
     df=df |>
-      rownames_to_column("id")
+      tibble::rownames_to_column("id")
   }) |>
     (\(lst){
       # Name list
@@ -100,7 +100,7 @@ associate_all_outcome <- function(expomicset,
       lst
     })() |>
     # Combine all omics data into a single data frame
-    purrr::reduce(full_join, by = "id")
+    purrr::reduce(dplyr::full_join, by = "id")
 
   # Merge omics data with exposure data
   data <- data |>
@@ -171,13 +171,13 @@ associate_all_outcome <- function(expomicset,
 
   annot_df <- MultiAssayExperiment::metadata(expomicset)$var_info |>
     dplyr::select(variable, category) |>
-    bind_rows(
+    dplyr::bind_rows(
       selected_features |>
-        imap(~ data.frame(
+        purrr::imap(~ data.frame(
           category = .y,
           variable = .x
         )) |>
-        bind_rows() |>
+        dplyr::bind_rows() |>
         dplyr::mutate(category = gsub(" ","_",category),
                       variable=paste(category,variable,sep="_"),
                       variable=gsub(" |-","_",variable))

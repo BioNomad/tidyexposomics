@@ -61,30 +61,30 @@ plot_manhattan <- function(
   # Prepare data and plot separately
   manhattan_data <- expomicset |>
     MultiAssayExperiment::metadata() |>
-    pluck("exwas_all") |>
-    pluck("results_df") |>
-    filter(!is.na(category)) |>
-    mutate(category=gsub("_"," ",category)) |>
-    mutate(
+    purrr::pluck("exwas_all") |>
+    purrr::pluck("results_df") |>
+    dplyr::filter(!is.na(category)) |>
+    dplyr::mutate(category=gsub("_"," ",category)) |>
+    dplyr::mutate(
       var = forcats::fct_reorder(var, category),
       thresh_met = ifelse(p.value < pval_thresh, "yes", "no")
     )
 
   if(!is.null(vars_to_label)){
     manhattan_data <- manhattan_data |>
-      mutate(label = ifelse(var %in% vars_to_label, as.character(var), NA))
+      dplyr::mutate(label = ifelse(var %in% vars_to_label, as.character(var), NA))
 
   }else{
     manhattan_data <- manhattan_data |>
-      mutate(label = ifelse(thresh_met == "yes", as.character(var), NA))
+      dplyr::mutate(label = ifelse(thresh_met == "yes", as.character(var), NA))
 
   }
 
   # Filter out categories with fewer than min_per_cat significant features
   manhattan_data <- manhattan_data |>
-    group_by(category) |>
-    filter(n() >= min_per_cat) |>
-    ungroup()
+    dplyr::group_by(category) |>
+    dplyr::filter(dplyr::n() >= min_per_cat) |>
+    dplyr::ungroup()
 
   # Get unique ordered categories
   ordered_cats <- manhattan_data$category |> unique() |> sort()
@@ -95,7 +95,7 @@ plot_manhattan <- function(
 
   # Add color column to data
   manhattan_data <- manhattan_data |>
-    mutate(
+    dplyr::mutate(
       cols = ifelse(
         thresh_met == "yes",
         sig_color,
@@ -109,10 +109,10 @@ plot_manhattan <- function(
     facet_cols <- ggsci::pal_npg("nrc")(length(unique(
       expomicset |>
         MultiAssayExperiment::metadata() |>
-        pluck("exwas_all") |>
-        pluck("results_df") |>
-        filter(!is.na(category)) |>
-        pull(category)
+        purrr::pluck("exwas_all") |>
+        purrr::pluck("results_df") |>
+        dplyr::filter(!is.na(category)) |>
+        dplyr::pull(category)
     )))
   } else{
     facet_cols

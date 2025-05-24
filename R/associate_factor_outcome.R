@@ -7,14 +7,14 @@
 #' @param expomicset A \code{MultiAssayExperiment} object containing integration results.
 #' @param outcome A character string specifying the outcome variable name.
 #' @param categorical A logical value indicating whether the outcome is categorical (\code{TRUE}) or continuous (\code{FALSE}). Default is \code{FALSE}.
-#' @param p_thresh A numeric value specifying the p-value threshold for significance filtering. Default is \code{0.05}.
+#' @param pval_thresh A numeric value specifying the p-value threshold for significance filtering. Default is \code{0.05}.
 #' @param action A character string indicating whether to return results (\code{"get"}) or add them to metadata (\code{"add"}). Default is \code{"add"}.
 #'
 #' @details
 #' The function extracts integration-derived factors from \code{metadata(expomicset)} based on the integration method
 #' (\code{"MOFA"} or \code{"MCIA"}). It then matches factor sample identifiers with those of the outcome and performs
 #' either Spearman correlation (\code{cor.test()}) for continuous outcomes or a Kruskal-Wallis test (\code{kruskal.test()})
-#' for categorical outcomes. Significant results (\code{p.value < p_thresh}) are retained.
+#' for categorical outcomes. Significant results (\code{p.value < pval_thresh}) are retained.
 #'
 #' @return If \code{action = "add"}, returns the modified \code{expomicset} with significant factors stored in metadata.
 #' If \code{action = "get"}, returns a data frame containing:
@@ -29,7 +29,7 @@
 #'   expomicset = my_expomicset,
 #'   outcome = "fev_height",
 #'   categorical = TRUE,
-#'   p_thresh = 0.05,
+#'   pval_thresh = 0.05,
 #'   action = "get"
 #' )
 #' }
@@ -42,7 +42,7 @@ associate_factor_outcome <- function(
     # outcome,
     # categorical = FALSE,
     family="gaussian",
-    p_thresh = 0.05,
+    pval_thresh = 0.05,
     action = "add") {
   require(Hmisc)
   require(MultiAssayExperiment)
@@ -166,7 +166,7 @@ associate_factor_outcome <- function(
 
   # Keep only significant results
   results <- results |>
-    dplyr::filter(p.value < p_thresh)
+    dplyr::filter(p.value < pval_thresh)
 
   message("Factors with significant association with outcome:")
   for (i in 1:nrow(results)) {
