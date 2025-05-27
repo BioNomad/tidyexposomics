@@ -1,0 +1,190 @@
+#' Plot Exposure Distributions by Category or Group
+#'
+#' Visualizes exposure variable distributions using **boxplots** or **ridge plots**,
+#' optionally grouped by a variable such as sex, smoking status, or exposure category.
+#'
+#' @param expomicset A `MultiAssayExperiment` object containing exposure data.
+#' @param exposure_cat A character string or vector specifying exposure category names (from `var_info$category`) to include. Use `"all"` to include all exposures.
+#' @param exposure_cols Optional character vector specifying exact exposure variables to plot.
+#' @param group_by A string specifying the column in `colData(expomicset)` used to fill the plot (e.g., `"sex"`). Defaults to `NULL`, in which case exposures are colored by `category`.
+#' @param plot_type Type of plot: `"boxplot"` (default) or `"ridge"`.
+#' @param alpha Transparency level for background facet color strips. Default is `0.5`.
+#' @param panel_sizes A numeric vector passed to `ggh4x::force_panelsizes()` for controlling facet widths or heights.
+#' @param title Plot title. Default is `"Exposure Levels by Category"`.
+#' @param xlab X-axis label. Default is an empty string.
+#' @param ylab Y-axis label. Default is an empty string.
+#' @param facet_cols Optional vector of colors to use as background for facet categories. If `NULL`, a default palette is used.
+#' @param group_cols Optional named vector of colors for `group_by` levels. If `NULL`, a default palette is used.
+#' @param fill_lab Legend title for the fill aesthetic (e.g., `"Sex"` or `"Exposure Group"`). Default is `""`.
+#'
+#' @details
+#' This function:
+#' - Filters exposure data based on category or selected columns.
+#' - Merges variable metadata from `metadata(expomicset)$var_info`.
+#' - Supports either **boxplot** (vertical distributions per variable) or **ridgeplot** (horizontal density plots per variable).
+#' - If `group_by` is specified, that variable defines the plot fill color; otherwise, the fill is based on exposure `category`.
+#' - Facets by `category` using `ggh4x::facet_grid2()` with color-coded strip backgrounds.
+#'
+#' @return A `ggplot2` object showing exposure distributions, optionally grouped.
+#'
+#' @examples
+#' \dontrun{
+#' plot_exposures(expomicset, exposure_cat = "Air Pollution")
+#' plot_exposures(expomicset, group_by = "sex", plot_type = "ridge")
+#' plot_exposures(expomicset, exposure_cols = c("hs_no2", "hs_pm25"), group_by = "smoking_status")
+#' }
+#'
+#' @export
+plot_exposures <- function(
+    expomicset,
+    exposure_cat = "all",
+    exposure_cols = NULL,
+    group_by = NULL,
+    plot_type = "boxplot",
+    alpha=0.5,
+    panel_sizes=rep(1,100),
+    title = "Exposure Levels by Category",
+    xlab = "",
+    ylab = "",
+    facet_cols = NULL,
+    group_cols = NULL,
+    fill_lab = ""
+){
+  # Extract exposure data
+  exposure_data <- expomicset |> pivot_sample()
+
+  # Extract variable description file
+  des <- MultiAssayExperiment::metadata(expomicset) |> purrr::pluck("var_info")
+
+  # Filter by exposure category if specified
+  if (exposure_cat == "all") {
+    exposure_data <- exposure_data
+  } else {
+    vars_to_keep <- des[des$category %in% exposure_cat, "variable"]
+    exposure_data <- exposure_data[, c(".sample",group_by, vars_to_keep)]
+  }
+
+  # If specific columns are provided, filter to those
+  if (!is.null(exposure_cols)) {
+    exposure_data <- exposure_data[, c(".sample",group_by, exposure_cols)]
+  }
+
+  # Ensure only numeric exposure variables + .sample are retained
+  numeric_cols <- exposure_data |>
+    dplyr::select(where(is.numeric)) |>
+    colnames()
+
+  exposure_data <- exposure_data |>
+    dplyr::select(dplyr::all_of(c(".sample", group_by,numeric_cols)))
+
+
+  # Pivot to long format and join with variable metadata
+  sample_metadata <- exposure_data |>
+    tidyr::pivot_longer(
+      cols = -c(.sample, group_by),
+      names_to = "variable",
+      values_to = "value"
+    ) |>
+    dplyr::inner_join(des, by = "variable")
+
+  # set facet colors
+  if(!is.null(facet_cols)){
+    facet_cols <- facet_cols
+  } else{
+    facet_cols <- ggsci::pal_npg("nrc")(length(unique(sample_metadata$category)))
+  }
+
+  if(!is.null(group_by)){
+    group_var <- group_by
+  } else {
+    group_var <- "category"
+  }
+
+  if(!is.null(group_cols)){
+    group_cols <- group_cols
+  } else{
+    group_cols <- ggpubr::get_palette("npg", length(unique(sample_metadata[[group_var]])))
+  }
+
+  if( plot_type == "boxplot"){
+
+    # Create boxplot
+    sample_metadata |>
+      filter(value>0) |>
+      ggplot(aes(
+        x = variable,
+        y = value,
+        fill = !!sym(group_var))) +
+      geom_boxplot() +
+      ggh4x::facet_grid2(
+        ~category,
+        scales = "free_x",
+        space = "free_x",
+        strip = ggh4x::strip_themed(
+          background_x = ggh4x::elem_list_rect(
+            fill = scales::alpha(
+              facet_cols,
+              alpha
+            )
+          )
+        )
+      ) +
+      scale_fill_manual(values = group_cols)+
+      ggh4x::force_panelsizes(cols = panel_sizes)+
+      labs(
+        title = title,
+        x = xlab,
+        y = ylab,
+        fill = fill_lab
+      ) +
+      ggpubr::theme_pubclean() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            legend.position = ifelse(!is.null(group_var),"right","none"),
+            strip.text.x = element_text(face = "bold.italic"),
+            plot.title = element_text(face = "bold.italic"))+
+      scale_y_log10()
+
+  } else if (plot_type == "ridge"){
+    # Create boxplot
+    sample_metadata |>
+      filter(value>0) |>
+      ggplot(aes(
+        x = value,
+        y = variable,
+        fill = !!sym(group_var))) +
+      ggridges::geom_density_ridges() +
+      ggh4x::facet_grid2(
+        category~.,
+        scales = "free_y",
+        space = "free_y",
+        strip = ggh4x::strip_themed(
+          background_y = ggh4x::elem_list_rect(
+            fill = scales::alpha(
+              facet_cols,
+              alpha
+            )
+          )
+        )
+      ) +
+      scale_fill_manual(values = group_cols)+
+      ggh4x::force_panelsizes(cols = panel_sizes)+
+      labs(
+        title = title,
+        x = xlab,
+        y = ylab,
+        fill = fill_lab
+      ) +
+      ggpubr::theme_pubclean() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            legend.position = ifelse(!is.null(group_var),"right","none"),
+            strip.text.y = element_text(angle=0,face = "bold.italic"),
+            plot.title = element_text(face = "bold.italic"))+
+      scale_x_log10()
+  } else {
+    stop("Unsupported plot type.")
+  }
+
+
+}
+
+

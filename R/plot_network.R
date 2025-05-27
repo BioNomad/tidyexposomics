@@ -1,37 +1,56 @@
-#' Plot a tidygraph network from a MultiAssayExperiment object
+#' Plot Network Graph of Omics-Exposure Associations
 #'
-#' This function visualizes a network stored in the metadata of a `MultiAssayExperiment`
-#' object using `ggraph`. It supports node filtering, labeling, faceting, and visual annotation
-#' based on node attributes such as centrality or metadata.
+#' Visualizes a tidygraph network stored in the `MultiAssayExperiment` metadata using `ggraph`.
 #'
-#' @param expomicset A `MultiAssayExperiment` object that contains a network in its metadata.
-#' @param network A character string indicating which network to extract. Options:
-#'   `"omics_exposure_deg_network"`, `"omics_exposure_factor_network"`, or `"omics_exposure_network"`.
-#' @param include_stats Logical; if `TRUE`, adds a caption summarizing graph statistics.
-#' @param nodes_to_include Optional character vector of node names to retain in the plot.
-#' @param centrality_thresh Optional numeric threshold to filter nodes by degree centrality.
-#' @param top_n_nodes Optional integer; keeps the top N nodes by centrality.
-#' @param label Logical; if `TRUE`, adds node labels.
-#' @param label_top_n Integer; number of top central nodes to label if `nodes_to_label` is not provided.
-#' @param nodes_to_label Optional character vector; names of nodes to explicitly label.
-#' @param facet_var Optional name of a node attribute to facet the plot by (e.g., `group`, `type`).
-#' @param foreground Background fill color for facet strip themes.
-#' @param fg_text_colour Text color for graph theme.
-#' @param node_colors Optional named vector of colors to apply to node groups (used with `node_color_var`).
-#' @param node_color_var Optional name of a node attribute to color nodes by (e.g., `type`, `module`).
-#' @param alpha Numeric; transparency level for facet strip backgrounds.
-#' @param size_lab Label for the node size legend (default: `"Centrality"`).
-#' @param color_lab Label for the node color legend (default: `"Group"`).
+#' @param expomicset A `MultiAssayExperiment` object containing network metadata (e.g., `"omics_exposure_network"`).
+#' @param network A character string specifying which network to plot. Options are:
+#' \describe{
+#'   \item{"omics_exposure_network"}{The full correlation network.}
+#'   \item{"omics_exposure_deg_network"}{Subset of the network for DEGs.}
+#'   \item{"omics_exposure_factor_network"}{Subset of the network involving factor features.}
+#' }
+#' @param include_stats Logical; whether to compute and visualize centrality statistics. Default is `TRUE`.
+#' @param nodes_to_include A character vector of node names to retain. If `NULL`, include all nodes.
+#' @param centrality_thresh Numeric threshold to retain only nodes above a minimum centrality value.
+#' @param top_n_nodes Integer; retain only the top N most central nodes.
+#' @param cor_thresh Numeric; threshold for filtering edges by absolute correlation.
+#' @param label Logical; whether to display node labels. Default is `FALSE`.
+#' @param label_top_n Integer; number of top central nodes to label if `label = TRUE` and `nodes_to_label` is `NULL`. Default is `5`.
+#' @param nodes_to_label A character vector of node names to label. Overrides `label_top_n` if provided.
+#' @param facet_var Optional column name (in the node data) to use for faceting the layout.
+#' @param foreground Color of the label highlight. Default is `"steelblue"`.
+#' @param fg_text_colour Text color for node labels. Default is `"grey25"`.
+#' @param node_colors Optional named vector for manually setting node colors by group.
+#' @param node_color_var A column name in node metadata used for color mapping (e.g., `"type"` or `"category"`).
+#' @param alpha Transparency for nodes. Default is `0.5`.
+#' @param size_lab Label for the node size legend. Default is `"Centrality"`.
+#' @param color_lab Label for the node color legend. Default is `"Group"`.
 #'
-#' @return A `ggplot` object representing the plotted network.
-#' @import ggraph tidygraph igraph
-#' @export
+#' @details
+#' This function:
+#' \itemize{
+#'   \item Selects a stored network from `metadata(expomicset)`.
+#'   \item Applies optional node and edge filters (e.g., correlation threshold, centrality, node list).
+#'   \item Prunes unconnected nodes (nodes not involved in any remaining edges).
+#'   \item Computes node centrality for sizing or filtering if requested.
+#'   \item Generates a `ggraph` layout using `.build_ggraph_plot()`.
+#' }
+#' Node color and label aesthetics are customizable. Labeling can be automatic (e.g., top 5 by centrality) or manual via `nodes_to_label`.
+#'
+#' @return A `ggraph` object for plotting.
 #'
 #' @examples
 #' \dontrun{
-#' # Assume `mae` is a MultiAssayExperiment with a network
-#' plot_network(mae, network = "omics_exposure_network")
+#' plot_network(
+#'   expomicset,
+#'   network = "omics_exposure_network",
+#'   cor_thresh = 0.4,
+#'   top_n_nodes = 100,
+#'   label = TRUE
+#' )
 #' }
+#'
+#' @export
 
 plot_network <- function(expomicset,
                          network,
@@ -39,6 +58,7 @@ plot_network <- function(expomicset,
                          nodes_to_include = NULL,
                          centrality_thresh = NULL,
                          top_n_nodes = NULL,
+                         cor_thresh = NULL,
                          label = FALSE,
                          label_top_n = 5,
                          nodes_to_label = NULL,
@@ -81,6 +101,13 @@ plot_network <- function(expomicset,
       filter(name %in% nodes_to_include)
   }
 
+  if(!is.null(cor_thresh)){
+    message("Filtering nodes based on correlation threshold...")
+    g <- g |>
+      activate(edges) |>
+      filter(abs(correlation) > cor_thresh)
+  }
+
   # Filter based on centrality threshold
   if(!is.null(centrality_thresh)){
     message("Filtering nodes based on centrality threshold...")
@@ -115,6 +142,22 @@ plot_network <- function(expomicset,
       arrange(desc(centrality)) |>
       mutate(label = ifelse(dplyr::row_number() <= label_top_n, name, NA))
   }
+
+  # Filter the graph before plotting to make sure that
+  # only nodes included in edges are present
+  # Keep only nodes involved in at least one edge
+  used_node_indices <- g |>
+    activate(edges) |>
+    as_tibble() |>
+    select(from, to) |>
+    unlist() |>
+    unique()
+
+  g <- g |>
+    activate(nodes) |>
+    mutate(node_index = row_number()) |>
+    filter(node_index %in% used_node_indices) |>
+    select(-node_index)
 
   # User confirmation for large networks
   if (igraph::gorder(g) > 500) {

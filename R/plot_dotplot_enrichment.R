@@ -1,39 +1,48 @@
-#' Plot Dotplot of Functional Enrichment Results
+#' Dotplot of Functional Enrichment Results
 #'
-#' Generates a dotplot visualization of enriched gene ontology (GO) terms
-#' across different experimental categories.
+#' Generates a dotplot of enriched gene ontology (GO) terms across experiments and categories,
+#' optionally annotated with the top genes contributing to each GO group.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing functional enrichment results.
-#' @param geneset A character string specifying the gene set name to extract enrichment results from.
-#' @param top_n An integer specifying the number of top GO groups to display. Default is `5`.
-#' @param n_per_group An integer specifying the number of top enriched terms to display within each GO group. Default is `5`.
-#' @param go_groups A character vector specifying specific GO groups to include. If `NULL`, selects the top `top_n` groups based on enrichment score.
+#' @param geneset A character string specifying the gene set (e.g., `"GO_BP"` or `"KEGG"`) to extract enrichment results from.
+#' @param top_n An integer specifying the number of top GO groups to select (based on enrichment score). Default is `5`.
+#' @param n_per_group Number of top GO terms to show within each GO group. Default is `5`.
+#' @param add_top_genes Logical; if `TRUE`, appends top genes contributing to each GO group as annotation in facet labels. Default is `TRUE`.
+#' @param top_n_genes Integer; number of top genes to extract and display per GO group (used only if `add_top_genes = TRUE`). Default is `5`.
+#' @param go_groups Optional character vector of GO group names to include. If `NULL`, the top `top_n` groups are selected automatically.
 #'
 #' @details
-#' This function extracts functional enrichment results from `metadata(expomicset)$functional_enrichment`,
-#' selects the most significant GO terms based on `-log10(p.adjust) * Count`,
-#' and visualizes them in a dotplot.
+#' This function:
+#' \itemize{
+#'   \item Extracts enrichment results from `metadata(expomicset)$functional_enrichment[[geneset]]`.
+#'   \item Selects top GO groups based on the product of `-log10(p.adjust) * Count`.
+#'   \item Displays a dotplot with:
+#'     \itemize{
+#'       \item x-axis: experimental categories.
+#'       \item y-axis: GO term descriptions.
+#'       \item dot size: number of genes (`Count`).
+#'       \item dot color: significance level (`-log10(p.adjust)`).
+#'     }
+#'   \item Optionally appends top genes as annotations in facet strip labels.
+#' }
 #'
-#' - The x-axis represents experimental categories.
-#' - The y-axis represents enriched GO terms.
-#' - Dot size indicates the number of genes in the GO term.
-#' - Dot color represents statistical significance (`-log10(p.adjust)`).
-#'
-#' The function allows filtering by predefined `go_groups` or selecting the top `top_n` groups automatically.
-#'
-#' @return A `ggplot` object displaying a dotplot of enriched GO terms.
+#' @return A `ggplot` object displaying the dotplot of enriched GO terms, faceted by GO group and category.
 #'
 #' @examples
 #' \dontrun{
 #' plot_dotplot_enrichment(expom, geneset = "GO_BP")
+#' plot_dotplot_enrichment(expom, geneset = "KEGG", top_n = 10, add_top_genes = TRUE)
 #' }
 #'
 #' @export
+
 plot_dotplot_enrichment <- function(
     expomicset,
     geneset,
     top_n=5,
     n_per_group=5,
+    add_top_genes=TRUE,
+    top_n_genes=5,
     go_groups=NULL
 ){
   require(ggplot2)
@@ -59,7 +68,58 @@ plot_dotplot_enrichment <- function(
       ))
   }
 
+  # go_group_genes_df <- go_group_df |>
+  #   (\(df) split(df,df$go_group))() |>
+  #   map(~.x |> pull(geneID) |>
+  #         (\(x) strsplit(x,"/"))() |>
+  #         unlist() |>
+  #         table() |>
+  #         sort() |>
+  #         tail(n=5) |>
+  #         names() |>
+  #         paste(collapse=",")) |>
+  #   as.data.frame() |>
+  #   t() |>
+  #   as.data.frame() |>
+  #   setNames("gene_col") |>
+  #   rownames_to_column("go_group")
+
+  go_group_genes_df <- go_group_df |>
+    (\(df) split(df, df$go_group))() |>
+    purrr::map(~ .x |>
+                 pull(geneID) |>
+                 (\(x) strsplit(x, "/"))() |>
+                 unlist() |>
+                 table() |>
+                 sort() |>
+                 tail(n = top_n_genes) |>
+                 names() |>
+                 (\(genes) {
+                   # Split into groups of 5 and add line breaks
+                   gene_chunks <- split(genes, ceiling(seq_along(genes) / 5))
+                   paste(sapply(gene_chunks, function(chunk) paste(chunk, collapse = ", ")), collapse = "\n")
+                 })()
+    ) |>
+    as.data.frame() |>
+    t() |>
+    as.data.frame() |>
+    setNames("gene_col") |>
+    tibble::rownames_to_column("go_group")
+
+  if(add_top_genes){
+    go_group_df <- go_group_df |>
+      inner_join(
+        go_group_genes_df,
+        by = "go_group"
+      ) |>
+      mutate(go_group = gsub("_"," ", go_group))
+  } else{
+    go_group_df <- go_group_df |>
+      mutate(go_group = gsub("_"," ", go_group))
+  }
+
   go_group_df |>
+    mutate(go_group = paste(go_group,gene_col,sep="\n")) |>
     dplyr::group_by(category,exp_name,go_group) |>
     dplyr::arrange(p.adjust) |>
     dplyr::slice_head(n=n_per_group) |>

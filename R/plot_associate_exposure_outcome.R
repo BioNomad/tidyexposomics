@@ -1,29 +1,34 @@
-#' Plot Exposure-Outcome Associations
+#' Plot Significant Exposure-Outcome Associations
 #'
-#' Generates a forest plot visualizing significant exposure-outcome associations
-#' from ExWAS results stored in `expomicset`.
+#' Generates a **forest plot** of significant associations between exposures and an outcome, based on results from `perform_exwas()`.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing ExWAS results.
-#' @param filter_col A character string specifying the column used for filtering significant associations. Default is `"p.value"`.
-#' @param filter_thresh A numeric value specifying the threshold for filtering significant associations. Default is `0.05`.
+#' @param expomicset A `MultiAssayExperiment` object that includes results from `perform_exwas()` in its metadata.
+#' @param filter_col A character string specifying the column to use for significance filtering. Default is `"p.value"`.
+#' @param filter_thresh A numeric threshold to apply to `filter_col`. Only terms below this threshold will be plotted. Default is `0.05`.
+#' @param subtitle Optional subtitle for the plot. If `NULL`, the covariates used in the model will be shown.
 #'
 #' @details
-#' The function extracts ExWAS results from `metadata(expomicset)$exwas$results_df`,
-#' filters based on `filter_col` and `filter_thresh`, and generates a forest plot of effect sizes.
-#' Associations are color-coded as upregulated (red), downregulated (blue), or non-significant (grey).
+#' This function:
+#' \itemize{
+#'   \item Extracts exposure-outcome association results from `metadata(expomicset)$exwas$results_df`.
+#'   \item Filters associations using `filter_col < filter_thresh`.
+#'   \item Classifies direction of effect as `"up"`, `"down"`, or `"ns"` (non-significant).
+#'   \item Visualizes point estimates and standard errors using a horizontal forest plot.
+#' }
 #'
-#' @return A `ggplot` object displaying the exposure-outcome associations.
+#' @return A `ggplot2` object showing a forest plot of significant exposure-outcome associations.
 #'
 #' @examples
 #' \dontrun{
-#' plot_associate_exposure_outcome(expom)
+#' plot_associate_exposure_outcome(expomicset, filter_thresh = 0.01)
 #' }
 #'
 #' @export
 plot_associate_exposure_outcome <- function(
     expomicset,
     filter_col = "p.value",
-    filter_thresh = 0.05){
+    filter_thresh = 0.05,
+    subtitle = NULL){
   require(ggplot2)
 
   # Check if the required metadata is present
@@ -37,6 +42,12 @@ plot_associate_exposure_outcome <- function(
 
   covariates <- MultiAssayExperiment::metadata(expomicset)$exwas$covariates
 
+  # if subtitle is NULL, create a default subtitle
+  if(is.null(subtitle)){
+    subtitle <- paste("Covariates: ",paste(covariates, collapse = ", "))
+  } else {
+    subtitle <- subtitle
+  }
   # Create forest plot of significant associations
   exwas  |>
     dplyr::mutate(direction=dplyr::case_when(
@@ -69,7 +80,7 @@ plot_associate_exposure_outcome <- function(
       x = "Effect size",
       y = "",
       title = "Exposure-Outcome Associations",
-      subtitle = paste("Covariates: ",paste(covariates, collapse = ", "))
+      subtitle = subtitle
       )
 
 }
