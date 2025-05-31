@@ -1,4 +1,52 @@
 url: ~
+
 template:
   bootstrap: 5
+  bslib:
+      primary: "#71255A"
+      brand: brand.yml
+  math-rendering: mathjax
+  light-switch: true
+  navbar:
+    bg: primary   # uses the bslib-defined "primary" color
+    type: dark    # ensures navbar text is light (white)
+    structure:
+      left:  [get-started,faq,reference]
+    components:
+      home: ~
+      get-started:
+        text: "Get Started"
+        href: tidyexposomics.html
+      faq:
+        text: "FAQ"
+        href: faq.html
+    right:
+      - icon: fa-home
+        href: ../
+      - icon: fa-github
+        href: https://github.com/BioNomad/tidyexposomics
+
+reference:
+- title: Correlation/Association
+  contents:
+  - starts_with("associate")
+  - starts_with("correlate")
+
+- title: Run Pipelines
+  contents:
+  - starts_with("run")
+
+- title: Data Processing
+  contents:
+  - starts_with("create")
+  - starts_with("filter")
+  - starts_with("extract")
+  - starts_with("transform")
+  - starts_with("pivot")
+
+- title: Data Visualization
+  contents:
+  - starts_with("plot")
+
+
 
