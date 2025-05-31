@@ -1,0 +1,71 @@
+---
+title: "Overflow"
+output: html_document
+date: "2025-05-22"
+---
+
+
+We also provide additional functionality to prioritze GO groups driven by a particular exposure or omic layer. To accomplish this we filter the GO groups by the omic layer and exposure category. Then we collect the genes driving the association and calculate the eigengene, or first principal component, of the GO group. We then associate the eigengene with the outcome variable. The `associate_go_outcome` function has several options:
+
+- `geneset` is used to specify the geneset to use for the association.
+- `outcome` is used to specify the outcome variable to associate with.
+- `covariates` is used to specify the covariates to adjust for.
+- `feature_col` is used to specify the column in the geneset to use for the association.
+- `family` is used to specify the type of model to use for the association. Here we use a binomial model as our outcome variable is binary (i.e., asthma status).
+
+
+```{r,eval=FALSE}
+# Identify GO Groups that correlate with the outcome
+expom_enrich <- expom_enrich |> 
+  associate_go_outcome(
+    geneset = "deg_exp_cor",
+    outcome = "hs_asthma",
+    covariates = c("hs_child_age" , "e3_sex"),
+    feature_col = "gene",
+    family = "binomial",
+    action = "add"
+  )
+```
+
+```{r,fig.width=6,fig.height=3,warning=FALSE,message=FALSE}
+# Plot GO Group Eigengene, Outcome Association
+expom_enrich |> 
+  plot_associate_go_outcome(
+    direction_filter = "up",
+    filter_thresh = 0.9)
+```
+
+Here you'll note that GO groups 2 and 4 eigengenes are positively associated with asthma status, across multiple categories, meaning that variation in these GO groups is associated with asthma status. We can now re-plot our dotplot to investigate what the biological functions associated with these GO groups.
+
+```{r,fig.width=9,fig.height=8}
+# Plot GO Group Exposures
+expom_enrich |> 
+  plot_dotplot_enrichment(
+    geneset = "deg_exp_cor",
+    go_groups = c("Group_2","Group_4"))
+```
+
+While some of the GO groups remain the same, we do see that groups associated with PI3K signalling are now prioritized. 
+
+```{r}
+b=data.frame(variable=c(exp_vars,"hs_asthma"),exp_name="exposure") |> 
+  dplyr::bind_rows(
+    MultiAssayExperiment::metadata(a) |>
+      purrr::pluck("top_factor_features") |>
+      dplyr::select(feature,exp_name) |> 
+      dplyr::rename(variable = feature)
+  ) 
+
+c <- a |> extract_omics_exposure_df(variable_map = b)
+
+c1 <- c |> 
+  # select numeric cols and hs_asthma
+  dplyr::select(dplyr::where(is.numeric), hs_asthma) 
+
+d <- c |> run_enet(outcome = "hs_asthma")
+```
+- `associate_*` Associations using models
+- `correlate_*`  Correlation based approaches
+- `run_*`  Running more complex pipelines
+- `plot_*`  Visualizing results
+- `filter_*`, `transform_*`, `extract_*`, and `pivot_*`  Data pre-processing steps
