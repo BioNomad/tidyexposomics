@@ -84,8 +84,8 @@ plot_missing_summary <- function(
       yend = as.numeric(forcats::fct_reorder(exp_name, missingness)) + 0.45,
       color = exp_name,
     ), size = 1) +
-    ggsci::scale_fill_aaas()+
-    ggsci::scale_color_aaas()+
+    scale_fill_tidy_exp()+
+    scale_color_tidy_exp()+
     labs(title = paste("No. of Features Over ", threshold, "%"," Threshold",sep=""),
          y = "",
          x = "No. of Features") +

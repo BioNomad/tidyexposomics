@@ -60,7 +60,7 @@ run_normality_check <- function(expomicset,
     ) |>
     t() |>
     as.data.frame() |>
-    rownames_to_column("var") |>
+    tibble::rownames_to_column("var") |>
     setNames(c("var","value"))
 
   # Create normality plot
@@ -110,6 +110,11 @@ run_normality_check <- function(expomicset,
     MultiAssayExperiment::metadata(expomicset)$normality <- list(
       norm_df = norm_df,
       norm_summary = norm_summary
+    )
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_normality_check"
     )
     return(expomicset)
   } else if (action=="get"){

@@ -1,14 +1,14 @@
 #' Plot Exposure Associations by Category
 #'
-#' Generates a bar plot visualizing the number of significant exposure associations 
+#' Generates a bar plot visualizing the number of significant exposure associations
 #' across different exposure categories.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing exposure-feature correlation results.
-#' @param geneset A character string indicating the type of features to use. 
+#' @param geneset A character string indicating the type of features to use.
 #' Options are `"degs"` (differentially expressed genes) or `"factors"` (latent factors). Default is `"degs"`.
 #'
 #' @details
-#' The function extracts correlation results from `metadata(expomicset)`, 
+#' The function extracts correlation results from `metadata(expomicset)`,
 #' groups exposures by category, and visualizes the number of significant associations.
 #' The color represents different exposure categories.
 #'
@@ -24,14 +24,14 @@ plot_bar_correlate_exposure <- function(
     expomicset,
     geneset = "degs") {
   require(ggplot2)
-  
+
   if(geneset=="degs"){
     # Check if the metadata contains the required data
     if(!"omics_exposure_deg_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))){
       stop("Please run `correlate_exposures_with_degs()` first.")
     }
     exp_feature_cor_df <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation
-    
+
   }else if(geneset=="factors"){
     # Check if the metadata contains the required data
     if(!"omics_exposure_factor_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))){
@@ -41,9 +41,9 @@ plot_bar_correlate_exposure <- function(
   } else{
     stop("`geneset` must be either 'degs' or 'factors'")
   }
-  
+
   # Plot the bar plot
-  exp_feature_cor_df |> 
+  exp_feature_cor_df |>
     janitor::tabyl(category) |>
     ggplot(aes(
       x=n,
@@ -58,8 +58,8 @@ plot_bar_correlate_exposure <- function(
       yend = as.numeric(reorder(category, n)) + 0.45,
       color = category,
     ), size = 1) +
-    ggsci::scale_fill_cosmic()+
-    ggsci::scale_color_cosmic()+
+    scale_fill_tidy_exp()+
+    scale_color_tidy_exp()+
     ggpubr::theme_pubr(legend="none",base_size = 10)+
     theme(plot.title = element_text(face = "bold.italic"))+
     labs(

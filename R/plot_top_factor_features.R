@@ -76,14 +76,14 @@ plot_top_factor_features <- function(
     if (!is.null(facet_cols)) {
       facet_cols <- facet_cols
     } else{
-      facet_cols <- ggpubr::get_palette("npg",k=length(unique(df$exp_name)))
+      facet_cols <- tidy_exp_pal[1:length(unique(df$factor))]
     }
 
     # If no exp_name_cols provided, use default
     if(!is.null(exp_name_cols)){
       exp_name_cols <- exp_name_cols
     } else{
-      exp_name_cols <- ggpubr::get_palette("jco",k=length(unique(df$exp_name)))
+      exp_name_cols <- rev(tidy_exp_pal)[1:length(unique(df$exp_name))]
     }
 
     # Create a plot of top features per factor
@@ -156,14 +156,14 @@ plot_top_factor_features <- function(
     if (!is.null(facet_cols)) {
       facet_cols <- facet_cols
     } else{
-      facet_cols <- ggpubr::get_palette("npg",k=length(unique(df$exp_name)))
+      facet_cols <- tidy_exp_pal[1:length(unique(df$factor))]
     }
 
     # If no exp_name_cols provided, use default
     if(!is.null(exp_name_cols)){
       exp_name_cols <- exp_name_cols
     } else{
-      exp_name_cols <- ggpubr::get_palette("jco",k=length(unique(df$exp_name)))
+      exp_name_cols <- rev(tidy_exp_pal)[1:length(unique(df$exp_name))]
     }
 
 

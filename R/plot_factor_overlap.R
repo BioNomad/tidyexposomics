@@ -51,6 +51,9 @@ plot_factor_overlap <- function(
     left_heights = c(2, 1),
     col_widths = c(1, 1)
 ){
+  require(ggplot2)
+  require(patchwork)
+
   # Check if top factor features are available
   if(!("top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset)))){
     stop("Please run `extract_top_factor_features()` first to generate the top factor features.")
@@ -65,13 +68,14 @@ plot_factor_overlap <- function(
   if(!is.null(venn_colors)){
     venn_colors <- venn_colors
   } else{
-    venn_colors <- get_palette("npg", k = length(unique(top_factor_features$factor)))
+    venn_colors <- tidy_exp_pal[1:length(unique(top_factor_features$factor))]
   }
+
   # Venn Diagram of top factor features
   venn <- top_factor_features |>
     (\(df)split(df,df$factor))() |>
-    map(~.x |>
-          pull(feature) |>
+    purrr::map(~.x |>
+          dplyr::pull(feature) |>
           unique()) |>
     ggvenn::ggvenn(text_size = venn_text_size,
                    stroke_size = venn_stroke_size,
@@ -91,42 +95,42 @@ plot_factor_overlap <- function(
   if(!is.null(shared_bar_colors)){
     shared_bar_colors <- shared_bar_colors
   } else{
-    shared_bar_colors <- get_palette("lancet", k = length(unique(top_factor_features$exp_name)))
+    shared_bar_colors <- ggpubr::get_palette("lancet", k = length(unique(top_factor_features$exp_name)))
   }
 
 
   if(!is.null(da_bar_colors)){
     da_bar_colors <- da_bar_colors
   } else{
-    da_bar_colors <- get_palette("uchicago", k = length(unique(top_factor_features$exp_name)))
+    da_bar_colors <- ggpubr::get_palette("uchicago", k = length(unique(top_factor_features$exp_name)))
   }
 
   if(!is.null(da_bar_facet_cols)){
     da_bar_facet_cols <- da_bar_facet_cols
   } else{
     # Use a default palette for facets if not provided
-    da_bar_facet_cols <- get_palette("uchicago", k = length(unique(top_factor_features$factor)))
+    da_bar_facet_cols <- rev(tidy_exp_pal)[1:length(unique(top_factor_features$factor))]
   }
 
   # Barplot of experiment names, and colored by if the feature is shared
   barplot_shared <- top_factor_features |>
     dplyr::select(exp_name,factor,feature)|>
-    distinct() |>
-    mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
+    dplyr::distinct() |>
+    dplyr::mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
     dplyr::mutate(is_shared = ifelse(
       exp_name_feature %in%
         common_features$exp_name_feature,
       "Shared",
       "Unique")) |>
-    group_by(exp_name, factor,is_shared) |>
-    summarise(n = n()) |>
-    mutate(exp_name = paste0(
+    dplyr::group_by(exp_name, factor,is_shared) |>
+    dplyr::summarise(n = dplyr::n()) |>
+    dplyr::mutate(exp_name = paste0(
       exp_name, " (",
       sum(n[is_shared == "Shared"], na.rm = TRUE), "/",
       sum(n),
       ")"
     )) |>
-    ungroup() |>
+    dplyr::ungroup() |>
     ggplot(aes(
       x=n,
       y=forcats::fct_reorder(exp_name, n),
@@ -159,23 +163,23 @@ plot_factor_overlap <- function(
   # Barplot of experiment names, and colored by if the feature is deg
   barplot_deg <- top_factor_features |>
     dplyr::select(exp_name,factor,feature)|>
-    distinct() |>
-    mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
+    dplyr::distinct() |>
+    dplyr::mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
     dplyr::mutate(is_deg = ifelse(
       exp_name_feature %in%
         common_features$exp_name_feature[
           common_features$is_deg == TRUE],
       "Differentially Abundant",
       "Not Differentially Abundant")) |>
-    group_by(exp_name, factor,is_deg) |>
-    summarise(n = n()) |>
-    mutate(exp_name = paste0(
+    dplyr::group_by(exp_name, factor,is_deg) |>
+    dplyr::summarise(n = dplyr::n()) |>
+    dplyr::mutate(exp_name = paste0(
       exp_name, " (",
       sum(n[is_deg == "Differentially Abundant"], na.rm = TRUE), "/",
       sum(n),
       ")"
     )) |>
-    ungroup() |>
+    dplyr::ungroup() |>
     ggplot(aes(
       x=n,
       y=forcats::fct_reorder(exp_name, n),
@@ -209,23 +213,23 @@ plot_factor_overlap <- function(
   # Barplot of shared features that are also DEGs (bottom-right)
   barplot_shared_deg <- common_features |>
     dplyr::select(exp_name,feature)|>
-    distinct() |>
-    mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
+    dplyr::distinct() |>
+    dplyr::mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
     dplyr::mutate(is_deg = ifelse(
       exp_name_feature %in%
         common_features$exp_name_feature[
           common_features$is_deg == TRUE],
       "Differentially Abundant",
       "Not Differentially Abundant")) |>
-    group_by(exp_name,is_deg) |>
-    summarise(n = n()) |>
-    mutate(exp_name = paste0(
+    dplyr::group_by(exp_name,is_deg) |>
+    dplyr::summarise(n = n()) |>
+    dplyr::mutate(exp_name = paste0(
       exp_name, " (",
       sum(n[is_deg == "Differentially Abundant"], na.rm = TRUE), "/",
       sum(n),
       ")"
     )) |>
-    ungroup() |>
+    dplyr::ungroup() |>
     ggplot(aes(
       x=n,
       y=forcats::fct_reorder(exp_name, n),

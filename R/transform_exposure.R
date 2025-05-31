@@ -195,6 +195,12 @@ transform_exposure <- function(
     )
   }
 
+  # Add analysis steps taken to metadata
+  MultiAssayExperiment::metadata(expomicset)$steps <- c(
+    MultiAssayExperiment::metadata(expomicset)$steps,
+    "transform_exposure"
+  )
+
   return(expomicset)
 }
 

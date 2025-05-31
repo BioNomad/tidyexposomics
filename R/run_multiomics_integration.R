@@ -108,6 +108,12 @@ run_multiomics_integration <- function(expomicset,
       result = result
     )
 
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_multiomics_integration"
+    )
+
     return(expomicset)
   }else if (action=="get"){
     return(list(

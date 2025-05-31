@@ -50,23 +50,23 @@ run_summarize_exposures <- function(
   # Subset to selected columns if specified
   if(!is.null(exposure_cols)){
     exposure_df <- exposure_df |>
-      select(all_of(exposure_cols))
+      dplyr::select(dplyr::all_of(exposure_cols))
   }
 
   # Keep only numeric columns
   exposure_df <- exposure_df |>
-    select(where(is.numeric))
+    dplyr::select(dplyr::where(is.numeric))
 
   # Pivot to long format for summary
   long_df <- exposure_df |>
-    pivot_longer(cols = everything(),
+    tidyr::pivot_longer(cols = dplyr::everything(),
                  names_to = "variable",
                  values_to = "value")
 
   # Group by variable and compute stats
   exposure_summary_df <- long_df |>
-    group_by(variable) |>
-    summarise(
+    dplyr::group_by(variable) |>
+    dplyr::summarise(
       n_values = sum(!is.na(value)),
       n_na = sum(is.na(value)),
       min = min(value, na.rm = TRUE),
@@ -82,19 +82,26 @@ run_summarize_exposures <- function(
       sd = sd(value, na.rm = TRUE),
       coef_var = sd / mean
     ) |>
-    ungroup()
+    dplyr::ungroup()
 
   # Merge with variable info
   exposure_summary_df <- exposure_summary_df |>
-    inner_join(
+    dplyr::inner_join(
       expomicset |>
     MultiAssayExperiment::metadata() |>
-    pluck("var_info"),
-    by="variable")
+    purrr::pluck("var_info"),
+    by="variable") |>
+    dplyr::mutate_if(is.numeric,~round(.,digits = 2))
 
   if(action=="add"){
     # Store results
     MultiAssayExperiment::metadata(expomicset)$exposure_summary_df <- exposure_summary_df
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_summarize_exposures"
+    )
 
     return(expomicset)
 

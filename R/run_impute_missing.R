@@ -114,6 +114,12 @@ run_impute_missing <- function(expomicset,
     MultiAssayExperiment::experiments(expomicset)[[omics_name]] <- experiment
   }
 
+  # Add analysis steps taken to metadata
+  MultiAssayExperiment::metadata(expomicset)$steps <- c(
+    MultiAssayExperiment::metadata(expomicset)$steps,
+    "run_impute_missing"
+  )
+
   return(expomicset)
 }
 

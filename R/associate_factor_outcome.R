@@ -179,6 +179,12 @@ associate_factor_outcome <- function(
     # Store significant factors in metadata
     MultiAssayExperiment::metadata(expomicset)$significant_factors <- results
 
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "associate_factor_outcome"
+    )
+
     return(expomicset)
   }else if (action =="get"){
     return(results)

@@ -98,6 +98,12 @@ run_create_network <- function(expomicset,
 
     )
 
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_create_network"
+    )
+
     return(expomicset)
   }else if (action=="get"){
     return(list(

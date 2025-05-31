@@ -77,7 +77,7 @@ correlate_exposoures_omics <- function(
     return(df)
   }) |>
     purrr::compact() |>
-    purrr::reduce(full_join,
+    purrr::reduce(dplyr::full_join,
                   by = "id")
 
   # Merge with exposures
@@ -94,7 +94,7 @@ correlate_exposoures_omics <- function(
   message("Running correlation...")
   correlation_matrix <- merged_data |>
     dplyr::select(-id) |>
-    mutate_all(as.numeric) |>
+    dplyr::mutate_all(as.numeric) |>
     as.matrix() |>
     Hmisc::rcorr(type = correlation_method)
 
@@ -133,17 +133,17 @@ correlate_exposoures_omics <- function(
 
   # Merge and filter results
   correlation_results <- correlation_df |>
-    inner_join(pvalue_df, by = c("var1", "var2")) |>
-    filter(abs(correlation) > correlation_cutoff) |>
-    mutate(FDR = p.adjust(p.value, method = "fdr")) |>
-    filter(!!sym(cor_pval_column) < pval_cutoff) |>
-    arrange(desc(abs(correlation))) |>
-    mutate(
+    dplyr::inner_join(pvalue_df, by = c("var1", "var2")) |>
+    dplyr::filter(abs(correlation) > correlation_cutoff) |>
+    dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
+    dplyr::filter(!!dplyr::sym(cor_pval_column) < pval_cutoff) |>
+    dplyr::arrange(dplyr::desc(abs(correlation))) |>
+    dplyr::mutate(
       var_min = pmin(var1, var2),
       var_max = pmax(var1, var2)
     ) |>
-    distinct(var_min, var_max, .keep_all = TRUE) |>
-    filter(var_min != var_max) |>
+    dplyr::distinct(var_min, var_max, .keep_all = TRUE) |>
+    dplyr::filter(var_min != var_max) |>
     # rename(var1 = var_min, var2 = var_max)
     dplyr::transmute(
       var1 = var_min,
@@ -177,23 +177,23 @@ correlate_exposoures_omics <- function(
 
 
   correlation_results <- correlation_results |>
-    mutate(
+    dplyr::mutate(
       var1_type = purrr::map_chr(var1, classify_variable),
       var2_type = purrr::map_chr(var2, classify_variable)
     )
 
   correlation_results <- correlation_results |>
     dplyr::mutate(
-      var1_clean = case_when(
-        var1_type != "exposure" ~ str_remove(var1, paste0("^", var1_type, "_")),
+      var1_clean = dplyr::case_when(
+        var1_type != "exposure" ~ stringr::str_remove(var1, paste0("^", var1_type, "_")),
         TRUE ~ var1
       ),
-      var2_clean = case_when(
-        var2_type != "exposure" ~ str_remove(var2, paste0("^", var2_type, "_")),
+      var2_clean = dplyr::case_when(
+        var2_type != "exposure" ~ stringr::str_remove(var2, paste0("^", var2_type, "_")),
         TRUE ~ var2
       )
     ) |>
-    mutate(var1_type = gsub("_"," ", var1_type),
+    dplyr::mutate(var1_type = gsub("_"," ", var1_type),
            var2_type = gsub("_"," ", var2_type)) |>
     dplyr::select(
       var1 = var1_clean,

@@ -163,6 +163,12 @@ run_enrichment <- function(
     enrich_res$go_group <- NA_character_
     if (action == "add") {
       MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]] <- enrich_res
+
+      # Add analysis steps taken to metadata
+      MultiAssayExperiment::metadata(expomicset)$steps <- c(
+        MultiAssayExperiment::metadata(expomicset)$steps,
+        "run_enrichment"
+      )
       return(expomicset)
     } else {
       return(enrich_res)

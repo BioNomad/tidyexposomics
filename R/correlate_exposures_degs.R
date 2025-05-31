@@ -220,6 +220,13 @@ correlate_exposures_degs <- function(
   if(action=="add"){
     # Save to metadata
     MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation <- combined_results
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "correlate_exposures_degs"
+    )
+
     return(expomicset)
   }else if (action =="get"){
     return(combined_results)

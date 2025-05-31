@@ -194,6 +194,13 @@ run_cluster_samples <- function(expomicset,
       sample_cluster = sample_cluster,
       sample_groups = sample_groups
     )
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_cluster_samples"
+    )
+
     return(expomicset)
   } else if (action == "get") {
     return(list(

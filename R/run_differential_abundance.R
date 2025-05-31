@@ -21,7 +21,7 @@
 #' - Combines results across assays.
 #' - Stores results in `metadata(expomicset)$differential_abundance` when `action="add"`.
 #'
-#' @return If `action="add"`, returns the updated `expomicset`.  
+#' @return If `action="add"`, returns the updated `expomicset`.
 #' If `action="get"`, returns a `data.frame` with differential abundance results, including:
 #' \item{feature}{Feature identifier.}
 #' \item{exp_name}{Assay name.}
@@ -50,19 +50,19 @@ run_differential_abundance <- function(
     scaling_method = "none",
     action="add"
 ) {
-  
+
   message("Running differential abundance testing...")
-  
+
   # Initialize a data frame to store results
   da_results_df <- list()
-  
+
   # Iterate through assays in expomicset
   for (exp_name in names(MultiAssayExperiment::experiments(expomicset))) {
     message("Processing assay: ", exp_name)
-    
+
     # Update assay with colData
     exp <- .update_assay_colData(expomicset, exp_name)
-    
+
     # Run differential analysis using `.run_se_differential_abundance`
     res <- .run_se_differential_abundance(
       se = exp,
@@ -74,26 +74,33 @@ run_differential_abundance <- function(
       min_proportion = minimum_proportion,
       contrasts = contrasts
     )
-    
+
     # If results exist, append assay name and store them
     if (!is.null(res) && nrow(res) > 0) {
-      res <- res |> 
+      res <- res |>
         dplyr::mutate(exp_name = exp_name)
       da_results_df[[exp_name]] <- res
     } else {
       warning("No significant results found for assay: ", exp_name)
     }
   }
-  
+
   # Combine results across assays
-  final_results <- da_results_df |> 
+  final_results <- da_results_df |>
     dplyr::bind_rows()
-  
+
   message("Differential abundance testing completed.")
-  
+
   if(action == "add") {
     MultiAssayExperiment::metadata(expomicset)$differential_abundance <- final_results
     return(expomicset)
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_differential_abundance"
+    )
+
   } else if (action == "get") {
     return(final_results)
   } else {

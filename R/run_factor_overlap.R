@@ -125,6 +125,12 @@ run_factor_overlap <- function(
   if(action=="add"){
     # Store selected features
     MultiAssayExperiment::metadata(expomicset)$common_top_factor_features <- top_factor_features
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_factor_overlap"
+    )
     return(expomicset)
   }else if (action=="get"){
     return(top_factor_features)

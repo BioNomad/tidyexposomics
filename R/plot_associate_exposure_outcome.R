@@ -3,29 +3,34 @@
 #' Generates a **forest plot** of significant associations between exposures and an outcome, based on results from `perform_exwas()`.
 #'
 #' @param expomicset A `MultiAssayExperiment` object that includes results from `perform_exwas()` in its metadata.
+#' @param result An integer index specifying which result in `metadata(expomicset)$exwas` to plot. Default is `1`.
 #' @param filter_col A character string specifying the column to use for significance filtering. Default is `"p.value"`.
 #' @param filter_thresh A numeric threshold to apply to `filter_col`. Only terms below this threshold will be plotted. Default is `0.05`.
-#' @param subtitle Optional subtitle for the plot. If `NULL`, the covariates used in the model will be shown.
+#' @param subtitle Optional subtitle for the plot. If `NULL`, a subtitle will be auto-generated listing the covariates used in the model.
 #'
 #' @details
 #' This function:
 #' \itemize{
-#'   \item Extracts exposure-outcome association results from `metadata(expomicset)$exwas$results_df`.
+#'   \item Extracts exposure-outcome association results from `metadata(expomicset)$exwas[[result]]$results_df`.
 #'   \item Filters associations using `filter_col < filter_thresh`.
 #'   \item Classifies direction of effect as `"up"`, `"down"`, or `"ns"` (non-significant).
 #'   \item Visualizes point estimates and standard errors using a horizontal forest plot.
 #' }
 #'
+#' Associations with effect estimates (`estimate`) and standard errors (`std.error`) are plotted with error bars. Terms are ordered by effect size.
+#'
 #' @return A `ggplot2` object showing a forest plot of significant exposure-outcome associations.
 #'
 #' @examples
 #' \dontrun{
-#' plot_associate_exposure_outcome(expomicset, filter_thresh = 0.01)
+#' # Plot associations using the first result
+#' plot_associate_exposure_outcome(expomicset, result = 1, filter_thresh = 0.01)
 #' }
 #'
 #' @export
 plot_associate_exposure_outcome <- function(
     expomicset,
+    result = 1,
     filter_col = "p.value",
     filter_thresh = 0.05,
     subtitle = NULL){
@@ -36,11 +41,24 @@ plot_associate_exposure_outcome <- function(
     stop("Please run `perform_exwas()` first.")
   }
 
-  # Extract the results dataframe and filter based on the specified column and threshold
-  exwas <- MultiAssayExperiment::metadata(expomicset)$exwas$results_df |>
-    dplyr::filter(!!sym(filter_col) < filter_thresh)
+  if (result>1){
+    # Extract the results dataframe and filter based on the specified column and threshold
+    exwas <- MultiAssayExperiment::metadata(expomicset)$exwas[[result]][["results_df"]] |>
+      dplyr::filter(!!sym(filter_col) < filter_thresh)
 
-  covariates <- MultiAssayExperiment::metadata(expomicset)$exwas$covariates
+    covariates <- MultiAssayExperiment::metadata(expomicset)$exwas[[result]][["covariates"]]
+  } else if(result == 1 && length(MultiAssayExperiment::metadata(expomicset)$exwas) > 1){
+    exwas <- MultiAssayExperiment::metadata(expomicset)$exwas[[result]][["results_df"]] |>
+      dplyr::filter(!!sym(filter_col) < filter_thresh)
+
+    covariates <- MultiAssayExperiment::metadata(expomicset)$exwas[[result]][["covariates"]]
+  }else{
+    # Extract the results dataframe and filter based on the specified column and threshold
+    exwas <- MultiAssayExperiment::metadata(expomicset)$exwas[["results_df"]] |>
+      dplyr::filter(!!sym(filter_col) < filter_thresh)
+
+    covariates <- MultiAssayExperiment::metadata(expomicset)$exwas[["covariates"]]
+  }
 
   # if subtitle is NULL, create a default subtitle
   if(is.null(subtitle)){
@@ -64,7 +82,7 @@ plot_associate_exposure_outcome <- function(
       xmin = estimate-std.error,
       xmax = estimate+std.error),
       color="grey55",
-      height = 0.2) +
+      height = 0.05) +
     geom_point(shape=18,
                size=5,
                alpha=0.5) +

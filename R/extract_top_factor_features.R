@@ -139,6 +139,12 @@ extract_top_factor_features <- function(
   if(action=="add"){
     # Store selected features
     MultiAssayExperiment::metadata(expomicset)$top_factor_features <- filtered_features
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "extract_top_factor_features"
+    )
     return(expomicset)
   }else if (action=="get"){
     return(filtered_features)

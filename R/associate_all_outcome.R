@@ -219,6 +219,12 @@ associate_all_outcome <- function(expomicset,
       results_df=results_df,
       covariates=covariates)
 
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "associate_all_outcome"
+    )
+
     return(expomicset)
   }else if (action=="get"){
     return(list(

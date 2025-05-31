@@ -58,8 +58,9 @@ plot_normality_summary <- function(
         size = 1
       ) +
       ggpubr::theme_pubr(legend = "right") +
-      ggsci::scale_fill_lancet() +
-      ggsci::scale_color_lancet(guide = FALSE) +
+      scale_fill_manual(values = ggpubr::get_palette("uchicago",k = 2)[c(2,1)])+
+      scale_color_manual(values = ggpubr::get_palette("uchicago",k = 2)[c(2,1)])+
+      guides(color=F)+
       labs(
         x = "",
         y = "No. of Exposures",

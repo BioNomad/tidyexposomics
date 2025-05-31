@@ -79,7 +79,7 @@ extract_omics_exposure_df <- function(
     return(df)
   }) |>
     purrr::compact() |>
-    purrr::reduce(full_join,
+    purrr::reduce(dplyr::full_join,
                   by = "id")
 
   # Merge with exposures

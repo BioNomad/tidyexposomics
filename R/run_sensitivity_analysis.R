@@ -203,6 +203,13 @@ run_sensitivity_analysis <- function(
       feature_stability = feature_stability_df,
       score_thresh = score_thresh
     )
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "run_sensitivity_analysis"
+    )
+
     return(expomicset)
   }else if (action=="get"){
     return(list(

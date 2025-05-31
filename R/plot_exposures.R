@@ -41,20 +41,25 @@ plot_exposures <- function(
     exposure_cols = NULL,
     group_by = NULL,
     plot_type = "boxplot",
-    alpha=0.5,
+    alpha=0.3,
     panel_sizes=rep(1,100),
     title = "Exposure Levels by Category",
     xlab = "",
     ylab = "",
     facet_cols = NULL,
     group_cols = NULL,
+    box_width = 0.1,
     fill_lab = ""
 ){
+  require(ggplot2)
+
   # Extract exposure data
-  exposure_data <- expomicset |> pivot_sample()
+  exposure_data <- expomicset |>
+    pivot_sample()
 
   # Extract variable description file
-  des <- MultiAssayExperiment::metadata(expomicset) |> purrr::pluck("var_info")
+  des <- MultiAssayExperiment::metadata(expomicset) |>
+    purrr::pluck("var_info")
 
   # Filter by exposure category if specified
   if (exposure_cat == "all") {
@@ -71,7 +76,7 @@ plot_exposures <- function(
 
   # Ensure only numeric exposure variables + .sample are retained
   numeric_cols <- exposure_data |>
-    dplyr::select(where(is.numeric)) |>
+    dplyr::select(dplyr::where(is.numeric)) |>
     colnames()
 
   exposure_data <- exposure_data |>
@@ -91,7 +96,7 @@ plot_exposures <- function(
   if(!is.null(facet_cols)){
     facet_cols <- facet_cols
   } else{
-    facet_cols <- ggsci::pal_npg("nrc")(length(unique(sample_metadata$category)))
+    facet_cols <- tidy_exp_pal[1:length(unique(sample_metadata$category))]
   }
 
   if(!is.null(group_by)){
@@ -103,19 +108,22 @@ plot_exposures <- function(
   if(!is.null(group_cols)){
     group_cols <- group_cols
   } else{
-    group_cols <- ggpubr::get_palette("npg", length(unique(sample_metadata[[group_var]])))
+    group_cols <- tidy_exp_pal[1:length(unique(sample_metadata[[group_var]]))]
   }
 
   if( plot_type == "boxplot"){
 
     # Create boxplot
     sample_metadata |>
-      filter(value>0) |>
+      dplyr::filter(value>0) |>
       ggplot(aes(
         x = variable,
         y = value,
-        fill = !!sym(group_var))) +
-      geom_boxplot() +
+        fill = !!sym(group_var),
+        color = !!sym(group_var))) +
+      #geom_violin()+
+      geom_boxplot(alpha=0.4) +
+      geom_jitter(alpha=0.03)+
       ggh4x::facet_grid2(
         ~category,
         scales = "free_x",
@@ -129,6 +137,7 @@ plot_exposures <- function(
           )
         )
       ) +
+      scale_color_manual(values=facet_cols)+
       scale_fill_manual(values = group_cols)+
       ggh4x::force_panelsizes(cols = panel_sizes)+
       labs(
@@ -137,9 +146,10 @@ plot_exposures <- function(
         y = ylab,
         fill = fill_lab
       ) +
-      ggpubr::theme_pubclean() +
+      #ggpubr::theme_pubclean() +
+      theme_minimal()+
       theme(axis.text.x = element_text(angle = 45, hjust = 1),
-            legend.position = ifelse(!is.null(group_var),"right","none"),
+            legend.position = ifelse(is.null(group_var),"right","none"),
             strip.text.x = element_text(face = "bold.italic"),
             plot.title = element_text(face = "bold.italic"))+
       scale_y_log10()

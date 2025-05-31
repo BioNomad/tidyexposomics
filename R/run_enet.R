@@ -50,6 +50,12 @@ run_enet <- function(
   message("Detecting outcome type...")
 
   outcome_var <- data[[outcome]]
+
+  if (is.ordered(outcome_var)) {
+    outcome_var <- factor(outcome_var, ordered = FALSE)
+    data[[outcome]] <- outcome_var
+  }
+
   if (is.factor(outcome_var)) {
     model_mode <- "classification"
   } else if (is.numeric(outcome_var)) {

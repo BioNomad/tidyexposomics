@@ -62,8 +62,8 @@ plot_sensitivity_summary <- function(
       yend = as.numeric(forcats::fct_reorder(exp_name, n)) + 0.45,
       color = exp_name,
     ), size = 1) +
-    ggsci::scale_fill_aaas()+
-    ggsci::scale_color_aaas()+
+    scale_fill_tidy_exp()+
+    scale_color_tidy_exp()+
     ggpubr::theme_pubr(legend="none")+
     theme(plot.title = element_text(face = "bold.italic"),
           axis.text.y = element_blank(),
@@ -88,7 +88,7 @@ plot_sensitivity_summary <- function(
       y=forcats::fct_reorder(exp_name,n),
       fill=exp_name))+
     ggridges::geom_density_ridges()+
-    ggsci::scale_fill_aaas()+
+    scale_fill_tidy_exp()+
     theme_minimal()+
     geom_vline(xintercept=stability_score_thresh,
                linetype="dashed",

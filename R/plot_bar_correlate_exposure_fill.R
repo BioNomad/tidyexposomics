@@ -65,8 +65,8 @@ plot_bar_correlate_exposure_fill <- function(
       fill=exp_name
     ))+
     geom_bar(stat = "identity",alpha=0.7) +
-    ggsci::scale_fill_aaas()+
-    ggsci::scale_color_aaas()+
+    scale_fill_tidy_exp(rev = T)+
+    scale_color_tidy_exp(rev = T)+
     ggpubr::theme_pubr(legend="right",base_size = 10)+
     theme(plot.title = element_text(face = "bold.italic"))+
     labs(title = "Frequently Associated Exposures",

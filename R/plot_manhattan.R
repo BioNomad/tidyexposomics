@@ -106,14 +106,14 @@ plot_manhattan <- function(
 
   # Facet colors
   if(is.null(facet_cols)){
-    facet_cols <- ggsci::pal_npg("nrc")(length(unique(
+    facet_cols <- tidy_exp_pal[1:length(unique(
       expomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck("exwas_all") |>
         purrr::pluck("results_df") |>
         dplyr::filter(!is.na(category)) |>
         dplyr::pull(category)
-    )))
+    ))]
   } else{
     facet_cols
   }

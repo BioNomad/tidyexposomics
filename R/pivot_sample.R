@@ -1,6 +1,6 @@
 #' Extract Sample Metadata from MultiAssayExperiment or SummarizedExperiment
 #'
-#' Extracts and formats sample-level metadata (`colData`) from a `MultiAssayExperiment` 
+#' Extracts and formats sample-level metadata (`colData`) from a `MultiAssayExperiment`
 #' or `SummarizedExperiment` object.
 #'
 #' @param x A `MultiAssayExperiment` or `SummarizedExperiment` object.
@@ -26,7 +26,7 @@ pivot_sample <- function(x, ...) {
     MultiAssayExperiment::colData(x) |>
       as.data.frame() |>
       tibble::rownames_to_column(".sample") |>
-      as_tibble()
+      dplyr::as_tibble()
   } else if (inherits(x, "SummarizedExperiment")) {
     # Call the pivot_sample() from the other package
     tidybulk::pivot_sample(x, ...)

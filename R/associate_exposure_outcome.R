@@ -124,10 +124,29 @@ associate_exposure_outcome <- function(expomicset,
   message("ExWAS analysis completed.")
 
   if(action=="add"){
-    # Save results in metadata
-    MultiAssayExperiment::metadata(expomicset)$exwas <- list(
-      results_df=results_df,
-      covariates=covariates)
+
+    if("exwas" %in% names(MultiAssayExperiment::metadata(expomicset))) {
+      message("Appending ExWAS results to existing metadata.")
+      # Save results in metadata
+      MultiAssayExperiment::metadata(expomicset)$exwas <- list(
+        MultiAssayExperiment::metadata(expomicset)$exwas,
+        list(
+          results_df=results_df,
+          covariates=covariates)
+      )
+    } else {
+      message("Creating new ExWAS metadata entry.")
+      # Save results in metadata
+      MultiAssayExperiment::metadata(expomicset)$exwas <- list(
+        results_df=results_df,
+        covariates=covariates)
+    }
+
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "associate_exposure_outcome"
+    )
 
     return(expomicset)
   }else if (action=="get"){

@@ -57,8 +57,8 @@ plot_bar_correlate_feature <- function(
       yend = as.numeric(reorder(exp_name, n)) + 0.45,
       color = exp_name,
     ), size = 1) +
-    ggsci::scale_fill_aaas()+
-    ggsci::scale_color_aaas()+
+    scale_fill_tidy_exp(rev = T)+
+    scale_color_tidy_exp(rev = T)+
     ggpubr::theme_pubr(legend="none",base_size = 10)+
     theme(plot.title = element_text(face = "bold.italic"))+
     labs(

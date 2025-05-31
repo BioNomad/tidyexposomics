@@ -164,6 +164,12 @@ correlate_exposures <- function(
       filtered_table = filtered_corr
     )
 
+    # Add analysis steps taken to metadata
+    MultiAssayExperiment::metadata(expomicset)$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$steps,
+      "correlate_exposures"
+    )
+
     return(expomicset)
   }else if (action=="get"){
     return(list(

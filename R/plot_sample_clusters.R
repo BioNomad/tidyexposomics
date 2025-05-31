@@ -90,6 +90,7 @@ plot_sample_clusters <- function(
 
 
   df |>
+    mutate(Category=as.character(Category)) |>
     dplyr::group_by(sample_group) |>
     tidyHeatmap::heatmap(variable,
                          Sample,
@@ -98,8 +99,12 @@ plot_sample_clusters <- function(
                          palette_value = circlize::colorRamp2(
                            c(-2, 0, 2),
                            c("#006666", "white", "#8E0152"))) |>
-    tidyHeatmap::annotation_tile(Category) |>
-    tidyHeatmap::annotation_tile(sample_group)
+    tidyHeatmap::annotation_tile(
+      Category,
+      palette = rev(tidy_exp_pal)[1:length(unique(df$Category))]) |>
+    tidyHeatmap::annotation_tile(
+      sample_group,
+      palette = tidy_exp_pal[1:length(unique(df$sample_group))])
 }
 
 

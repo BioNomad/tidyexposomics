@@ -23,6 +23,7 @@ plot_circos_correlate_exposure <- function(
     correlation_cutoff = 0.3) {
 
   require(ggplot2)
+  require(ggraph)
 
   # Extract and filter relevant data
   correlation_data <- MultiAssayExperiment::metadata(expomicset)$exposure_correlation$filtered_table %>%

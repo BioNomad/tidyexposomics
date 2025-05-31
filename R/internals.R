@@ -1,3 +1,39 @@
+# --- Define Custom Color Pallette  ---
+
+tidy_exp_pal <- c(
+  "#1E0C1F",
+  "#00c9c1",
+  "#cf68d9",
+  "#6d7ea9",
+  "#e8d5b5",
+  "#944470",
+  "#67abff",
+  "#b5a7b6",
+  "#002f4f",
+  "#f2b459",
+  "#4f4350",
+  "#51aabb",
+  "#994a4f",
+  "#00a3cd",
+  "#240d00",
+  "#48817d"
+)
+
+scale_fill_tidy_exp <- function(...,rev = F) {
+  if (rev) {
+    tidy_exp_pal <- rev(tidy_exp_pal)
+  }
+  ggplot2::scale_fill_manual(values = tidy_exp_pal, ...)
+}
+
+scale_color_tidy_exp <- function(..., rev = F) {
+  if (rev) {
+    tidy_exp_pal <- rev(tidy_exp_pal)
+  }
+  ggplot2::scale_color_manual(values = tidy_exp_pal, ...)
+}
+
+
 # --- Update Assay ColData ------
 
 #' Update Assay colData in a MultiAssayExperiment
@@ -1203,7 +1239,7 @@
       dplyr::pull(group) |>
       unique() |>
       length()
-    p <- p + scale_color_manual(values = ggpubr::get_palette("npg",n_colors))
+    p <- p + scale_color_tidy_exp()
   }
 
   if (!is.null(facet_var)) {
@@ -1222,7 +1258,7 @@
   }
 
   if (label) {
-    p <- p + geom_node_label(aes(label = label), repel = TRUE)
+    p <- p + geom_node_label(aes(label = label), repel = T)
   }
 
   if (include_stats) {
