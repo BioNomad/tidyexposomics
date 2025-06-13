@@ -19,7 +19,7 @@
 #'
 #' @param expomicset A \code{MultiAssayExperiment} object containing exposures and omics data.
 #' @param exposure_impute_method Character. Imputation method to use for exposure variables. Defaults to \code{"median"}.
-#' @param exposure_columns Character vector. Names of columns in \code{colData} to impute. If \code{NULL}, all numeric columns are used.
+#' @param exposure_cols Character vector. Names of columns in \code{colData} to impute. If \code{NULL}, all numeric columns are used.
 #' @param omics_impute_method Character. Imputation method to use for omics data. Defaults to \code{"knn"}.
 #' @param omics_to_impute Character vector. Names of omics datasets to impute. If \code{NULL}, all omics datasets are included.
 #'
@@ -39,14 +39,14 @@
 #' \dontrun{
 #' imputed_mae <- run_impute_missing(my_mae,
 #'                                   exposure_impute_method = "lod_sqrt2",
-#'                                   exposure_columns = c("pm25", "no2"),
+#'                                   exposure_cols = c("pm25", "no2"),
 #'                                   omics_impute_method = "missforest",
 #'                                   omics_to_impute = c("metabolomics", "proteomics"))
 #' }
 
 run_impute_missing <- function(expomicset,
                                exposure_impute_method = "median",
-                               exposure_columns = NULL,
+                               exposure_cols = NULL,
                                omics_impute_method = "knn",
                                omics_to_impute = NULL) {
 
@@ -90,14 +90,14 @@ run_impute_missing <- function(expomicset,
     message("Imputing exposure data using method: ", exposure_impute_method)
 
     metadata_df <- as.data.frame(MultiAssayExperiment::colData(expomicset))
-    if (is.null(exposure_columns)) {
-      exposure_columns <- names(metadata_df)[sapply(metadata_df, is.numeric)]
+    if (is.null(exposure_cols)) {
+      exposure_cols <- names(metadata_df)[sapply(metadata_df, is.numeric)]
     }
 
-    data_to_impute <- metadata_df[, exposure_columns, drop = FALSE]
+    data_to_impute <- metadata_df[, exposure_cols, drop = FALSE]
     imputed <- impute_data(data_to_impute, exposure_impute_method)
 
-    metadata_df[, exposure_columns] <- imputed
+    metadata_df[, exposure_cols] <- imputed
     MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(metadata_df)
   }
 
@@ -115,9 +115,15 @@ run_impute_missing <- function(expomicset,
   }
 
   # Add analysis steps taken to metadata
-  MultiAssayExperiment::metadata(expomicset)$steps <- c(
-    MultiAssayExperiment::metadata(expomicset)$steps,
-    "run_impute_missing"
+  MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+    MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    list(run_impute_missing=list(
+         timestamp = Sys.time(),
+         params = list(exposure_impute_method = exposure_impute_method,
+                       exposure_cols = exposure_cols,
+                       omics_impute_method = omics_impute_method,
+                       omics_to_impute = omics_to_impute),
+         notes = ""))
   )
 
   return(expomicset)

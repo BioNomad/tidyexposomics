@@ -28,7 +28,7 @@
 #' }
 #'
 #' @param expomicset A \code{MultiAssayExperiment} object.
-#' @param cols_of_interest A character vector of column names from \code{colData(expomicset)} to transform.
+#' @param exposure_cols A character vector of column names from \code{colData(expomicset)} to transform.
 #'   If \code{NULL}, the function will attempt to use metadata from \code{check_normality()}.
 #' @param transform_method One of \code{"none"}, \code{"log2"}, \code{"x_1_3"}, \code{"sqrt"},
 #'   \code{"boxcox_best"}, or \code{"best"} (default). \code{"best"} evaluates all available
@@ -47,13 +47,13 @@
 #' @examples
 #' \dontrun{
 #' transformed_mae <- transform_exposure(my_mae,
-#'                                       cols_of_interest = c("pm25", "no2"),
+#'                                       exposure_cols = c("pm25", "no2"),
 #'                                       transform_method = "best")
 #' }
 
 transform_exposure <- function(
     expomicset,
-    cols_of_interest = NULL,
+    exposure_cols = NULL,
     transform_method = "best") {
 
   boxcox_best <- function(var) {
@@ -109,8 +109,8 @@ transform_exposure <- function(
 
   col_data <- as.data.frame(MultiAssayExperiment::colData(expomicset))
   numeric_cols <- names(col_data)[sapply(col_data, is.numeric)]
-  variables_to_transform <- if (!is.null(cols_of_interest)) {
-    cols_of_interest
+  variables_to_transform <- if (!is.null(exposure_cols)) {
+    exposure_cols
   } else {
     MultiAssayExperiment::metadata(expomicset)$normality$norm_df$exposure
   }
@@ -207,11 +207,11 @@ transform_exposure <- function(
 
 # transform_exposure <- function(
 #     expomicset,
-#     cols_of_interest=NULL,
+#     exposure_cols=NULL,
 #     transform_method = "best") {
 #
-#   if(!is.null(cols_of_interest)){
-#     variables_to_transform <- cols_of_interest
+#   if(!is.null(exposure_cols)){
+#     variables_to_transform <- exposure_cols
 #   }else{
 #     # Extract variables to transform from normality metadata
 #     variables_to_transform <- MultiAssayExperiment::metadata(expomicset)$normality$norm_df$exposure

@@ -134,7 +134,7 @@ run_pca <- function(
 
   if(action=="add"){
     # Store results
-    MultiAssayExperiment::metadata(expomicset)$pca <- list(
+    MultiAssayExperiment::metadata(expomicset)$quality_control$pca <- list(
       pca_df = tibble(dat),
       pca_feature = pca_feature,
       pca_sample = pca_sample,
@@ -142,9 +142,13 @@ run_pca <- function(
     )
 
     # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_pca"
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      list(run_pca=list(
+           timestamp = Sys.time(),
+           params = list(),
+           notes = c("Outliers: ",paste(rownames(pca_sample$x)[outliers], collapse = ", ")))
+      )
     )
 
     return(expomicset)

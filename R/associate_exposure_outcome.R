@@ -5,7 +5,7 @@
 #' optionally stores results in `expomicset` metadata.
 #'
 #' @param expomicset An \code{expomicset} object containing exposure and outcome data.
-#' @param exposures A character vector of exposure variable names.
+#' @param exposure_cols A character vector of exposure variable names.
 #' @param outcome A character string specifying the outcome variable name.
 #' @param covariates An optional character vector of covariate names. Default is \code{NULL}.
 #' @param family A character string specifying the GLM family (e.g., \code{"gaussian"}, \code{"binomial"}). Default is \code{"gaussian"}.
@@ -26,7 +26,7 @@
 #' \dontrun{
 #' results <- associate_exposure_outcome(
 #'   expomicset = my_expomicset,
-#'   exposures = c("pm25", "lead", "ozone"),
+#'   exposure_cols = c("pm25", "lead", "ozone"),
 #'   outcome = "lung_function",
 #'   covariates = c("age", "sex", "smoking"),
 #'   family = "gaussian",
@@ -37,7 +37,7 @@
 #'
 #' @export
 associate_exposure_outcome <- function(expomicset,
-                          exposures,
+                          exposure_cols,
                           outcome,
                           covariates = NULL,
                           family = "gaussian",
@@ -65,7 +65,7 @@ associate_exposure_outcome <- function(expomicset,
 
   # Iterate over each exposure
   message("Performing ExWAS...")
-  for (exposure in exposures) {
+  for (exposure in exposure_cols) {
     # Construct formula
     formula <- as.formula(
       paste(outcome, "~",

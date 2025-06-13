@@ -40,15 +40,15 @@ plot_pca <- function(
   require(ggfortify)
 
   # Check if the required metadata is present
-  if (is.null(MultiAssayExperiment::metadata(expomicset)$pca)) {
+  if (is.null(MultiAssayExperiment::metadata(expomicset)$quality_control$pca)) {
     stop("Please run `run_pca` first.")
   }
 
   # grab data
-  dat <- MultiAssayExperiment::metadata(expomicset)$pca$pca_df |>
+  dat <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$pca_df |>
     as.data.frame()
-  pca_feature <- MultiAssayExperiment::metadata(expomicset)$pca$pca_feature
-  pca_sample <- MultiAssayExperiment::metadata(expomicset)$pca$pca_sample
+  pca_feature <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$pca_feature
+  pca_sample <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$pca_sample
 
   # capitalize exposure for plot
   dat <- dat |>
@@ -75,7 +75,7 @@ plot_pca <- function(
   )
 
   # Define outliers
-  outlier_samples <- MultiAssayExperiment::metadata(expomicset)$pca$outliers
+  outlier_samples <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$outliers
 
   # PCA sample scatter plot
   pca_plot_sample <- autoplot(pca_sample, colour = sample_col) +

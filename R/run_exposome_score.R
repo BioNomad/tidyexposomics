@@ -13,6 +13,7 @@
 #'
 #' @details
 #' - `"mean"`: Computes the row-wise mean across exposure values.
+#' - `"sum"`: Computes the row-wise sum across exposure values.
 #' - `"median"`: Computes the row-wise median across exposure values.
 #' - `"pca"`: Performs PCA on exposures and uses the first principal component.
 #' - `"irt"`: Fits a unidimensional graded IRT model using decile-binned exposures.
@@ -64,6 +65,14 @@ run_exposome_score <- function(
     scores <- data |>
       dplyr::mutate(exposome_score_mean = rowMeans(dplyr::across(dplyr::everything()), na.rm = TRUE)) |>
       dplyr::select(exposome_score_mean)
+
+  } else if (score_type == "sum"){
+    # Calculate sum exposome score
+    message("Calculating sum exposure scores...")
+
+    scores <- data |>
+      dplyr::mutate(exposome_score_sum = rowSums(dplyr::across(dplyr::everything()), na.rm = TRUE)) |>
+      dplyr::select(exposome_score_sum)
 
   } else if(score_type == "median"){
     # Calculate median exposome score
@@ -130,7 +139,7 @@ run_exposome_score <- function(
       dplyr::select(exposome_score_var)
 
     } else {
-    stop("Invalid score_type. Choose either 'mean', 'median', 'pca', 'irt', or 'quantile'.")
+    stop("Invalid score_type. Choose either 'sum', mean', 'median', 'pca', 'irt', or 'quantile'.")
   }
 
   if(!is.null(score_column_name)) {

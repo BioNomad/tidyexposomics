@@ -42,43 +42,44 @@ plot_heatmap_correlate_exposure <- function(
     mid = "white",
     high = "#8E0152",
     midpoint = 0) {
-  library(ggplot2)
-  library(dplyr)
-  library(tidyr)
-  library(patchwork)
-  library(tibble)
+  require(ggplot2)
+  require(patchwork)
 
   # Check that exposure correlation has been run
   if(!("exposure_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))) ) {
     stop("Exposure correlation has not been run. Please run `correlate_exposures()` first.")
   }
 
-  correlation_df <- MultiAssayExperiment::metadata(expomicset)$exposure_correlation$correlation_table
+  correlation_df <- expomicset |>
+    MultiAssayExperiment::metadata() |>
+    purrr::pluck("exposure_correlation") |>
+    purrr::pluck("correlation_table")
 
   if(!is.null(exposure_cols)){
     # Filter correlation_df based on exposure_cols
     correlation_df <- correlation_df |>
-      filter(var1 %in% exposure_cols & var2 %in% exposure_cols)
+      dplyr::filter(var1 %in% exposure_cols & var2 %in% exposure_cols)
   }
 
   if(!is.null(corr_threshold)) {
     # Filter based on correlation threshold
     correlation_df <- correlation_df |>
-      filter(abs(correlation) >= corr_threshold)
+      dplyr::filter(abs(correlation) >= corr_threshold)
 
     # Remove unnecessary rows if no correlations remain
     remaining_vars <- unique(c(correlation_df$var1, correlation_df$var2))
 
     correlation_df <- correlation_df |>
-      filter(var1 %in% remaining_vars & var2 %in% remaining_vars)
+      dplyr::filter(var1 %in% remaining_vars & var2 %in% remaining_vars)
   }
 
   # Build correlation matrix
   cor_mat <- correlation_df |>
-    select(var1, var2, correlation) |>
-    pivot_wider(names_from = var2, values_from = correlation) |>
-    mutate(across(everything(), ~replace_na(.x, 0))) |>
-    column_to_rownames("var1") |>
+    dplyr::select(var1, var2, correlation) |>
+    tidyr::pivot_wider(names_from = var2,
+                       values_from = correlation) |>
+    dplyr::mutate(across(everything(), ~replace_na(.x, 0))) |>
+    tibble::column_to_rownames("var1") |>
     as.matrix()
 
   # Get variable order
@@ -87,22 +88,31 @@ plot_heatmap_correlate_exposure <- function(
 
   # Melt correlation matrix and join with metadata
   df <- as.data.frame(as.table(cor_mat)) |>
-    rename(var1 = Var1, var2 = Var2, correlation = Freq) |>
-    left_join(correlation_df |> select(var1, var2, category_1, category_2),
+    dplyr::rename(var1 = Var1,
+                  var2 = Var2,
+                  correlation = Freq) |>
+    dplyr::left_join(correlation_df |>
+                       dplyr::select(var1,
+                                     var2,
+                                     category_1,
+                                     category_2),
               by = c("var1", "var2")) |>
-    mutate(
+    dplyr::mutate(
       var1_idx = idx[as.character(var1)],
       var2_idx = idx[as.character(var2)]
     ) |>
-    filter(var1_idx <= var2_idx) |>  # Keep upper-left triangle
-    mutate(
+    dplyr::filter(var1_idx <= var2_idx) |>  # Keep upper-left triangle
+    dplyr::mutate(
       var1 = factor(var1, levels = vars),
       var2 = factor(var2, levels = rev(vars))  # reverse for y-axis
     )
 
   # Unified color palette
-  all_categories <- unique(c(correlation_df$category_1, correlation_df$category_2)) |>
-    as.character() |> unique() |> na.omit()
+  all_categories <- unique(c(correlation_df$category_1,
+                             correlation_df$category_2)) |>
+    as.character() |>
+    unique() |>
+    na.omit()
 
   # Check if annotation_colors is provided
   if(!is.null(annotation_colors)){
@@ -114,15 +124,23 @@ plot_heatmap_correlate_exposure <- function(
     }
 
   } else{
-    cat_colors <- setNames(ggpubr::get_palette("jco", length(all_categories)), all_categories)
+    cat_colors <- setNames(tidy_exp_pal[1:length(all_categories)], all_categories)
   }
 
   # Heatmap
-  heatmap <- ggplot(df, aes(x = var1, y = var2, fill = correlation)) +
+  heatmap <- df |>
+    ggplot(
+      aes(x = var1,
+          y = var2,
+          fill = correlation)) +
     geom_tile() +
     scale_fill_gradient2(
-      low = low, mid = mid, high = high, midpoint = midpoint,
-      limits = c(-1, 1), name = "Correlation"
+      low = low,
+      mid = mid,
+      high = high,
+      midpoint = midpoint,
+      limits = c(-1, 1),
+      name = "Correlation"
     ) +
     theme_minimal() +
     theme(
@@ -133,10 +151,17 @@ plot_heatmap_correlate_exposure <- function(
     )
 
   # Top annotation bar (x-axis)
-  top_annot <- correlation_df |> distinct(var1, category_1)
-  top_bar <- ggplot(top_annot, aes(x = var1, y = 1, fill = category_1)) +
+  top_annot <- correlation_df |>
+    dplyr::distinct(var1, category_1)
+
+  top_bar <- top_annot |>
+    ggplot(aes(
+      x = var1,
+      y = 1,
+      fill = category_1)) +
     geom_tile(height = 0.01) +
-    scale_fill_manual(name = "Category", values = cat_colors) +
+    scale_fill_manual(name = "Category",
+                      values = cat_colors) +
     theme_minimal() +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
@@ -148,10 +173,17 @@ plot_heatmap_correlate_exposure <- function(
     )
 
   # Left annotation bar (y-axis)
-  left_annot <- correlation_df |> distinct(var2, category_2)
-  left_bar <- ggplot(left_annot, aes(x = 1, y = var2, fill = category_2)) +
+  left_annot <- correlation_df |>
+    dplyr::distinct(var2, category_2)
+
+  left_bar <- left_annot |>
+    ggplot(aes(
+      x = 1,
+      y = var2,
+      fill = category_2)) +
     geom_tile(width = 0.01) +
-    scale_fill_manual(name = "Category", values = cat_colors) +
+    scale_fill_manual(name = "Category",
+                      values = cat_colors) +
     scale_x_continuous(expand = c(0, 0)) +
     theme_minimal() +
     theme(

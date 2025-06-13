@@ -66,7 +66,7 @@ plot_circos_exposure_shared_features <- function(
     dplyr::arrange(num_shared)
 
   # Vertex Information
-  vertex_df <- MultiAssayExperiment::metadata(expomicset)$var_info %>%
+  vertex_df <- MultiAssayExperiment::metadata(expomicset)$var_info |>
     dplyr::filter(variable %in% c(
       exp_shared_feature_df$source,
       exp_shared_feature_df$target))

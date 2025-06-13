@@ -4,7 +4,7 @@
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing sample clustering results
 #' in `metadata(expomicset)$sample_clustering`.
-#' @param cols_of_interest A character vector specifying columns from `colData` to include
+#' @param exposure_cols A character vector specifying columns from `colData` to include
 #' in the summary. Default is `NULL`, which includes all available columns.
 #'
 #' @details
@@ -23,17 +23,17 @@
 #' @export
 plot_sample_clusters <- function(
     expomicset,
-    cols_of_interest=NULL
+    exposure_cols=NULL
 ){
 
   if(!"sample_clustering" %in% names(MultiAssayExperiment::metadata(expomicset))){
     stop("Please run `cluster_samples()` first")
   }
 
-  if(is.null(cols_of_interest)){
-    cols_of_interest <- colnames(expomicset)
+  if(is.null(exposure_cols)){
+    exposure_cols <- colnames(expomicset)
   } else{
-    cols_of_interest <- cols_of_interest[cols_of_interest %in% colnames(MultiAssayExperiment::colData(expomicset))]
+    exposure_cols <- exposure_cols[exposure_cols %in% colnames(MultiAssayExperiment::colData(expomicset))]
   }
 
   # add in sample group to the colData
@@ -48,16 +48,16 @@ plot_sample_clusters <- function(
   #     ),
   #     by="id_to_map"
   #   ) |>
-  #   dplyr::select(dplyr::all_of(c(cols_of_interest,"cluster"))) |>
-  #   dplyr::mutate_at(dplyr::vars(cols_of_interest), as.numeric)
+  #   dplyr::select(dplyr::all_of(c(exposure_cols,"cluster"))) |>
+  #   dplyr::mutate_at(dplyr::vars(exposure_cols), as.numeric)
   #
   # ComplexHeatmap::draw(MultiAssayExperiment::metadata(expomicset)$sample_clustering$heatmap)
 
   # df <-  a |>
   #   pivot_sample() |>
   #   as.data.frame() |>
-  #   dplyr::select(all_of(c(cols_of_interest,".sample",sample_group)) |>
-  #   mutate(across(cols_of_interest,~as.numeric(.))) |>
+  #   dplyr::select(all_of(c(exposure_cols,".sample",sample_group)) |>
+  #   mutate(across(exposure_cols,~as.numeric(.))) |>
   #     pivot_longer(-c(.sample,sample_group),
   #                  names_to = "variable",
   #                  values_to = "value") |>
@@ -69,7 +69,7 @@ plot_sample_clusters <- function(
   df <- expomicset |>
     MultiAssayExperiment::colData() |>
     as.data.frame() |>
-    dplyr::select(cols_of_interest) |>
+    dplyr::select(exposure_cols) |>
     dplyr::mutate_all(~as.numeric(.)) |>
     tibble::rownames_to_column("Sample") |>
     dplyr::inner_join(

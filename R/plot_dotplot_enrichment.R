@@ -87,7 +87,7 @@ plot_dotplot_enrichment <- function(
   go_group_genes_df <- go_group_df |>
     (\(df) split(df, df$go_group))() |>
     purrr::map(~ .x |>
-                 pull(geneID) |>
+                 dplyr::pull(geneID) |>
                  (\(x) strsplit(x, "/"))() |>
                  unlist() |>
                  table() |>
@@ -96,8 +96,12 @@ plot_dotplot_enrichment <- function(
                  names() |>
                  (\(genes) {
                    # Split into groups of 5 and add line breaks
-                   gene_chunks <- split(genes, ceiling(seq_along(genes) / 5))
-                   paste(sapply(gene_chunks, function(chunk) paste(chunk, collapse = ", ")), collapse = "\n")
+                   gene_chunks <- split(genes,
+                                        ceiling(seq_along(genes) / 5))
+                   paste(sapply(gene_chunks,
+                                function(chunk) paste(
+                                  chunk, collapse = ", ")),
+                         collapse = "\n")
                  })()
     ) |>
     as.data.frame() |>
@@ -108,18 +112,18 @@ plot_dotplot_enrichment <- function(
 
   if(add_top_genes){
     go_group_df <- go_group_df |>
-      inner_join(
+      dplyr::inner_join(
         go_group_genes_df,
         by = "go_group"
       ) |>
-      mutate(go_group = gsub("_"," ", go_group))
+      dplyr::mutate(go_group = gsub("_"," ", go_group))
   } else{
     go_group_df <- go_group_df |>
-      mutate(go_group = gsub("_"," ", go_group))
+      dplyr::mutate(go_group = gsub("_"," ", go_group))
   }
 
   go_group_df |>
-    mutate(go_group = paste(go_group,gene_col,sep="\n")) |>
+    dplyr::mutate(go_group = paste(go_group,gene_col,sep="\n")) |>
     dplyr::group_by(category,exp_name,go_group) |>
     dplyr::arrange(p.adjust) |>
     dplyr::slice_head(n=n_per_group) |>

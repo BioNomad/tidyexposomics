@@ -9,8 +9,8 @@
 #' @param top_n An integer specifying the number of top exposures to display per experimental assay. Default is `15`.
 #'
 #' @details
-#' This function identifies exposures significantly correlated with features within specified GO groups. 
-#' It extracts functional enrichment results from `metadata(expomicset)$functional_enrichment` and 
+#' This function identifies exposures significantly correlated with features within specified GO groups.
+#' It extracts functional enrichment results from `metadata(expomicset)$functional_enrichment` and
 #' cross-references them with exposure-feature correlation results:
 #'
 #' - `"deg_exp_cor"`: Uses `metadata(expomicset)$omics_exposure_deg_correlation`
@@ -37,53 +37,54 @@ plot_go_group_exposures <- function(
     top_n = 15
 ){
   require(ggplot2)
-  
+
   # Check if the required metadata is present
   if(!"functional_enrichment" %in% names(MultiAssayExperiment::metadata(expomicset))){
     stop("Please run `run_enrichment()` first.")
   }
-  
+
   # Get the functional enrichment results
   enrich_res <- MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]]
-  
+
   # Filter the results to the GO groups of interest
   if(identical(go_groups,"all")){
-    go_group_res <- enrich_res 
+    go_group_res <- enrich_res
   }else{
-    go_group_res <- enrich_res |> 
+    go_group_res <- enrich_res |>
       dplyr::filter(go_group %in% go_groups)
   }
-  
+
   # Get the genes in the GO groups
-  go_group_genes <- go_group_res |> 
-    dplyr::pull(geneID) |> 
-    stringr::str_split("/") |> 
-    unlist() |> 
+  go_group_genes <- go_group_res |>
+    dplyr::pull(geneID) |>
+    #stringr::str_split("/") |>
+    (\(chr) strsplit(chr,"/"))() |>
+    unlist() |>
     unique()
-  
+
   # Get the correlation results
   if(geneset=="deg_exp_cor"){
-    cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation |> 
+    cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation |>
       dplyr::inner_join(pivot_feature(expomicset),
                  by=c("feature"=".feature",
-                      "exp_name"=".exp_name")) 
+                      "exp_name"=".exp_name"))
   }else if(geneset=="factor_exp_cor"){
-    cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_factor_correlation |> 
+    cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_factor_correlation |>
       dplyr::inner_join(pivot_feature(expomicset),
                  by=c("feature"=".feature",
                       "exp_name"=".exp_name"))
   }
-  
+
   # Filter the correlation results to the GO groups
-  cor_res_go_group <- cor_res |> 
+  cor_res_go_group <- cor_res |>
     dplyr::filter(!!sym(feature_col) %in% go_group_genes)
-  
+
   # Plot the results
   cor_res_go_group |>
     dplyr::group_by(exp_name,category,exposure) |>
     dplyr::summarise(n=dplyr::n()) |>
-    dplyr::ungroup() |> 
-    dplyr::group_by(exp_name) |> 
+    dplyr::ungroup() |>
+    dplyr::group_by(exp_name) |>
     dplyr::arrange(desc(n)) |>
     dplyr::slice_head(n=top_n) |>
     dplyr::ungroup() |>

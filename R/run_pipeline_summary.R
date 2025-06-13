@@ -25,7 +25,9 @@
 #' }
 #'
 #' @export
-run_pipeline_summary <- function(expomicset, show_index = TRUE, console_print = FALSE) {
+run_pipeline_summary <- function(expomicset,
+                                 show_index = TRUE,
+                                 console_print = FALSE) {
   # Check for 'steps' metadata
   if (!("steps" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
     stop("Please run analysis steps before running the pipeline summary.")

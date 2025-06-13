@@ -109,7 +109,8 @@ scale_color_tidy_exp <- function(..., rev = F) {
 #'
 #' @keywords internal
 #' @noRd
-.scale_multiassay <- function(expomicset,log2=FALSE) {
+.scale_multiassay <- function(expomicset,
+                              log2=FALSE) {
 
   message("Scaling each assay in MultiAssayExperiment...")
 
@@ -289,8 +290,8 @@ scale_color_tidy_exp <- function(..., rev = F) {
   #                    .groups = "drop") |>
   #   dplyr::arrange(desc(stability_score))
 
-  feature_stability_df <- sensitivity_df %>%
-    group_by(feature,exp_name) %>%
+  feature_stability_df <- sensitivity_df |>
+    group_by(feature,exp_name) |>
     summarise(
       # Stability Score (Weighted: Frequency × Effect Size Consistency)
       # FDR-adjusted significance frequency
@@ -1278,4 +1279,100 @@ scale_color_tidy_exp <- function(..., rev = F) {
   }
 
   return(p)
+}
+# --- Ontology Root --------------
+#' Collapse Ontology Root Nodes
+#'
+#' Collapses a set of ontology terms to either user specified root nodes or root level depending on the level of detail they want
+#'
+#' @keywords internal
+#' @noRd
+.collapse_ont_terms <- function(
+    ontology_df,
+    term_ids,
+    root_level = "top",
+    assign_label = TRUE
+) {
+  # Sanitize input: fix character → list columns
+  fix_rel_cols <- function(x) {
+    if (!is.list(x)) strsplit(x, ";\\s*") else x
+  }
+
+  ontology_df <- ontology_df |>
+    dplyr::mutate(
+      ancestors = fix_rel_cols(ancestors),
+      parents = fix_rel_cols(parents),
+      children = fix_rel_cols(children)
+    )
+
+  get_ancestors <- function(term_id) {
+    idx <- match(term_id, ontology_df$id)
+    if (!is.na(idx)) ontology_df$ancestors[[idx]] else character(0)
+  }
+
+  get_name <- function(term_id) {
+    idx <- match(term_id, ontology_df$id)
+    if (!is.na(idx)) ontology_df$name[[idx]] else NA_character_
+  }
+
+  get_depth <- function(term_id) {
+    length(get_ancestors(term_id))
+  }
+
+  # Root nodes depend on input
+  if (identical(root_level, "top")) {
+    root_nodes <- ontology_df$id[
+      sapply(ontology_df$parents,
+             function(p) length(p) == 0)]
+
+    assign_to_root <- function(term_id) {
+      anc <- c(term_id, get_ancestors(term_id))
+      matched <- intersect(anc, root_nodes)
+
+      if (length(matched)) matched[1] else NA_character_
+    }
+  } else if (is.numeric(root_level)) {
+
+    all_depths <- sapply(ontology_df$id, get_depth)
+    id_to_depth <- setNames(all_depths, ontology_df$id)
+
+    assign_to_root <- function(term_id) {
+      anc <- c(term_id, get_ancestors(term_id))
+      if (length(anc) == 0) return(NA_character_)
+      # Filter to ancestors that are in the ontology and have depth
+      anc_depths <- id_to_depth[anc]
+      anc_depths <- anc_depths[!is.na(anc_depths)]
+      if (length(anc_depths) == 0) return(NA_character_)
+
+      # Find the deepest matching node ≤ root_level
+      eligible <- anc_depths[anc_depths <= root_level]
+      if (length(eligible)) {
+        return(names(eligible)[which.max(eligible)])  # closest from below
+      } else {
+        return(NA_character_)
+      }
+    }
+  } else if (is.character(root_level)) {
+    root_nodes <- root_level
+    assign_to_root <- function(term_id) {
+      anc <- c(term_id, get_ancestors(term_id))
+      matched <- intersect(anc, root_nodes)
+      if (length(matched)) matched[1] else NA_character_
+    }
+  } else {
+    stop("`root_level` must be 'top', a depth integer, or vector of term IDs.")
+  }
+
+  assigned_root_ids <- sapply(term_ids, assign_to_root)
+
+  if (assign_label) {
+    tibble::tibble(
+      term_id = term_ids,
+      term_label = sapply(term_ids, get_name),
+      root_id = assigned_root_ids,
+      root_label = sapply(assigned_root_ids, get_name)
+    )
+  } else {
+    assigned_root_ids
+  }
 }

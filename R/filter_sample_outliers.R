@@ -27,13 +27,13 @@ filter_sample_outliers <- function(
 ){
 
   # Check if the input is a MultiAssayExperiment object
-  if(!"pca" %in% names(MultiAssayExperiment::metadata(expomicset))){
+  if(!"pca" %in% names(MultiAssayExperiment::metadata(expomicset)$quality_control)){
     stop("PCA not performed on the data. Please run 'pca_analysis' first.")
   }
 
   # Check if outliers are provided
   if(is.null(outliers)){
-    outliers <-  MultiAssayExperiment::metadata(expomicset)$pca$outliers
+    outliers <-  MultiAssayExperiment::metadata(expomicset)$quality_control$pca$outliers
   } else{
     outliers <- outliers
   }
@@ -44,9 +44,13 @@ filter_sample_outliers <- function(
                                                       !(rownames(SummarizedExperiment::colData(expomicset)) %in% outliers))
 
   # Add analysis steps taken to metadata
-  MultiAssayExperiment::metadata(expomicset)$steps <- c(
-    MultiAssayExperiment::metadata(expomicset)$steps,
-    "filter_sample_outliers"
+  MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+    MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    list(filter_sample_outliers=list(
+         timestamp = Sys.time(),
+         params = list(),
+         notes = c("Outliers: ",paste(outliers, collapse = ", ")))
+    )
   )
 
   # expomicset <- expomicset[,!colnames(expomicset) %in% outliers]
