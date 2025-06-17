@@ -53,13 +53,13 @@ plot_volcano <- function(
   require(ggplot2)
 
   # Check to see if Differential Abundance Results are available
-  if(!"differential_abundance" %in% names(MultiAssayExperiment::metadata(expomicset))){
+  if(!"differential_abundance" %in% names(MultiAssayExperiment::metadata(expomicset)$differential_analysis)){
     stop("Please run `run_differential_abundance()` first.")
   }
 
   if(plot_n_sig){
     # Grab the significant features per experiment
-    exp_sum <- MultiAssayExperiment::metadata(expomicset)$differential_abundance |>
+    exp_sum <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance |>
       dplyr::group_by(exp_name) |>
       dplyr::summarise(total = dplyr::n(),
                 total_significant = sum(
@@ -75,7 +75,7 @@ plot_volcano <- function(
         ")",
         sep=""))
   } else {
-    exp_sum <- MultiAssayExperiment::metadata(expomicset)$differential_abundance |>
+    exp_sum <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance |>
       dplyr::group_by(exp_name) |>
       dplyr::summarise(total = dplyr::n(),
                 total_significant = sum(
@@ -85,7 +85,7 @@ plot_volcano <- function(
   }
 
 
-  plot_df <- MultiAssayExperiment::metadata(expomicset)$differential_abundance |>
+  plot_df <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance |>
     dplyr::inner_join(exp_sum,
                       by = "exp_name") |>
     dplyr::arrange(dplyr::desc(total)) |>

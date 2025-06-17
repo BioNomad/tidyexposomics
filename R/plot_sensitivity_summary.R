@@ -29,20 +29,16 @@ plot_sensitivity_summary <- function(
     stability_score_thresh = NULL,
     title="Distribution of Stability Scores"){
 
-  if(!"sensitivity_analysis" %in% names(MultiAssayExperiment::metadata(expomicset))){
-    stop("Please run `run_sensitivity_analysis` first.")
-  }
-
   require(ggplot2)
   require(patchwork)
 
   # Check if sensitivity analysis results are available
-  if(!"sensitivity_analysis" %in% names(MultiAssayExperiment::metadata(expomicset))){
+  if(!"sensitivity_analysis" %in% names(MultiAssayExperiment::metadata(expomicset)$differential_analysis)){
     stop("Please run `run_sensitivity_analysis()` first.")
   }
 
   # Get the sensitivity scores
-  sensitivity_sum <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |>
+  sensitivity_sum <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$feature_stability |>
     dplyr::group_by(exp_name) |>
     dplyr::summarise(n=dplyr::n()) |>
     dplyr::arrange(desc(n))
@@ -75,13 +71,13 @@ plot_sensitivity_summary <- function(
 
   # Identify the stability score threshold
   if(is.null(stability_score_thresh)){
-    stability_score_thresh <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$score_thresh
+    stability_score_thresh <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$score_thresh
   } else{
     stability_score_thresh <- stability_score_thresh
   }
 
   # Create a ridge plot of stability score distributions per assay
-  sensitivity_ridgeplot <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |>
+  sensitivity_ridgeplot <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$feature_stability |>
     dplyr::left_join(sensitivity_sum, by="exp_name") |>
     ggplot(aes(
       x=stability_score,
@@ -101,7 +97,7 @@ plot_sensitivity_summary <- function(
          title = title)
 
   # Print the number of features with stability scores above the threshold
-  sensitivity_sum <- MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis$feature_stability |>
+  sensitivity_sum <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$feature_stability |>
     dplyr::group_by(exp_name) |>
     dplyr::summarise(
       n_above=length(stability_score[stability_score>stability_score_thresh]),

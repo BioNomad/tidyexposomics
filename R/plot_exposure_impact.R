@@ -45,6 +45,7 @@
 #' @export
 plot_exposure_impact <- function(
     expomicset,
+    feature_type = c("degs", "omics", "factors"),
     min_per_group=5,
     facet_cols=NULL,
     bar_cols=NULL,
@@ -58,21 +59,25 @@ plot_exposure_impact <- function(
   require(patchwork)
 
   # Check that exposure impact analysis has been run
-  if(!("exposure_impact" %in% names(MultiAssayExperiment::metadata(expomicset)))){
+  if(!("exposure_impact" %in% names(MultiAssayExperiment::metadata(expomicset)$network))){
     stop("Please run `run_exposure_impact()` first.")
   }
 
   exposure_impact_degree <-
     expomicset |>
     MultiAssayExperiment::metadata() |>
+    purrr::pluck("network") |>
     purrr::pluck("exposure_impact") |>
-    purrr::pluck("exposure_impact_degree")
+    purrr::pluck(feature_type) |>
+    purrr::pluck("exposure_impact")
 
   exposure_impact_deg_n <-
     expomicset |>
     MultiAssayExperiment::metadata() |>
+    purrr::pluck("network") |>
     purrr::pluck("exposure_impact") |>
-    purrr::pluck("exposure_impact_deg_n")
+    purrr::pluck(feature_type) |>
+    purrr::pluck("deg_association_summary")
 
   # set facet colors
   if(!is.null(facet_cols)){
@@ -99,9 +104,9 @@ plot_exposure_impact <- function(
   # Create a boxplot of the degree centrality of genes that are associated
   # with a particular exposure
   boxplot <- exposure_impact_degree |>
-    dplyr::filter(n_exp>min_per_group) |>
+    dplyr::filter(n_features >min_per_group) |>
     ggplot(aes(
-      x=reorder(exposure,-mean),
+      x=reorder(exposure,-mean_centrality),
       y=centrality,
       fill=category,
       color=category

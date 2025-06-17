@@ -112,7 +112,7 @@ transform_exposure <- function(
   variables_to_transform <- if (!is.null(exposure_cols)) {
     exposure_cols
   } else {
-    MultiAssayExperiment::metadata(expomicset)$normality$norm_df$exposure
+    MultiAssayExperiment::metadata(expomicset)$quality_control$normality$norm_df$exposure
   }
   variables_to_transform <- intersect(variables_to_transform, numeric_cols)
 
@@ -161,7 +161,7 @@ transform_exposure <- function(
     updated_col_data <- dplyr::bind_cols(non_numeric_data, transformed_numeric)
     MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
 
-    MultiAssayExperiment::metadata(expomicset)$transformation <- list(
+    MultiAssayExperiment::metadata(expomicset)$quality_control$transformation <- list(
       norm_df = norm_results |> dplyr::filter(transformation == best_transformation),
       norm_summary = norm_summary
     )
@@ -189,16 +189,39 @@ transform_exposure <- function(
       t() |> as.data.frame() |> tibble::rownames_to_column("var") |>
       setNames(c("var", "value"))
 
-    MultiAssayExperiment::metadata(expomicset)$transformation <- list(
+    MultiAssayExperiment::metadata(expomicset)$quality_control$transformation <- list(
       norm_df = norm_results,
       norm_summary = norm_summary
     )
   }
 
-  # Add analysis steps taken to metadata
-  MultiAssayExperiment::metadata(expomicset)$steps <- c(
-    MultiAssayExperiment::metadata(expomicset)$steps,
-    "transform_exposure"
+  # Add step record
+  n_transformed <- length(variables_to_transform)
+
+  # Pull normality results
+  norm_df <- MultiAssayExperiment::metadata(expomicset)$quality_control$transformation$norm_df
+
+  n_normal <- sum(norm_df$p.value > 0.05, na.rm = TRUE)
+  p_normal <- round(n_normal / n_transformed * 100, 1)
+
+  step_record <- list(
+    transform_exposure = list(
+      timestamp = Sys.time(),
+      params = list(
+        transform_method = transform_method,
+        n_transformed = n_transformed,
+        exposures = variables_to_transform
+      ),
+      notes = paste0(
+        "Applied '", transform_method, "' transformation to ", n_transformed, " exposure variables. ",
+        n_normal, " passed normality (Shapiro-Wilk p > 0.05, ", p_normal, "%)."
+      )
+    )
+  )
+
+  MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+    MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    step_record
   )
 
   return(expomicset)

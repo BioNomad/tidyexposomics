@@ -55,15 +55,15 @@ plot_factor_overlap <- function(
   require(patchwork)
 
   # Check if top factor features are available
-  if(!("top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset)))){
+  if(!("top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset)$multiomics_integration))){
     stop("Please run `extract_top_factor_features()` first to generate the top factor features.")
   }
 
   # Extract top factor features
-  top_factor_features <- MultiAssayExperiment::metadata(expomicset)$top_factor_features
+  top_factor_features <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$top_factor_features
 
   # Extract common feature information
-  common_features <- MultiAssayExperiment::metadata(expomicset)$common_top_factor_features
+  common_features <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$common_top_factor_features
 
   if(!is.null(venn_colors)){
     venn_colors <- venn_colors

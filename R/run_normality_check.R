@@ -107,15 +107,32 @@ run_normality_check <- function(expomicset,
 
   if(action=="add"){
     # Add normality results to expomicset metadata
-    MultiAssayExperiment::metadata(expomicset)$normality <- list(
+    MultiAssayExperiment::metadata(expomicset)$quality_control$normality <- list(
       norm_df = norm_df,
       norm_summary = norm_summary
     )
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_normality_check"
+
+    # Add step record
+    step_record <- list(
+      run_normality_check = list(
+        timestamp = Sys.time(),
+        params = list(
+          method = "Shapiro-Wilk",
+          alpha = 0.05
+        ),
+        notes = paste0(
+          "Assessed normality of ", nrow(norm_df), " numeric exposure variables. ",
+          sum(norm_df$p.value > 0.05), " were normally distributed (p > 0.05), ",
+          sum(norm_df$p.value <= 0.05), " were not."
+        )
+      )
     )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
+
     return(expomicset)
   } else if (action=="get"){
     # Return normality results

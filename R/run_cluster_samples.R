@@ -190,15 +190,29 @@ run_cluster_samples <- function(expomicset,
 
   if (action == "add") {
     # Save clustering results in metadata
-    MultiAssayExperiment::metadata(expomicset)$sample_clustering <- list(
+    MultiAssayExperiment::metadata(expomicset)$quality_control$sample_clustering <- list(
       sample_cluster = sample_cluster,
       sample_groups = sample_groups
     )
 
     # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_cluster_samples"
+    step_record <- list(
+      run_cluster_samples = list(
+        timestamp = Sys.time(),
+        params = list(
+          exposure_cols = exposure_cols,
+          dist_method = dist_method,
+          user_k = user_k,
+          cluster_method = cluster_method,
+          clustering_approach = clustering_approach
+        ),
+        notes = paste0("Optimal number of clusters for samples: ", k_samples)
+      )
+    )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
     )
 
     return(expomicset)

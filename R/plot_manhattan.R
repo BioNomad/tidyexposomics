@@ -53,22 +53,43 @@ plot_manhattan <- function(
 ){
   require(ggplot2)
 
-  # Check if "normality" is a name in metadata
-  if(!("exwas_all" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
-    stop("Please run `associate_all_outcome() first.`")
+  # Check if "correlation" is a name in metadata
+  if(!("association" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
+    stop("Please run `run_association() first.`")
   }
 
-  # Prepare data and plot separately
+  # If exp_names in manhattan_data, replace with experiment names
   manhattan_data <- expomicset |>
     MultiAssayExperiment::metadata() |>
-    purrr::pluck("exwas_all") |>
+    purrr::pluck("association") |>
+    purrr::pluck("assoc_omics") |>
     purrr::pluck("results_df") |>
+    bind_rows(
+      expomicset |>
+        MultiAssayExperiment::metadata() |>
+        purrr::pluck("association") |>
+        purrr::pluck("assoc_exposures") |>
+        purrr::pluck("results_df")
+    ) |>
     dplyr::filter(!is.na(category)) |>
     dplyr::mutate(category=gsub("_"," ",category)) |>
     dplyr::mutate(
-      var = forcats::fct_reorder(var, category),
+      var = forcats::fct_reorder(as.character(term), category),
       thresh_met = ifelse(p.value < pval_thresh, "yes", "no")
     )
+
+  # Prepare data and plot separately
+  # manhattan_data <- expomicset |>
+  #   MultiAssayExperiment::metadata() |>
+  #   purrr::pluck("association") |>
+  #   purrr::pluck("assoc_omics") |>
+  #   purrr::pluck("results_df") |>
+  #   dplyr::filter(!is.na(category)) |>
+  #   dplyr::mutate(category=gsub("_"," ",category)) |>
+  #   dplyr::mutate(
+  #     var = forcats::fct_reorder(var, category),
+  #     thresh_met = ifelse(p.value < pval_thresh, "yes", "no")
+  #   )
 
   if(!is.null(vars_to_label)){
     manhattan_data <- manhattan_data |>
@@ -107,10 +128,7 @@ plot_manhattan <- function(
   # Facet colors
   if(is.null(facet_cols)){
     facet_cols <- tidy_exp_pal[1:length(unique(
-      expomicset |>
-        MultiAssayExperiment::metadata() |>
-        purrr::pluck("exwas_all") |>
-        purrr::pluck("results_df") |>
+      manhattan_data |>
         dplyr::filter(!is.na(category)) |>
         dplyr::pull(category)
     ))]

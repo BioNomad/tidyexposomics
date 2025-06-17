@@ -160,10 +160,25 @@ run_exposome_score <- function(
   # Update the colData of the MultiAssayExperiment object
   MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
 
-  # Add analysis steps taken to metadata
-  MultiAssayExperiment::metadata(expomicset)$steps <- c(
-    MultiAssayExperiment::metadata(expomicset)$steps,
-    "run_exposome_score"
+  # Add summary step record
+  step_record <- list(
+    run_exposome_score = list(
+      timestamp = Sys.time(),
+      params = list(
+        score_type = score_type,
+        scaled = scale,
+        exposure_cols = exposure_cols,
+        score_column_name = ifelse(is.null(score_column_name),
+                                   colnames(scores)[1],
+                                   score_column_name)
+      ),
+      notes = paste0("Exposome score computed using method: '", score_type, "'")
+    )
+  )
+
+  MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+    MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    step_record
   )
 
   return(expomicset)

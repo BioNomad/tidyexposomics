@@ -27,15 +27,15 @@ plot_missing_summary <- function(
   require(ggplot2)
 
   # check if the required metadata is present
-  if(!"na_qc" %in% names(MultiAssayExperiment::metadata(expomicset))){
+  if(!"na_qc" %in% names(MultiAssayExperiment::metadata(expomicset)$quality_control)){
     stop("Please run `filter_missing()` first.")
   }
 
   # Plot missing data summary
-  qc_res <- MultiAssayExperiment::metadata(expomicset)$na_qc
+  qc_res <- MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc
 
   # loop through each omic and determine which layers have missing data
-  missing_data <- purrr::imap(MultiAssayExperiment::metadata(expomicset)$na_qc, ~ {
+  missing_data <- purrr::imap(MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc, ~ {
 
     df <- .x$all_var_sum |>
       dplyr::filter(pct_miss>threshold)
@@ -57,7 +57,7 @@ plot_missing_summary <- function(
     dplyr::summarise(missingness = dplyr::n())
 
   # add in other assay names and say their missingness is 0
-  exp_names <- MultiAssayExperiment::metadata(expomicset)$na_qc |>
+  exp_names <- MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc |>
     names()
 
   missing_data <- missing_data |>

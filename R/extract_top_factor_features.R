@@ -48,13 +48,14 @@ extract_top_factor_features <- function(
   message("Extracting top contributing features for specified factors...")
 
   # Get integration results
-  integration_results <- MultiAssayExperiment::metadata(expomicset)$integration_results
+  integration_results <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results
   method_used <- integration_results$method
 
   # Extract factor loadings based on method
   if (method_used == "MOFA") {
     message("Using MOFA+ factor loadings...")
     loadings <- MOFA2::get_weights(integration_results$result)
+
   } else if (method_used == "MCIA") {
     message("Using MCIA block loadings...")
     loadings <- integration_results$result@block_loadings
@@ -138,14 +139,31 @@ extract_top_factor_features <- function(
 
   if(action=="add"){
     # Store selected features
-    MultiAssayExperiment::metadata(expomicset)$top_factor_features <- filtered_features
+    MultiAssayExperiment::metadata(expomicset)$multiomics_integration$top_factor_features <- filtered_features
+
 
     # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "extract_top_factor_features"
+    step_record <- list(
+      extract_top_factor_features = list(
+        timestamp = Sys.time(),
+        params = list(
+          factors=factors,
+          method = method,
+          percentile = percentile,
+          threshold = threshold
+        ),
+        notes = paste0("Selected ",
+                       nrow(filtered_features),
+                       " features contributing to specified factors.")
+      )
+    )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
     )
     return(expomicset)
+
   }else if (action=="get"){
     return(filtered_features)
   }else{

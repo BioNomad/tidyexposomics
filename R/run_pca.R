@@ -142,13 +142,16 @@ run_pca <- function(
     )
 
     # Add analysis steps taken to metadata
+    step_record <- list(
+      run_pca=list(
+      timestamp = Sys.time(),
+      params = list(),
+      notes = c("Outliers: ",paste(rownames(pca_sample$x)[outliers], collapse = ", ")))
+    )
+
     MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
       MultiAssayExperiment::metadata(expomicset)$summary$steps,
-      list(run_pca=list(
-           timestamp = Sys.time(),
-           params = list(),
-           notes = c("Outliers: ",paste(rownames(pca_sample$x)[outliers], collapse = ", ")))
-      )
+      step_record
     )
 
     return(expomicset)

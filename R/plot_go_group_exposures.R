@@ -39,12 +39,12 @@ plot_go_group_exposures <- function(
   require(ggplot2)
 
   # Check if the required metadata is present
-  if(!"functional_enrichment" %in% names(MultiAssayExperiment::metadata(expomicset))){
+  if(!"enrichment" %in% names(MultiAssayExperiment::metadata(expomicset))){
     stop("Please run `run_enrichment()` first.")
   }
 
   # Get the functional enrichment results
-  enrich_res <- MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]]
+  enrich_res <- MultiAssayExperiment::metadata(expomicset)$enrichment[[geneset]]
 
   # Filter the results to the GO groups of interest
   if(identical(go_groups,"all")){
@@ -64,12 +64,12 @@ plot_go_group_exposures <- function(
 
   # Get the correlation results
   if(geneset=="deg_exp_cor"){
-    cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation |>
+    cor_res <- MultiAssayExperiment::metadata(expomicset)$correlation[["degs"]] |>
       dplyr::inner_join(pivot_feature(expomicset),
                  by=c("feature"=".feature",
                       "exp_name"=".exp_name"))
   }else if(geneset=="factor_exp_cor"){
-    cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_factor_correlation |>
+    cor_res <- MultiAssayExperiment::metadata(expomicset)$correlation[["factors"]]|>
       dplyr::inner_join(pivot_feature(expomicset),
                  by=c("feature"=".feature",
                       "exp_name"=".exp_name"))

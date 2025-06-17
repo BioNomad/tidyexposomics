@@ -33,24 +33,33 @@ filter_sample_outliers <- function(
 
   # Check if outliers are provided
   if(is.null(outliers)){
-    outliers <-  MultiAssayExperiment::metadata(expomicset)$quality_control$pca$outliers
+    outliers <-  expomicset |>
+      MultiAssayExperiment::metadata() |>
+      purrr::pluck("quality_control") |>
+      purrr::pluck("pca") |>
+      purrr::pluck("outliers")
   } else{
     outliers <- outliers
   }
 
   message("Removing outliers: ", paste(outliers, collapse=", "))
+
   # Subset by ColData to properly filter outliers
-  expomicset <- MultiAssayExperiment::subsetByColData(expomicset,
-                                                      !(rownames(SummarizedExperiment::colData(expomicset)) %in% outliers))
+  expomicset <- MultiAssayExperiment::subsetByColData(
+    expomicset,
+    !(rownames(SummarizedExperiment::colData(expomicset)) %in% outliers))
+
 
   # Add analysis steps taken to metadata
+  step_record <- list(filter_sample_outliers=list(
+    timestamp = Sys.time(),
+    params = list(),
+    notes = paste("Outliers: ",paste(outliers, collapse = ", "),collapse = ""))
+  )
+
   MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
     MultiAssayExperiment::metadata(expomicset)$summary$steps,
-    list(filter_sample_outliers=list(
-         timestamp = Sys.time(),
-         params = list(),
-         notes = c("Outliers: ",paste(outliers, collapse = ", ")))
-    )
+    step_record
   )
 
   # expomicset <- expomicset[,!colnames(expomicset) %in% outliers]

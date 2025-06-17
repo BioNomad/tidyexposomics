@@ -97,22 +97,84 @@ run_multiomics_integration <- function(expomicset,
       tol = 1e-12,
       plots = "none")
 
+  } else if (method == "MCCA") {
+    # MCCA integration using PMA package
+    x <- purrr::map(
+      .x = MultiAssayExperiment::experiments(expomicset_mo),
+      .f = ~ SummarizedExperiment::assay(.x)
+    )
+    # Ensure all assays have the same columns
+    x <- purrr::map(
+      .x = x,
+      .f = ~ t(.x[, Reduce(intersect,lapply(x, colnames))])
+    )
+
+    # Run MultiCCA
+    y <- PMA::MultiCCA(
+      xlist = x,
+      ncomponents = n_factors)
+
+    # Extract results
+    y_ws <- y$ws
+
+    # Match the names of the results to the original assays
+    names(y_ws) <- names(x)
+
+    # Match rownames
+    y_ws <- purrr::imap(
+      .x = y_ws,
+      .f = ~ {
+        rownames(.x) <- colnames(x[[.y]])
+        .x
+      }
+    )
+
+    # Grab sample level scores
+    sample_scores <- purrr::map2(
+      .x = x,         # data: samples x features
+      .y = y$ws,      # weights: features x components
+      .f = ~ .x %*% .y   # scores: samples x components
+    )
+
+    # return result
+    result <- list(
+      weights = y_ws,
+      sample_scores = sample_scores
+    )
+
   } else{
-    stop("Invalid method. Choose from 'MOFA' or 'MCIA'.")
+    stop("Invalid method. Choose from 'MOFA', 'MCIA', or 'MCCA'.")
   }
 
   if(action=="add"){
     # Store results in MultiAssayExperiment metadata
-    MultiAssayExperiment::metadata(expomicset)$integration_results <- list(
+    MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results <- list(
       method = method,
       result = result
     )
 
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_multiomics_integration"
+    # Add analysis step record
+    step_record <- list(
+      run_multiomics_integration = list(
+        timestamp = Sys.time(),
+        params = list(
+          method = method,
+          n_factors = n_factors,
+          scale = scale
+        ),
+        notes = paste0(
+          "Performed multi-omics integration using ", method,
+          " with ", n_factors, " latent factors. Scaling was ",
+          ifelse(scale, "enabled.", "disabled.")
+        )
+      )
     )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
+
 
     return(expomicset)
   }else if (action=="get"){

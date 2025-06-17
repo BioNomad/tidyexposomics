@@ -454,18 +454,18 @@ scale_color_tidy_exp <- function(..., rev = F) {
     ont = "BP") {
 
   # Check for differential abundance results
-  if (!"differential_abundance" %in% names(MultiAssayExperiment::metadata(expomicset))) {
+  if (!"differential_abundance" %in% names(MultiAssayExperiment::metadata(expomicset)$differential_analysis)) {
     stop("Please run `run_differential_abundance() first.`")
   }
 
   # Check for correlation results
-  if (!"omics_exposure_deg_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))) {
-    stop("Please run `correlate_exposures_with_degs() first.`")
+  if (!"degs" %in% names(MultiAssayExperiment::metadata(expomicset)$correlation)) {
+    stop("Please run `run_correlation() first.`")
   }
 
   # Extract differential abundance and correlation results
-  da_res <- MultiAssayExperiment::metadata(expomicset)$differential_abundance
-  da_cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_deg_correlation
+  da_res <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance
+  da_cor_res <- MultiAssayExperiment::metadata(expomicset)$correlation$degs
 
   # Filter and merge results based on p-value and logFC thresholds
   da_res_cor_merged <- da_res |>
@@ -603,12 +603,12 @@ scale_color_tidy_exp <- function(..., rev = F) {
   require(org.Hs.eg.db)
 
   # Check for differential abundance results
-  if (!"differential_abundance" %in% names(expomicset@metadata)) {
+  if (!"differential_abundance" %in% names(expomicset@metadata$differential_analysis)) {
     stop("Please run `run_differential_abundance() first.`")
   }
 
   # Filter and merge results based on p-value and logFC thresholds
-  da_res <- MultiAssayExperiment::metadata(expomicset)$differential_abundance |>
+  da_res <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance |>
     dplyr::filter(!!sym(pval_col) < pval_threshold) |>
     dplyr::filter(abs(!!sym(logfc_col)) > logfc_threshold) |>
     dplyr::mutate(direction=ifelse(logFC>0,"up","down")) |>
@@ -730,17 +730,17 @@ scale_color_tidy_exp <- function(..., rev = F) {
     ont = "BP") {
 
   # Check for top factor features and correlation results
-  if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset))) {
+  if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset)$multiomics_integration)) {
     stop("Please run `extract_top_factor_features() first.`")
   }
 
-  if (!"omics_exposure_factor_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))) {
-    stop("Please run `correlate_exposures_with_factors() first.`")
+  if (!"factors" %in% names(MultiAssayExperiment::metadata(expomicset)$correlation)) {
+    stop("Please run `run_correlation() first.`")
   }
 
   # Extract factor results and correlation results
-  factor_res <- MultiAssayExperiment::metadata(expomicset)$top_factor_features
-  factor_cor_res <- MultiAssayExperiment::metadata(expomicset)$omics_exposure_factor_correlation
+  factor_res <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$top_factor_features
+  factor_cor_res <- MultiAssayExperiment::metadata(expomicset)$correlation$factors
 
   # Filter and merge results based on p-value and logFC thresholds
   factor_res_cor_merged <- factor_res |>
@@ -863,12 +863,12 @@ scale_color_tidy_exp <- function(..., rev = F) {
     ont = "BP") {
 
   # Check for top factor features and correlation results
-  if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset))) {
+  if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset)$multiomics_integration)) {
     stop("Please run `extract_top_factor_features() first.`")
   }
 
   # Extract factor results
-  factor_res <- MultiAssayExperiment::metadata(expomicset)$top_factor_features |>
+  factor_res <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$top_factor_features |>
     dplyr::select(feature,
                   exp_name) |>
     dplyr::inner_join(pivot_feature(expomicset),

@@ -198,17 +198,50 @@ run_sensitivity_analysis <- function(
 
   if(action =="add"){
     # Store results in metadata
-    MultiAssayExperiment::metadata(expomicset)$sensitivity_analysis <- list(
+    MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis <- list(
       sensitivity_df = sensitivity_df,
       feature_stability = feature_stability_df,
       score_thresh = score_thresh
     )
 
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_sensitivity_analysis"
+    # Add step record
+    step_record <- list(
+      run_sensitivity_analysis = list(
+        timestamp = Sys.time(),
+        params = list(
+          n_models = length(model_list),
+          n_methods = length(methods),
+          n_scalings = length(scaling_methods),
+          min_counts_range = min_counts_range,
+          min_proportion_range = min_proportion_range,
+          covariates_removed = covariates_to_remove,
+          pval_threshold = pval_threshold,
+          logFC_threshold = logFC_threshold,
+          score_thresh = score_thresh,
+          score_quantile = score_quantile,
+          abundance_col = abundance_col
+        ),
+        notes = paste0(
+          "Tested ", length(model_list), " models × ",
+          length(methods), " methods × ",
+          length(scaling_methods), " scalings × ",
+          length(min_counts_range) * length(min_proportion_range), " filtering combinations. ",
+          "Stability threshold used: ",
+          if (!is.null(score_thresh)) {
+            paste0(round(score_thresh, 3), " (fixed)")
+          } else {
+            paste0("quantile-based (", score_quantile, ")")
+          }, "."
+        )
+      )
     )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
+
+
 
     return(expomicset)
   }else if (action=="get"){

@@ -1,168 +1,129 @@
-#' Calculate Exposure Impact Based on DEG Network Centrality
+#' Calculate Exposure Impact from Feature-Exposure Correlation Networks
 #'
-#' This function computes a network-based measure of exposure impact by integrating
-#' differential abundance (DA) results, DA-exposure correlations, and network centrality.
-#' It returns either a summary of exposure impact statistics or stores them in the
-#' `MultiAssayExperiment` object's metadata.
+#' Generalized centrality-based exposure impact analysis using DEG, omics, or factor features.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} object containing prior results
-#'   from sensitivity analysis and exposure correlation analysis.
-#' @param robust Logical. If \code{TRUE}, checks that sensitivity analysis has been run
-#'   and uses robust (stability-based) features. Default is \code{TRUE}.
-#' @param stability_threshold Numeric threshold used to filter features by stability
-#'   score. If \code{NULL}, the threshold stored in metadata is used.
-#' @param pval_col Character. Column name in the DA results indicating the adjusted
-#'   p-value. Default is \code{"adj.P.Val"}.
-#' @param pval_thresh Numeric. Threshold used to define differentially abundant features.
-#'   Default is \code{0.1}.
-#' @param action Character. If \code{"add"}, stores results in metadata; if \code{"get"},
-#'   returns results as a list. Must be either \code{"add"} or \code{"get"}.
+#' @param expomicset A `MultiAssayExperiment` object with correlation and network metadata.
+#' @param feature_type One of `"degs"`, `"omics"`, or `"factors"`.
+#' @param robust Logical. Use only stable features (for "degs" only). Default = TRUE.
+#' @param stability_threshold Optional numeric threshold for stability scores.
+#' @param pval_col Column in differential abundance results to filter DEGs. Default = `"adj.P.Val"`.
+#' @param pval_thresh DEG p-value threshold. Ignored unless `feature_type == "degs"`.
+#' @param action Either `"add"` (store in metadata) or `"get"` (return list).
 #'
-#' @return Either:
-#'   \itemize{
-#'     \item The original \code{MultiAssayExperiment} object with added exposure impact metadata (if \code{action = "add"}), or
-#'     \item A named list with:
-#'       \describe{
-#'         \item{exposure_impact_degree}{Data frame of feature centrality statistics by exposure.}
-#'         \item{exposure_impact_deg_n}{Summary of how many DEGs are associated with each exposure.}
-#'       }
-#'   }
-#'
-#' @details
-#' This function:
-#' \enumerate{
-#'   \item Filters stable features (using stability scores if \code{robust = TRUE}).
-#'   \item Runs exposure correlation analysis on those features.
-#'   \item Builds a network of correlated features and calculates node centrality.
-#'   \item Merges centrality with DEG-exposure associations.
-#'   \item Summarizes exposure impact using average centrality and DEG counts.
-#' }
-#'
-#' @seealso \code{\link{run_sensitivity_analysis}}, \code{\link{correlate_exposoures_degs}}, \code{\link{correlate_exposoures_omics}}
-#'
-#'
+#' @return Either an updated MultiAssayExperiment (if action = "add") or a list.
 #' @export
-
 run_exposure_impact <- function(
     expomicset,
-    robust=TRUE,
-    stability_threshold=NULL,
-    pval_col="adj.P.Val",
-    pval_thresh=0.1,
-    action="add"
-){
-  # This function will take a multiassay experiment object
-  # search the meta data
-  # identify differential abundance results and da-exposure correlations
-  # create a network based on correlation of the differential abundance results
-  # and then get the degree of those correlations
-  # then map back to the da-exposure correlations
-  # and identify the degree for features that
-  # are associated with a particular exposure
-  # and then plot the degree of those features
+    feature_type = c("degs", "omics", "factors"),
+    robust = TRUE,
+    stability_threshold = NULL,
+    pval_col = "adj.P.Val",
+    pval_thresh = 0.1,
+    action = c("add", "get")
+) {
+  feature_type <- match.arg(feature_type)
+  action <- match.arg(action)
+  md <- MultiAssayExperiment::metadata(expomicset)
 
-  require(ggplot2)
-
-  # Check to see if the stability analysis has been run
-  if(robust & !("sensitivity_analysis" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
-    stop("Please run `run_senstivity_analysis()` first.")
+  # Validate required correlation and network
+  if (is.null(md$correlation[[feature_type]])) {
+    stop("Correlation results missing for feature_type = ", feature_type,
+         ". Please run run_correlation(..., feature_type = '", feature_type, "').")
+  }
+  if (is.null(md$network[[paste0("network_", feature_type)]])) {
+    stop("Network missing for feature_type = ", feature_type,
+         ". Please run run_create_network(..., feature_type = '", feature_type, "').")
   }
 
-  # Check to see if the deg correlation analysis has been run
-  if(!("omics_exposure_deg_correlation" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
-    stop("Please run `correlate_exposoures_degs()` first.")
-  }
+  # Get correlation and network
+  correlation_df <- md$correlation[[feature_type]]
+  net_graph <- md$network[[paste0("network_", feature_type)]]$graph
 
-  if(!is.null(stability_threshold)) {
-    stability_threshold <- stability_threshold
-  } else{
-    stability_threshold <- expomicset |>
-      MultiAssayExperiment::metadata() |>
-      purrr::pluck("sensitivity_analysis") |>
-      purrr::pluck("score_thresh")
-  }
-
-  da_res <- expomicset |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("sensitivity_analysis") |>
-    purrr:::pluck("feature_stability") |>
-    dplyr::filter(stability_score>stability_threshold) |>
-    dplyr::select(feature,exp_name) |>
-    dplyr::distinct()
-
-  expomicset_tmp <- expomicset |>
-    correlate_exposoures_omics(
-      variable_map = da_res |>
-        dplyr::ungroup() |>
-        dplyr::rename(variable=feature),
-      action = "add"
-    )
-
-  node_centrality <- expomicset_tmp |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("omics_exposure_correlation") |>
+  # Compute centrality for all nodes
+  node_centrality <- net_graph |>
     tidygraph::as_tbl_graph() |>
     tidygraph::activate(nodes) |>
-    dplyr::mutate(centrality=tidygraph::centrality_degree()) |>
-    tidygraph::as_tibble() |>
-    as.data.frame() |>
-    dplyr::rename(feature=name)
+    dplyr::mutate(centrality = tidygraph::centrality_degree()) |>
+    dplyr::as_tibble()
 
-  exposure_impact_degree <- expomicset_tmp |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("omics_exposure_deg_correlation") |>
-    dplyr::left_join(node_centrality,by = "feature") |>
+  # Merge with correlation edges (exposure-feature)
+  if (feature_type == "degs") {
+    correlation_df <- correlation_df |>
+      dplyr::rename(feature = feature, exposure = exposure)
+
+  } else if ("var1" %in% names(correlation_df)) {
+    # Handle generalized format
+    correlation_df <- correlation_df |>
+      dplyr::filter(var1_type == "exposure", var2_type != "exposure") |>
+      dplyr::rename(exposure = var1, feature = var2)
+  }
+
+  impact_df <- correlation_df |>
+    dplyr::left_join(node_centrality, by = c("feature" = "name")) |>
     dplyr::filter(!is.na(centrality)) |>
     dplyr::group_by(exposure) |>
     dplyr::mutate(
-      mean=mean(centrality,na.rm = TRUE),
-      n_exp=dplyr::n()
+      mean_centrality = mean(centrality, na.rm = TRUE),
+      n_features = dplyr::n()
     ) |>
     dplyr::ungroup()
 
-  exposure_impact_deg_n <- expomicset_tmp |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("differential_abundance") |>
-    dplyr::filter(!!dplyr::sym(pval_col)<pval_thresh) |>
-    dplyr::left_join(expomicset_tmp |>
-                       MultiAssayExperiment::metadata() |>
-                       purrr::pluck("omics_exposure_deg_correlation") |>
-                dplyr::select(feature,exp_name) |>
-                dplyr::distinct() |>
-                dplyr::mutate(exposure_association = "yes"),
-              by = c("feature", "exp_name")
-    ) |>
-    dplyr::mutate(exposure_association=ifelse(is.na(exposure_association),
-                                       "no",
-                                       exposure_association)) |>
-    dplyr::group_by(exp_name) |>
-    dplyr::summarise(
-      total_deg=dplyr::n(),
-      n_assoc_exp=length(exposure_association[exposure_association == "yes"]),
-      percent_assoc_exp = n_assoc_exp/total_deg*100
+  # Optionally compute DEG counts per exposure
+  if (feature_type == "degs") {
+    if (is.null(md$differential_analysis$differential_abundance)) {
+      stop("Differential abundance results missing for DEG impact summary.")
+    }
+
+    da_df <- md$differential_analysis$differential_abundance
+
+    deg_summary <- da_df |>
+      dplyr::filter(!!rlang::sym(pval_col) < pval_thresh) |>
+      dplyr::left_join(
+        correlation_df |>
+          dplyr::select(feature, exp_name) |>
+          dplyr::distinct() |>
+          dplyr::mutate(exposure_association = "yes"),
+        by = c("feature", "exp_name")
+      ) |>
+      dplyr::mutate(
+        exposure_association = ifelse(is.na(exposure_association), "no", exposure_association)
+      ) |>
+      dplyr::group_by(exp_name) |>
+      dplyr::summarise(
+        total_deg = dplyr::n(),
+        n_assoc_exp = sum(exposure_association == "yes"),
+        percent_assoc_exp = n_assoc_exp / total_deg * 100
+      )
+
+    result <- list(
+      exposure_impact = impact_df,
+      deg_association_summary = deg_summary
     )
-
-  exposure_impact <- list(
-    exposure_impact_degree=exposure_impact_degree,
-    exposure_impact_deg_n=exposure_impact_deg_n
-  )
-
-  if(action=="add"){
-    # Store selected features
-    MultiAssayExperiment::metadata(expomicset)$exposure_impact <- exposure_impact
-
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_exposure_impact"
+  } else {
+    result <- list(
+      exposure_impact = impact_df
     )
-
-    return(expomicset)
-  }else if (action=="get"){
-    return(exposure_impact)
-  }else{
-    stop("Invalid action. Choose 'add' or 'get'.")
   }
 
+  # Store or return
+  if (action == "add") {
+    MultiAssayExperiment::metadata(expomicset)$network$exposure_impact[[feature_type]] <- result
 
+    step_record <- list(
+      run_exposure_impact = list(
+      timestamp = Sys.time(),
+      params = list(feature_type = feature_type),
+      notes = paste("Computed exposure impact using",
+                    feature_type,
+                    "correlation network.")
+    ))
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
+    return(expomicset)
+  } else {
+    return(result)
+  }
 }

@@ -31,7 +31,9 @@ extract_omics_exposure_df <- function(
   }
 
   # Extract and preprocess colData
-  col_df <- MultiAssayExperiment::colData(expomicset) |> as.data.frame()
+  col_df <- expomicset |>
+    MultiAssayExperiment::colData() |>
+    as.data.frame()
 
   # Select exposure variables
   if (!is.null(variable_map)) {
@@ -42,7 +44,8 @@ extract_omics_exposure_df <- function(
     exposure_data <- dplyr::select_if(col_df, is.numeric)
     # Remove PCs
     if (any(grepl("^PC", colnames(exposure_data)))) {
-      exposure_data <- dplyr::select(exposure_data, -dplyr::matches("^PC"))
+      exposure_data <- exposure_data |>
+        dplyr::select(-dplyr::matches("^PC"))
     }
   }
 
@@ -58,6 +61,7 @@ extract_omics_exposure_df <- function(
   if (!is.null(variable_map)) {
     omics_map <- variable_map[variable_map$exp_name != "exposure", ]
     selected_features <- split(omics_map$variable, omics_map$exp_name)
+
   } else {
     # Use all features if no map provided
     selected_features <- lapply(
@@ -67,18 +71,36 @@ extract_omics_exposure_df <- function(
   }
 
   # Extract and filter omics
-  omics_df <- lapply(names(MultiAssayExperiment::experiments(omics_data)), function(name) {
+  omics_df <- lapply(
+    names(MultiAssayExperiment::experiments(omics_data)),
+    function(name) {
+      # Extract omics data for each dataset
     se <- MultiAssayExperiment::experiments(omics_data)[[name]]
+
+    # Filter features based on selected features
     feats <- selected_features[[name]]
+
+    # If no features are selected, return NULL
     if (is.null(feats)) return(NULL)
+
+    # Filter se for selected features
     se <- se[rownames(se) %in% feats, , drop = FALSE]
-    df <- SummarizedExperiment::assay(se) |> t() |> as.data.frame()
-    colnames(df) <- paste0(name, "_", colnames(df))  # disambiguate
+
+    df <- se |>
+      SummarizedExperiment::assay() |>
+      t() |>
+      as.data.frame()
+
+    # Set column names with prefix
+    colnames(df) <- paste0(name, "_", colnames(df))
     colnames(df) <- gsub(" |-", "_", colnames(df))
     df <- df |> tibble::rownames_to_column("id")
     return(df)
   }) |>
+    # Remove NULL entries
     purrr::compact() |>
+
+    # Reduce to a single data frame
     purrr::reduce(dplyr::full_join,
                   by = "id")
 

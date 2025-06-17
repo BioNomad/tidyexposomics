@@ -52,7 +52,7 @@ filter_missing <- function(expomicset,
     "DataFrame")
 
   # QC plot for metadata
-  MultiAssayExperiment::metadata(expomicset)$na_qc <- list(
+  MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc <- list(
     exposure = list(
       vars_to_exclude_exposure_sum = col_exclude$summary |>
         dplyr::filter(pct_miss > na_thresh),
@@ -86,7 +86,7 @@ filter_missing <- function(expomicset,
     MultiAssayExperiment::experiments(expomicset)[[omics_name]] <- experiment
 
     # QC plot for omics data
-    MultiAssayExperiment::metadata(expomicset)$na_qc[[omics_name]] <- list(
+    MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc[[omics_name]] <- list(
       vars_to_exclude_omics_sum = row_exclude$summary |>
         dplyr::filter(pct_miss > na_thresh),
       all_var_sum = row_exclude$summary |>
@@ -96,18 +96,28 @@ filter_missing <- function(expomicset,
           dplyr::select(all_of(row_exclude$to_exclude)))
     )
 
-    message("Filtered rows with high missingness in ", omics_name, ": ", length(row_exclude$to_exclude))
+    message("Filtered rows with high missingness in ",
+            omics_name,
+            ": ",
+            length(row_exclude$to_exclude))
   }
 
   # Add analysis steps taken to metadata
+  step_record <- list(
+    filter_missing=
+      list(timestamp = Sys.time(),
+           params = list(na_thresh = na_thresh),
+           notes = paste0("Filtered exposure variables and omics features with more than ",
+           na_thresh,
+           "% missing values. QC plots generated for exposure and omics data.")
+  ))
+
   MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
     MultiAssayExperiment::metadata(expomicset)$summary$steps,
-    list(filter_missing=
-           list(timestamp = Sys.time(),
-                params = list(na_thresh = na_thresh),
-                notes = paste("Filtered rows with high missingness in ", omics_name, ": ", length(row_exclude$to_exclude),collapse = " "))
-    )
+    step_record
   )
+
+
   return(expomicset)
 }
 

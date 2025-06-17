@@ -92,14 +92,31 @@ run_differential_abundance <- function(
   message("Differential abundance testing completed.")
 
   if(action == "add") {
-    MultiAssayExperiment::metadata(expomicset)$differential_abundance <- final_results
+    MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance <- final_results
+
+    # Add step record to metadata
+    step_record <- list(
+      run_differential_abundance = list(
+        timestamp = Sys.time(),
+        params = list(
+          formula = format(formula),
+          method = method,
+          scaling_method = scaling_method,
+          abundance_col = abundance_col,
+          minimum_counts = minimum_counts,
+          minimum_proportion = minimum_proportion,
+          contrasts = contrasts
+        ),
+        notes = "Performed differential abundance analysis across all assays."
+      )
+    )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
     return(expomicset)
 
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_differential_abundance"
-    )
 
   } else if (action == "get") {
     return(final_results)

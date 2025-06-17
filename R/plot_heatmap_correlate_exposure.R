@@ -46,13 +46,14 @@ plot_heatmap_correlate_exposure <- function(
   require(patchwork)
 
   # Check that exposure correlation has been run
-  if(!("exposure_correlation" %in% names(MultiAssayExperiment::metadata(expomicset))) ) {
-    stop("Exposure correlation has not been run. Please run `correlate_exposures()` first.")
+  if(!("exposures" %in% names(MultiAssayExperiment::metadata(expomicset)$correlation)) ) {
+    stop("Exposure correlation has not been run. Please run `run_correlation()` first.")
   }
 
   correlation_df <- expomicset |>
     MultiAssayExperiment::metadata() |>
-    purrr::pluck("exposure_correlation") |>
+    purrr::pluck("correlation") |>
+    purrr::pluck("exposures") |>
     purrr::pluck("correlation_table")
 
   if(!is.null(exposure_cols)){

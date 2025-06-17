@@ -29,20 +29,20 @@ plot_normality_summary <- function(
   require(ggplot2)
 
   # Check if "normality" is a name in metadata
-  if(!("normality" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
+  if(!("normality" %in% names(MultiAssayExperiment::metadata(expomicset)$quality_control))) {
     stop("Please run `run_normality_check() first.`")
   }
 
   # Check if "transformation" is a name in metadata
   if(transformed){
-    if(!("transformation" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
+    if(!("transformation" %in% names(MultiAssayExperiment::metadata(expomicset)$quality_control))) {
       stop("Please run `transform_exposure() first.`")
     }
   }
 
   # Plot normality results
   if(transformed){
-    norm_plot <- MultiAssayExperiment::metadata(expomicset)$transformation$norm_summary |>
+    norm_plot <- MultiAssayExperiment::metadata(expomicset)$quality_control$transformation$norm_summary |>
       ggplot(aes(
       x = var,
       y = value,
@@ -69,7 +69,7 @@ plot_normality_summary <- function(
         subtitle = "Shapiro-Wilk Test"
       )
   }else{
-    norm_plot <- MultiAssayExperiment::metadata(expomicset)$normality$norm_summary |>
+    norm_plot <- MultiAssayExperiment::metadata(expomicset)$quality_control$normality$norm_summary |>
       ggplot(aes(
         x = var,
         y = value,

@@ -51,22 +51,23 @@ run_factor_overlap <- function(
     action = "add"){
 
   # Check if the required data is available
-  if(!("top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset)))){
+  if(!("top_factor_features" %in% names(MultiAssayExperiment::metadata(expomicset)$multiomics_integration))){
     stop("Please run 'extract_top_factor_features()' first.")
   }
 
   # Extract the top factor features
   top_factor_features <- expomicset |>
     MultiAssayExperiment::metadata() |>
-    pluck("top_factor_features") |>
-    mutate(exp_name_feature=paste(
+    purrr::pluck("multiomics_integration") |>
+    purrr::pluck("top_factor_features") |>
+    dplyr::mutate(exp_name_feature=paste(
       exp_name, feature, sep="_"
     ))
 
   # Check for overlapping features across factors
   common_features <- top_factor_features |>
     # make a list by factor and look for overlaps in exp_name_feature
-    (\(df)split(df,df$factor))() |>
+    (\(df) split(df,df$factor))() |>
     purrr::map(~{
       .x |>
         dplyr::select(exp_name_feature) |>
@@ -85,8 +86,9 @@ run_factor_overlap <- function(
     if (is.null(stability_score)) {
       score <- expomicset |>
         MultiAssayExperiment::metadata() |>
-        pluck("sensitivity_analysis") |>
-        pluck("score_thresh")
+        purrr::pluck("differential_analysis") |>
+        purrr::pluck("sensitivity_analysis") |>
+        purrr::pluck("score_thresh")
     } else {
       score <- stability_score
     }
@@ -94,43 +96,67 @@ run_factor_overlap <- function(
     # Filter based on stability score
     da_res <- expomicset |>
       MultiAssayExperiment::metadata() |>
-      pluck("sensitivity_analysis") |>
-      pluck("feature_stability") |>
+      purrr::pluck("differential_analysis") |>
+      purrr::pluck("sensitivity_analysis") |>
+      purrr::pluck("feature_stability") |>
       dplyr::filter(
         stability_score>score) |>
       dplyr::select(exp_name,feature) |>
-      distinct()|>
-      mutate(exp_name_feature = paste0(exp_name, "_", feature))
+      dplyr::distinct()|>
+      dplyr::mutate(exp_name_feature = paste0(exp_name, "_", feature))
 
   } else{
     # Filter based on p-value and log fold change thresholds
     da_res <- expomicset |>
       MultiAssayExperiment::metadata() |>
-      pluck("differential_abundance") |>
+      purrr::pluck("differential_analysis") |>
+      purrr::pluck("differential_abundance") |>
       dplyr::filter(
         !!sym(pval_col) < pval_thresh,
         abs(!!sym(logfc_col)) > logfc_thresh) |>
       dplyr::select(exp_name, feature) |>
-      distinct() |>
-      mutate(exp_name_feature = paste0(exp_name, "_", feature))
+      dplyr::distinct() |>
+      dplyr::mutate(exp_name_feature = paste0(exp_name, "_", feature))
   }
 
   # Create a data frame where the we see if the top factor features are degs
   top_factor_features <- top_factor_features |>
-    mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
-    mutate(is_deg = exp_name_feature %in% da_res$exp_name_feature)
+    dplyr::mutate(exp_name_feature = paste0(exp_name, "_", feature)) |>
+    dplyr::mutate(is_deg = exp_name_feature %in% da_res$exp_name_feature)
 
   message(paste0("Found ", length(common_features), " common features across factors."))
 
   if(action=="add"){
     # Store selected features
-    MultiAssayExperiment::metadata(expomicset)$common_top_factor_features <- top_factor_features
+    MultiAssayExperiment::metadata(expomicset)$multiomics_integration$common_top_factor_features <- top_factor_features
 
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_factor_overlap"
+    # Add analysis step record
+    step_record <- list(
+      run_factor_overlap = list(
+        timestamp = Sys.time(),
+        params = list(
+          robust_comparison = robust_comparison,
+          stability_score = stability_score,
+          pval_thresh = pval_thresh,
+          logfc_thresh = logfc_thresh
+        ),
+        notes = paste0(
+          "Identified shared top features across integration factors and ",
+          if (robust_comparison) {
+            "annotated based on stability scores."
+          } else {
+            "annotated based on differential abundance thresholds."
+          }
+        )
+      )
     )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
+
+
     return(expomicset)
   }else if (action=="get"){
     return(top_factor_features)

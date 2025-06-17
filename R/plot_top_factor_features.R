@@ -40,15 +40,15 @@ plot_top_factor_features <- function(
   require(ggplot2)
 
   # Check to see if multiomics integration results are available
-  if(!"integration_results" %in% names(MultiAssayExperiment::metadata(expomicset))){
+  if(!"integration_results" %in% names(MultiAssayExperiment::metadata(expomicset)$multiomics_integration)){
     stop("Please run `multiomics_integration()` first.")
   }
 
-  if(MultiAssayExperiment::metadata(expomicset)$integration_results$method == "MOFA"){
+  if(MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method == "MOFA"){
     # Grab top MOFA features per factor
-    df <- MOFA2::get_weights(MultiAssayExperiment::metadata(expomicset)$integration_results$result) |>
+    df <- MOFA2::get_weights(MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result) |>
       purrr::map2(
-        names(MOFA2::get_weights(MultiAssayExperiment::metadata(expomicset)$integration_results$result)),
+        names(MOFA2::get_weights(MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result)),
         ~.x|>
           as.data.frame() |>
           tibble::rownames_to_column("feature") |>
@@ -125,11 +125,11 @@ plot_top_factor_features <- function(
         color="Experiment"
       )
 
-  }else if(MultiAssayExperiment::metadata(expomicset)$integration_results$method == "MCIA"){
+  }else if(MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method == "MCIA"){
     # Grab top MCIA features per factor
-    df <- MultiAssayExperiment::metadata(expomicset)$integration_results$result@block_loadings |>
+    df <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result@block_loadings |>
       purrr::map2(
-        names(MultiAssayExperiment::metadata(expomicset)$integration_results$result@block_loadings),
+        names(MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result@block_loadings),
         ~.x|>
           as.data.frame() |>
           tibble::rownames_to_column("feature") |>

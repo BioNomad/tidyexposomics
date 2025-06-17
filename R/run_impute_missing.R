@@ -86,7 +86,7 @@ run_impute_missing <- function(expomicset,
   }
 
   # Impute selected exposure columns
-  if ("exposure" %in% names(MultiAssayExperiment::metadata(expomicset)$na_qc)) {
+  if ("exposure" %in% names(MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc)) {
     message("Imputing exposure data using method: ", exposure_impute_method)
 
     metadata_df <- as.data.frame(MultiAssayExperiment::colData(expomicset))
@@ -115,15 +115,17 @@ run_impute_missing <- function(expomicset,
   }
 
   # Add analysis steps taken to metadata
+  step_record <- list(run_impute_missing=list(
+    timestamp = Sys.time(),
+    params = list(exposure_impute_method = exposure_impute_method,
+                  exposure_cols = exposure_cols,
+                  omics_impute_method = omics_impute_method,
+                  omics_to_impute = omics_to_impute),
+    notes = ""))
+
   MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
     MultiAssayExperiment::metadata(expomicset)$summary$steps,
-    list(run_impute_missing=list(
-         timestamp = Sys.time(),
-         params = list(exposure_impute_method = exposure_impute_method,
-                       exposure_cols = exposure_cols,
-                       omics_impute_method = omics_impute_method,
-                       omics_to_impute = omics_to_impute),
-         notes = ""))
+    step_record
   )
 
   return(expomicset)

@@ -4,7 +4,7 @@
 #' optionally annotated with the top genes contributing to each GO group.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing functional enrichment results.
-#' @param geneset A character string specifying the gene set (e.g., `"GO_BP"` or `"KEGG"`) to extract enrichment results from.
+#' @param geneset A character string specifying the gene set to analyze. Options: `"deg"`, `"deg_exp_cor"`, `"factor_exp_cor"`, or `"factor"`.
 #' @param top_n An integer specifying the number of top GO groups to select (based on enrichment score). Default is `5`.
 #' @param n_per_group Number of top GO terms to show within each GO group. Default is `5`.
 #' @param add_top_genes Logical; if `TRUE`, appends top genes contributing to each GO group as annotation in facet labels. Default is `TRUE`.
@@ -47,11 +47,11 @@ plot_dotplot_enrichment <- function(
 ){
   require(ggplot2)
 
-  if(!"functional_enrichment" %in% names(MultiAssayExperiment::metadata(expomicset))){
+  if(!"enrichment" %in% names(MultiAssayExperiment::metadata(expomicset))){
     stop("Please run `run_functional_enrichment` first.")
   }
 
-  go_group_df <- MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]]
+  go_group_df <- MultiAssayExperiment::metadata(expomicset)$enrichment[[geneset]]
 
   if(!is.null(go_groups)){
     go_group_df <- go_group_df |>
@@ -61,7 +61,8 @@ plot_dotplot_enrichment <- function(
       dplyr::filter(go_group %in% c(
         go_group_df |>
           dplyr::group_by(go_group) |>
-          dplyr::reframe(score=mean(-log10(p.adjust) * Count)) |>
+          dplyr::mutate(score_tmp= (-log10(p.adjust) * Count)) |>
+          dplyr::reframe(score=mean(score_tmp)) |>
           dplyr::arrange(desc(score)) |>
           dplyr::slice_head(n=top_n) |>
           dplyr::pull(go_group)

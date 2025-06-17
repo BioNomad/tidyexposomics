@@ -6,51 +6,49 @@
 #' flowchart. The flowchart wraps to a new row after every 5 steps.
 #'
 #' @param expomicset A `MultiAssayExperiment` object that contains a `"steps"`
-#' entry in its metadata. This entry should be a character vector describing the pipeline steps.
-#' @param show_index Logical, default `TRUE`. If `TRUE`, each step is prefixed with its index
-#' (e.g., "1. Step description"). If `FALSE`, only the step text is shown.
-#' @param console_print Logical, default `FALSE`. If `TRUE`, prints the step list to the console.
+#' entry in its metadata.
+#' @param show_index Logical, default `TRUE`. Prefix steps with index.
+#' @param console_print Logical, default `FALSE`. If `TRUE`, prints to console.
+#' @param include_notes Logical, default `FALSE`. If `TRUE`, appends notes from each step.
 #'
-#' @return No return value. This function is called for its side effects:
-#' it optionally prints steps to the console and renders a Mermaid diagram.
-#'
-#' @examples
-#' if (requireNamespace("MultiAssayExperiment") && requireNamespace("DiagrammeR")) {
-#'   mae <- MultiAssayExperiment::MultiAssayExperiment()
-#'   MultiAssayExperiment::metadata(mae)$steps <- c(
-#'     "Import data", "Normalize", "Run PCA", "Fit model", "Export results",
-#'     "Visualize", "Report"
-#'   )
-#'   run_pipeline_summary(mae, show_index = TRUE, console_print = TRUE)
-#' }
-#'
+#' @return No return value; called for side effects (console print + diagram).
 #' @export
 run_pipeline_summary <- function(expomicset,
                                  show_index = TRUE,
-                                 console_print = FALSE) {
-  # Check for 'steps' metadata
-  if (!("steps" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
+                                 console_print = FALSE,
+                                 include_notes = FALSE) {
+  # Validate metadata
+  summary_md <- MultiAssayExperiment::metadata(expomicset)$summary
+  if (!("steps" %in% names(summary_md))) {
     stop("Please run analysis steps before running the pipeline summary.")
   }
 
-  steps <- MultiAssayExperiment::metadata(expomicset)[["steps"]]
+  # Get step names
+  step_names <- names(summary_md$steps)
 
+  # Optionally include notes in step text
+  step_labels <- purrr::map_chr(step_names, function(step) {
+    note <- if (include_notes && !is.null(summary_md$steps[[step]]$notes)) {
+      paste0(" — ", summary_md$steps[[step]]$notes)
+    } else ""
+    paste0(step, note)
+  })
 
-  # Optionally add line numbers
+  # Add index if needed
   labeled_steps <- if (show_index) {
-    sprintf("%d. %s", seq_along(steps), steps)
+    sprintf("%d. %s", seq_along(step_labels), step_labels)
   } else {
-    steps
+    step_labels
   }
 
-  if(console_print) {
-    # Print steps to console
+  # Optional console output
+  if (console_print) {
     cat(labeled_steps, sep = "\n")
   }
 
-  # Build Mermaid flowchart
+  # Build Mermaid diagram
   mermaid_lines <- c("graph TD")
-  for (i in seq_along(steps)[-length(steps)]) {
+  for (i in seq_along(labeled_steps)[-length(labeled_steps)]) {
     from <- sprintf("step%d", i)
     to <- sprintf("step%d", i + 1)
     from_label <- labeled_steps[i]
@@ -62,7 +60,5 @@ run_pipeline_summary <- function(expomicset,
     )
   }
 
-  # Render Mermaid diagram
   DiagrammeR::mermaid(paste(mermaid_lines, collapse = "\n"))
 }
-

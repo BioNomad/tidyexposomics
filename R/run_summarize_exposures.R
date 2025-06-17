@@ -95,12 +95,31 @@ run_summarize_exposures <- function(
 
   if(action=="add"){
     # Store results
-    MultiAssayExperiment::metadata(expomicset)$exposure_summary_df <- exposure_summary_df
+    MultiAssayExperiment::metadata(expomicset)$quality_control$exposure_summary_df <- exposure_summary_df
 
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_summarize_exposures"
+    # Add step record
+    step_record <- list(
+      run_summarize_exposures = list(
+        timestamp = Sys.time(),
+        params = list(
+          exposure_cols = exposure_cols,
+          n_vars_summarized = length(unique(exposure_summary_df$variable))
+        ),
+        notes = paste0(
+          "Summarized ", length(unique(exposure_summary_df$variable)),
+          " numeric exposure variables. ",
+          if (is.null(exposure_cols)) {
+            "Included all numeric exposures from colData."
+          } else {
+            paste0("Subset to user-specified exposure columns (n = ", length(exposure_cols), ").")
+          }
+        )
+      )
+    )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
     )
 
     return(expomicset)

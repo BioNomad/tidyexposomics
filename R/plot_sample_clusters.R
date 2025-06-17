@@ -26,8 +26,8 @@ plot_sample_clusters <- function(
     exposure_cols=NULL
 ){
 
-  if(!"sample_clustering" %in% names(MultiAssayExperiment::metadata(expomicset))){
-    stop("Please run `cluster_samples()` first")
+  if(!"sample_clustering" %in% names(MultiAssayExperiment::metadata(expomicset)$quality_control)){
+    stop("Please run `run_cluster_samples()` first")
   }
 
   if(is.null(exposure_cols)){
@@ -74,9 +74,9 @@ plot_sample_clusters <- function(
     tibble::rownames_to_column("Sample") |>
     dplyr::inner_join(
       data.frame(
-        Sample = names(MultiAssayExperiment::metadata(expomicset)$sample_clustering$sample_groups),
+        Sample = names(MultiAssayExperiment::metadata(expomicset)$quality_control$sample_clustering$sample_groups),
         sample_group = paste0("Group_",
-                             as.character(MultiAssayExperiment::metadata(expomicset)$sample_clustering$sample_groups))
+                             as.character(MultiAssayExperiment::metadata(expomicset)$quality_control$sample_clustering$sample_groups))
       ),
       by=c("Sample"="Sample")
     ) |>

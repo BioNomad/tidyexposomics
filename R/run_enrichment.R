@@ -20,29 +20,8 @@
 #' @param clustering_approach A character string specifying the clustering approach for GO term grouping. Default is `"diana"`.
 #' @param action A character string specifying `"add"` (store results in metadata) or `"get"` (return results). Default is `"add"`.
 #'
-#' @details
-#' This function:
-#' - Performs functional enrichment analysis on `geneset`-specific features.
-#' - Supports enrichment for differentially abundant (`"deg"`) or correlated (`"deg_exp_cor"`, `"factor_exp_cor"`, `"factor"`) features.
-#' - Uses `.get_pairwise_overlaps()` to cluster GO terms based on shared genes.
-#' - Uses `.cluster_mat()` to determine GO term clusters using the selected `clustering_approach`.
-#' - Stores results in `metadata(expomicset)$functional_enrichment[[geneset]]` when `action="add"`.
-#'
 #' @return If `action="add"`, returns the updated `expomicset`.
-#' If `action="get"`, returns a `data.frame` with enrichment results, including:
-#' \item{Description}{GO term description.}
-#' \item{geneID}{Gene set associated with the GO term.}
-#' \item{go_group}{Assigned GO term cluster.}
-#'
-#' @examples
-#' \dontrun{
-#' expom <- run_enrichment(
-#'   expomicset = expom,
-#'   geneset = "deg",
-#'   pvalueCutoff = 0.01,
-#'   clustering_approach = "gap"
-#' )
-#' }
+#' If `action="get"`, returns a `data.frame` with enrichment results.
 #'
 #' @export
 run_enrichment <- function(
@@ -62,73 +41,68 @@ run_enrichment <- function(
     keyType = "SYMBOL",
     ont = "BP",
     clustering_approach = "diana",
-    action="add"
-){
+    action = "add"
+) {
+  # Run enrichment based on geneset type
+  enrich_res <- switch(
+    geneset,
+    "deg" = .da_functional_enrichment(
+      expomicset = expomicset,
+      mirna_assays = mirna_assays,
+      pval_col = pval_col,
+      pval_threshold = pval_threshold,
+      logfc_col = logfc_col,
+      logfc_threshold = logfc_threshold,
+      pAdjustMethod = pAdjustMethod,
+      pvalueCutoff = pvalueCutoff,
+      qvalueCutoff = qvalueCutoff,
+      OrgDb = OrgDb,
+      keyType = keyType,
+      ont = ont
+    ),
+    "deg_exp_cor" = .da_exposure_functional_enrichment(
+      expomicset = expomicset,
+      #feature_type = "degs",
+      feature_col = feature_col,
+      mirna_assays = mirna_assays,
+      pAdjustMethod = pAdjustMethod,
+      pvalueCutoff = pvalueCutoff,
+      qvalueCutoff = qvalueCutoff,
+      fun = fun,
+      OrgDb = OrgDb,
+      keyType = keyType,
+      ont = ont
+    ),
+    "factor_exp_cor" = .correlation_functional_enrichment(
+      expomicset = expomicset,
+      feature_type = "factors",
+      feature_col = feature_col,
+      mirna_assays = mirna_assays,
+      pAdjustMethod = pAdjustMethod,
+      pvalueCutoff = pvalueCutoff,
+      qvalueCutoff = qvalueCutoff,
+      fun = fun,
+      OrgDb = OrgDb,
+      keyType = keyType,
+      ont = ont
+    ),
+    "factor" = .factor_functional_enrichment(
+      expomicset = expomicset,
+      mirna_assays = mirna_assays,
+      pAdjustMethod = pAdjustMethod,
+      pvalueCutoff = pvalueCutoff,
+      qvalueCutoff = qvalueCutoff,
+      OrgDb = OrgDb,
+      keyType = keyType,
+      ont = ont
+    ),
+    stop("Invalid geneset. Choose from 'deg', 'deg_exp_cor', 'factor_exp_cor', or 'factor'.")
+  )
 
-  if(geneset == "deg"){
-    enrich_res <- expomicset |>
-      .da_functional_enrichment(
-        mirna_assays = mirna_assays,
-        pval_col = pval_col,
-        pval_threshold = pval_threshold,
-        logfc_col = logfc_col,
-        logfc_threshold = logfc_threshold,
-        pAdjustMethod = pAdjustMethod,
-        pvalueCutoff = pvalueCutoff,
-        qvalueCutoff = qvalueCutoff,
-        OrgDb = OrgDb,
-        keyType = keyType,
-        ont = ont
-      )
-  } else if (geneset == "deg_exp_cor"){
-    enrich_res <- expomicset |>
-      .da_exposure_functional_enrichment(
-        feature_col = feature_col,
-        mirna_assays = mirna_assays,
-        pval_col = pval_col,
-        pval_threshold = pval_threshold,
-        logfc_col = logfc_col,
-        logfc_threshold = logfc_threshold,
-        pAdjustMethod = pAdjustMethod,
-        pvalueCutoff = pvalueCutoff,
-        qvalueCutoff = qvalueCutoff,
-        fun = fun,
-        OrgDb = OrgDb,
-        keyType = keyType,
-        ont = ont
-      )
-  } else if (geneset == "factor_exp_cor"){
-    enrich_res <- expomicset |>
-      .factor_exposure_functional_enrichment(
-        mirna_assays = mirna_assays,
-        pAdjustMethod = pAdjustMethod,
-        pvalueCutoff = pvalueCutoff,
-        qvalueCutoff = qvalueCutoff,
-        fun = fun,
-        OrgDb = OrgDb,
-        keyType = keyType,
-        ont = ont
-      )
-  } else if (geneset == "factor"){
-    enrich_res <- expomicset |>
-      .factor_functional_enrichment(
-        mirna_assays = mirna_assays,
-        pAdjustMethod = pAdjustMethod,
-        pvalueCutoff = pvalueCutoff,
-        qvalueCutoff = qvalueCutoff,
-        OrgDb = OrgDb,
-        keyType = keyType,
-        ont = ont
-      )
-  } else {
-    stop("Invalid geneset. Choose from 'deg', 'deg_cor', 'factor_exp_cor', or 'factor'.")
-  }
-
-  # Exit early if no enrichment was found
   if (is.null(enrich_res) || nrow(enrich_res) == 0) {
     warning("No enrichment results found for geneset '", geneset, "'. Skipping GO term clustering.")
     if (action == "add") {
-      MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]] <- enrich_res
+      MultiAssayExperiment::metadata(expomicset)$enrichment[[geneset]] <- enrich_res
       return(expomicset)
     } else {
       return(enrich_res)
@@ -137,58 +111,59 @@ run_enrichment <- function(
 
   message("Determining Number of GO Term Clusters...")
 
-  # determine go groups
-  go_groups <- enrich_res |>
-    (\(df) split(df,df$Description) )() |>
-    purrr::map(~.x |>
-          dplyr::pull(geneID) |>
-          paste(collapse ="/") |>
-          stringr::str_split("/") |>
-          unlist() |>
-          stringr::str_trim() |>
-          unique()) |>
+  # Deduplicate GO terms by Description
+  go_term_list <- enrich_res |>
+    dplyr::mutate(gene_list = stringr::str_split(geneID, "/")) |>
+    tidyr::unnest(gene_list) |>
+    dplyr::mutate(gene_list = stringr::str_trim(gene_list)) |>
+    dplyr::distinct(Description, gene_list) |>
+    dplyr::group_by(Description) |>
+    dplyr::summarise(genes = list(unique(gene_list)), .groups = "drop")
+
+  # Compute Jaccard matrix and cluster
+  go_groups <- go_term_list$genes |>
+    rlang::set_names(go_term_list$Description) |>
     .get_pairwise_overlaps() |>
-    dplyr::select(source,target,jaccard) |>
-    tidyr::pivot_wider(names_from = "target",
-                values_from = "jaccard") |>
+    dplyr::select(source, target, jaccard) |>
+    tidyr::pivot_wider(names_from = "target", values_from = "jaccard") |>
     tibble::column_to_rownames("source") |>
     as.matrix() |>
     .cluster_mat(clustering_approach = clustering_approach) |>
-    (\(x) df=data.frame(
-      Description=names(x),
-      go_group=as.numeric(x)))()
+    (\(x) data.frame(Description = names(x), go_group = paste0("Group_", as.numeric(x))))()
 
-  if (is.null(go_groups) || nrow(go_groups) == 0 || !"Description" %in% colnames(go_groups)) {
-    warning("GO clustering failed — no Description terms or clusters found.")
+  if (is.null(go_groups) || nrow(go_groups) == 0) {
+    warning("GO clustering failed — no clusters found.")
     enrich_res$go_group <- NA_character_
-    if (action == "add") {
-      MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]] <- enrich_res
-
-      # Add analysis steps taken to metadata
-      MultiAssayExperiment::metadata(expomicset)$steps <- c(
-        MultiAssayExperiment::metadata(expomicset)$steps,
-        "run_enrichment"
-      )
-      return(expomicset)
-    } else {
-      return(enrich_res)
-    }
+  } else {
+    enrich_res <- dplyr::inner_join(enrich_res, go_groups, by = "Description")
   }
 
+  if (action == "add") {
+    MultiAssayExperiment::metadata(expomicset)$enrichment[[geneset]] <- enrich_res
 
-  enrich_res <- enrich_res |>
-    dplyr::inner_join(
-      go_groups,
-      by = "Description") |>
-    dplyr::mutate(go_group=paste("Group", go_group, sep="_"))
+    step_record <- list(
+      run_enrichment = list(
+        timestamp = Sys.time(),
+        params = list(
+          geneset = geneset,
+          enrichment_fun = fun,
+          pvalueCutoff = pvalueCutoff,
+          qvalueCutoff = qvalueCutoff,
+          clustering_approach = clustering_approach
+        ),
+        notes = paste0("Performed enrichment on ", geneset, " features.")
+      )
+    )
 
-  if(action=="add"){
-    MultiAssayExperiment::metadata(expomicset)$functional_enrichment[[geneset]] <- enrich_res
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
 
     return(expomicset)
-  }else if (action=="get"){
+  } else if (action == "get") {
     return(enrich_res)
-  }else{
+  } else {
     stop("Invalid action. Choose from 'add' or 'get'.")
   }
 }

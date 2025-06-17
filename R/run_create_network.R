@@ -1,117 +1,86 @@
 #' Create and store a network from correlation results in a MultiAssayExperiment
 #'
 #' Constructs an undirected network based on correlation results between exposures
-#' and omics data, and optionally stores it in the metadata of a `MultiAssayExperiment` object.
-#' Nodes are derived from both variables in the correlation results, and grouped by data type
-#' (e.g., "Gene Expression", "Metabolomics", etc.).
+#' and features (e.g., DEGs, omics, latent factors, exposures) and optionally stores it
+#' in the metadata of a `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object that contains correlation results
-#'   in its metadata.
-#' @param cor_results Character string indicating which correlation result to use.
-#'   Options are `"deg_exp_cor"` (default), `"factor_exp_cor"`, or `"omic_exp_cor"`.
-#' @param action Character string indicating whether to `"add"` the resulting graph to
-#'   the object's metadata or to `"get"` it directly. Default is `"add"`.
+#' @param expomicset A `MultiAssayExperiment` object.
+#' @param feature_type One of "degs", "omics", "factors", or "exposures". Used to select correlation results.
+#' @param action "add" to store the graph in metadata, or "get" to return it.
 #'
-#' @return If `action = "add"`, returns the modified `MultiAssayExperiment` with the
-#'   network added to its metadata. If `action = "get"`, returns a list with the graph
-#'   object and a summary of the graph structure.
-#'
-#' @details
-#' The function identifies the appropriate correlation results table based on the
-#' `cor_results` argument. It then constructs an `igraph` object from the edges
-#' (correlations) and derives node metadata from variable types or categories.
-#'
-#' The resulting graph is undirected and includes group labels for visualization.
-#'
-#' @import igraph tidygraph MultiAssayExperiment dplyr
+#' @return If `action = "add"`, returns modified `MultiAssayExperiment`. Otherwise, returns a list with `graph` and `summary`.
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Build a network and add it to the MultiAssayExperiment metadata
-#' mae <- run_create_network(mae, cor_results = "omic_exp_cor", action = "add")
-#'
-#' # Retrieve the network object without adding it
-#' net_obj <- run_create_network(mae, cor_results = "deg_exp_cor", action = "get")
-#' igraph::plot(net_obj$graph)
-#' }
-
 run_create_network <- function(expomicset,
-                           cor_results = "deg_exp_cor",
-                           action = "add") {
-
-  # Load required libraries
+                               feature_type = c("degs", "omics", "factors", "exposures"),
+                               action = c("add", "get")) {
   require(igraph)
   require(tidygraph)
 
-  # Check if data is available
-  if(!any(grepl("omics_exposure_deg_correlation|omics_exposure_factor_correlation|omics_exposure_correlation",(MultiAssayExperiment::metadata(expomicset) |> names())))
-     ) {
-    stop("Please run either `correlate_exposures_degs()` or `correlate_exposures_factors()` or `correlate_exposures_omics()` first.")
-  }
+  feature_type <- match.arg(feature_type)
+  action <- match.arg(action)
 
-  # Switch correlation results based on the input
-  cor_res <- switch(cor_results,
-                       "deg_exp_cor" = MultiAssayExperiment::metadata(expomicset)[["omics_exposure_deg_correlation"]],
-                       "factor_exp_cor" = MultiAssayExperiment::metadata(expomicset)[["omics_exposure_factor_correlation"]],
-                       "omic_exp_cor" = MultiAssayExperiment::metadata(expomicset)[["omics_exposure_correlation"]])
+  cor_data <- MultiAssayExperiment::metadata(expomicset)$correlation[[feature_type]]
+
+  if (is.null(cor_data)) {
+    stop(paste0("No correlation data found for feature_type = '", feature_type, "'"))
+  }
 
   message("Creating network from correlation results...")
 
-  # Create a graph object from the data frame
-  # g <- graph_from_data_frame(cor_res, directed = FALSE)
+  # Detect variable structure
+  if (all(c("feature", "exposure", "exp_name", "category") %in% colnames(cor_data))) {
+    node_tbl <- dplyr::bind_rows(
+      dplyr::select(cor_data, name = feature, group = exp_name),
+      dplyr::select(cor_data, name = exposure, group = category)
+    ) |> dplyr::distinct()
 
-  # If the correlation results are between omics and exposures:
-  if("exp_name" %in% colnames(cor_res)){
-    node_tbl <- bind_rows(
-      cor_res |> select(name = feature, group = exp_name),
-      cor_res |> select(name = exposure, group = category)
-    ) |>
-      distinct()
-  } else if ("var1_type" %in% colnames(cor_res)){
-    node_tbl <- bind_rows(
-      cor_res |> select(name = var1, group = var1_type),
-      cor_res |> select(name = var2, group = var2_type)
-    ) |>
-      distinct()
+    edge_df <- dplyr::select(cor_data, from = exposure, to = feature, correlation, FDR)
+
+  } else if (all(c("var1", "var2", "var1_type", "var2_type") %in% colnames(cor_data))) {
+    node_tbl <- dplyr::bind_rows(
+      dplyr::select(cor_data, name = var1, group = var1_type),
+      dplyr::select(cor_data, name = var2, group = var2_type)
+    ) |> dplyr::distinct()
+
+    edge_df <- dplyr::select(cor_data, from = var1, to = var2, correlation, FDR)
+
   } else {
-    stop("Invalid correlation results format.")
+    stop("Unrecognized correlation format.")
   }
 
-  # Create graph with node metadata
-  g <- graph_from_data_frame(cor_res, directed = FALSE, vertices = node_tbl)
+  g <- igraph::graph_from_data_frame(edge_df, directed = FALSE, vertices = node_tbl)
+  net_summary <- .summarize_graph(g)
 
+  net_name <- paste0("network_", feature_type)
 
-  # Switch correlation results based on the input
-  net_name <- switch(cor_results,
-                    "deg_exp_cor" = "omics_exposure_deg_network",
-                    "factor_exp_cor" = "omics_exposure_factor_network",
-                    "omic_exp_cor" = "omics_exposure_network")
-
-  message("Network Created.")
-
-  if(action=="add"){
-    # Save results in metadata
-    MultiAssayExperiment::metadata(expomicset)[[net_name]] <- list(
+  if (action == "add") {
+    MultiAssayExperiment::metadata(expomicset)[["network"]][[net_name]] <- list(
       graph = g,
-      summary = .summarize_graph(g)
-
+      summary = net_summary
     )
 
-    # Add analysis steps taken to metadata
-    MultiAssayExperiment::metadata(expomicset)$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$steps,
-      "run_create_network"
+    # Add analysis step to metadata
+    step_record <- list(
+      run_create_network = list(
+        timestamp = Sys.time(),
+        params = list(
+          feature_type = feature_type
+        ),
+        notes = paste0(
+          "Created undirected network from correlation results for feature_type = '",
+          feature_type,
+          "'.")
+      )
     )
 
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
+
+    message("Network added to metadata as: ", net_name)
     return(expomicset)
-  }else if (action=="get"){
-    return(list(
-      graph = g,
-      summary = .summarize_graph(g)
-
-    ))
-  }else{
-    stop("Invalid action. Use 'add' or 'get'.")
+  } else {
+    return(list(graph = g, summary = net_summary))
   }
 }

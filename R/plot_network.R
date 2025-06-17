@@ -53,7 +53,7 @@
 #' @export
 
 plot_network <- function(expomicset,
-                         network,
+                         network = c("degs", "omics", "factors", "exposures"),
                          include_stats = TRUE,
                          nodes_to_include = NULL,
                          centrality_thresh = NULL,
@@ -69,83 +69,56 @@ plot_network <- function(expomicset,
                          node_color_var = NULL,
                          alpha = 0.5,
                          size_lab = "Centrality",
-                         color_lab = "Group"
-                         ){
-  # Load required libraries
+                         color_lab = "Group") {
+
   require(ggraph)
   require(tidygraph)
 
-  # Check to see that networks are present in the mae
-  if(!any(grepl("network",(MultiAssayExperiment::metadata(expomicset) |> names())))
-  ) {
-    stop("Please run either `run_create_network()` first.")
-  }
+  network <- match.arg(network)
 
-  # Switch the graph based on which network user choses
-  g <- switch(network,
-                     "omics_exposure_deg_network" = MultiAssayExperiment::metadata(expomicset)[["omics_exposure_deg_network"]][["graph"]],
-                     "omics_exposure_factor_network" = MultiAssayExperiment::metadata(expomicset)[["omics_exposure_factor_network"]][["graph"]],
-                     "omics_exposure_network" = MultiAssayExperiment::metadata(expomicset)[["omics_exposure_network"]][["graph"]])
+  net_key <- paste0("network_", network)
+  net_obj <- MultiAssayExperiment::metadata(expomicset)$network[[net_key]]
+
+  if (is.null(net_obj)) {
+    stop("No network found for `feature_type = '", network, "'. Please run `run_create_network()` first.")
+  }
 
   message("Extracting graph...")
+  g <- tidygraph::as_tbl_graph(net_obj$graph)
 
-  # Ensure graph is a tidygraph object
-  g <- g |>
-    tidygraph::as_tbl_graph()
-
-  # Filter based on whether or not the user wants certain nodes
-  if(!is.null(nodes_to_include)){
-    message("Filtering nodes...")
-    g <- g |>
-      activate(nodes) |>
-      filter(name %in% nodes_to_include)
+  if (!is.null(nodes_to_include)) {
+    g <- g |> activate(nodes) |> filter(name %in% nodes_to_include)
   }
 
-  if(!is.null(cor_thresh)){
-    message("Filtering nodes based on correlation threshold...")
-    g <- g |>
-      activate(edges) |>
-      filter(abs(correlation) > cor_thresh)
+  if (!is.null(cor_thresh)) {
+    g <- g |> activate(edges) |> filter(abs(correlation) > cor_thresh)
   }
 
-  # Filter based on centrality threshold
-  if(!is.null(centrality_thresh)){
-    message("Filtering nodes based on centrality threshold...")
+  if (!is.null(centrality_thresh)) {
     g <- g |>
       activate(nodes) |>
-      mutate(centrality=tidygraph::centrality_degree()) |>
-      filter(centrality>centrality_thresh)
+      mutate(centrality = centrality_degree()) |>
+      filter(centrality > centrality_thresh)
   }
 
-  # Filter top n nodes based on centrality
-  if(!is.null(top_n_nodes)){
-    message("Filtering top ",top_n_nodes," nodes based on centrality...")
+  if (!is.null(top_n_nodes)) {
     g <- g |>
       activate(nodes) |>
-      mutate(centrality=tidygraph::centrality_degree()) |>
+      mutate(centrality = centrality_degree()) |>
       arrange(desc(centrality)) |>
-      slice_head(n=top_n_nodes)
+      slice_head(n = top_n_nodes)
   }
 
-  # Create a column of nodes to label based on user input
-  if(!is.null(nodes_to_label) & isTRUE(label)){
-    g <- g |>
-      activate(nodes) |>
-      mutate(label=ifelse(name %in% nodes_to_label, name, NA))
-
-  } else if(isTRUE(label)){
-    # If the user wants to label nodes, but does not provide input
-    # label the top 5 nodes based on centrality
-    g <- g |>
-      activate(nodes) |>
-      mutate(centrality=tidygraph::centrality_degree()) |>
+  if (!is.null(nodes_to_label) && isTRUE(label)) {
+    g <- g |> activate(nodes) |> mutate(label = ifelse(name %in% nodes_to_label, name, NA))
+  } else if (isTRUE(label)) {
+    g <- g |> activate(nodes) |>
+      mutate(centrality = centrality_degree()) |>
       arrange(desc(centrality)) |>
-      mutate(label = ifelse(dplyr::row_number() <= label_top_n, name, NA))
+      mutate(label = ifelse(row_number() <= label_top_n, name, NA))
   }
 
-  # Filter the graph before plotting to make sure that
-  # only nodes included in edges are present
-  # Keep only nodes involved in at least one edge
+  # Prune nodes without edges
   used_node_indices <- g |>
     activate(edges) |>
     as_tibble() |>
@@ -159,13 +132,13 @@ plot_network <- function(expomicset,
     filter(node_index %in% used_node_indices) |>
     select(-node_index)
 
-  # User confirmation for large networks
+  # Warn if plotting very large networks
   if (igraph::gorder(g) > 500) {
     user_input <- readline("The network has more than 500 nodes. Plot anyway? (y/n): ")
     if (tolower(user_input) != "y") stop("Exiting.")
   }
 
-  # Build and return plot using helper
+  # Build plot using internal helper
   g_plot <- .build_ggraph_plot(
     g = g,
     node_color_var = node_color_var,
@@ -182,3 +155,4 @@ plot_network <- function(expomicset,
 
   return(g_plot)
 }
+
