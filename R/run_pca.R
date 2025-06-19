@@ -146,7 +146,10 @@ run_pca <- function(
       run_pca=list(
       timestamp = Sys.time(),
       params = list(),
-      notes = c("Outliers: ",paste(rownames(pca_sample$x)[outliers], collapse = ", ")))
+      notes = paste("Outliers: ",
+                    paste(rownames(pca_sample$x)[outliers], collapse = ", "),
+                    collapse = "")
+      )
     )
 
     MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(

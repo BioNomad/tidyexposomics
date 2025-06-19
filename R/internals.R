@@ -281,40 +281,35 @@ scale_color_tidy_exp <- function(..., rev = F) {
 
   message("Computing feature stability across sensitivity conditions...")
 
-  # # Identify significant features in each test setting
-  # feature_stability_df <- sensitivity_df |>
-  #   dplyr::filter(!!sym(pval_col) < pval_threshold,
-  #          abs(!!sym(logfc_col)) > logFC_threshold) |>
-  #   dplyr::group_by(feature, exp_name) |>
-  #   dplyr::summarize(stability_score = n(),
-  #                    .groups = "drop") |>
-  #   dplyr::arrange(desc(stability_score))
-
   feature_stability_df <- sensitivity_df |>
-    group_by(feature,exp_name) |>
+    group_by(feature, exp_name) |>
     summarise(
-      # Stability Score (Weighted: Frequency × Effect Size Consistency)
-      # FDR-adjusted significance frequency
+      # selection frequency (fraction of significant p-values)
       presence_rate = mean(!!sym(pval_col) < pval_threshold, na.rm = TRUE),
-      # Ensures stability considers effect size
-      effect_consistency = 1 / (1 + (sd(!!sym(logfc_col), na.rm = TRUE) / mean(abs(!!sym(logfc_col)), na.rm = TRUE))),
-      # Weighted score
-      stability_score = presence_rate * effect_consistency,  # Weighted score
 
-      # Effect Size Variability
+      # effect size consistency (inverse of coefficient of variation)
+      effect_consistency = 1 / (1 + (sd(!!sym(logfc_col), na.rm = TRUE) /
+                                       mean(abs(!!sym(logfc_col)), na.rm = TRUE))),
+
+      # main hybrid score combining presence and effect stability
+      stability_score = presence_rate * effect_consistency,
+
+      # statistical signal strength based on p-values
+      mean_log_p = mean(-log10(!!sym(pval_col) + 1e-10), na.rm = TRUE),
+
+      # optional alternative hybrid score using log p-values
+      logp_weighted_score = mean_log_p * effect_consistency,
+
+      # effect size variability
       sd_logFC = sd(!!sym(logfc_col), na.rm = TRUE),
-      # Robust alternative to SD
       iqr_logFC = IQR(!!sym(logfc_col), na.rm = TRUE),
+      cv_logFC = sd(!!sym(logfc_col), na.rm = TRUE) / abs(mean(!!sym(logfc_col), na.rm = TRUE)),
 
-      # Sign Flip Frequency (How often logFC changes sign)
+      # sign flip frequency of logfc across runs
       sign_flip_freq = mean(sign(!!sym(logfc_col)) != sign(mean(!!sym(logfc_col), na.rm = TRUE)), na.rm = TRUE),
 
-      # p-value Variability (SD of log-transformed p-values)
-      # Adding small offset to avoid log(0)
-      sd_log_p = sd(log10(!!sym(pval_col) + 1e-10), na.rm = TRUE),
-
-      # Coefficient of Variation (CV) for Relative Variability
-      cv_logFC = sd(!!sym(logfc_col), na.rm = TRUE) / abs(mean(!!sym(logfc_col), na.rm = TRUE))
+      # variability of p-values on the log scale
+      sd_log_p = sd(log10(!!sym(pval_col) + 1e-10), na.rm = TRUE)
     )
 
   message("Feature stability analysis completed.")
