@@ -11,6 +11,9 @@ plot_volcano(
   logFC_col = "logFC",
   logFC_thresh = log2(1.5),
   plot_n_sig = TRUE,
+  top_n_label = NULL,
+  features_to_label = NULL,
+  feature_col = "feature",
   xlab = expression(Log[2] * "FC"),
   ylab = expression(-Log[10] * "P"),
   title = "Volcano Plot of Differential Abundance",
@@ -18,45 +21,54 @@ plot_volcano(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with differential abundance results.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing differential abundance results in \code{metadata(expomicset)$differential_abundance}.}
 
-\item{pval_col}{A character string specifying the column for p-values. Default is \code{"adj.P.Val"}.}
+\item{pval_col}{A character string specifying the column containing p-values. Default is \code{"adj.P.Val"}.}
 
-\item{pval_thresh}{A numeric value for the significance threshold. Default is \code{0.05}.}
+\item{pval_thresh}{A numeric threshold for significance. Features with p-values below this are considered significant. Default is \code{0.05}.}
 
-\item{logFC_col}{A character string specifying the column for log fold change. Default is \code{"logFC"}.}
+\item{logFC_col}{A character string specifying the column for log fold changes. Default is \code{"logFC"}.}
 
-\item{logFC_thresh}{A numeric value for the log fold change threshold. Default is \code{log2(1.5)}.}
+\item{logFC_thresh}{A numeric threshold for absolute log fold change significance. Default is \code{log2(1.5)}.}
 
-\item{plot_n_sig}{A logical indicating whether to display the number of significant features in facet labels. Default is \code{TRUE}.}
+\item{plot_n_sig}{Logical; if \code{TRUE}, appends the number of significant features to facet titles. Default is \code{TRUE}.}
+
+\item{top_n_label}{Optional integer. If provided, the top \code{n} most significant features per assay will be labeled on the plot.}
+
+\item{features_to_label}{Optional character vector. Specific features to label regardless of significance.}
+
+\item{feature_col}{A character string naming the feature ID column to use for labeling. Default is \code{"feature"}.}
 
 \item{xlab}{Label for the x-axis. Default is \code{expression(Log[2]*"FC")}.}
 
 \item{ylab}{Label for the y-axis. Default is \code{expression(-Log[10]*"P")}.}
 
-\item{title}{Title of the plot. Default is \code{"Volcano Plot of Differential Abundance"}.}
+\item{title}{Plot title. Default is \code{"Volcano Plot of Differential Abundance"}.}
 
-\item{nrow}{Number of rows in the facet layout. Default is \code{2}.}
+\item{nrow}{Number of rows in the \code{facet_wrap()} layout. Default is \code{2}.}
 }
 \value{
-A \code{ggplot2} object displaying a volcano plot of differential abundance.
+A \code{ggplot2} object representing the volcano plot.
 }
 \description{
-Generates a \strong{volcano plot} to visualize differentially abundant features across assays.
+Generates a \strong{volcano plot} to visualize differential abundance results across one or more omics layers.
 }
 \details{
-This function:
+The function:
 \itemize{
-\item Extracts \strong{differential abundance results} from \code{metadata(expomicset)}.
-\item Assigns significance based on \code{pval_thresh} and \code{logFC_thresh}.
-\item Colors points as \strong{Upregulated (red)}, \strong{Downregulated (blue)}, or \strong{Not-Significant (gray)}.
-\item Adds \strong{dashed cutoff lines} for significance thresholds.
-\item Facets by assay (\code{exp_name}), optionally displaying counts of significant features.
+\item Extracts differential abundance results from \code{metadata(expomicset)$differential_abundance}.
+\item Assigns each feature a direction of change: \strong{Upregulated}, \strong{Downregulated}, or \strong{Not-Significant}.
+\item Uses \code{logFC_thresh} and \code{pval_thresh} to define thresholds.
+\item Adds dashed lines to indicate cutoffs for fold change and significance.
+\item Uses \code{facet_wrap()} to display each assay (\code{exp_name}) separately.
+\item Optionally labels the most significant features or user-defined ones.
 }
 }
 \examples{
 \dontrun{
 plot_volcano(expom, pval_thresh = 0.01, logFC_thresh = log2(2))
+plot_volcano(expom, features_to_label = c("TP53", "MYC"))
+plot_volcano(expom, top_n_label = 5)
 }
 
 }

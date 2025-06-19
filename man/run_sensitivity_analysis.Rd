@@ -14,9 +14,15 @@ run_sensitivity_analysis(
   min_proportion_range = c(0.1, 0.2, 0.3),
   contrasts = NULL,
   covariates_to_remove = NULL,
+  pval_col = "adj.P.Val",
+  logfc_col = "logFC",
+  pval_threshold = 0.05,
+  logFC_threshold = log2(1.5),
   score_thresh = NULL,
-  score_quantile = 0.1,
-  action = "add"
+  score_quantile = 0.9,
+  stability_metric = "stability_score",
+  action = "add",
+  bootstrap_n = 0
 )
 }
 \arguments{
@@ -38,14 +44,26 @@ run_sensitivity_analysis(
 
 \item{covariates_to_remove}{A character vector of covariates to iteratively remove from the model for sensitivity testing. Default is \code{NULL}.}
 
+\item{pval_col}{Name of the column containing adjusted p-values. Default is \code{"adj.P.Val"}.}
+
+\item{logfc_col}{Name of the column containing log fold changes. Default is \code{"logFC"}.}
+
+\item{pval_threshold}{Numeric threshold to consider a p-value significant. Default is \code{0.05}.}
+
+\item{logFC_threshold}{Minimum absolute log fold change for filtering. Default is \code{log2(1.5)}.}
+
 \item{score_thresh}{A numeric value specifying a fixed threshold for feature stability. If \code{NULL}, it is determined based on \code{score_quantile}.}
 
-\item{score_quantile}{A numeric value specifying the quantile threshold for determining stable features. Default is \code{0.1}.}
+\item{score_quantile}{A numeric value (between 0 and 1) specifying the quantile to define stability threshold. Default is \code{0.9}.}
 
-\item{action}{A character string specifying whether to store (\code{"add"}) or return (\code{"get"}) the results. Default is \code{"add"}.}
+\item{stability_metric}{The name of the column in the stability table to use for scoring (e.g., \code{"stability_score"}, \code{"logp_weighted_score"}). Default is \code{"stability_score"}.}
+
+\item{action}{Whether to \code{"add"} results to the \code{MultiAssayExperiment} metadata or \code{"get"} them as a list. Default is \code{"add"}.}
+
+\item{bootstrap_n}{Number of bootstrap iterations. Set to \code{0} to disable bootstrapping. Default is \code{0}.}
 }
 \value{
-A \code{MultiAssayExperiment} object with sensitivity analysis results added to metadata (if \code{action = "add"}) or a list with:
+Either a \code{MultiAssayExperiment} object with results added to metadata (if \code{action = "add"}) or a list with:
 \item{sensitivity_df}{A dataframe of differential abundance results across all tested conditions.}
 \item{feature_stability}{A dataframe summarizing stability scores for each feature.}
 \item{score_thresh}{The threshold used for stable feature selection.}
@@ -55,34 +73,18 @@ Runs differential abundance testing across multiple models, statistical methods,
 scaling approaches, and filtering criteria to assess feature stability.
 }
 \details{
-This function:
-\itemize{
-\item Iterates over multiple \strong{model specifications} by removing covariates.
-\item Tests different \strong{differential abundance methods} (\code{limma_voom}, \code{DESeq2}, \code{edgeR_quasi_likelihood}).
-\item Evaluates \strong{scaling approaches} (\code{none}, \code{TMM}, \code{quantile}).
-\item Filters features based on \strong{minimum count} and \strong{sample proportion} thresholds.
-\item \strong{Calculates feature stability}, measuring how often a feature is identified across conditions.
-\item Determines a \strong{stability threshold} using either \code{score_thresh} or the \code{score_quantile}.
-\item \strong{Output Handling}:
-\itemize{
-\item \code{"add"}: Stores results in \code{metadata(expomicset)$sensitivity_analysis}.
-\item \code{"get"}: Returns a list containing the sensitivity results.
-}
-}
+The stability score can be calculated in various ways. By default, \code{stability_score} is used, which multiplies the proportion of significant p-values across runs (\code{presence_rate}) by a consistency metric (\code{effect_consistency}). Users may specify alternative metrics like \code{logp_weighted_score} for more conservative feature prioritization.
+
+If \code{bootstrap_n > 0}, the entire sensitivity analysis is repeated \code{bootstrap_n} times on resampled versions of the dataset, and summary statistics are returned for each feature's stability.
 }
 \examples{
 \dontrun{
-expom <- run_sensitivity_analysis(
+result <- run_sensitivity_analysis(
   expomicset = expom,
   base_formula = ~ condition + batch,
   methods = c("limma_voom", "DESeq2"),
   min_counts_range = c(5, 10),
-  action = "add"
-)
-
-sensitivity_results <- run_sensitivity_analysis(
-  expomicset = expom,
-  base_formula = ~ condition + batch,
+  stability_metric = "logp_weighted_score",
   action = "get"
 )
 }

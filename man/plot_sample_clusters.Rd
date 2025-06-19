@@ -4,13 +4,13 @@
 \alias{plot_sample_clusters}
 \title{Plot Sample Clusters}
 \usage{
-plot_sample_clusters(expomicset, cols_of_interest = NULL)
+plot_sample_clusters(expomicset, exposure_cols = NULL)
 }
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing sample clustering results
 in \code{metadata(expomicset)$sample_clustering}.}
 
-\item{cols_of_interest}{A character vector specifying columns from \code{colData} to include
+\item{exposure_cols}{A character vector specifying columns from \code{colData} to include
 in the summary. Default is \code{NULL}, which includes all available columns.}
 }
 \value{

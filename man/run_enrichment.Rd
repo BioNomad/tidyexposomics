@@ -7,6 +7,9 @@
 run_enrichment(
   expomicset,
   geneset,
+  robust = T,
+  score_col = "stability_score",
+  score_threshold = NULL,
   feature_col = "feature",
   mirna_assays = NULL,
   pval_col = "adj.P.Val",
@@ -61,32 +64,8 @@ run_enrichment(
 }
 \value{
 If \code{action="add"}, returns the updated \code{expomicset}.
-If \code{action="get"}, returns a \code{data.frame} with enrichment results, including:
-\item{Description}{GO term description.}
-\item{geneID}{Gene set associated with the GO term.}
-\item{go_group}{Assigned GO term cluster.}
+If \code{action="get"}, returns a \code{data.frame} with enrichment results.
 }
 \description{
 Runs functional enrichment analysis on differentially abundant features or correlated features in a \code{MultiAssayExperiment} object.
-}
-\details{
-This function:
-\itemize{
-\item Performs functional enrichment analysis on \code{geneset}-specific features.
-\item Supports enrichment for differentially abundant (\code{"deg"}) or correlated (\code{"deg_exp_cor"}, \code{"factor_exp_cor"}, \code{"factor"}) features.
-\item Uses \code{.get_pairwise_overlaps()} to cluster GO terms based on shared genes.
-\item Uses \code{.cluster_mat()} to determine GO term clusters using the selected \code{clustering_approach}.
-\item Stores results in \code{metadata(expomicset)$functional_enrichment[[geneset]]} when \code{action="add"}.
-}
-}
-\examples{
-\dontrun{
-expom <- run_enrichment(
-  expomicset = expom,
-  geneset = "deg",
-  pvalueCutoff = 0.01,
-  clustering_approach = "gap"
-)
-}
-
 }

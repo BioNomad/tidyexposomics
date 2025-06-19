@@ -4,7 +4,7 @@
 \alias{plot_normality_summary}
 \title{Plot Summary of Normality Test for Exposure Variables}
 \usage{
-plot_normality_summary(expomicset)
+plot_normality_summary(expomicset, transformed = FALSE)
 }
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing normality test results

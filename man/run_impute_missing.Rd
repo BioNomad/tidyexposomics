@@ -2,50 +2,55 @@
 % Please edit documentation in R/run_impute_missing.R
 \name{run_impute_missing}
 \alias{run_impute_missing}
-\title{Impute Missing Values in Exposure and Omics Data}
+\title{Impute Missing Exposure and Omics Data in a MultiAssayExperiment}
 \usage{
 run_impute_missing(
   expomicset,
   exposure_impute_method = "median",
-  omics_impute_method = "knn"
+  exposure_cols = NULL,
+  omics_impute_method = "knn",
+  omics_to_impute = NULL
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics and exposure data.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing exposures and omics data.}
 
-\item{exposure_impute_method}{A character string specifying the imputation method for exposure data. Options: \code{"median"}, \code{"mean"}. Default is \code{"median"}.}
+\item{exposure_impute_method}{Character. Imputation method to use for exposure variables. Defaults to \code{"median"}.}
 
-\item{omics_impute_method}{A character string specifying the imputation method for omics data. Options: \code{"knn"}, \code{"mice"}, \code{"median"}, \code{"mean"}, \code{"dep"}, \code{"missforest"}. Default is \code{"knn"}.}
+\item{exposure_cols}{Character vector. Names of columns in \code{colData} to impute. If \code{NULL}, all numeric columns are used.}
+
+\item{omics_impute_method}{Character. Imputation method to use for omics data. Defaults to \code{"knn"}.}
+
+\item{omics_to_impute}{Character vector. Names of omics datasets to impute. If \code{NULL}, all omics datasets are included.}
 }
 \value{
-A \code{MultiAssayExperiment} object with imputed missing values in exposure and omics data.
+A \code{MultiAssayExperiment} object with imputed exposure and/or omics data.
 }
 \description{
-Imputes missing values in the \code{colData} (exposures) and \code{assays} (omics data) of a \code{MultiAssayExperiment} object.
+Performs missing data imputation on both exposure variables (from \code{colData}) and
+omics datasets (from \code{experiments}) within a \code{MultiAssayExperiment} object.
 }
 \details{
-This function:
+For exposures, numeric columns in \code{colData} are imputed using the selected method.
+For omics data, assays are selected and imputed individually.
+
+Supported imputation methods include:
 \itemize{
-\item Identifies datasets with missing values using \code{metadata(expomicset)$na_qc}.
-\item Imputes missing exposure data using \code{naniar::impute_median_all()} (default) or \code{naniar::impute_mean_all()}.
-\item Imputes missing omics data based on \code{omics_impute_method}:
-\itemize{
-\item \code{"knn"}: Uses \code{impute::impute.knn()}.
-\item \code{"mice"}: Uses \code{mice::mice()} with predictive mean matching.
-\item \code{"median"} / \code{"mean"}: Uses \code{naniar::impute_median_all()} / \code{naniar::impute_mean_all()}.
-\item \code{"dep"}: Uses \code{DEP::impute()} with \code{"MinProb"}, \code{q = 0.01} (for proteomics data).
-\item \code{"missforest"}: Uses \code{missForest::missForest()}.
-}
-\item Updates \code{colData(expomicset)} and \code{assays(expomicset)} with imputed values.
+\item \code{"median"}: Median imputation using \code{naniar::impute_median_all}
+\item \code{"mean"}: Mean imputation using \code{naniar::impute_mean_all}
+\item \code{"knn"}: k-nearest neighbor imputation using \code{impute::impute.knn}
+\item \code{"mice"}: Multiple imputation using chained equations (\code{mice::mice})
+\item \code{"dep"}: MinProb imputation for proteomics using \code{DEP::impute}
+\item \code{"missforest"}: Random forest-based imputation using \code{missForest::missForest}
+\item \code{"lod_sqrt2"}: Substitution of missing values with LOD/sqrt(2), where LOD is the smallest non-zero value per variable
 }
 }
 \examples{
 \dontrun{
-expom <- run_impute_missing(
-  expomicset = expom,
-  exposure_impute_method = "median",
-  omics_impute_method = "knn"
-)
+imputed_mae <- run_impute_missing(my_mae,
+                                  exposure_impute_method = "lod_sqrt2",
+                                  exposure_cols = c("pm25", "no2"),
+                                  omics_impute_method = "missforest",
+                                  omics_to_impute = c("metabolomics", "proteomics"))
 }
-
 }

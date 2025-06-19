@@ -7,6 +7,7 @@
 plot_sensitivity_summary(
   expomicset,
   stability_score_thresh = NULL,
+  stability_metric = "stability_score",
   title = "Distribution of Stability Scores"
 )
 }
@@ -17,8 +18,10 @@ in \code{metadata(expomicset)$sensitivity_analysis}.}
 \item{stability_score_thresh}{A numeric threshold for stability scores. Default is \code{NULL},
 which uses the threshold stored in \code{metadata(expomicset)$sensitivity_analysis$score_thresh}.}
 
+\item{stability_metric}{A character string specifying which stability metric to plot (e.g., "stability_score", "logp_weighted_score"). Default is "stability_score".}
+
 \item{title}{A character string specifying the title of the ridge plot. Default is
-\code{"Distribution of Stability Scores"}.}
+"Distribution of Stability Scores".}
 }
 \value{
 A \code{patchwork} object combining a ridge plot and a bar chart.
@@ -37,7 +40,7 @@ This function:
 }
 \examples{
 \dontrun{
-plot_sensitivity_summary(expom)
+plot_sensitivity_summary(expom, stability_metric = "logp_weighted_score")
 }
 
 }

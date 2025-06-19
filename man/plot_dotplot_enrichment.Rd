@@ -2,50 +2,59 @@
 % Please edit documentation in R/plot_dotplot_enrichment.R
 \name{plot_dotplot_enrichment}
 \alias{plot_dotplot_enrichment}
-\title{Plot Dotplot of Functional Enrichment Results}
+\title{Dotplot of Functional Enrichment Results}
 \usage{
 plot_dotplot_enrichment(
   expomicset,
   geneset,
   top_n = 5,
   n_per_group = 5,
+  add_top_genes = TRUE,
+  top_n_genes = 5,
   go_groups = NULL
 )
 }
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing functional enrichment results.}
 
-\item{geneset}{A character string specifying the gene set name to extract enrichment results from.}
+\item{geneset}{A character string specifying the gene set to analyze. Options: \code{"deg"}, \code{"deg_exp_cor"}, \code{"factor_exp_cor"}, or \code{"factor"}.}
 
-\item{top_n}{An integer specifying the number of top GO groups to display. Default is \code{5}.}
+\item{top_n}{An integer specifying the number of top GO groups to select (based on enrichment score). Default is \code{5}.}
 
-\item{n_per_group}{An integer specifying the number of top enriched terms to display within each GO group. Default is \code{5}.}
+\item{n_per_group}{Number of top GO terms to show within each GO group. Default is \code{5}.}
 
-\item{go_groups}{A character vector specifying specific GO groups to include. If \code{NULL}, selects the top \code{top_n} groups based on enrichment score.}
+\item{add_top_genes}{Logical; if \code{TRUE}, appends top genes contributing to each GO group as annotation in facet labels. Default is \code{TRUE}.}
+
+\item{top_n_genes}{Integer; number of top genes to extract and display per GO group (used only if \code{add_top_genes = TRUE}). Default is \code{5}.}
+
+\item{go_groups}{Optional character vector of GO group names to include. If \code{NULL}, the top \code{top_n} groups are selected automatically.}
 }
 \value{
-A \code{ggplot} object displaying a dotplot of enriched GO terms.
+A \code{ggplot} object displaying the dotplot of enriched GO terms, faceted by GO group and category.
 }
 \description{
-Generates a dotplot visualization of enriched gene ontology (GO) terms
-across different experimental categories.
+Generates a dotplot of enriched gene ontology (GO) terms across experiments and categories,
+optionally annotated with the top genes contributing to each GO group.
 }
 \details{
-This function extracts functional enrichment results from \code{metadata(expomicset)$functional_enrichment},
-selects the most significant GO terms based on \code{-log10(p.adjust) * Count},
-and visualizes them in a dotplot.
+This function:
 \itemize{
-\item The x-axis represents experimental categories.
-\item The y-axis represents enriched GO terms.
-\item Dot size indicates the number of genes in the GO term.
-\item Dot color represents statistical significance (\code{-log10(p.adjust)}).
+\item Extracts enrichment results from \code{metadata(expomicset)$functional_enrichment[[geneset]]}.
+\item Selects top GO groups based on the product of \code{-log10(p.adjust) * Count}.
+\item Displays a dotplot with:
+\itemize{
+\item x-axis: experimental categories.
+\item y-axis: GO term descriptions.
+\item dot size: number of genes (\code{Count}).
+\item dot color: significance level (\code{-log10(p.adjust)}).
 }
-
-The function allows filtering by predefined \code{go_groups} or selecting the top \code{top_n} groups automatically.
+\item Optionally appends top genes as annotations in facet strip labels.
+}
 }
 \examples{
 \dontrun{
 plot_dotplot_enrichment(expom, geneset = "GO_BP")
+plot_dotplot_enrichment(expom, geneset = "KEGG", top_n = 10, add_top_genes = TRUE)
 }
 
 }

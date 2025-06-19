@@ -2,38 +2,55 @@
 % Please edit documentation in R/plot_top_factor_features.R
 \name{plot_top_factor_features}
 \alias{plot_top_factor_features}
-\title{Plot Top Features for Each Factor}
+\title{Plot Top Features by Factor from Integration Results}
 \usage{
-plot_top_factor_features(expomicset, top_n = 5)
+plot_top_factor_features(
+  expomicset,
+  factors = NULL,
+  top_n = 5,
+  facet_cols = NULL,
+  exp_name_cols = NULL,
+  alpha = 0.5
+)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing factor loadings from MOFA or MCIA.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing integration results in the \code{metadata} slot (must include \code{integration_results}).}
 
-\item{top_n}{An integer specifying the number of top features to display per factor. Default is \code{5}.}
+\item{factors}{Character vector of factors to include (e.g., \code{"Factor1"}, \code{"Factor2"}). If \code{NULL}, all factors are plotted.}
+
+\item{top_n}{Integer specifying the number of top features to show per factor. Default is \code{5}.}
+
+\item{facet_cols}{Optional color palette for facet strip backgrounds (one per \code{exp_name}), used to distinguish factors.}
+
+\item{exp_name_cols}{Optional color palette for experiment labels in the plot (\code{exp_name}), passed to \code{scale_color_manual()}.}
+
+\item{alpha}{Numeric value between 0 and 1 controlling the transparency of facet strip background fill. Default is \code{0.5}.}
 }
 \value{
-A \code{ggplot2} object displaying a scatter plot of the top factor-associated features.
+A \code{ggplot2} object with one facet per factor, showing the top features and their loadings by experiment.
 }
 \description{
-Visualizes the most influential features for each latent factor based on multi-omics integration.
+Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA or MCIA).
 }
 \details{
-This function:
+This function supports the following integration methods:
 \itemize{
-\item Extracts factor loadings from MOFA (\code{get_weights()}) or MCIA (\verb{@block_loadings}).
-\item Selects the top \code{top_n} features per factor based on absolute loading values.
-\item Generates a \strong{facet grid scatter plot} of the top features colored by assay type.
+\item \code{"MOFA"}: Uses feature weights from MOFA2 (\code{get_weights()}).
+\item \code{"MCIA"}: Uses block loadings from MCIA (\verb{@block_loadings}).
 }
 
-\strong{Supported Integration Methods:}
+For each factor, it:
 \itemize{
-\item \strong{MOFA}: Uses \code{get_weights()} to extract factor loadings.
-\item \strong{MCIA}: Uses \verb{@block_loadings} to extract block loadings.
+\item Selects the top \code{top_n} features by \strong{absolute loading}.
+\item Creates a point-range plot showing the loading magnitude.
+\item Facets each factor with a customizable strip background.
 }
+
+If palettes are not provided, defaults are chosen using \code{ggpubr::get_palette()}.
 }
 \examples{
 \dontrun{
-plot_top_factor_features(expom, top_n = 10)
+plot_top_factor_features(expomicset, factors = c("Factor1", "Factor2"), top_n = 10)
 }
 
 }
