@@ -27,6 +27,9 @@
 run_enrichment <- function(
     expomicset,
     geneset,
+    robust = T,
+    score_col = "stability_score",
+    score_threshold = NULL,
     feature_col = "feature",
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
@@ -48,6 +51,10 @@ run_enrichment <- function(
     geneset,
     "deg" = .da_functional_enrichment(
       expomicset = expomicset,
+      robust = robust,
+      score_col = score_col,
+      score_threshold = score_threshold,
+      feature_col = feature_col,
       mirna_assays = mirna_assays,
       pval_col = pval_col,
       pval_threshold = pval_threshold,

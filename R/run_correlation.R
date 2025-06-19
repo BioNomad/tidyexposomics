@@ -7,6 +7,7 @@
 #' @param exposure_cols Optional character vector of exposure variable names. If NULL, all numeric exposures are used.
 #' @param variable_map Optional variable mapping table (only for omics).
 #' @param robust If TRUE and feature_type == "degs", restrict to stable DEGs.
+#' @param score_col Column name for stability scores in sensitivity analysis.
 #' @param score_thresh Optional numeric threshold for feature stability scores.
 #' @param correlation_method Correlation method ("spearman", "pearson", etc.).
 #' @param correlation_cutoff Threshold for absolute correlation.
@@ -28,6 +29,7 @@ run_correlation <- function(
     exposure_cols = NULL,
     variable_map = NULL,
     robust = FALSE,
+    score_col = "stability_score",
     score_thresh = NULL,
     correlation_method = "spearman",
     correlation_cutoff = 0.3,
@@ -46,6 +48,7 @@ run_correlation <- function(
   col_df <- MultiAssayExperiment::colData(expomicset) |>
     as.data.frame() |>
     dplyr::select(-dplyr::starts_with("PC"))
+
   exposures <- col_df |>
     dplyr::select(where(is.numeric))
 
@@ -56,14 +59,28 @@ run_correlation <- function(
 
   feature_matrix <- switch(
     feature_type,
-    degs = .extract_deg_matrix(expomicset, robust, score_thresh, deg_pval_col, deg_logfc_col, deg_pval_thresh, deg_logfc_thresh),
-    omics = .extract_omics_matrix(expomicset, variable_map),
+    degs = .extract_deg_matrix(
+      expomicset,
+      robust,
+      score_col,
+      score_thresh,
+      deg_pval_col,
+      deg_logfc_col,
+      deg_pval_thresh,
+      deg_logfc_thresh
+    ),
+    omics = .extract_omics_matrix(
+      expomicset,
+      variable_map),
     factors = .extract_factor_matrix(expomicset),
-    exposures = .extract_exposure_matrix(col_df, exposure_cols),
+    exposures = .extract_exposure_matrix(
+      col_df,
+      exposure_cols),
     factor_features = .extract_factor_feature_matrix(expomicset)
   )
 
-  exposures <- exposures |> tibble::rownames_to_column("id")
+  exposures <- exposures |>
+    tibble::rownames_to_column("id")
 
   if (feature_type == "exposures") {
     merged_data <- exposures
@@ -71,9 +88,11 @@ run_correlation <- function(
     feature_vars <- exposure_vars
   } else {
     if (!"id" %in% colnames(feature_matrix)) {
-      feature_matrix <- feature_matrix |> tibble::rownames_to_column("id")
+      feature_matrix <- feature_matrix |>
+        tibble::rownames_to_column("id")
     }
-    merged_data <- dplyr::left_join(exposures, feature_matrix, by = "id") |> na.omit()
+    merged_data <- dplyr::left_join(exposures, feature_matrix, by = "id") |>
+      na.omit()
     exposure_vars <- setdiff(colnames(exposures), "id")
     feature_vars <- setdiff(colnames(feature_matrix), "id")
   }
@@ -170,11 +189,23 @@ run_correlation <- function(
 
     corr_mat <- Hmisc::rcorr(mat, type = correlation_method)
 
-    corr_df <- as.data.frame(corr_mat$r) |> tibble::rownames_to_column("var1") |> tidyr::pivot_longer(-var1, names_to = "var2", values_to = "correlation")
-    pval_df <- as.data.frame(corr_mat$P) |> tibble::rownames_to_column("var1") |> tidyr::pivot_longer(-var1, names_to = "var2", values_to = "p.value")
+    corr_df <- as.data.frame(corr_mat$r) |>
+      tibble::rownames_to_column("var1") |>
+      tidyr::pivot_longer(-var1,
+                          names_to = "var2",
+                          values_to = "correlation")
+    pval_df <- as.data.frame(corr_mat$P) |>
+      tibble::rownames_to_column("var1") |>
+      tidyr::pivot_longer(-var1,
+                          names_to = "var2",
+                          values_to = "p.value")
 
-    merged <- dplyr::inner_join(corr_df, pval_df, by = c("var1", "var2")) |>
-      dplyr::filter(var1 %in% exposure_vars, var2 %in% features, abs(correlation) > correlation_cutoff) |>
+    merged <- dplyr::inner_join(corr_df,
+                                pval_df,
+                                by = c("var1", "var2")) |>
+      dplyr::filter(var1 %in% exposure_vars,
+                    var2 %in% features,
+                    abs(correlation) > correlation_cutoff) |>
       dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
       dplyr::filter(!!rlang::sym(cor_pval_column) < pval_cutoff)
 
@@ -184,7 +215,15 @@ run_correlation <- function(
   dplyr::bind_rows(correlation_results)
 }
 
-.extract_deg_matrix <- function(expomicset, robust, score_thresh, deg_pval_col, deg_logfc_col, deg_pval_thresh, deg_logfc_thresh) {
+.extract_deg_matrix <- function(
+    expomicset,
+    robust,
+    score_col,
+    score_thresh,
+    deg_pval_col,
+    deg_logfc_col,
+    deg_pval_thresh,
+    deg_logfc_thresh) {
   da <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance
   if (is.null(da)) stop("No differential_abundance in metadata")
 
@@ -197,9 +236,12 @@ run_correlation <- function(
   if (robust) {
     sens <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis
     if (is.null(sens)) stop("No sensitivity_analysis in metadata")
+
     stable_feats <- sens$feature_stability |>
-      dplyr::filter(stability_score > (score_thresh %||% sens$score_thresh))
-    da <- dplyr::semi_join(da, stable_feats, by = c("exp_name", "feature"))
+      dplyr::filter(!!dplyr::sym(score_col) > (score_thresh %||% sens$score_thresh))
+    da <- dplyr::semi_join(da,
+                           stable_feats,
+                           by = c("exp_name", "feature"))
   }
 
   mats <- lapply(unique(da$exp_name), function(name) {
@@ -228,7 +270,9 @@ run_correlation <- function(
     tibble::rownames_to_column(df, "id")
   }) |> purrr::compact()
 
-  purrr::reduce(dfs, dplyr::full_join, by = "id")
+  purrr::reduce(dfs,
+                dplyr::full_join,
+                by = "id")
 }
 
 .extract_factor_matrix <- function(expomicset) {

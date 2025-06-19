@@ -29,9 +29,9 @@
 #' @export
 run_exposome_score <- function(
     expomicset,
+    score_type ,
     exposure_cols = NULL,
     scale = TRUE,
-    score_type = "median",
     score_column_name = NULL){
 
   # Extract and preprocess colData
@@ -161,20 +161,20 @@ run_exposome_score <- function(
   MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
 
   # Add summary step record
-  step_record <- list(
-    run_exposome_score = list(
-      timestamp = Sys.time(),
-      params = list(
-        score_type = score_type,
-        scaled = scale,
-        exposure_cols = exposure_cols,
-        score_column_name = ifelse(is.null(score_column_name),
-                                   colnames(scores)[1],
-                                   score_column_name)
-      ),
-      notes = paste0("Exposome score computed using method: '", score_type, "'")
-    )
+  # Create step content
+  step_content <- list(
+    timestamp = Sys.time(),
+    params = list(
+      score_type = score_type,
+      scaled = scale,
+      exposure_cols = exposure_cols,
+      score_column_name = score_column_name
+    ),
+    notes = paste0("Exposome score computed using method: '", score_type, "'")
   )
+
+  # Assign dynamic name to the step
+  step_record <- setNames(list(step_content), paste0("run_exposome_score_", score_column_name))
 
   MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
     MultiAssayExperiment::metadata(expomicset)$summary$steps,

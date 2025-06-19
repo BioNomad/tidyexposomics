@@ -297,7 +297,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
       # statistical signal strength based on p-values
       mean_log_p = mean(-log10(!!sym(pval_col) + 1e-10), na.rm = TRUE),
 
-      # optional alternative hybrid score using log p-values
+      # hybrid score using log p-values
       logp_weighted_score = mean_log_p * effect_consistency,
 
       # effect size variability
@@ -579,6 +579,9 @@ scale_color_tidy_exp <- function(..., rev = F) {
 #' @noRd
 .da_functional_enrichment <- function(
     expomicset,
+    robust = T,
+    score_col = "stability_score",
+    score_threshold = NULL,
     feature_col="feature",
     mirna_assays = NULL,
     pval_col = "adj.P.Val",
@@ -612,6 +615,29 @@ scale_color_tidy_exp <- function(..., rev = F) {
                   exp_name,
                   direction) |>
     dplyr::mutate(feature_col=!!sym(feature_col))
+
+  # If robust analysis is requested, filter based on stability score
+  if (robust) {
+    if (!"sensitivity_analysis" %in% names(MultiAssayExperiment::metadata(expomicset)$differential_analysis)) {
+      stop("Please run `run_sensitivity_analysis() first.`")
+    }
+
+    if(is.null(score_threshold)) {
+      score_threshold <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$score_thresh
+    }
+
+    # Filter stability scores based on the specified threshold
+    stability_df <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$feature_stability |>
+      dplyr::filter(!!dplyr::sym(score_col) > score_threshold) |>
+      dplyr::select(feature,
+                    exp_name,
+                    !!sym(score_col))
+
+    da_res <- da_res |>
+      dplyr::inner_join(stability_df,
+                        by = c("feature",
+                               "exp_name"))
+  }
 
   if (!is.null(mirna_assays)) {
     # Retrieve miRNA target genes and merge with differential abundance results

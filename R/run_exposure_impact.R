@@ -4,8 +4,6 @@
 #'
 #' @param expomicset A `MultiAssayExperiment` object with correlation and network metadata.
 #' @param feature_type One of `"degs"`, `"omics"`, or `"factors"`.
-#' @param robust Logical. Use only stable features (for "degs" only). Default = TRUE.
-#' @param stability_threshold Optional numeric threshold for stability scores.
 #' @param pval_col Column in differential abundance results to filter DEGs. Default = `"adj.P.Val"`.
 #' @param pval_thresh DEG p-value threshold. Ignored unless `feature_type == "degs"`.
 #' @param action Either `"add"` (store in metadata) or `"get"` (return list).
@@ -15,8 +13,6 @@
 run_exposure_impact <- function(
     expomicset,
     feature_type = c("degs", "omics", "factors"),
-    robust = TRUE,
-    stability_threshold = NULL,
     pval_col = "adj.P.Val",
     pval_thresh = 0.1,
     action = c("add", "get")
@@ -49,17 +45,21 @@ run_exposure_impact <- function(
   # Merge with correlation edges (exposure-feature)
   if (feature_type == "degs") {
     correlation_df <- correlation_df |>
-      dplyr::rename(feature = feature, exposure = exposure)
+      dplyr::rename(feature = feature,
+                    exposure = exposure)
 
   } else if ("var1" %in% names(correlation_df)) {
     # Handle generalized format
     correlation_df <- correlation_df |>
-      dplyr::filter(var1_type == "exposure", var2_type != "exposure") |>
-      dplyr::rename(exposure = var1, feature = var2)
+      dplyr::filter(var1_type == "exposure",
+                    var2_type != "exposure") |>
+      dplyr::rename(exposure = var1,
+                    feature = var2)
   }
 
   impact_df <- correlation_df |>
-    dplyr::left_join(node_centrality, by = c("feature" = "name")) |>
+    dplyr::left_join(node_centrality,
+                     by = c("feature" = "name")) |>
     dplyr::filter(!is.na(centrality)) |>
     dplyr::group_by(exposure) |>
     dplyr::mutate(

@@ -12,45 +12,40 @@
 #' @param min_proportion_range A numeric vector of minimum sample proportion thresholds to test. Default is `c(0.1, 0.2, 0.3)`.
 #' @param contrasts A character vector specifying contrasts for the differential analysis. Default is `NULL`.
 #' @param covariates_to_remove A character vector of covariates to iteratively remove from the model for sensitivity testing. Default is `NULL`.
+#' @param pval_col Name of the column containing adjusted p-values. Default is `"adj.P.Val"`.
+#' @param logfc_col Name of the column containing log fold changes. Default is `"logFC"`.
+#' @param pval_threshold Numeric threshold to consider a p-value significant. Default is `0.05`.
+#' @param logFC_threshold Minimum absolute log fold change for filtering. Default is `log2(1.5)`.
 #' @param score_thresh A numeric value specifying a fixed threshold for feature stability. If `NULL`, it is determined based on `score_quantile`.
-#' @param score_quantile A numeric value specifying the quantile threshold for determining stable features. Default is `0.1`.
-#' @param action A character string specifying whether to store (`"add"`) or return (`"get"`) the results. Default is `"add"`.
+#' @param score_quantile A numeric value (between 0 and 1) specifying the quantile to define stability threshold. Default is `0.9`.
+#' @param stability_metric The name of the column in the stability table to use for scoring (e.g., `"stability_score"`, `"logp_weighted_score"`). Default is `"stability_score"`.
+#' @param action Whether to `"add"` results to the `MultiAssayExperiment` metadata or `"get"` them as a list. Default is `"add"`.
+#' @param bootstrap_n Number of bootstrap iterations. Set to `0` to disable bootstrapping. Default is `0`.
 #'
-#' @details
-#' This function:
-#' - Iterates over multiple **model specifications** by removing covariates.
-#' - Tests different **differential abundance methods** (`limma_voom`, `DESeq2`, `edgeR_quasi_likelihood`).
-#' - Evaluates **scaling approaches** (`none`, `TMM`, `quantile`).
-#' - Filters features based on **minimum count** and **sample proportion** thresholds.
-#' - **Calculates feature stability**, measuring how often a feature is identified across conditions.
-#' - Determines a **stability threshold** using either `score_thresh` or the `score_quantile`.
-#' - **Output Handling**:
-#'   - `"add"`: Stores results in `metadata(expomicset)$sensitivity_analysis`.
-#'   - `"get"`: Returns a list containing the sensitivity results.
-#'
-#' @return A `MultiAssayExperiment` object with sensitivity analysis results added to metadata (if `action = "add"`) or a list with:
+#' @return Either a `MultiAssayExperiment` object with results added to metadata (if `action = "add"`) or a list with:
 #' \item{sensitivity_df}{A dataframe of differential abundance results across all tested conditions.}
 #' \item{feature_stability}{A dataframe summarizing stability scores for each feature.}
 #' \item{score_thresh}{The threshold used for stable feature selection.}
 #'
+#' @details
+#' The stability score can be calculated in various ways. By default, `stability_score` is used, which multiplies the proportion of significant p-values across runs (`presence_rate`) by a consistency metric (`effect_consistency`). Users may specify alternative metrics like `logp_weighted_score` for more conservative feature prioritization.
+#'
+#' If `bootstrap_n > 0`, the entire sensitivity analysis is repeated `bootstrap_n` times on resampled versions of the dataset, and summary statistics are returned for each feature's stability.
+#'
 #' @examples
 #' \dontrun{
-#' expom <- run_sensitivity_analysis(
+#' result <- run_sensitivity_analysis(
 #'   expomicset = expom,
 #'   base_formula = ~ condition + batch,
 #'   methods = c("limma_voom", "DESeq2"),
 #'   min_counts_range = c(5, 10),
-#'   action = "add"
-#' )
-#'
-#' sensitivity_results <- run_sensitivity_analysis(
-#'   expomicset = expom,
-#'   base_formula = ~ condition + batch,
+#'   stability_metric = "logp_weighted_score",
 #'   action = "get"
 #' )
 #' }
 #'
 #' @export
+
 run_sensitivity_analysis <- function(
     expomicset,
     base_formula,
@@ -65,139 +60,65 @@ run_sensitivity_analysis <- function(
     logfc_col = "logFC",
     pval_threshold = 0.05,
     logFC_threshold = log2(1.5),
-    score_thresh=NULL,
-    score_quantile=0.9,
-    action="add"
+    score_thresh = NULL,
+    score_quantile = 0.9,
+    stability_metric = "stability_score",
+    action = "add",
+    bootstrap_n = 0
 ) {
-
-  message("Running sensitivity analysis for differential abundance...")
-
-  # Extract all terms in the base model
-  base_terms <- all.vars(base_formula)
-
-  # Generate all models by removing each covariate one at a time
-  model_list <- list()
-  model_list[["Full Model"]] <- base_formula
-
-  if (!is.null(covariates_to_remove)) {
-    for (covar in covariates_to_remove) {
-      reduced_terms <- setdiff(base_terms, covar)
-      if (length(reduced_terms) > 1) {
-        reduced_formula <- as.formula(paste("~", paste(reduced_terms, collapse = " + ")))
-        model_list[[paste("Without", covar)]] <- reduced_formula
-      }
-    }
+  if (bootstrap_n > 0) {
+    return(.bootstrap_analysis(
+      expomicset = expomicset,
+      base_formula = base_formula,
+      abundance_col = abundance_col,
+      methods = methods,
+      scaling_methods = scaling_methods,
+      min_counts_range = min_counts_range,
+      min_proportion_range = min_proportion_range,
+      contrasts = contrasts,
+      covariates_to_remove = covariates_to_remove,
+      pval_col = pval_col,
+      logfc_col = logfc_col,
+      pval_threshold = pval_threshold,
+      logFC_threshold = logFC_threshold,
+      score_thresh = score_thresh,
+      score_quantile = score_quantile,
+      bootstrap_n = bootstrap_n,
+      action = action
+    ))
   }
 
-  # Initialize results dataframe
-  sensitivity_df <- data.frame()
+  model_list <- .build_model_list(base_formula,
+                                  covariates_to_remove)
+  sensitivity_df <- .run_sensitivity_grid(
+    expomicset,
+    model_list,
+    methods,
+    scaling_methods,
+    min_counts_range,
+    min_proportion_range,
+    abundance_col,
+    contrasts
+  )
 
-  for (model_name in names(model_list)) {
-    formula <- model_list[[model_name]]
+  feature_stability_df <- .calculate_feature_stability(
+    sensitivity_df,
+    pval_col,
+    logfc_col,
+    pval_threshold
+  )
 
-    message("Testing model: ", model_name, " | Formula: ", formula)
-
-    for (method in methods) {
-      for (scaling in scaling_methods) {
-        for (min_counts in min_counts_range) {
-          for (min_prop in min_proportion_range) {
-
-            message("Testing method: ", method,
-                    " | Scaling: ", scaling,
-                    " | Min Counts: ", min_counts,
-                    " | Min Proportion: ", min_prop)
-
-            # Iterate over each experiment in expomicset
-            for (exp_name in names(MultiAssayExperiment::experiments(expomicset))) {
-              message("Processing experiment: ", exp_name)
-
-              exp <- .update_assay_colData(expomicset, exp_name)
-
-              # Skip if too few features
-              features_to_test <- exp |>
-                tidybulk::identify_abundant(minimum_counts = min_counts,
-                                  minimum_proportion = min_prop) |>
-                S4Vectors::elementMetadata() |>
-                as.data.frame() |>
-                dplyr::filter(.abundant == TRUE) |>
-                nrow()
-
-              if (features_to_test < 2) {
-                warning("Skipping assay ", exp_name, " due to insufficient features.")
-                next
-              }
-
-              # If DESeq2 is used, ensure integer values
-              if (method == "DESeq2" && !all(assay(exp) == floor(assay(exp)))) {
-                message("Detected non-integer values for DESeq2 in ", exp_name, ". Rounding to nearest integer...")
-                SummarizedExperiment::assay(exp, abundance_col) <- round(SummarizedExperiment::assay(exp, abundance_col), 0)
-              }
-
-              # Call helper function
-              res <- .run_se_differential_abundance(
-                se = exp,
-                formula = formula,
-                abundance_col = abundance_col,
-                method = method,
-                scaling_method = scaling,
-                min_counts = min_counts,
-                min_proportion = min_prop,
-                contrasts = contrasts
-              )
-
-              # Append results
-              if (!is.null(res)) {
-                res <- res |>
-                  dplyr::mutate(model = model_name,
-                                exp_name = exp_name)
-                sensitivity_df <- sensitivity_df |>
-                  dplyr::bind_rows(res)
-              }
-            }
-          }
-        }
-      }
-    }
+  if (!stability_metric %in% colnames(feature_stability_df)) {
+    stop(paste0("Invalid stability_metric: '", stability_metric, "'. Must be one of: ", paste(names(feature_stability_df), collapse = ", ")))
   }
 
-
-  # Determine stable features
-  feature_stability_df <- sensitivity_df |>
-    .calculate_feature_stability(pval_col = pval_col,
-                                 logfc_col = logfc_col,
-                                 pval_threshold = pval_threshold)
-
-
-  if(is.null(score_thresh)){
-    score_thresh <- quantile(
-      feature_stability_df$stability_score,
-      score_quantile)
-  }else{
-    score_thresh <- score_thresh
+  if (is.null(score_thresh)) {
+    score_thresh <- quantile(feature_stability_df[[stability_metric]], score_quantile)
   }
 
-  sum <- feature_stability_df |>
-    dplyr::group_by(exp_name) |>
-    dplyr::reframe(
-      n_above=sum(stability_score>score_thresh),
-      n=n())
+  .summarize_stable_features(feature_stability_df, score_thresh, stability_metric)
 
-  message("Number of features above threshold of ", round(score_thresh,digits = 2), ":")
-  message("-----------------------------------------")
-  for(exp_name in unique(feature_stability_df$exp_name)){
-    n_above  <- sum |>
-      dplyr::filter(exp_name==!!exp_name) |>
-      dplyr::pull(n_above);
-    n <- sum |>
-      dplyr::filter(exp_name==!!exp_name) |>
-      dplyr::pull(n);
-    message(exp_name, ": ", n_above,"/", n)
-  }
-
-  message("Sensitivity analysis completed.")
-
-  if(action =="add"){
-    # Store results in metadata
+  if (action == "add") {
     MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis <- list(
       sensitivity_df = sensitivity_df,
       feature_stability = feature_stability_df,
@@ -209,29 +130,31 @@ run_sensitivity_analysis <- function(
       run_sensitivity_analysis = list(
         timestamp = Sys.time(),
         params = list(
-          n_models = length(model_list),
-          n_methods = length(methods),
-          n_scalings = length(scaling_methods),
+          formula = format(base_formula),
+          methods = methods,
+          scaling_methods = scaling_methods,
+          abundance_col = abundance_col,
           min_counts_range = min_counts_range,
           min_proportion_range = min_proportion_range,
-          covariates_removed = covariates_to_remove,
+          contrasts = contrasts,
+          covariates_to_remove = covariates_to_remove,
           pval_threshold = pval_threshold,
           logFC_threshold = logFC_threshold,
-          score_thresh = score_thresh,
           score_quantile = score_quantile,
-          abundance_col = abundance_col
+          stability_metric = stability_metric,
+          bootstrap_n = bootstrap_n
         ),
-        notes = paste0(
-          "Tested ", length(model_list), " models × ",
-          length(methods), " methods × ",
-          length(scaling_methods), " scalings × ",
-          length(min_counts_range) * length(min_proportion_range), " filtering combinations. ",
-          "Stability threshold used: ",
-          if (!is.null(score_thresh)) {
-            paste0(round(score_thresh, 3), " (fixed)")
+        notes = paste(
+          "Ran sensitivity analysis across",
+          length(methods), "methods and",
+          length(scaling_methods), "scaling strategies, testing",
+          length(min_counts_range), "minimum count thresholds and",
+          length(min_proportion_range), "sample proportion thresholds.",
+          if (!is.null(covariates_to_remove)) {
+            paste("Covariates removed in model variations:", paste(covariates_to_remove, collapse = ", "))
           } else {
-            paste0("quantile-based (", score_quantile, ")")
-          }, "."
+            "No covariates were removed from the base model."
+          }
         )
       )
     )
@@ -241,17 +164,257 @@ run_sensitivity_analysis <- function(
       step_record
     )
 
-
-
     return(expomicset)
-  }else if (action=="get"){
+  }
+  else if (action == "get") {
     return(list(
       sensitivity_df = sensitivity_df,
       feature_stability = feature_stability_df,
       score_thresh = score_thresh
     ))
-  }else{
-    stop("Invalid action. Use 'add' or 'get'.")
+  } else {
+    stop("invalid action. use 'add' or 'get'.")
   }
+}
 
+# build list of model formulas by removing covariates from base model
+.build_model_list <- function(base_formula,
+                              covariates_to_remove) {
+  base_terms <- all.vars(base_formula)
+  model_list <- list("full model" = base_formula)
+  if (!is.null(covariates_to_remove)) {
+    for (covar in covariates_to_remove) {
+      reduced_terms <- setdiff(base_terms, covar)
+      if (length(reduced_terms) > 1) {
+        reduced_formula <- as.formula(paste("~", paste(reduced_terms, collapse = " + ")))
+        model_list[[paste("without", covar)]] <- reduced_formula
+      }
+    }
+  }
+  return(model_list)
+}
+
+# get features passing abundance thresholds
+.get_abundant_features <- function(se, min_counts, min_prop) {
+  tidybulk::identify_abundant(se,
+                              minimum_counts = min_counts,
+                              minimum_proportion = min_prop)
+}
+
+# run differential abundance pipeline for one configuration
+.run_da_pipeline <- function(
+    se,
+    formula,
+    method,
+    scaling,
+    min_counts,
+    min_prop,
+    abundance_col,
+    contrasts) {
+  .run_se_differential_abundance(
+    se = se,
+    formula = formula,
+    abundance_col = abundance_col,
+    method = method,
+    scaling_method = scaling,
+    min_counts = min_counts,
+    min_proportion = min_prop,
+    contrasts = contrasts
+  )
+}
+
+# run sensitivity grid across all configurations using pmap
+.run_sensitivity_grid <- function(
+    expomicset,
+    model_list,
+    methods,
+    scalings,
+    min_counts_range,
+    min_prop_range,
+    abundance_col,
+    contrasts
+) {
+  grid <- expand.grid(
+    model_name = names(model_list),
+    method = methods,
+    scaling = scalings,
+    min_counts = min_counts_range,
+    min_prop = min_prop_range,
+    exp_name = names(MultiAssayExperiment::experiments(expomicset)),
+    stringsAsFactors = FALSE
+  )
+
+  results <- purrr::pmap_dfr(grid, function(
+    model_name,
+    method,
+    scaling,
+    min_counts,
+    min_prop,
+    exp_name) {
+    formula <- model_list[[model_name]]
+    exp <- .update_assay_colData(expomicset, exp_name)
+    abundant <- .get_abundant_features(exp, min_counts, min_prop)
+    n_features <- sum(S4Vectors::elementMetadata(abundant)[[".abundant"]], na.rm = TRUE)
+    if (n_features < 2) return(NULL)
+    if (method == "DESeq2") {
+      SummarizedExperiment::assay(exp, abundance_col) <- round(SummarizedExperiment::assay(exp, abundance_col), 0)
+    }
+    res <- .run_da_pipeline(
+      exp,
+      formula,
+      method,
+      scaling,
+      min_counts,
+      min_prop,
+      abundance_col,
+      contrasts)
+    if (is.null(res)) return(NULL)
+    res$model <- model_name
+    res$exp_name <- exp_name
+    res
+  })
+
+  return(results)
+}
+
+# summarize and report stable features above threshold
+.summarize_stable_features <- function(
+    feature_stability_df,
+    score_thresh,
+    stability_metric) {
+  sum <- feature_stability_df |>
+    dplyr::group_by(exp_name) |>
+    dplyr::reframe(
+      n_above = sum(!!rlang::sym(stability_metric) > score_thresh),
+      n = dplyr::n()
+    )
+
+  message("Number Of Features Above Threshold Of ", round(score_thresh, 2), ":")
+  message("----------------------------------------")
+  for (exp_name in unique(feature_stability_df$exp_name)) {
+    n_above <- sum |>
+      dplyr::filter(exp_name == !!exp_name) |>
+      dplyr::pull(n_above)
+    n <- sum |>
+      dplyr::filter(exp_name == !!exp_name) |>
+      dplyr::pull(n)
+    message(exp_name, ": ", n_above, "/", n)
+  }
+}
+
+# run sensitivity analysis with bootstrapping
+.bootstrap_analysis <- function(
+    expomicset,
+    base_formula,
+    abundance_col,
+    methods,
+    scaling_methods,
+    min_counts_range,
+    min_proportion_range,
+    contrasts,
+    covariates_to_remove,
+    pval_col,
+    logfc_col,
+    pval_threshold,
+    logFC_threshold,
+    score_thresh,
+    score_quantile,
+    bootstrap_n,
+    action
+) {
+  message("Running Bootstrapped Sensitivity Analysis With ", bootstrap_n, " iterations...")
+
+  boot_results <- purrr::map_dfr(1:bootstrap_n, function(b) {
+    mae_b <- .resample_MAE(expomicset)
+    res_b <- run_sensitivity_analysis(
+      expomicset = mae_b,
+      base_formula = base_formula,
+      abundance_col = abundance_col,
+      methods = methods,
+      scaling_methods = scaling_methods,
+      min_counts_range = min_counts_range,
+      min_proportion_range = min_proportion_range,
+      contrasts = contrasts,
+      covariates_to_remove = covariates_to_remove,
+      pval_col = pval_col,
+      logfc_col = logfc_col,
+      pval_threshold = pval_threshold,
+      logFC_threshold = logFC_threshold,
+      score_thresh = score_thresh,
+      score_quantile = score_quantile,
+      action = "get"
+    )
+    res_b$feature_stability |>
+      dplyr::mutate(bootstrap_id = b)
+  })
+
+  # boot_summary <- boot_results |>
+  #   dplyr::group_by(feature, exp_name) |>
+  #   dplyr::summarise(
+  #     mean_stability = mean(stability_score, na.rm = TRUE),
+  #     freq_selected = mean(stability_score > score_thresh, na.rm = TRUE),
+  #     sd_stability = sd(stability_score, na.rm = TRUE),
+  #     .groups = "drop"
+  #   )
+
+  if (action == "add") {
+    MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis <- list(
+      feature_stability = boot_results,
+      score_thresh = score_thresh
+    )
+
+    # Add step record
+    step_record <- list(
+      run_sensitivity_analysis_bootstrap = list(
+        timestamp = Sys.time(),
+        params = list(
+          formula = format(base_formula),
+          methods = methods,
+          scaling_methods = scaling_methods,
+          abundance_col = abundance_col,
+          min_counts_range = min_counts_range,
+          min_proportion_range = min_proportion_range,
+          contrasts = contrasts,
+          covariates_to_remove = covariates_to_remove,
+          pval_threshold = pval_threshold,
+          logFC_threshold = logFC_threshold,
+          score_quantile = score_quantile,
+          stability_metric = "stability_score",
+          bootstrap_n = bootstrap_n
+        ),
+        notes = paste(
+          "Performed bootstrapped sensitivity analysis (", bootstrap_n, " iterations) using",
+          length(methods), "methods and",
+          length(scaling_methods), "scaling strategies, with feature-level stability scores recorded per run.",
+          if (!is.null(covariates_to_remove)) {
+            paste("Covariates removed in model variations:", paste(covariates_to_remove, collapse = ", "))
+          } else {
+            "No covariates were removed from the base model."
+          }
+        )
+      )
+    )
+
+    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+      MultiAssayExperiment::metadata(expomicset)$summary$steps,
+      step_record
+    )
+
+    return(expomicset)
+  }
+  else if (action == "get") {
+    return(list(
+      feature_stability = boot_results,
+      score_thresh = score_thresh
+    ))
+  } else {
+    stop("invalid action. use 'add' or 'get'.")
+  }
+}
+
+
+# resample columns (samples) of multiassayexperiment object
+.resample_MAE <- function(mae) {
+  sample_ids <- sample(colnames(mae), replace = TRUE)
+  return(mae[, sample_ids])
 }

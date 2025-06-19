@@ -3,23 +3,101 @@ title: "FAQ"
 output: html_document
 ---
 
-What is a MultiAssayExperiment and why use it?
+**What is the structure of the expomicset object and why use MultiAssayExperiment?**
 
-The `MultiAssayExperiment` is a container that lets us store multiple types of omics data linked by sample metadata.
+`tidyexposomics` wraps exposures and omics layers into a MultiAssayExperiment, allowing for synchronized sample metadata, flexible omics input, and pipeline tracking.
 
----
+- Exposure metadata lives in `colData()`.
 
-What's the difference between `run_*` and `associate_*` functions?
+- Omics assays live in `experiments()`.
 
-- `run_*`: Executes a multi-step or complex analysis pipeline
-- `associate_*`: Fits a model or correlation between variables
+- Row-level feature annotations live in `rowData()`.
 
----
+- Results data live in `metadata()`.
 
-How is the stability score calculated?
+<hr>
 
-Stability scores reflect the reproducibility of differential abundance results across different preprocessing pipelines. A score of 1 means it's always detected, and 0 means never.
 
-What is an eigengene?
+**How are DEGs defined and filtered before correlation?**
 
-An eigengene is a representative gene expression profile for a module of co-expressed genes. It summarizes the module's expression pattern and is used in network analysis.
+You control:
+
+- `logfc_thresh` (log fold change)
+
+- `pval_thresh` (adjusted p-value)
+
+- `score_col` (stability score)
+
+- `score_thresh` (stability filter if using sensitivity)
+
+If you skip sensitivity, all DEGs can be used. But using stability scores makes your associations more robust by selecting features that are consistently significant across different pre-processing conditions.
+
+<hr>
+
+**How is run_sensitivity_analysis() different from just re-running DA?**
+
+`sensitivity_analysis()` performs systematic re-analysis under different pre-processing assumptions, capturing:
+
+- Different scaling methods
+
+- Count/proportion thresholds
+
+- Covariate inclusion/exclusion
+
+- Different sampling using bootstrapping
+
+It calculates a stability score per feature to measure how robust significance is across conditions — not just significance in one model or set of preprocessing conditions.
+
+<hr>
+
+**What do exposome scores represent, and when should I use them?**
+
+Exposome scores summarize multi-exposure burden into one variable using strategies like:
+
+- `median`: Calculates the median of the exposure variables.
+
+- `mean`: Calculates the mean of the exposure variables.
+
+- `sum`: Calculates the sum of the exposure variables.
+
+- `pca`: Calculates the first principal component of the exposure variables.
+
+- `irt`: Uses Item Response Theory to calculate the exposome score.
+
+- `quantile`: Calculates the quantile of the exposure variables.
+
+Use when:
+
+- You want dimensionality reduction
+
+- Or you believe co-exposure effects are more meaningful than single exposures
+
+You can then associate them with outcomes using `run_association()`.
+
+<hr>
+
+**How do I interpret enrichment results from `deg_exp_cor`?**
+
+Each enriched term represents a biological process or pathway that is:
+
+- Affected at the omics level (differential feature)
+
+- Correlated with an environmental exposure
+
+This supports mechanistic interpretation of how exposures may impact disease-relevant pathways.
+
+<hr>
+
+**I see significant features with low stability — what does that mean?**
+
+If features pass significance filters but have low stability scores, they:
+
+- Might be highly sensitive to pre-processing choices
+
+- Are less reliable in real-world datasets
+
+Use plot_sensitivity_summary() to visualize the trade-off between stability and significance.
+
+<hr>
+
+
