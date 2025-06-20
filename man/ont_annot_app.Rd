@@ -15,7 +15,7 @@ using ontology terms such as HPO, ENVO, and ChEBI. The app is bundled with the
 \code{tidyexposomics} package and allows interactive selection or search of ontology terms.
 }
 \examples{
-if (interactive()) {
-  ont_annot_app()
+\dontrun{
+ont_annot_app()
 }
 }

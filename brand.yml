@@ -1,5 +1,11 @@
 logo: ./vignettes/logo.png
 
+meta:
+  name: tidyexposomics
+  link:
+    home: https://BioNomad.github.io/tidyexposomics
+    github: https://github.com/BioNomad/tidyexposomics
+
 defaults:
   bootstrap:
     defaults:

@@ -2,20 +2,17 @@ url: https://BioNomad.github.io/tidyexposomics
 
 template:
   bootstrap: 5
-  params:
-    github:
-      user: BioNomad
-      repo: tidyexposomics
   bslib:
       primary: "#71255A"
       brand: brand.yml
   math-rendering: mathjax
   light-switch: true
   navbar:
-    bg: primary   # uses the bslib-defined "primary" color
-    type: dark    # ensures navbar text is light (white)
+    bg: primary
+    type: dark
     structure:
-      left:  [get-started,faq,reference]
+      left:  [get-started,articles,reference]
+      right: [search, github, lightswitch]
     components:
       home: ~
       get-started:
@@ -24,11 +21,6 @@ template:
       faq:
         text: "FAQ"
         href: faq.html
-    right:
-      - icon: fa-home
-        href: ../
-      - icon: fa-github
-        href: https://github.com/BioNomad/tidyexposomics
 
 reference:
 - title: Correlation/Association

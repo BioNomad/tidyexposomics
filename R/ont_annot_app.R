@@ -8,9 +8,10 @@
 #' @export
 #'
 #' @examples
-#' if (interactive()) {
-#'   ont_annot_app()
+#' \dontrun{
+#' ont_annot_app()
 #' }
+#' @export
 ont_annot_app <- function() {
   app_dir <- system.file("shiny/ont_annot", package = "tidyexposomics")
   shiny::runApp(app_dir, display.mode = "normal")
