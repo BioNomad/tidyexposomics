@@ -7,8 +7,8 @@ library(httr)
 library(jsonlite)
 
 # ---- Load your lightweight annotation ontology ----
-# load("../../../data/ont.RData")
-data("ont")
+load("../../../data/ont.RData")
+#data("ont")
 ontology_df <- ontology_df |>
   dplyr::select(id, name) |>
   dplyr::distinct()
@@ -25,13 +25,13 @@ preprocess_ont <- function(ont) {
     )
 }
 
-# hpo_raw   <- readRDS("../../../data/hpo.rds")
-# ecto_raw  <- readRDS("../../../data/ecto.rds")
-# chebi_raw <- readRDS("../../../data/chebi.rds")
+hpo_raw   <- readRDS("../../../data/hpo.rds")
+ecto_raw  <- readRDS("../../../data/ecto.rds")
+chebi_raw <- readRDS("../../../data/chebi.rds")
 
-hpo_raw   <- data("hpo")
-ecto_raw  <- data("ecto")
-chebi_raw <- data("chebi")
+# hpo_raw   <- data("hpo")
+# ecto_raw  <- data("ecto")
+# chebi_raw <- data("chebi")
 
 ont_list <- list(
   hpo   = preprocess_ont(hpo_raw),
@@ -72,9 +72,9 @@ run_categorize_ontology <- function(
 ) {
   ontology_df <- switch(
     ontology,
-    "hpo"   = data("hpo"),
-    "ecto"  = data("ecto"),
-    "chebi" = data("chebi"),
+    "hpo"   = readRDS("../../../data/hpo.rds"),
+    "ecto"  = readRDS("../../../data/ecto.rds"),
+    "chebi" = readRDS("../../../data/chebi.rds"),
     stop("Invalid ontology. Choose from 'hpo', 'ecto', or 'chebi'.")
   )
   fix_rel_cols <- function(x) if (!is.list(x)) strsplit(x, ";\\s*") else x
