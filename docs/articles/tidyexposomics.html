@@ -156,13 +156,18 @@ variable was measured, such as “home”, “work”, or “school”.</p></li>
 <li><p><strong>Variable Ontology</strong>: The ontology term associated
 with the variable.</p></li>
 </ul>
-<p>Now the ontology is very important and we recommend: - <a href="https://www.ebi.ac.uk/ols4/ontologies/ecto" class="external-link">Environment Exposure
-Ontology</a> to annotate your exposure variables. - <a href="https://www.ebi.ac.uk/ols4/ontologies/hp" class="external-link">Human Phenotype
-Ontology</a> to annotate your outcome variables and phenotypic data. -
-<a href="https://www.ebi.ac.uk/ols4/ontologies/chebi" class="external-link">Chemical Entities
-of Biological Interest</a> to annotate your chemical exposure
-variables.</p>
-<p>Now why should you bother doing this?</p>
+<p>Now the ontology is very important and we recommend:</p>
+<ul>
+<li><p><a href="https://www.ebi.ac.uk/ols4/ontologies/ecto" class="external-link">Environment
+Exposure Ontology</a> to annotate your exposure variables.</p></li>
+<li><p><a href="https://www.ebi.ac.uk/ols4/ontologies/hp" class="external-link">Human
+Phenotype Ontology</a> to annotate your outcome variables and phenotypic
+data.</p></li>
+<li><p><a href="https://www.ebi.ac.uk/ols4/ontologies/chebi" class="external-link">Chemical
+Entities of Biological Interest</a> to annotate your chemical exposure
+variables.</p></li>
+</ul>
+<p><strong>Now why should you bother doing this?</strong></p>
 <ul>
 <li><p><strong>Interpretability</strong>: Ontology labels clarify
 ambiguous or inconsistently named variables.</p></li>
@@ -181,7 +186,7 @@ use and how to annotate your variable:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Launch the shiny app to annotate exposure variables</span></span>
 <span><span class="fu"><a href="../reference/ont_annot_app.html">ont_annot_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Now:</p>
+<p><strong>Now to use the app:</strong></p>
 <ul>
 <li><p>Click “Browse” to select your exposure metadata file.</p></li>
 <li><p>Then you can click the variable you’d like to link to an
@@ -494,21 +499,21 @@ identify clusters. Here we use the <code>dynamic</code> approach, which
 uses a dynamic tree cut method to identify clusters. However, you may
 choose between these other options as well:</p>
 <ul>
-<li><p><code>gap</code>: Gap statistic method (default); estimates
-optimal <code>k</code> by comparing within-cluster dispersion to that of
-reference data.</p></li>
-<li><p><code>diana</code>: Divisive hierarchical clustering (DIANA);
-chooses <code>k</code> based on the largest drop in dendrogram
-height.</p></li>
-<li><p><code>elbow</code>: Elbow method; detects the point of maximum
-curvature in within-cluster sum of squares (WSS) to determine
-<code>k</code>.</p></li>
-<li><p><code>dynamic</code>: Dynamic tree cut; adaptively detects
-clusters from a dendrogram structure without needing to predefine
-<code>k</code>.</p></li>
-<li><p><code>density</code>: Density-based clustering (via
-<code>densityClust</code>); identifies clusters based on local density
-peaks in distance space.</p></li>
+<li><p><code>gap</code>: <strong>Gap statistic method
+(default)</strong>; estimates optimal <code>k</code> by comparing
+within-cluster dispersion to that of reference data.</p></li>
+<li><p><code>diana</code>: <strong>Divisive hierarchical clustering
+(DIANA)</strong>; chooses <code>k</code> based on the largest drop in
+dendrogram height.</p></li>
+<li><p><code>elbow</code>: <strong>Elbow method</strong>; detects the
+point of maximum curvature in within-cluster sum of squares (WSS) to
+determine <code>k</code>.</p></li>
+<li><p><code>dynamic</code>: <strong>Dynamic tree cut</strong>;
+adaptively detects clusters from a dendrogram structure without needing
+to predefine <code>k</code>.</p></li>
+<li><p><code>density</code>: <strong>Density-based clustering</strong>
+(via <code>densityClust</code>); identifies clusters based on local
+density peaks in distance space.</p></li>
 </ul>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Sample clustering</span></span>
@@ -905,19 +910,14 @@ uses canonical correlation analysis to integrate multiple omics layers.
 We use the nipalsMCIA algorithm to compute the co-inertia scores from
 the <a href="https://www.bioconductor.org/packages/release/bioc/html/nipalsMCIA.html" class="external-link">nipalsMCIA
 package</a>.</p></li>
-<li>
-<p><code>MCCA</code>: Multi-Omics Canonical Correlation Analysis, a
+<li><p><code>MCCA</code>: Multi-Omics Canonical Correlation Analysis, a
 method that uses canonical correlation analysis to integrate multiple
 omics layers. We use the <a href="https://github.com/bnaras/PMA" class="external-link">PMA
-package</a> to compute the canonical correlation score.</p>
-<ul>
-<li>
-<code>MOFA</code>: Multi-Omics Factor Analysis, a method that uses
-factor analysis to integrate multiple omics layers. MOFA is implemented
-using the <a href="https://www.bioconductor.org/packages/release/bioc/html/MOFA2.html" class="external-link">MOFA2
-package</a>.</li>
-</ul>
-</li>
+package</a> to compute the canonical correlation score.</p></li>
+<li><p><code>MOFA</code>: Multi-Omics Factor Analysis, a method that
+uses factor analysis to integrate multiple omics layers. MOFA is
+implemented using the <a href="https://www.bioconductor.org/packages/release/bioc/html/MOFA2.html" class="external-link">MOFA2
+package</a>.</p></li>
 </ul>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform Multi-Omics Integration</span></span>
