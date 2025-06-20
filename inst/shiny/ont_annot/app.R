@@ -1,4 +1,5 @@
 library(shiny)
+library(tidyexposomics)
 library(DT)
 library(dplyr)
 library(ontologyIndex)
