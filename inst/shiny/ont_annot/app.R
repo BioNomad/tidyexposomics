@@ -7,7 +7,12 @@ library(httr)
 library(jsonlite)
 
 # ---- Load your lightweight annotation ontology ----
-load("../../../data/ont.RData")
+#load("../../../data/ont.RData")
+
+data("ont", package = "tidyexposomics")
+data("hpo", package = "tidyexposomics")
+data("ecto", package = "tidyexposomics")
+data("chebi", package = "tidyexposomics")
 #data("ont")
 ontology_df <- ontology_df |>
   dplyr::select(id, name) |>
@@ -25,13 +30,21 @@ preprocess_ont <- function(ont) {
     )
 }
 
-hpo_raw   <- readRDS("../../../data/hpo.rds")
-ecto_raw  <- readRDS("../../../data/ecto.rds")
-chebi_raw <- readRDS("../../../data/chebi.rds")
+# hpo_raw   <- readRDS("../../../data/hpo.rds")
+# ecto_raw  <- readRDS("../../../data/ecto.rds")
+# chebi_raw <- readRDS("../../../data/chebi.rds")
 
 # hpo_raw   <- data("hpo")
 # ecto_raw  <- data("ecto")
 # chebi_raw <- data("chebi")
+
+# hpo_raw   <- get("hpo", envir = asNamespace("tidyexposomics"))
+# ecto_raw  <- get("ecto", envir = asNamespace("tidyexposomics"))
+# chebi_raw <- get("chebi", envir = asNamespace("tidyexposomics"))
+
+hpo_raw   <- hpo
+ecto_raw  <- ecto
+chebi_raw <- chebi
 
 ont_list <- list(
   hpo   = preprocess_ont(hpo_raw),
@@ -72,9 +85,9 @@ run_categorize_ontology <- function(
 ) {
   ontology_df <- switch(
     ontology,
-    "hpo"   = readRDS("../../../data/hpo.rds"),
-    "ecto"  = readRDS("../../../data/ecto.rds"),
-    "chebi" = readRDS("../../../data/chebi.rds"),
+    "hpo"   = hpo,
+    "ecto"  = ecto,
+    "chebi" = chebi,
     stop("Invalid ontology. Choose from 'hpo', 'ecto', or 'chebi'.")
   )
   fix_rel_cols <- function(x) if (!is.list(x)) strsplit(x, ";\\s*") else x

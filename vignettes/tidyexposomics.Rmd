@@ -85,11 +85,14 @@ So before starting an exposomics data analysis we recommend having a codebook ab
 - **Variable Ontology**: The ontology term associated with the variable.
 
 Now the ontology is very important and we recommend:
+
 - [Environment Exposure Ontology](https://www.ebi.ac.uk/ols4/ontologies/ecto) to annotate your exposure variables. 
+
 - [Human Phenotype Ontology](https://www.ebi.ac.uk/ols4/ontologies/hp) to annotate your outcome variables and phenotypic data.
+
 - [Chemical Entities of Biological Interest](https://www.ebi.ac.uk/ols4/ontologies/chebi) to annotate your chemical exposure variables.
 
-Now why should you bother doing this? 
+**Now why should you bother doing this?**
 
 - **Interpretability**: Ontology labels clarify ambiguous or inconsistently named variables.
 
@@ -106,7 +109,7 @@ To help you annotate your exposure variables, we provide a lightweight shiny app
 ont_annot_app()
 ```
 
-Now:
+**Now to use the app:**
 
 - Click "Browse" to select your exposure metadata file. 
 
@@ -360,15 +363,15 @@ expom |>
 
 The `run_cluster_samples` function is used to cluster samples based on the exposure data. The `clustering_approach` argument is used to set the clustering approach to automatically identify clusters. Here we use the `dynamic` approach, which uses a dynamic tree cut method to identify clusters. However, you may choose between these other options as well:
 
-- `gap`: Gap statistic method (default); estimates optimal `k` by comparing within-cluster dispersion to that of reference data.
+- `gap`: **Gap statistic method (default)**; estimates optimal `k` by comparing within-cluster dispersion to that of reference data.
 
-- `diana`: Divisive hierarchical clustering (DIANA); chooses `k` based on the largest drop in dendrogram height.
+- `diana`: **Divisive hierarchical clustering (DIANA)**; chooses `k` based on the largest drop in dendrogram height.
 
-- `elbow`: Elbow method; detects the point of maximum curvature in within-cluster sum of squares (WSS) to determine `k`.
+- `elbow`: **Elbow method**; detects the point of maximum curvature in within-cluster sum of squares (WSS) to determine `k`.
 
-- `dynamic`: Dynamic tree cut; adaptively detects clusters from a dendrogram structure without needing to predefine `k`.
+- `dynamic`: **Dynamic tree cut**; adaptively detects clusters from a dendrogram structure without needing to predefine `k`.
 
-- `density`: Density-based clustering (via `densityClust`); identifies clusters based on local density peaks in distance space.
+- `density`: **Density-based clustering** (via `densityClust`); identifies clusters based on local density peaks in distance space.
 
 ```{r,eval=FALSE}
 # Sample clustering
@@ -710,7 +713,7 @@ While differential abundance analysis per omic can deliver insights into how eac
 
 - `MCCA`: Multi-Omics Canonical Correlation Analysis, a method that uses canonical correlation analysis to integrate multiple omics layers. We use the [PMA package](https://github.com/bnaras/PMA) to compute the canonical correlation score.
 
-  - `MOFA`: Multi-Omics Factor Analysis, a method that uses factor analysis to integrate multiple omics layers. MOFA is implemented using the [MOFA2 package](https://www.bioconductor.org/packages/release/bioc/html/MOFA2.html).
+- `MOFA`: Multi-Omics Factor Analysis, a method that uses factor analysis to integrate multiple omics layers. MOFA is implemented using the [MOFA2 package](https://www.bioconductor.org/packages/release/bioc/html/MOFA2.html).
 
 
 ```{r,eval=FALSE}

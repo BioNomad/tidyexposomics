@@ -19,15 +19,6 @@ Imports:
     dplyr,
     dynamicTreeCut,
     factoextra,
-    forcats,
-    ggplot2,
-    ggpubr,
-    ggraph,
-    ggrepel,
-    ggridges,
-    ggsci,
-    grid,
-    gridExtra,
     Hmisc,
     igraph,
     janitor,
@@ -38,7 +29,6 @@ Imports:
     naniar,
     nipalsMCIA,
     org.Hs.eg.db,
-    patchwork,
     purrr,
     reshape2,
     S4Vectors,
@@ -52,5 +42,15 @@ Imports:
 Depends: 
     tidyverse
 Suggests: 
+    forcats,
+    ggplot2,
+    ggpubr,
+    ggraph,
+    ggrepel,
+    ggridges,
+    ggsci,
+    grid,
+    gridExtra,
+    patchwork,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

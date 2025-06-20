@@ -447,16 +447,16 @@ the metadata of the MultiAssayExperiment object.</p>
 <span><span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="../reference/run_summarize_exposures.html">run_summarize_exposures</a></span><span class="op">(</span>action <span class="op">=</span> <span class="st">"get"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 17</span></span>m</span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 17</span></span></span>
 <span><span class="co">##   variable    n_values  n_na   min   max range   sum median  mean    se ci_lower</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> h_PM             269     0  5.24 82.1  76.9  <span style="text-decoration: underline;">4</span>176.  12.3  15.5   0.67    14.2 </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> h_clf_preg       269     0  0.03  6.77  6.73  912.   3.32  3.39  0.14     3.12</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> h_no2_rati…      269     0  2.11  4.14  2.04  835.   3.12  3.1   0.03     3.05</span>05</span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> h_pm10_rat…      269     0  3.34  6.91  3.57 <span style="text-decoration: underline;">1</span>351.   4.94  5.02  0.05     4.93</span>93</span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> h_pm25_rat…      269     0  3.06  4.57  1.5  <span style="text-decoration: underline;">1</span>039.   3.83  3.86  0.02     3.83</span>83</span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> h_walkabil…      269     0  0.39  0.74  0.35  143.   0.52  0.53  0        0.53</span>53</span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 6 more variables: ci_upper &lt;dbl&gt;, variance &lt;dbl&gt;, sd &lt;dbl&gt;, coef_var &lt;dbl&gt;,</span></span>9m</span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> h_no2_rati…      269     0  2.11  4.14  2.04  835.   3.12  3.1   0.03     3.05</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> h_pm10_rat…      269     0  3.34  6.91  3.57 <span style="text-decoration: underline;">1</span>351.   4.94  5.02  0.05     4.93</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> h_pm25_rat…      269     0  3.06  4.57  1.5  <span style="text-decoration: underline;">1</span>039.   3.83  3.86  0.02     3.83</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> h_walkabil…      269     0  0.39  0.74  0.35  143.   0.52  0.53  0        0.53</span></span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 6 more variables: ci_upper &lt;dbl&gt;, variance &lt;dbl&gt;, sd &lt;dbl&gt;, coef_var &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   category &lt;fct&gt;, sub_category &lt;fct&gt;</span></span></span></code></pre>
 </div>
 <div class="section level3">
@@ -1366,7 +1366,7 @@ columns.</p>
 <span><span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="../reference/pivot_sample.html">pivot_sample</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 269</span></span>m</span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 269</span></span></span>
 <span><span class="co">##   .sample  h_PM hs_greenyn300_h h_greenyn300_preg hs_participation_3cat  </span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>                  </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> s548    13.9  1               1                 None                   </span></span>
@@ -1375,13 +1375,13 @@ columns.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">4</span> s175     8.85 1               1                 None                   </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">5</span> s241    14.7  1               1                 None                   </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">6</span> s600    11.0  1               1                 2 or more organisations</span></span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 264 more variables: hs_smk_parents &lt;fct&gt;, hs_asthma &lt;ord&gt;,</span></span>9m</span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 264 more variables: hs_smk_parents &lt;fct&gt;, hs_asthma &lt;ord&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   hs_child_age &lt;dbl&gt;, e3_sex &lt;fct&gt;, PC1 &lt;dbl&gt;, PC2 &lt;dbl&gt;, PC3 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC4 &lt;dbl&gt;, PC5 &lt;dbl&gt;, PC6 &lt;dbl&gt;, PC7 &lt;dbl&gt;, PC8 &lt;dbl&gt;, PC9 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC10 &lt;dbl&gt;, PC11 &lt;dbl&gt;, PC12 &lt;dbl&gt;, PC13 &lt;dbl&gt;, PC14 &lt;dbl&gt;, PC15 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC16 &lt;dbl&gt;, PC17 &lt;dbl&gt;, PC18 &lt;dbl&gt;, PC19 &lt;dbl&gt;, PC20 &lt;dbl&gt;, PC21 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC22 &lt;dbl&gt;, PC23 &lt;dbl&gt;, PC24 &lt;dbl&gt;, PC25 &lt;dbl&gt;, PC26 &lt;dbl&gt;, PC27 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   PC28 &lt;dbl&gt;, PC29 &lt;dbl&gt;, PC30 &lt;dbl&gt;, PC31 &lt;dbl&gt;, PC32 &lt;dbl&gt;, PC33 &lt;dbl&gt;, …</span></span>9m</span></code></pre>
+<span><span class="co">## <span style="color: #949494;">#   PC28 &lt;dbl&gt;, PC29 &lt;dbl&gt;, PC30 &lt;dbl&gt;, PC31 &lt;dbl&gt;, PC32 &lt;dbl&gt;, PC33 &lt;dbl&gt;, …</span></span></span></code></pre>
 <p>We could use this functionality to count the number of asthmatics per
 sex:</p>
 <div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
@@ -1389,7 +1389,7 @@ sex:</p>
 <span>  <span class="fu"><a href="../reference/pivot_sample.html">pivot_sample</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">hs_asthma</span>,<span class="va">e3_sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 3</span></span>m</span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   hs_asthma [2]</span></span></span>
 <span><span class="co">##   hs_asthma     e3_sex     n</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
@@ -1410,16 +1410,16 @@ way.</p>
 <span><span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="../reference/pivot_feature.html">pivot_feature</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 30</span></span>m</span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 30</span></span></span>
 <span><span class="co">##   .exp_name     .feature transcript_cluster_id probeset_id seqname strand  start</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> Gene Express… TC01000… TC01000001.hg.1       TC01000001… chr1    +       <span style="text-decoration: underline;">11</span>869</span>24m869</span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> Gene Express… TC01000… TC01000002.hg.1       TC01000002… chr1    +       <span style="text-decoration: underline;">29</span>554</span>24m554</span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> Gene Express… TC01000… TC01000003.hg.1       TC01000003… chr1    +       <span style="text-decoration: underline;">69</span>091</span>24m091</span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> Gene Express… TC01000… TC01000005.hg.1       TC01000005… chr1    +      <span style="text-decoration: underline;">317</span>811</span>24m811</span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> Gene Express… TC01000… TC01000007.hg.1       TC01000007… chr1    +      <span style="text-decoration: underline;">321</span>146</span>24m146</span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> Gene Express… TC01000… TC01000009.hg.1       TC01000009… chr1    +      <span style="text-decoration: underline;">367</span>640</span>24m640</span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 23 more variables: stop &lt;int&gt;, total_probes &lt;int&gt;, gene_assignment &lt;chr&gt;,</span></span>9m</span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> Gene Express… TC01000… TC01000001.hg.1       TC01000001… chr1    +       <span style="text-decoration: underline;">11</span>869</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> Gene Express… TC01000… TC01000002.hg.1       TC01000002… chr1    +       <span style="text-decoration: underline;">29</span>554</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> Gene Express… TC01000… TC01000003.hg.1       TC01000003… chr1    +       <span style="text-decoration: underline;">69</span>091</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> Gene Express… TC01000… TC01000005.hg.1       TC01000005… chr1    +      <span style="text-decoration: underline;">317</span>811</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> Gene Express… TC01000… TC01000007.hg.1       TC01000007… chr1    +      <span style="text-decoration: underline;">321</span>146</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> Gene Express… TC01000… TC01000009.hg.1       TC01000009… chr1    +      <span style="text-decoration: underline;">367</span>640</span></span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 23 more variables: stop &lt;int&gt;, total_probes &lt;int&gt;, gene_assignment &lt;chr&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   mrna_assignment &lt;chr&gt;, notes &lt;chr&gt;, phase &lt;chr&gt;, TC_size &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   TSS_Affy &lt;int&gt;, EntrezeGeneID_Affy &lt;chr&gt;, GeneSymbol_Affy &lt;chr&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   GeneSymbolDB &lt;chr&gt;, GeneSymbolDB2 &lt;chr&gt;, mrna_ID &lt;chr&gt;, mrna_DB &lt;chr&gt;,</span></span></span>
@@ -1434,7 +1434,7 @@ we can count the number of features per omic layer:</p>
 <span>    <span class="fu"><a href="../reference/pivot_feature.html">pivot_feature</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">.exp_name</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 3 × 2</span></span>m</span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">##   .exp_name           n</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> Gene Expression <span style="text-decoration: underline;">28</span>738</span></span>
@@ -1450,7 +1450,7 @@ we can count the number of features per omic layer:</p>
 <span>  <span class="fu"><a href="../reference/pivot_exp.html">pivot_exp</a></span><span class="op">(</span>omics_name <span class="op">=</span> <span class="st">"Proteomics"</span>,</span>
 <span>            features <span class="op">=</span> <span class="st">"TAF7"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 273</span></span>m</span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 273</span></span></span>
 <span><span class="co">##   exp_name   .feature .sample counts  h_PM hs_greenyn300_h h_greenyn300_preg</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>            </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> Proteomics TAF7     s555      4.85  7.48 1               1                </span></span>
@@ -1459,13 +1459,13 @@ we can count the number of features per omic layer:</p>
 <span><span class="co">## <span style="color: #BCBCBC;">4</span> Proteomics TAF7     s241      5.73 14.7  1               1                </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">5</span> Proteomics TAF7     s609      2.59 14.3  0               0                </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">6</span> Proteomics TAF7     s257      4.26 35.4  1               0                </span></span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 266 more variables: hs_participation_3cat &lt;fct&gt;, hs_smk_parents &lt;fct&gt;,</span></span>9m</span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 266 more variables: hs_participation_3cat &lt;fct&gt;, hs_smk_parents &lt;fct&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   hs_asthma &lt;ord&gt;, hs_child_age &lt;dbl&gt;, e3_sex &lt;fct&gt;, PC1 &lt;dbl&gt;, PC2 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC3 &lt;dbl&gt;, PC4 &lt;dbl&gt;, PC5 &lt;dbl&gt;, PC6 &lt;dbl&gt;, PC7 &lt;dbl&gt;, PC8 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC9 &lt;dbl&gt;, PC10 &lt;dbl&gt;, PC11 &lt;dbl&gt;, PC12 &lt;dbl&gt;, PC13 &lt;dbl&gt;, PC14 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC15 &lt;dbl&gt;, PC16 &lt;dbl&gt;, PC17 &lt;dbl&gt;, PC18 &lt;dbl&gt;, PC19 &lt;dbl&gt;, PC20 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   PC21 &lt;dbl&gt;, PC22 &lt;dbl&gt;, PC23 &lt;dbl&gt;, PC24 &lt;dbl&gt;, PC25 &lt;dbl&gt;, PC26 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   PC27 &lt;dbl&gt;, PC28 &lt;dbl&gt;, PC29 &lt;dbl&gt;, PC30 &lt;dbl&gt;, PC31 &lt;dbl&gt;, PC32 &lt;dbl&gt;, …</span></span>9m</span></code></pre>
+<span><span class="co">## <span style="color: #949494;">#   PC27 &lt;dbl&gt;, PC28 &lt;dbl&gt;, PC29 &lt;dbl&gt;, PC30 &lt;dbl&gt;, PC31 &lt;dbl&gt;, PC32 &lt;dbl&gt;, …</span></span></span></code></pre>
 <p>We can use this functionality to create custom plots or analyses
 based on the exposure and feature data. For example, we can plot the
 abundance of TAF7 by asthma status:</p>

@@ -6,20 +6,20 @@
 \usage{
 run_exposome_score(
   expomicset,
+  score_type,
   exposure_cols = NULL,
   scale = TRUE,
-  score_type = "median",
   score_column_name = NULL
 )
 }
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data in its \code{colData}.}
 
+\item{score_type}{Character string indicating the scoring method to use. One of \code{"mean"}, \code{"median"}, \code{"pca"}, \code{"irt"}, \code{"quantile"}, or \code{"var"}.}
+
 \item{exposure_cols}{Optional character vector specifying which exposure columns to use. If \code{NULL}, all numeric columns (excluding those starting with "PC") are used.}
 
 \item{scale}{Logical; if \code{TRUE}, standardizes (z-scores) the selected exposures before scoring. Default is \code{TRUE}.}
-
-\item{score_type}{Character string indicating the scoring method to use. One of \code{"mean"}, \code{"median"}, \code{"pca"}, \code{"irt"}, \code{"quantile"}, or \code{"var"}.}
 
 \item{score_column_name}{Optional string to rename the resulting exposome score column in the output \code{colData}. If \code{NULL}, a default name based on \code{score_type} is used.}
 }

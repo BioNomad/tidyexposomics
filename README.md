@@ -39,7 +39,7 @@ The following code is a great way to get started with the package. It includes l
 <div class="callout">
 <h3>More to tidyexposomics!</h3>
 <p>
-However, there is so much more to the `tidyexposomics` package! So check out the [Get Started](articles/tidyexposomics.html) page for a more detailed walkthrough of the package's functionality.
+However, there is so much more to the `tidyexposomics` package! So check out the [Get Started](docs/articles/tidyexposomics.html) page for a more detailed walkthrough of the package's functionality.
 </p>
 </div>
 

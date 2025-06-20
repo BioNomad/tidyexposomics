@@ -1,7 +1,11 @@
-url: ~
+url: https://BioNomad.github.io/tidyexposomics
 
 template:
   bootstrap: 5
+  params:
+    github:
+      user: BioNomad
+      repo: tidyexposomics
   bslib:
       primary: "#71255A"
       brand: brand.yml
@@ -47,6 +51,10 @@ reference:
 - title: Data Visualization
   contents:
   - starts_with("plot")
+
+- title: Ontology Annotation App
+  contents:
+  - starts_with("ont")
 
 
 
