@@ -5,6 +5,8 @@
 <br>
 <br>
 
+<hr>
+
 - **Website:** https://bionomad.github.io/tidyexposomics/index.html
 
 - **BioConductor Documentation:** 
