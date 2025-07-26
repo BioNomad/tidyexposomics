@@ -5,7 +5,11 @@
 <br>
 <br>
 
-[`tidyexposomics` website](https://bionomad.github.io/tidyexposomics/index.html)
+- **Website:** https://bionomad.github.io/tidyexposomics/index.html
+
+- **BioConductor Documentation:** 
+
+- **Paper:** 
 
 ## Overview
 
