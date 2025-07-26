@@ -1,6 +1,6 @@
-[![Website](https://raw.githubusercontent.com/edent/SuperTinyIcons/refs/heads/master/images/svg/chromium.svg) Website]()
+<a href="https://bionomad.github.io/tidyexposomics/index.html"><img src="./vignettes/logo.png" align="right" height="10" /></a>
 
-# tidyexposomics <a href="#"><img src="./vignettes/logo.png" align="right" height="200" /></a>
+# tidyexposomics <a href="#"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/refs/heads/master/images/svg/chromium.svg" align="right" height="200" /></a>
 
 <br>
 <br>
