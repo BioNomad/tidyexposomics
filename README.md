@@ -1,15 +1,11 @@
-<a href="https://bionomad.github.io/tidyexposomics/index.html" style="display: inline-flex; align-items: center; gap: 0.5em;">
-  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/refs/heads/master/images/svg/chromium.svg" height="24" alt="Website Icon"/>
-  <span>Website</span>
-</a>
-
-
 # tidyexposomics <a href="#"><img src="./vignettes/logo.png" align="right" height="200" /></a>
 
 <br>
 <br>
 <br>
 <br>
+
+[`tidyexposomics` website](https://bionomad.github.io/tidyexposomics/index.html)
 
 ## Overview
 
