@@ -1,4 +1,4 @@
-[![Website](https://camo.githubusercontent.com/4793ce1bb92ff11e2f0a147d61380585cd428c58d99b48c414cb3deb3694779b/68747470733a2f2f6564656e742e6769746875622e696f2f537570657254696e7949636f6e732f696d616765732f7376672f6368726f6d69756d2e737667) Website]()
+[![Website](https://raw.githubusercontent.com/edent/SuperTinyIcons/refs/heads/master/images/svg/chromium.svg) Website]()
 
 # tidyexposomics <a href="#"><img src="./vignettes/logo.png" align="right" height="200" /></a>
 
