@@ -11,31 +11,60 @@ plot_association(
   filter_col = "p.value",
   filter_thresh = 0.05,
   direction_filter = "all",
+  add_r2_tile = T,
+  r2_col = "adj_r2",
   facet = FALSE,
   nrow = 1,
   subtitle = NULL
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with association results in metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing association results in metadata.}
 
-\item{source}{One of \code{"omics"}, \code{"exposures"}, \code{"factors"}, \code{"go_pcs"}.}
+\item{source}{Character string indicating the association source. One of \code{"omics"}, \code{"exposures"}, \code{"factors"}, or \code{"go_pcs"}.}
 
-\item{filter_col}{Column to use for significance filtering. Default is \code{"p.value"}.}
+\item{terms}{Optional character vector of term names to subset the plot to. Default is \code{NULL} (include all).}
 
-\item{filter_thresh}{Numeric threshold for \code{filter_col}. Default is \code{0.05}.}
+\item{filter_col}{Column used to assess statistical significance (default: \code{"p.value"}).}
 
-\item{direction_filter}{One of \code{"all"}, \code{"up"}, \code{"down"}. Default is \code{"all"}.}
+\item{filter_thresh}{Numeric threshold applied to \code{filter_col} (default: \code{0.05}).}
 
-\item{facet}{Logical; if \code{TRUE} and \code{source == "go_pcs"}, apply nested faceting. Default is \code{FALSE}.}
+\item{direction_filter}{Direction of associations to retain. One of \code{"all"} (default), \code{"up"}, or \code{"down"}.}
 
-\item{nrow}{Facet row layout if faceting is enabled. Default is \code{1}.}
+\item{add_r2_tile}{Logical; if \code{TRUE}, includes a tile plot for \code{r2_col} (default: \code{TRUE}).}
 
-\item{subtitle}{Optional plot subtitle. If \code{NULL}, generated from covariates.}
+\item{r2_col}{Column used for coloring the tile plot (default: \code{"adj_r2"}).}
+
+\item{facet}{Logical; if \code{TRUE} and \code{source == "go_pcs"}, apply nested faceting by experiment and GO cluster (default: \code{FALSE}).}
+
+\item{nrow}{Integer; number of rows for facet layout if enabled (default: \code{1}).}
+
+\item{subtitle}{Optional subtitle for the plot. If \code{NULL}, automatically generated from covariates used in the model.}
 }
 \value{
-A \code{ggplot2} forest plot of significant associations.
+A \code{ggplot2} object: either a single forest plot or a composite plot with an R^2 tile strip.
 }
 \description{
 Generates a forest plot for association results from any source stored in the metadata of a \code{MultiAssayExperiment} object.
+Supports faceting and visual augmentation with R^2 tiles when available.
+}
+\details{
+This function visualizes effect size estimates and confidence intervals from association analyses. It allows filtering by
+direction (\code{"up"} for positive, \code{"down"} for negative) and by significance. For \code{source = "go_pcs"}, it supports special
+formatting by splitting term labels into nested facets.
+
+The R^2 tile (if enabled) adds a side heatmap indicating model fit for each association. This can be useful for model diagnostics.
+}
+\examples{
+\dontrun{
+# Basic usage
+plot_association(expomicset, source = "omics")
+
+# Subset to only significant up-regulated features
+plot_association(expomicset, source = "omics", direction_filter = "up")
+
+# Plot with nested facets for GO PCs
+plot_association(expomicset, source = "go_pcs", facet = TRUE)
+}
+
 }

@@ -8,7 +8,7 @@ run_impute_missing(
   expomicset,
   exposure_impute_method = "median",
   exposure_cols = NULL,
-  omics_impute_method = "knn",
+  omics_impute_method = NULL,
   omics_to_impute = NULL
 )
 }

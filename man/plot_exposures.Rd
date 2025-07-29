@@ -24,7 +24,7 @@ plot_exposures(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data.}
 
-\item{exposure_cat}{A character string or vector specifying exposure category names (from \code{var_info$category}) to include. Use \code{"all"} to include all exposures.}
+\item{exposure_cat}{A character string or vector specifying exposure category names (from \code{codebook$category}) to include. Use \code{"all"} to include all exposures.}
 
 \item{exposure_cols}{Optional character vector specifying exact exposure variables to plot.}
 
@@ -59,7 +59,7 @@ optionally grouped by a variable such as sex, smoking status, or exposure catego
 This function:
 \itemize{
 \item Filters exposure data based on category or selected columns.
-\item Merges variable metadata from \code{metadata(expomicset)$var_info}.
+\item Merges variable metadata from \code{metadata(expomicset)$codebook}.
 \item Supports either \strong{boxplot} (vertical distributions per variable) or \strong{ridgeplot} (horizontal density plots per variable).
 \item If \code{group_by} is specified, that variable defines the plot fill color; otherwise, the fill is based on exposure \code{category}.
 \item Facets by \code{category} using \code{ggh4x::facet_grid2()} with color-coded strip backgrounds.

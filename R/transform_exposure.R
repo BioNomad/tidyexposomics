@@ -1,60 +1,47 @@
-#' Transform Exposure Variables in a MultiAssayExperiment
+#' Transform Exposure Variables for Normality
 #'
-#' Applies various transformation methods to numeric exposure variables in the
-#' `colData` of a `MultiAssayExperiment` object to improve normality.
+#' Applies a transformation to selected numeric exposure variables in the `colData` of a
+#' `MultiAssayExperiment` to improve their normality (e.g., log, Box-Cox, sqrt).
+#' Transformation results and normality statistics are stored in metadata for tracking.
 #'
-#' Supported transformations include:
+#' @param expomicset A `MultiAssayExperiment` object containing exposure variables in `colData`.
+#' @param exposure_cols Optional character vector of exposure variable names to transform.
+#'   If `NULL`, uses exposures found in `metadata(expomicset)$quality_control$normality$norm_df$exposure`.
+#' @param transform_method Character. Transformation method to apply. Options:
+#'   \itemize{
+#'     \item `"none"`: no transformation
+#'     \item `"log2"`: log base 2 transformation
+#'     \item `"x_1_3"`: cube-root transformation
+#'     \item `"sqrt"`: square-root transformation
+#'     \item `"boxcox_best"`: data-driven Box-Cox approximation with heuristic labeling
+#'   }
+#'
+#' @return A `MultiAssayExperiment` object with transformed exposures in `colData`,
+#' and transformation details stored in:
 #' \itemize{
-#'   \item \code{"none"}: No transformation
-#'   \item \code{"log2"}: Log base 2 with minimum value shift
-#'   \item \code{"x_1_3"}: Cube root with minimum value shift
-#'   \item \code{"sqrt"}: Square root with minimum value shift
-#'   \item \code{"boxcox_best"}: Box-Cox power transformation based on optimal lambda
-#'   \item \code{"best"}: Automatically selects the transformation method that best
-#'         normalizes the data (based on Shapiro-Wilk test)
+#'   \item `metadata(expomicset)$quality_control$transformation$norm_df`: Shapiro-Wilk test results
+#'   \item `metadata(expomicset)$quality_control$transformation$norm_summary`: Summary of normality
+#'   \item `metadata(expomicset)$codebook`: Updated with transformation info per variable
+#'   \item `metadata(expomicset)$summary$steps`: Updated with step record
 #' }
 #'
-#' The \code{"boxcox_best"} transformation is based on the Box-Cox method from the
-#' \code{MASS} package. Variables are shifted to ensure strictly positive values before
-#' transformation. Lambda intervals are interpreted as follows:
-#' \itemize{
-#'   \item \eqn{\lambda < -1.5}: \eqn{1 / x^2}
-#'   \item \eqn{-1.5 \leq \lambda < -0.75}: \eqn{1 / x}
-#'   \item \eqn{-0.75 \leq \lambda < -0.25}: \eqn{1 / sqrt(x)}
-#'   \item \eqn{-0.25 \leq \lambda < 0.25}: \eqn{log(x)}
-#'   \item \eqn{0.25 \leq \lambda < 0.75}: \eqn{sqrt(x)}
-#'   \item \eqn{0.75 \leq \lambda < 1.5}: identity
-#'   \item \eqn{\lambda \geq 1.5}: \eqn{x^2}
-#' }
-#'
-#' @param expomicset A \code{MultiAssayExperiment} object.
-#' @param exposure_cols A character vector of column names from \code{colData(expomicset)} to transform.
-#'   If \code{NULL}, the function will attempt to use metadata from \code{check_normality()}.
-#' @param transform_method One of \code{"none"}, \code{"log2"}, \code{"x_1_3"}, \code{"sqrt"},
-#'   \code{"boxcox_best"}, or \code{"best"} (default). \code{"best"} evaluates all available
-#'   methods and chooses the one that most improves normality.
-#'
-#' @return A \code{MultiAssayExperiment} object with updated \code{colData} and transformation
-#'   results saved in \code{metadata(expomicset)$transformation}.
-#'
-#' @importFrom MultiAssayExperiment colData metadata
-#' @importFrom dplyr mutate across all_of bind_cols select select_if group_by summarise n arrange desc
-#' @importFrom broom tidy
-#' @importFrom MASS boxcox
-#' @importFrom tibble rownames_to_column
-#' @export
+#' @details
+#' For `transform_method = "boxcox_best"`, the function automatically shifts values to be
+#' strictly positive and chooses from a discrete set of transformations (e.g., `1/x`, `log(x)`, `x^2`)
+#' based on estimated Box-Cox lambda. Each variable may receive a different transformation.
 #'
 #' @examples
 #' \dontrun{
-#' transformed_mae <- transform_exposure(my_mae,
-#'                                       exposure_cols = c("pm25", "no2"),
-#'                                       transform_method = "best")
+#' expomicset <- transform_exposure(expomicset, transform_method = "boxcox_best")
 #' }
-
+#'
+#' @seealso \code{\link[MASS]{boxcox}}, \code{\link[stats]{shapiro.test}}
+#'
+#' @export
 transform_exposure <- function(
     expomicset,
     exposure_cols = NULL,
-    transform_method = "best") {
+    transform_method = "boxcox_best") {
 
   boxcox_best <- function(var) {
     # Shift to make values strictly positive
@@ -70,21 +57,28 @@ transform_exposure <- function(
 
     if (lambda < -1.5) {
       transformed <- 1 / (var^2)
+      label <- "1/x^2"
     } else if (lambda < -0.75) {
       transformed <- 1 / var
+      label <- "1/x"
     } else if (lambda < -0.25) {
       transformed <- 1 / sqrt(var)
+      label <- "1/sqrt(x)"
     } else if (lambda < 0.25) {
       transformed <- log(var)
+      label <- "log(x)"
     } else if (lambda < 0.75) {
       transformed <- sqrt(var)
+      label <- "sqrt(x)"
     } else if (lambda < 1.5) {
       transformed <- var
+      label <- "identity"
     } else {
       transformed <- var^2
+      label <- "x^2"
     }
 
-    return(transformed)
+    return(list(values = transformed, label = label))
   }
 
 
@@ -99,9 +93,18 @@ transform_exposure <- function(
     } else if (method == "sqrt") {
       return(dplyr::mutate(data, dplyr::across(dplyr::all_of(columns), ~ sqrt(. + abs(min(.))))))
     } else if (method == "boxcox_best") {
-      transformed <- lapply(columns, function(col) boxcox_best(data[[col]]))
+      # transformed <- lapply(columns, function(col) boxcox_best(data[[col]]))
+      # names(transformed) <- columns
+      # return(cbind(data[, setdiff(names(data), columns)], as.data.frame(transformed)))
+      # --- Beginning of Test ---
+      result <- lapply(columns, function(col) boxcox_best(data[[col]]))
+      transformed <- lapply(result, `[[`, "values")
+      labels <- sapply(result, `[[`, "label")
       names(transformed) <- columns
-      return(cbind(data[, setdiff(names(data), columns)], as.data.frame(transformed)))
+      transformed_df <- as.data.frame(transformed)
+      attr(transformed_df, "labels") <- labels  # attach to the data.frame AFTER creation
+      return(transformed_df)
+      # --- End of Test ---
     } else {
       stop("Unsupported transformation method: ", method)
     }
@@ -120,80 +123,137 @@ transform_exposure <- function(
     stop("No numeric exposure variables to transform.")
   }
 
-  if (transform_method == "best") {
-    message("Evaluating the best transformation method including Box-Cox.")
+  message("Applying the ", transform_method, " transformation.")
+  numeric_data <- col_data[, variables_to_transform, drop = FALSE]
+  non_numeric_data <- col_data[, setdiff(names(col_data), variables_to_transform)]
 
-    non_numeric_data <- col_data[, setdiff(names(col_data), variables_to_transform)]
-    numeric_data <- col_data[, variables_to_transform, drop = FALSE]
+  transformed_numeric <- apply_transformation(numeric_data, variables_to_transform, transform_method)
 
-    transformations <- list(
-      none_trans = apply_transformation(numeric_data, variables_to_transform, "none"),
-      log_trans = apply_transformation(numeric_data, variables_to_transform, "log2"),
-      x_1_3_trans = apply_transformation(numeric_data, variables_to_transform, "x_1_3"),
-      sqrt_trans = apply_transformation(numeric_data, variables_to_transform, "sqrt"),
-      boxcox_trans = apply_transformation(numeric_data, variables_to_transform, "boxcox_best")
+  if ( transform_method  == "boxcox_best") {
+    transformation_info <- data.frame(
+      variable = colnames(transformed_numeric),
+      transformation_applied = attr(transformed_numeric, "labels"),
+      stringsAsFactors = FALSE
     )
-
-    norm_results <- lapply(names(transformations), function(name) {
-      transformed <- transformations[[name]]
-      transformed |>
-        apply(2, function(x) shapiro.test(x) |> broom::tidy()) |>
-        (\(x) do.call(rbind, x))() |>
-        dplyr::mutate(transformation = name,
-                      exposure = colnames(transformed))
-    }) |>
-      dplyr::bind_rows()
-
-    norm_summary <- norm_results |>
-      dplyr::group_by(transformation) |>
-      dplyr::summarise(
-        n = dplyr::n(),
-        normal = sum(p.value > 0.05),
-        not_normal = sum(p.value <= 0.05),
-        percent_normal = normal / n
-      ) |>
-      dplyr::arrange(dplyr::desc(percent_normal))
-
-    best_transformation <- norm_summary$transformation[1]
-    message("Using the ", best_transformation, " transformation.")
-
-    transformed_numeric <- transformations[[best_transformation]]
-    updated_col_data <- dplyr::bind_cols(non_numeric_data, transformed_numeric)
-    MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
-
-    MultiAssayExperiment::metadata(expomicset)$quality_control$transformation <- list(
-      norm_df = norm_results |> dplyr::filter(transformation == best_transformation),
-      norm_summary = norm_summary
-    )
-
-  } else {
-    message("Applying the ", transform_method, " transformation.")
-    numeric_data <- col_data[, variables_to_transform, drop = FALSE]
-    non_numeric_data <- col_data[, setdiff(names(col_data), variables_to_transform)]
-
-    transformed_numeric <- apply_transformation(numeric_data, variables_to_transform, transform_method)
-    updated_col_data <- dplyr::bind_cols(non_numeric_data, transformed_numeric)
-    MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
-
-    norm_results <- transformed_numeric |>
-      dplyr::select_if(~ length(unique(na.omit(.))) >= 3) |>
-      apply(2, function(x) shapiro.test(x) |> broom::tidy()) |>
-      (\(x) do.call(rbind, x))() |>
-      dplyr::mutate(exposure = colnames(transformed_numeric))
-
-    norm_summary <- norm_results |>
-      dplyr::summarise(
-        "Normal" = sum(p.value > 0.05),
-        "Not Normal" = sum(p.value <= 0.05)
-      ) |>
-      t() |> as.data.frame() |> tibble::rownames_to_column("var") |>
-      setNames(c("var", "value"))
-
-    MultiAssayExperiment::metadata(expomicset)$quality_control$transformation <- list(
-      norm_df = norm_results,
-      norm_summary = norm_summary
+  } else{
+    transformation_info <- data.frame(
+      variable = variables_to_transform,
+      transformation_applied = transform_method,
+      stringsAsFactors = FALSE
     )
   }
+
+  updated_col_data <- dplyr::bind_cols(non_numeric_data, transformed_numeric)
+  MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
+
+  norm_results <- transformed_numeric |>
+    dplyr::select_if(~ length(unique(na.omit(.))) >= 3) |>
+    apply(2, function(x) shapiro.test(x) |> broom::tidy()) |>
+    (\(x) do.call(rbind, x))() |>
+    dplyr::mutate(exposure = colnames(transformed_numeric))
+
+  norm_summary <- norm_results |>
+    dplyr::summarise(
+      "Normal" = sum(p.value > 0.05),
+      "Not Normal" = sum(p.value <= 0.05)
+    ) |>
+    t() |> as.data.frame() |> tibble::rownames_to_column("var") |>
+    setNames(c("var", "value"))
+
+  MultiAssayExperiment::metadata(expomicset)$quality_control$transformation <- list(
+    norm_df = norm_results,
+    norm_summary = norm_summary
+  )
+
+  # if (transform_method == "best") {
+  #   message("Evaluating the best transformation method including Box-Cox.")
+  #
+  #   non_numeric_data <- col_data[, setdiff(names(col_data), variables_to_transform)]
+  #   numeric_data <- col_data[, variables_to_transform, drop = FALSE]
+  #
+  #   transformations <- list(
+  #     none_trans = apply_transformation(numeric_data, variables_to_transform, "none"),
+  #     log_trans = apply_transformation(numeric_data, variables_to_transform, "log2"),
+  #     x_1_3_trans = apply_transformation(numeric_data, variables_to_transform, "x_1_3"),
+  #     sqrt_trans = apply_transformation(numeric_data, variables_to_transform, "sqrt"),
+  #     boxcox_trans = apply_transformation(numeric_data, variables_to_transform, "boxcox_best")
+  #   )
+  #
+  #   norm_results <- lapply(names(transformations), function(name) {
+  #     transformed <- transformations[[name]]
+  #     transformed |>
+  #       apply(2, function(x) shapiro.test(x) |> broom::tidy()) |>
+  #       (\(x) do.call(rbind, x))() |>
+  #       dplyr::mutate(transformation = name,
+  #                     exposure = colnames(transformed))
+  #   }) |>
+  #     dplyr::bind_rows()
+  #
+  #   norm_summary <- norm_results |>
+  #     dplyr::group_by(transformation) |>
+  #     dplyr::summarise(
+  #       n = dplyr::n(),
+  #       normal = sum(p.value > 0.05),
+  #       not_normal = sum(p.value <= 0.05),
+  #       percent_normal = normal / n
+  #     ) |>
+  #     dplyr::arrange(dplyr::desc(percent_normal))
+  #
+  #   best_transformation <- norm_summary$transformation[1]
+  #   message("Using the ", best_transformation, " transformation.")
+  #
+  #   transformed_numeric <- transformations[[best_transformation]]
+  #   updated_col_data <- dplyr::bind_cols(non_numeric_data, transformed_numeric)
+  #   MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
+  #
+  #   MultiAssayExperiment::metadata(expomicset)$quality_control$transformation <- list(
+  #     norm_df = norm_results |> dplyr::filter(transformation == best_transformation),
+  #     norm_summary = norm_summary
+  #   )
+  #
+  # } else {
+  #   message("Applying the ", transform_method, " transformation.")
+  #   numeric_data <- col_data[, variables_to_transform, drop = FALSE]
+  #   non_numeric_data <- col_data[, setdiff(names(col_data), variables_to_transform)]
+  #
+  #   transformed_numeric <- apply_transformation(numeric_data, variables_to_transform, transform_method)
+  #
+  #   if ( transform_method  == "boxcox_best") {
+  #     transformation_info <- data.frame(
+  #       variable = colnames(transformed_numeric),
+  #       transformation_applied = attr(transformed_numeric, "labels"),
+  #       stringsAsFactors = FALSE
+  #     )
+  #   } else{
+  #     transformation_info <- data.frame(
+  #       variable = variables_to_transform,
+  #       transformation_applied = transform_method,
+  #       stringsAsFactors = FALSE
+  #     )
+  #   }
+  #
+  #   updated_col_data <- dplyr::bind_cols(non_numeric_data, transformed_numeric)
+  #   MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
+  #
+  #   norm_results <- transformed_numeric |>
+  #     dplyr::select_if(~ length(unique(na.omit(.))) >= 3) |>
+  #     apply(2, function(x) shapiro.test(x) |> broom::tidy()) |>
+  #     (\(x) do.call(rbind, x))() |>
+  #     dplyr::mutate(exposure = colnames(transformed_numeric))
+  #
+  #   norm_summary <- norm_results |>
+  #     dplyr::summarise(
+  #       "Normal" = sum(p.value > 0.05),
+  #       "Not Normal" = sum(p.value <= 0.05)
+  #     ) |>
+  #     t() |> as.data.frame() |> tibble::rownames_to_column("var") |>
+  #     setNames(c("var", "value"))
+  #
+  #   MultiAssayExperiment::metadata(expomicset)$quality_control$transformation <- list(
+  #     norm_df = norm_results,
+  #     norm_summary = norm_summary
+  #   )
+  # }
 
   # Add step record
   n_transformed <- length(variables_to_transform)
@@ -224,12 +284,30 @@ transform_exposure <- function(
     step_record
   )
 
+  # --- Testing this chunk -----
+
+  # Merge with existing codebook or initialize
+  existing_codebook <- MultiAssayExperiment::metadata(expomicset)$codebook
+
+  # Create a new data frame for the updated variable information
+  updated_codebook <- existing_codebook |>
+    full_join(
+      transformation_info,
+      by = "variable"
+    )
+
+  # Update the codebook in the metadata
+  MultiAssayExperiment::metadata(expomicset)$codebook <- updated_codebook
+
+
+  # --- End of Test -------
+
   return(expomicset)
 }
 
 
 # transform_exposure <- function(
-#     expomicset,
+    #     expomicset,
 #     exposure_cols=NULL,
 #     transform_method = "best") {
 #

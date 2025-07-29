@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_association.R
 \name{run_association}
 \alias{run_association}
-\title{Generalized Association Analysis Across Data Sources}
+\title{Run Association Analysis}
 \usage{
 run_association(
   expomicset,
@@ -21,34 +21,46 @@ run_association(
 )
 }
 \arguments{
-\item{expomicset}{A MultiAssayExperiment object.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing data and metadata.}
 
-\item{outcome}{A character string naming the outcome variable.}
+\item{outcome}{The outcome variable name (must be in \code{colData}).}
 
-\item{source}{One of 'omics', 'exposures', 'factors', or 'go_pcs'.}
+\item{source}{Source of features to test. One of \code{"omics"}, \code{"exposures"}, \code{"factors"}, \code{"go_pcs"}.}
 
-\item{covariates}{Optional character vector of covariates.}
+\item{covariates}{Optional vector of covariate names to include in the model.}
 
-\item{feature_set}{Optional vector of feature names (e.g., exposures, GO terms).}
+\item{feature_set}{Optional character vector of exposure or GO terms to test.}
 
-\item{top_n}{For omics: select top N variable features per assay.}
+\item{top_n}{Optional integer: if using omics source, select top \code{n} most variable features.}
 
-\item{family}{GLM family ('gaussian' or 'binomial').}
+\item{family}{GLM family; \code{"gaussian"} or \code{"binomial"}.}
 
-\item{correction_method}{Method for p-value adjustment. Default is 'fdr'.}
+\item{correction_method}{Method for p-value adjustment (default: \code{"fdr"}).}
 
-\item{action}{Return results ('get') or attach to metadata ('add').}
+\item{action}{If \code{"add"} (default), saves results to metadata; else returns results as list.}
 
-\item{min_genes}{Minimum genes per GO group (for GO PC source).}
+\item{min_genes}{Minimum number of genes required to compute GO PCs.}
 
-\item{feature_col}{Optional column to map GO terms to features.}
+\item{feature_col}{If using GO PCs, the column in \code{rowData} for matching gene symbols or IDs.}
 
-\item{mirna_assays}{Assays to exclude in GO PC mode.}
+\item{mirna_assays}{Optional character vector of assays to exclude when extracting GO terms.}
+
+\item{print}{Optional variable name to print results for (useful for debugging).}
 }
 \value{
-If action = 'add', returns updated MultiAssayExperiment. Else returns result list.
+If \code{action = "add"}, returns updated \code{MultiAssayExperiment}. Otherwise, returns a list of:
+\itemize{
+\item \code{results_df}: tidy summary of associations
+\item \code{covariates}: the covariates used
+\item \code{model_data}: model matrix used in the GLMs
+}
 }
 \description{
-Performs GLM-based association testing between an outcome and features
-from omics, exposures, latent factors, or GO-based PCs in a MultiAssayExperiment.
+Perform GLM-based association testing between a specified outcome and features from exposures, omics,
+latent factors, or GO PCs. Automatically adjusts for covariates and supports both Gaussian and binomial models.
+}
+\examples{
+\dontrun{
+run_association(expomicset, outcome = "BMI", source = "exposures", covariates = c("age", "sex"))
+}
 }

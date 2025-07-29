@@ -62,7 +62,7 @@ plot_sample_clusters <- function(
   #                  names_to = "variable",
   #                  values_to = "value") |>
   #     inner_join(
-  #       MultiAssayExperiment::metadata(expomicset)$var_info,
+  #       MultiAssayExperiment::metadata(expomicset)$codebook,
   #       by="variable")
 
 
@@ -84,7 +84,7 @@ plot_sample_clusters <- function(
                  names_to = "variable",
                  values_to = "value") |>
     dplyr::inner_join(
-      MultiAssayExperiment::metadata(expomicset)$var_info,
+      MultiAssayExperiment::metadata(expomicset)$codebook,
       by="variable") |>
     dplyr::rename(Category=category)
 

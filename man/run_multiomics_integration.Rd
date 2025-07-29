@@ -2,64 +2,67 @@
 % Please edit documentation in R/run_multiomics_integration.R
 \name{run_multiomics_integration}
 \alias{run_multiomics_integration}
-\title{Perform Multi-Omics Integration}
+\title{Run Multi-Omics Integration}
 \usage{
 run_multiomics_integration(
   expomicset,
   method = "MCIA",
   n_factors = 10,
   scale = TRUE,
+  outcome = NULL,
   action = "add"
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing at least two omics assays.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with at least two assays.}
 
-\item{method}{A character string specifying the integration method. Options: \code{"MOFA"}, \code{"MCIA"}. Default is \code{"MCIA"}.}
+\item{method}{Character. Integration method to use. Options are \code{"MOFA"}, \code{"MCIA"},
+\code{"RGCCA"}, or \code{"DIABLO"}.}
 
-\item{n_factors}{An integer specifying the number of latent factors/components to compute. Default is \code{10}.}
+\item{n_factors}{Integer. Number of latent factors/components to compute. Default is 10.}
 
-\item{scale}{A logical indicating whether to standardize (\code{Z-score}) the assays before integration. Default is \code{TRUE}.}
+\item{scale}{Logical. Whether to scale each assay before integration. Default is \code{TRUE}.}
 
-\item{action}{A character string specifying whether to store (\code{"add"}) or return (\code{"get"}) the results. Default is \code{"add"}.}
+\item{outcome}{Character. Required if \code{method = "DIABLO"}. Name of outcome variable in \code{colData} used for supervised integration.}
+
+\item{action}{Character. Whether to \code{"add"} results to the metadata or \code{"get"} them as a list. Default is \code{"add"}.}
 }
 \value{
-A \code{MultiAssayExperiment} object with integration results added to metadata (if \code{action = "add"}) or a list with:
-\item{method}{The integration method used (\code{"MOFA"} or \code{"MCIA"}).}
-\item{result}{The trained integration model.}
+If \code{action = "add"}, returns a \code{MultiAssayExperiment} with integration results
+stored in \code{metadata(expomicset)$multiomics_integration$integration_results}. If \code{action = "get"}, returns a list with integration \code{method} and \code{result}.
 }
 \description{
-Integrates multiple assays in a \code{MultiAssayExperiment} object using either MOFA+ or MCIA.
+Performs multi-omics integration using one of several available methods: MOFA, MCIA,
+RGCCA, or DIABLO. This function takes a \code{MultiAssayExperiment} object with two or more
+assays and computes shared latent factors across omics layers.
 }
 \details{
-This function:
 \itemize{
-\item \strong{MOFA+ (\code{method = "MOFA"})}:
-\itemize{
-\item Creates a MOFA model from \code{expomicset}.
-\item Trains the model using default MOFA parameters.
-\item Saves and loads the trained model.
-}
-\item \strong{MCIA (\code{method = "MCIA"})}:
-\itemize{
-\item Applies \strong{NIPALS MCIA} via \code{nipalsMCIA::nipals_multiblock()}.
-}
-\item \strong{Scaling}: If \code{scale = TRUE}, all assays are standardized using \code{.scale_multiassay()}.
-\item \strong{Output Handling}:
-\itemize{
-\item \code{"add"}: Stores results in \code{metadata(expomicset)$integration_results}.
-\item \code{"get"}: Returns a list containing \code{method} and \code{result} (trained model).
-}
+\item \code{"MOFA"} runs Multi-Omics Factor Analysis using the \code{MOFA2} package and returns a trained model.
+\item \code{"MCIA"} runs multi-co-inertia analysis using the \code{nipalsMCIA} package.
+\item \code{"RGCCA"} runs Regularized Generalized Canonical Correlation Analysis using the \code{RGCCA} package.
+\item \code{"DIABLO"} performs supervised integration using the \code{mixOmics} package and a specified outcome.
 }
 }
 \examples{
 \dontrun{
-expom <- run_multiomics_integration(
-  expomicset = expom,
-  method = "MCIA",
-  n_factors = 10,
+expomicset <- run_multiomics_integration(
+  expomicset,
+  method = "MOFA",
+  n_factors = 5,
   scale = TRUE
+)
+
+expomicset <- run_multiomics_integration(
+  expomicset,
+  method = "DIABLO",
+  n_factors = 3,
+  outcome = "asthma_status"
 )
 }
 
+}
+\seealso{
+\code{\link{plot_factor_scores}}, \code{\link{plot_top_factor_features}},
+\code{\link{run_factor_overlap}}, \code{\link{run_enrichment}}
 }

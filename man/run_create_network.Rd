@@ -2,26 +2,43 @@
 % Please edit documentation in R/run_create_network.R
 \name{run_create_network}
 \alias{run_create_network}
-\title{Create and store a network from correlation results in a MultiAssayExperiment}
+\title{Create Correlation Network from Feature Data}
 \usage{
 run_create_network(
   expomicset,
-  feature_type = c("degs", "omics", "factors", "exposures"),
+  feature_type = c("degs", "omics", "factors", "factor_features", "exposures",
+    "degs_feature_cor", "omics_feature_cor", "factor_features_feature_cor"),
   action = c("add", "get")
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing correlation results in metadata.}
 
-\item{feature_type}{One of "degs", "omics", "factors", or "exposures". Used to select correlation results.}
+\item{feature_type}{Type of correlation result to convert to a network. One of:
+\code{"degs"}, \code{"omics"}, \code{"factors"}, \code{"factor_features"}, \code{"exposures"},
+\code{"degs_feature_cor"}, \code{"omics_feature_cor"}, or \code{"factor_features_feature_cor"}.}
 
-\item{action}{"add" to store the graph in metadata, or "get" to return it.}
+\item{action}{Whether to \code{"add"} the network to the object or \code{"get"} it as a list.}
 }
 \value{
-If \code{action = "add"}, returns modified \code{MultiAssayExperiment}. Otherwise, returns a list with \code{graph} and \code{summary}.
+If \code{action = "add"}, returns the updated \code{MultiAssayExperiment} with a new \code{network} entry in metadata.
+If \code{action = "get"}, returns a list with \code{graph} (an \code{igraph} object) and \code{summary} (a tibble).
 }
 \description{
-Constructs an undirected network based on correlation results between exposures
-and features (e.g., DEGs, omics, latent factors, exposures) and optionally stores it
-in the metadata of a \code{MultiAssayExperiment} object.
+Constructs an undirected feature–feature or feature–exposure correlation network
+from correlation results stored in a \code{MultiAssayExperiment} object. The function
+supports multiple correlation formats depending on \code{feature_type}, and stores or returns
+an \code{igraph} object with associated node and edge metadata.
+}
+\details{
+The function detects the appropriate edge and node structure based on column names
+in the correlation results. Edge weights are based on correlation coefficients and include FDR values.
+}
+\examples{
+\dontrun{
+expomicset <- run_correlation(expomicset, feature_type = "omics", feature_cors = TRUE)
+expomicset <- run_create_network(expomicset, feature_type = "omics_feature_cor")
+net <- run_create_network(expomicset, feature_type = "omics_feature_cor", action = "get")
+plot(net$graph)
+}
 }

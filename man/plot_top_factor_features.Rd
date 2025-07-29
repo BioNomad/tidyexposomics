@@ -6,6 +6,7 @@
 \usage{
 plot_top_factor_features(
   expomicset,
+  feature_col = "feature",
   factors = NULL,
   top_n = 5,
   facet_cols = NULL,
@@ -16,7 +17,7 @@ plot_top_factor_features(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing integration results in the \code{metadata} slot (must include \code{integration_results}).}
 
-\item{factors}{Character vector of factors to include (e.g., \code{"Factor1"}, \code{"Factor2"}). If \code{NULL}, all factors are plotted.}
+\item{factors}{Character vector of factors to include (e.g., "Factor1", "Factor2"). If \code{NULL}, all factors are plotted.}
 
 \item{top_n}{Integer specifying the number of top features to show per factor. Default is \code{5}.}
 
@@ -30,13 +31,15 @@ plot_top_factor_features(
 A \code{ggplot2} object with one facet per factor, showing the top features and their loadings by experiment.
 }
 \description{
-Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA or MCIA).
+Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).
 }
 \details{
 This function supports the following integration methods:
 \itemize{
 \item \code{"MOFA"}: Uses feature weights from MOFA2 (\code{get_weights()}).
 \item \code{"MCIA"}: Uses block loadings from MCIA (\verb{@block_loadings}).
+\item \code{"DIABLO"}: Extracts block-specific loadings from \code{loadings}.
+\item \code{"RGCCA"}: Extracts block-specific loadings from \code{a}.
 }
 
 For each factor, it:
@@ -47,10 +50,4 @@ For each factor, it:
 }
 
 If palettes are not provided, defaults are chosen using \code{ggpubr::get_palette()}.
-}
-\examples{
-\dontrun{
-plot_top_factor_features(expomicset, factors = c("Factor1", "Factor2"), top_n = 10)
-}
-
 }

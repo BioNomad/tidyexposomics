@@ -1,33 +1,46 @@
-#' Generalized Correlation Analysis Between Exposures and Features
+#' Run Correlation Analysis
 #'
-#' Performs correlation analysis between exposures and a selected feature set (DEGs, omics, latent factors, or exposures).
+#' Computes correlations between exposures and feature types including DEGs, omics, latent factors,
+#' top factor features, or principal components (PCs). Optionally computes feature–feature correlations
+#' to support network analysis.
 #'
-#' @param expomicset A MultiAssayExperiment object.
-#' @param feature_type One of "degs", "omics", "factors", "factor_features", or "exposures".
-#' @param exposure_cols Optional character vector of exposure variable names. If NULL, all numeric exposures are used.
-#' @param variable_map Optional variable mapping table (only for omics).
-#' @param robust If TRUE and feature_type == "degs", restrict to stable DEGs.
-#' @param score_col Column name for stability scores in sensitivity analysis.
-#' @param score_thresh Optional numeric threshold for feature stability scores.
-#' @param correlation_method Correlation method ("spearman", "pearson", etc.).
-#' @param correlation_cutoff Threshold for absolute correlation.
-#' @param cor_pval_column Which p-value column to apply cutoff to.
-#' @param pval_cutoff Significance threshold for p-values.
-#' @param deg_pval_col DEG p-value column name.
-#' @param deg_logfc_col DEG logFC column name.
-#' @param deg_pval_thresh DEG p-value filter threshold.
-#' @param deg_logfc_thresh DEG logFC filter threshold.
-#' @param batch_size Features per correlation batch.
-#' @param action Either "get" (return table) or "add" (update metadata).
+#' @param expomicset A `MultiAssayExperiment` object.
+#' @param feature_type Type of features to correlate. One of `"degs"`, `"omics"`, `"factors"`, `"factor_features"`, `"exposures"`, or `"pcs"`.
+#' @param exposure_cols Optional vector of exposure column names (from `colData`) to use.
+#' @param variable_map Optional mapping of features to include by assay for `omics` mode.
+#' @param n_pcs Number of PCs to use when `feature_type = "pcs"`.
+#' @param feature_cors Logical; if `TRUE`, compute correlations between features rather than with exposures.
+#' @param robust Logical; restrict DEGs to those passing sensitivity threshold.
+#' @param score_col Column name in sensitivity analysis with feature stability score.
+#' @param score_thresh Threshold for filtering robust features.
+#' @param correlation_method One of `"pearson"`, `"spearman"`, or `"kendall"`.
+#' @param correlation_cutoff Minimum absolute correlation to retain.
+#' @param cor_pval_column Column in output to filter by p-value (default: `"p.value"`).
+#' @param pval_cutoff Maximum p-value or FDR threshold to retain a correlation.
+#' @param deg_pval_col Column with DEG adjusted p-values.
+#' @param deg_logfc_col Column with DEG log fold-changes.
+#' @param deg_pval_thresh P-value cutoff for DEGs.
+#' @param deg_logfc_thresh Log fold-change cutoff for DEGs.
+#' @param batch_size Number of features to process per batch (default: 1500).
+#' @param action Whether to `"add"` results to metadata or `"get"` as a data frame.
 #'
-#' @return If action = "add", returns modified MultiAssayExperiment. Else, returns correlation result table.
+#' @return If `action = "add"`, returns updated `MultiAssayExperiment` with results added to metadata.
+#'         If `action = "get"`, returns a tidy `data.frame` of correlations.
 #'
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' run_correlation(expomicset, feature_type = "omics", correlation_method = "spearman")
+#' run_correlation(expomicset, feature_type = "degs", feature_cors = TRUE)
+#' }
 run_correlation <- function(
     expomicset,
-    feature_type = c("degs", "omics", "factors", "factor_features", "exposures"),
+    feature_type = c("degs", "omics", "factors", "factor_features", "exposures","pcs"),
     exposure_cols = NULL,
     variable_map = NULL,
+    n_pcs = NULL,
+    feature_cors = FALSE,
     robust = FALSE,
     score_col = "stability_score",
     score_thresh = NULL,
@@ -46,8 +59,8 @@ run_correlation <- function(
   action <- match.arg(action)
 
   col_df <- MultiAssayExperiment::colData(expomicset) |>
-    as.data.frame() |>
-    dplyr::select(-dplyr::starts_with("PC"))
+    as.data.frame()
+  #dplyr::select(-dplyr::starts_with("PC"))
 
   exposures <- col_df |>
     dplyr::select(where(is.numeric))
@@ -76,7 +89,8 @@ run_correlation <- function(
     exposures = .extract_exposure_matrix(
       col_df,
       exposure_cols),
-    factor_features = .extract_factor_feature_matrix(expomicset)
+    factor_features = .extract_factor_feature_matrix(expomicset),
+    pcs = .extract_pc_matrix(col_df, n_pcs = n_pcs)
   )
 
   exposures <- exposures |>
@@ -97,18 +111,61 @@ run_correlation <- function(
     feature_vars <- setdiff(colnames(feature_matrix), "id")
   }
 
-  correlation_df <- .run_correlation_batches(
-    merged_data,
-    exposure_vars,
-    feature_vars,
-    correlation_method,
-    correlation_cutoff,
-    cor_pval_column,
-    pval_cutoff,
-    batch_size
-  )
 
-  if (feature_type %in% c("degs", "omics", "factors", "factor_features")) {
+  if(feature_cors &&  feature_type %in% c("degs", "omics", "factors", "factor_features")){
+    # Run correlation on features
+    correlation_df <- .run_correlation_omics_batches(
+      merged_data,
+      feature_vars,
+      correlation_method,
+      correlation_cutoff,
+      cor_pval_column,
+      pval_cutoff,
+      batch_size
+    )
+
+    # Grab experiment names
+    exp_names <- names(MultiAssayExperiment::experiments(expomicset))
+
+    # Change names of the columns to match column type
+    correlation_df <- correlation_df |>
+      # Add in exp_name for the assay
+      dplyr::mutate(
+        exp_name_1 = stringr::str_extract(
+          var1,
+          paste0("^(", paste0(stringr::str_replace_all(exp_names, " ", "[ _]"), collapse = "|"), ")")
+        ),
+        # Remove matched exp_name and any underscore or space after it
+        var1 = dplyr::case_when(
+          !is.na(exp_name_1) ~ stringr::str_remove(var1, paste0("^", exp_name_1, "[ _]?")),
+          TRUE ~ var1
+        ),
+        exp_name_2 = stringr::str_extract(
+          var2,
+          paste0("^(", paste0(stringr::str_replace_all(exp_names, " ", "[ _]"), collapse = "|"), ")")
+        ),
+        # Remove matched exp_name and any underscore or space after it
+        var2 = dplyr::case_when(
+          !is.na(exp_name_2) ~ stringr::str_remove(var2, paste0("^", exp_name_2, "[ _]?")),
+          TRUE ~ var2
+        )
+      )
+
+  } else{
+    correlation_df <- .run_correlation_batches(
+      merged_data,
+      exposure_vars,
+      feature_vars,
+      correlation_method,
+      correlation_cutoff,
+      cor_pval_column,
+      pval_cutoff,
+      batch_size
+    )
+  }
+
+
+  if (!feature_cors && feature_type %in% c("degs", "omics", "factors", "factor_features")) {
     # Grab experiment names
     exp_names <- names(MultiAssayExperiment::experiments(expomicset))
 
@@ -135,7 +192,7 @@ run_correlation <- function(
     # Merge with exposure metadata
     correlation_df <- correlation_df |>
       dplyr::left_join(
-        MultiAssayExperiment::metadata(expomicset)$var_info,
+        MultiAssayExperiment::metadata(expomicset)$codebook,
         by = c("exposure"="variable")
       )
 
@@ -144,19 +201,39 @@ run_correlation <- function(
 
 
   if (action == "add") {
-    MultiAssayExperiment::metadata(expomicset)$correlation[[feature_type]] <- correlation_df
-    step_record <- list(
-      run_correlation = list(
-        timestamp = Sys.time(),
-        params = list(
-          feature_type = feature_type,
-          correlation_method = correlation_method,
-          correlation_cutoff = correlation_cutoff,
-          pval_cutoff = pval_cutoff
-        ),
-        notes = paste0("Correlated ", feature_type, " features with exposures.")
+    if (feature_cors){
+      MultiAssayExperiment::metadata(expomicset)$correlation[[paste0(feature_type,"_feature_cor")]] <- correlation_df
+      step_record <- list(
+        run_correlation = list(
+          timestamp = Sys.time(),
+          params = list(
+            feature_type = feature_type,
+            correlation_method = correlation_method,
+            correlation_cutoff = correlation_cutoff,
+            pval_cutoff = pval_cutoff
+          ),
+          notes = paste0("Correlated ", feature_type, " features with features.")
+        )
       )
-    )
+      names(step_record) <- paste0("run_correlation_", feature_type)
+    } else{
+      MultiAssayExperiment::metadata(expomicset)$correlation[[feature_type]] <- correlation_df
+      step_record <- list(
+        run_correlation = list(
+          timestamp = Sys.time(),
+          params = list(
+            feature_type = feature_type,
+            correlation_method = correlation_method,
+            correlation_cutoff = correlation_cutoff,
+            pval_cutoff = pval_cutoff
+          ),
+          notes = paste0("Correlated ", feature_type, " features with exposures.")
+        )
+      )
+      names(step_record) <- paste0("run_correlation_", feature_type)
+    }
+
+
     MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
       MultiAssayExperiment::metadata(expomicset)$summary$steps,
       step_record
@@ -206,6 +283,51 @@ run_correlation <- function(
       dplyr::filter(var1 %in% exposure_vars,
                     var2 %in% features,
                     abs(correlation) > correlation_cutoff) |>
+      dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
+      dplyr::filter(!!rlang::sym(cor_pval_column) < pval_cutoff)
+
+    correlation_results[[i]] <- merged
+  }
+
+  dplyr::bind_rows(correlation_results)
+}
+
+.run_correlation_omics_batches <- function(
+    feature_data,
+    feature_vars,
+    correlation_method,
+    correlation_cutoff,
+    cor_pval_column,
+    pval_cutoff,
+    batch_size
+) {
+  correlation_results <- list()
+  batches <- split(feature_vars, ceiling(seq_along(feature_vars) / batch_size))
+
+  for (i in seq_along(batches)) {
+    features <- batches[[i]]
+    cols_to_use <- intersect(features, colnames(feature_data))
+    mat <- as.matrix(feature_data[, cols_to_use, drop = FALSE])
+    mat <- mat[apply(mat, 1, function(x) all(is.finite(x))), , drop = FALSE]
+    if (nrow(mat) < 3) next
+
+    corr_mat <- Hmisc::rcorr(mat, type = correlation_method)
+
+    corr_df <- as.data.frame(corr_mat$r) |>
+      tibble::rownames_to_column("var1") |>
+      tidyr::pivot_longer(-var1,
+                          names_to = "var2",
+                          values_to = "correlation")
+    pval_df <- as.data.frame(corr_mat$P) |>
+      tibble::rownames_to_column("var1") |>
+      tidyr::pivot_longer(-var1,
+                          names_to = "var2",
+                          values_to = "p.value")
+
+    merged <- dplyr::inner_join(corr_df,
+                                pval_df,
+                                by = c("var1", "var2")) |>
+      dplyr::filter(abs(correlation) > correlation_cutoff) |>
       dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
       dplyr::filter(!!rlang::sym(cor_pval_column) < pval_cutoff)
 
@@ -311,4 +433,20 @@ run_correlation <- function(
   df <- col_df |> dplyr::select(where(is.numeric))
   if (!is.null(exposure_cols)) df <- df[, exposure_cols, drop = FALSE]
   tibble::rownames_to_column(df, "id")
+}
+
+.extract_pc_matrix <- function(col_df, n_pcs = NULL) {
+  all_pcs <- col_df |>
+    dplyr::select(where(is.numeric)) |>
+    dplyr::select(matches("^PC\\d+$"))
+
+  if (!is.null(n_pcs)) {
+    pc_names <- colnames(all_pcs)
+    # Sort by numeric PC number
+    pc_names_sorted <- pc_names[order(readr::parse_number(pc_names))]
+    selected <- pc_names_sorted[seq_len(min(n_pcs, length(pc_names_sorted)))]
+    all_pcs <- all_pcs[, selected, drop = FALSE]
+  }
+
+  tibble::rownames_to_column(all_pcs, "id")
 }

@@ -1,16 +1,35 @@
 Package: tidyexposomics
 Title: Integrated Exposure-Omics Analysis Powered by Tidy Principles
-Version: 0.0.0.9000
+Version: 0.99.0
 Authors@R: 
-    person("Jason", "Laird", , "jasonlaird5353@gmail.com", role = c("aut", "cre"))
+    person(given = "Jason",
+    family  = "Laird",
+    email = "jasonlaird5353@gmail.com",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0009-0000-5994-2236")
+    )
 Description: The tidyexposomics package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. We structure our commands to fit into the tidyverse framework, where commands are designed to be simplified and intuitive. Here we provide functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
-URL: https://github.com/BioNomad/tidyexposomics
+License: MIT + file LICENSE
+URL: https://BioNomad.github.io/tidyexposomics
 BugReports: https://github.com/BioNomad/tidyexposomics/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+VignetteBuilder: knitr
+biocViews: 
+    Software, 
+    Transcriptomics, 
+    GeneExpression, 
+    Epigenetics, 
+    Proteomics,
+    DifferentialExpression, 
+    DifferentialMethylation, 
+    GraphAndNetwork,
+    MultipleComparison, 
+    Regression,
+    StatisticalMethod, 
+    Visualization, 
+    WorkflowStep
 Imports: 
     broom,
     circlize,
@@ -41,7 +60,8 @@ Imports:
     tidybulk,
     tidyr,
     tidytext
-Depends: 
+Depends:
+    R (>= 4.4.0),
     tidyverse
 Suggests: 
     forcats,

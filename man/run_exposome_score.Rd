@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_exposome_score.R
 \name{run_exposome_score}
 \alias{run_exposome_score}
-\title{Calculate Exposome Score for a MultiAssayExperiment}
+\title{Compute Composite Exposome Scores}
 \usage{
 run_exposome_score(
   expomicset,
@@ -15,36 +15,41 @@ run_exposome_score(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data in its \code{colData}.}
 
-\item{score_type}{Character string indicating the scoring method to use. One of \code{"mean"}, \code{"median"}, \code{"pca"}, \code{"irt"}, \code{"quantile"}, or \code{"var"}.}
+\item{score_type}{Character. The method used to compute the score. Options are:
+\code{"mean"}, \code{"sum"}, \code{"median"}, \code{"pca"}, \code{"irt"}, \code{"quantile"}, \code{"var"}.}
 
-\item{exposure_cols}{Optional character vector specifying which exposure columns to use. If \code{NULL}, all numeric columns (excluding those starting with "PC") are used.}
+\item{exposure_cols}{Optional character vector. Specific exposure column names to include. If \code{NULL}, all numeric columns are used.}
 
-\item{scale}{Logical; if \code{TRUE}, standardizes (z-scores) the selected exposures before scoring. Default is \code{TRUE}.}
+\item{scale}{Logical. Whether to scale the exposures before computing the score. Default is \code{TRUE}.}
 
-\item{score_column_name}{Optional string to rename the resulting exposome score column in the output \code{colData}. If \code{NULL}, a default name based on \code{score_type} is used.}
+\item{score_column_name}{Optional name for the resulting score column. If \code{NULL}, an automatic name is used (e.g., \code{"exposome_score_pca"}).}
 }
 \value{
-A \code{MultiAssayExperiment} object with a new column added to its \code{colData}, containing the computed exposome score.
+A \code{MultiAssayExperiment} object with the exposome score added to \code{colData()}.
 }
 \description{
-This function calculates exposome scores using various methods (mean, median, PCA, IRT, quantile, variance)
-based on numeric exposure variables found in the \code{colData} of a \code{MultiAssayExperiment} object.
+Calculates a summary exposome score per sample using one of several methods including
+mean, sum, median, PCA (first principal component), IRT (Item Response Theory), quantile
+binning, or row-wise variance. The resulting score is added to the \code{colData} of the
+\code{MultiAssayExperiment} object.
 }
 \details{
 \itemize{
-\item \code{"mean"}: Computes the row-wise mean across exposure values.
-\item \code{"sum"}: Computes the row-wise sum across exposure values.
-\item \code{"median"}: Computes the row-wise median across exposure values.
-\item \code{"pca"}: Performs PCA on exposures and uses the first principal component.
-\item \code{"irt"}: Fits a unidimensional graded IRT model using decile-binned exposures.
-\item \code{"quantile"}: Converts each exposure to deciles (1–10) and sums them row-wise.
-\item \code{"var"}: Computes the row-wise variance across exposure values.
+\item \code{"pca"} uses the first principal component from \code{prcomp()}.
+\item \code{"irt"} uses the \code{mirt} package to fit a graded response model to discretized exposures.
+\item \code{"quantile"} assigns decile bins (1–10) to each variable and sums them row-wise.
+\item \code{"var"} computes the row-wise variance across exposures.
 }
-
-Note: IRT-based scoring requires the \code{mirt} package.
 }
 \examples{
-# Compute a PCA-based exposome score using specific exposure columns
-# mae <- run_exposome_score(mae, exposure_cols = c("no2", "pm25"), score_type = "pca", score_column_name = "pca_score")
+\dontrun{
+expomicset <- run_exposome_score(
+  expomicset,
+  score_type = "pca",
+  exposure_cols = c("pm25", "no2", "o3"),
+  scale = TRUE,
+  score_column_name = "air_pollution_score"
+)
+}
 
 }

@@ -4,10 +4,19 @@
 \alias{run_pca}
 \title{Perform Principal Component Analysis (PCA)}
 \usage{
-run_pca(expomicset, action = "add")
+run_pca(
+  expomicset,
+  log_trans_exp = FALSE,
+  log_trans_omics = TRUE,
+  action = "add"
+)
 }
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing omics and exposure data.}
+
+\item{log_trans_exp}{A boolean value specifying whether to log2 transform the exposure data}
+
+\item{log_trans_omics}{a boolean value specifying whether to log2 transform the omics data}
 
 \item{action}{A character string specifying whether to store (\code{"add"}) or return (\code{"get"}) the results. Default is \code{"add"}.}
 }

@@ -35,7 +35,7 @@ This function:
 \item Variance, standard deviation
 \item Coefficient of variation (\code{sd / mean})
 }
-\item Merges the result with variable metadata stored in \code{metadata(expomicset)$var_info}.
+\item Merges the result with variable metadata stored in \code{metadata(expomicset)$codebook}.
 }
 }
 \examples{

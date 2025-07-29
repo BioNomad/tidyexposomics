@@ -1,59 +1,54 @@
-#' Plot Network Graph of Omics-Exposure Associations
+#' Plot Network Graph of Features or Exposures
 #'
-#' Visualizes a tidygraph network stored in the `MultiAssayExperiment` metadata using `ggraph`.
+#' Visualizes network structures created by `run_create_network()` from the metadata of a `MultiAssayExperiment` object.
+#' Nodes can represent features (e.g., genes or factors) or exposures, and edges represent correlations or shared connections.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing network metadata (e.g., `"omics_exposure_network"`).
-#' @param network A character string specifying which network to plot. Options are:
-#' \describe{
-#'   \item{"omics_exposure_network"}{The full correlation network.}
-#'   \item{"omics_exposure_deg_network"}{Subset of the network for DEGs.}
-#'   \item{"omics_exposure_factor_network"}{Subset of the network involving factor features.}
-#' }
-#' @param include_stats Logical; whether to compute and visualize centrality statistics. Default is `TRUE`.
-#' @param nodes_to_include A character vector of node names to retain. If `NULL`, include all nodes.
-#' @param centrality_thresh Numeric threshold to retain only nodes above a minimum centrality value.
-#' @param top_n_nodes Integer; retain only the top N most central nodes.
-#' @param cor_thresh Numeric; threshold for filtering edges by absolute correlation.
-#' @param label Logical; whether to display node labels. Default is `FALSE`.
-#' @param label_top_n Integer; number of top central nodes to label if `label = TRUE` and `nodes_to_label` is `NULL`. Default is `5`.
-#' @param nodes_to_label A character vector of node names to label. Overrides `label_top_n` if provided.
-#' @param facet_var Optional column name (in the node data) to use for faceting the layout.
-#' @param foreground Color of the label highlight. Default is `"steelblue"`.
-#' @param fg_text_colour Text color for node labels. Default is `"grey25"`.
-#' @param node_colors Optional named vector for manually setting node colors by group.
-#' @param node_color_var A column name in node metadata used for color mapping (e.g., `"type"` or `"category"`).
-#' @param alpha Transparency for nodes. Default is `0.5`.
-#' @param size_lab Label for the node size legend. Default is `"Centrality"`.
-#' @param color_lab Label for the node color legend. Default is `"Group"`.
+#' @param expomicset A `MultiAssayExperiment` object containing network results in metadata.
+#' @param network Character string specifying the network type. One of `"degs"`, `"omics"`, `"factors"`,
+#'   `"factor_features"`, `"exposures"`, `"degs_feature_cor"`, `"omics_feature_cor"`, `"factor_features_feature_cor"`.
+#' @param include_stats Logical; if `TRUE`, include edge weights and node centrality metrics in the plot aesthetics. Default is `TRUE`.
+#' @param nodes_to_include Optional character vector of node names to include (subset of `name`).
+#' @param centrality_thresh Optional numeric threshold to filter nodes by centrality degree.
+#' @param top_n_nodes Optional integer to keep only the top N nodes by centrality.
+#' @param cor_thresh Optional numeric threshold to filter edges by minimum absolute correlation.
+#' @param label Logical; whether to label nodes. If `TRUE`, top nodes will be labeled.
+#' @param label_top_n Integer; number of top-centrality nodes to label if `label = TRUE`. Default is `5`.
+#' @param nodes_to_label Optional character vector of specific nodes to label.
+#' @param facet_var Optional node metadata column to facet the network layout by.
+#' @param foreground Color for node outlines and edge borders. Default is `"steelblue"`.
+#' @param fg_text_colour Color of node label text. Default is `"grey25"`.
+#' @param node_colors Optional named vector of colors for node groups.
+#' @param node_color_var Optional node attribute used for node color mapping.
+#' @param alpha Alpha transparency for nodes and edges. Default is `0.5`.
+#' @param size_lab Legend title for node size (typically centrality). Default is `"Centrality"`.
+#' @param color_lab Legend title for node color group. Default is `"Group"`.
+#'
+#' @return A `ggraph` plot object.
 #'
 #' @details
-#' This function:
-#' \itemize{
-#'   \item Selects a stored network from `metadata(expomicset)`.
-#'   \item Applies optional node and edge filters (e.g., correlation threshold, centrality, node list).
-#'   \item Prunes unconnected nodes (nodes not involved in any remaining edges).
-#'   \item Computes node centrality for sizing or filtering if requested.
-#'   \item Generates a `ggraph` layout using `.build_ggraph_plot()`.
-#' }
-#' Node color and label aesthetics are customizable. Labeling can be automatic (e.g., top 5 by centrality) or manual via `nodes_to_label`.
+#' This function retrieves the stored graph object and optionally filters or labels nodes based on:
+#' centrality, correlation, user input, or group-specific attributes. It supports layout faceting,
+#' custom color mappings, and highlights highly central nodes.
 #'
-#' @return A `ggraph` object for plotting.
+#' Large graphs (> 500 nodes) will prompt the user before plotting.
 #'
 #' @examples
 #' \dontrun{
-#' plot_network(
-#'   expomicset,
-#'   network = "omics_exposure_network",
-#'   cor_thresh = 0.4,
-#'   top_n_nodes = 100,
-#'   label = TRUE
-#' )
+#' plot_network(expomicset, network = "degs", label = TRUE)
+#' plot_network(expomicset, network = "exposures", cor_thresh = 0.4)
+#' plot_network(expomicset, network = "omics", top_n_nodes = 50, node_color_var = "exp_name")
 #' }
 #'
 #' @export
-
 plot_network <- function(expomicset,
-                         network = c("degs", "omics", "factors", "exposures"),
+                         network = c("degs",
+                                     "omics",
+                                     "factors",
+                                     "factor_features",
+                                     "exposures",
+                                     "degs_feature_cor",
+                                     "omics_feature_cor",
+                                     "factor_features_feature_cor"),
                          include_stats = TRUE,
                          nodes_to_include = NULL,
                          centrality_thresh = NULL,
@@ -83,7 +78,7 @@ plot_network <- function(expomicset,
     stop("No network found for `feature_type = '", network, "'. Please run `run_create_network()` first.")
   }
 
-  message("Extracting graph...")
+  message("Extracting graph.")
   g <- tidygraph::as_tbl_graph(net_obj$graph)
 
   if (!is.null(nodes_to_include)) {

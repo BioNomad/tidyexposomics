@@ -23,20 +23,20 @@
 #' @export
 filter_non_normal <- function(expomicset,
                               p_thresh = 0.05) {
-
-  # Extract non-normal variables based on the p-value threshold
-  non_normal_vars <- expomicset |>
+  norm_df <- expomicset |>
     MultiAssayExperiment::metadata() |>
-    purrr::pluck("quality_control") |>
-    purrr::pluck("transformation") |>
-    purrr::pluck("norm_df") |>
-    purrr::pluck("exposure") |>
-    filter((expomicset |>
-             MultiAssayExperiment::metadata() |>
-             purrr::pluck("quality_control") |>
-             purrr::pluck("transformation") |>
-             purrr::pluck("norm_df") |>
-             purrr::pluck("p.value")) < p_thresh)
+    purrr::pluck("quality_control",
+                 "transformation",
+                 "norm_df")
+
+  if (!all(c("exposure", "p.value") %in% colnames(norm_df))) {
+    stop("norm_df must contain 'exposure' and 'p.value' columns.")
+  }
+
+  # Get exposures to drop
+  non_normal_vars <- norm_df |>
+    dplyr::filter(p.value < p_thresh) |>
+    dplyr::pull(exposure)
 
   message("Filtering out ",
           length(non_normal_vars),
@@ -49,7 +49,6 @@ filter_non_normal <- function(expomicset,
 
   # Filter colData in each experiment
   for (omics_name in names(MultiAssayExperiment::experiments(expomicset))) {
-
     current_colData <- MultiAssayExperiment::colData(
       MultiAssayExperiment::experiments(expomicset)[[omics_name]])
 
@@ -61,17 +60,15 @@ filter_non_normal <- function(expomicset,
       MultiAssayExperiment::experiments(expomicset)[[omics_name]]) <- current_colData
   }
 
-  # Add analysis steps taken to metadata
+  # Log metadata
   step_record <- list(
-    filter_non_normal=
-      list(timestamp = Sys.time(),
-           params = list(p_thresh = p_thresh),
-           notes = paste0(
-             "Filtered out non-normal exposure variables based on p-value threshold of ",
-             p_thresh, ". ",
-             length(non_normal_vars),
-             " variables removed.")
-      ))
+    filter_non_normal = list(
+      timestamp = Sys.time(),
+      params = list(p_thresh = p_thresh),
+      notes = paste0(
+        "Filtered out non-normal exposure variables based on p-value threshold of ",
+        p_thresh, ". ", length(non_normal_vars), " variables removed.")
+    ))
 
   MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
     MultiAssayExperiment::metadata(expomicset)$summary$steps,
@@ -80,3 +77,63 @@ filter_non_normal <- function(expomicset,
 
   return(expomicset)
 }
+
+# filter_non_normal <- function(expomicset,
+#                               p_thresh = 0.05) {
+#
+#   # Extract non-normal variables based on the p-value threshold
+#   non_normal_vars <- expomicset |>
+#     MultiAssayExperiment::metadata() |>
+#     purrr::pluck("quality_control") |>
+#     purrr::pluck("transformation") |>
+#     purrr::pluck("norm_df") |>
+#     purrr::pluck("exposure") |>
+#     dplyr::filter((expomicset |>
+#              MultiAssayExperiment::metadata() |>
+#              purrr::pluck("quality_control") |>
+#              purrr::pluck("transformation") |>
+#              purrr::pluck("norm_df") |>
+#              purrr::pluck("p.value")) < p_thresh)
+#
+#   message("Filtering out ",
+#           length(non_normal_vars),
+#           " non-normal exposure variables.")
+#
+#   # Filter colData in the main object
+#   MultiAssayExperiment::colData(expomicset) <- MultiAssayExperiment::colData(expomicset)[
+#     , !colnames(MultiAssayExperiment::colData(expomicset)) %in% non_normal_vars,
+#     drop = FALSE]
+#
+#   # Filter colData in each experiment
+#   for (omics_name in names(MultiAssayExperiment::experiments(expomicset))) {
+#
+#     current_colData <- MultiAssayExperiment::colData(
+#       MultiAssayExperiment::experiments(expomicset)[[omics_name]])
+#
+#     current_colData <- current_colData[
+#       , !colnames(current_colData) %in% non_normal_vars,
+#       drop = FALSE]
+#
+#     MultiAssayExperiment::colData(
+#       MultiAssayExperiment::experiments(expomicset)[[omics_name]]) <- current_colData
+#   }
+#
+#   # Add analysis steps taken to metadata
+#   step_record <- list(
+#     filter_non_normal=
+#       list(timestamp = Sys.time(),
+#            params = list(p_thresh = p_thresh),
+#            notes = paste0(
+#              "Filtered out non-normal exposure variables based on p-value threshold of ",
+#              p_thresh, ". ",
+#              length(non_normal_vars),
+#              " variables removed.")
+#       ))
+#
+#   MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+#     MultiAssayExperiment::metadata(expomicset)$summary$steps,
+#     step_record
+#   )
+#
+#   return(expomicset)
+# }

@@ -2,14 +2,12 @@
 % Please edit documentation in R/run_differential_abundance.R
 \name{run_differential_abundance}
 \alias{run_differential_abundance}
-\title{Perform Differential Abundance Analysis}
+\title{Run Differential Abundance Analysis}
 \usage{
 run_differential_abundance(
   expomicset,
   formula,
   abundance_col = "counts",
-  minimum_counts = 10,
-  minimum_proportion = 0.3,
   method = "limma_voom",
   contrasts = NULL,
   scaling_method = "none",
@@ -17,51 +15,34 @@ run_differential_abundance(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics and exposure data.}
+\item{expomicset}{A \code{MultiAssayExperiment} containing assays to test.}
 
-\item{formula}{A model formula for differential testing.}
+\item{formula}{A model formula for the differential analysis (e.g., ~ group + batch).}
 
-\item{abundance_col}{A character string specifying the assay data column to use. Default is \code{"counts"}.}
+\item{abundance_col}{Character. The name of the assay matrix to use for abundance values. Default is \code{"counts"}.}
 
-\item{minimum_counts}{An integer specifying the minimum count threshold for feature filtering. Default is \code{10}.}
+\item{method}{Character. Differential analysis method to use. Currently supports \code{"limma_voom"} (default).}
 
-\item{minimum_proportion}{A numeric specifying the minimum proportion of samples with nonzero counts. Default is \code{0.3}.}
+\item{contrasts}{A named list of contrasts for pairwise comparisons. Default is \code{NULL} (uses default group comparisons).}
 
-\item{method}{A character string specifying the differential abundance method (\code{"limma_voom"}, \code{"DESeq2"}, etc.). Default is \code{"limma_voom"}.}
+\item{scaling_method}{Character. Scaling method to apply before modeling. Options include \code{"none"} (default), \code{"zscore"}, etc.}
 
-\item{contrasts}{A character vector specifying contrasts for differential testing. Default is \code{NULL}.}
-
-\item{scaling_method}{A character string specifying normalization/scaling. Default is \code{"none"}.}
-
-\item{action}{A character string specifying \code{"add"} (store results in metadata) or \code{"get"} (return results). Default is \code{"add"}.}
+\item{action}{Character. Whether to \code{"add"} results to \code{expomicset} metadata or \code{"get"} the results as a data frame. Default is \code{"add"}.}
 }
 \value{
-If \code{action="add"}, returns the updated \code{expomicset}.
-If \code{action="get"}, returns a \code{data.frame} with differential abundance results, including:
-\item{feature}{Feature identifier.}
-\item{exp_name}{Assay name.}
-\item{logFC}{Log-fold change.}
-\item{adj.P.Val}{Adjusted p-value.}
+Either the updated \code{MultiAssayExperiment} (if \code{action = "add"}) or a tibble with differential abundance results (if \code{action = "get"}).
 }
 \description{
-Runs differential abundance testing across all assays in a \code{MultiAssayExperiment} object.
-}
-\details{
-This function:
-\itemize{
-\item Iterates over all assays in \code{expomicset}.
-\item Updates sample metadata in each assay.
-\item Runs \code{.run_se_differential_abundance()} for differential testing.
-\item Filters results based on \code{minimum_counts} and \code{minimum_proportion}.
-\item Combines results across assays.
-\item Stores results in \code{metadata(expomicset)$differential_abundance} when \code{action="add"}.
-}
+Performs differential abundance testing across all assays in a \code{MultiAssayExperiment}
+object using a specified statistical method such as \code{limma_voom}. The function updates
+each assay with its corresponding \code{colData}, fits the model using the provided formula,
+and combines the results into a unified table.
 }
 \examples{
 \dontrun{
 expom <- run_differential_abundance(
   expomicset = expom,
-  formula = ~ condition,
+  formula = ~ exposure_group,
   abundance_col = "counts",
   method = "limma_voom"
 )

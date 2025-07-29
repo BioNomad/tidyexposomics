@@ -19,6 +19,8 @@ tidy_exp_pal <- c(
   "#48817d"
 )
 
+divergent_cols <- c('#0000FF','#FF0000','#00FF00','#000033','#FF00B6','#005300','#FFD300','#009FFF','#9A4D42','#00FFBE','#783FC1','#1F9698','#FFACFD','#B1CC71','#F1085C','#FE8F42','#DD00FF','#201A01','#720055','#766C95','#02AD24','#C8FF00','#886C00','#FFB79F','#858567','#A10300','#14F9FF','#00479E','#DC5E93','#93D4FF','#004CFF')
+
 scale_fill_tidy_exp <- function(...,rev = F) {
   if (rev) {
     tidy_exp_pal <- rev(tidy_exp_pal)
@@ -77,7 +79,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
 #' @noRd
 .log2_multiassay <- function(expomicset) {
 
-  message("Log2-Transforming each assay in MultiAssayExperiment...")
+  message("Log2-Transforming each assay in MultiAssayExperiment.")
 
   # Apply log2 transformation to each assay
   log2_experiments <- lapply(MultiAssayExperiment::experiments(expomicset),
@@ -112,7 +114,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
 .scale_multiassay <- function(expomicset,
                               log2=FALSE) {
 
-  message("Scaling each assay in MultiAssayExperiment...")
+  message("Scaling each assay in MultiAssayExperiment.")
 
   # Check if log2 transformation is needed
   if (log2){
@@ -194,10 +196,17 @@ scale_color_tidy_exp <- function(..., rev = F) {
     abundance_col = "counts",
     method = "limma_voom",
     scaling_method = "none",
-    min_counts = 10,
-    min_proportion = 0.3,
     contrasts = NULL
 ) {
+
+  # Confirm there are no negative values
+  if (min(SummarizedExperiment::assay(se,abundance_col)) < 0) {
+    # add a absolute value of minimum and add pseudocount to avoid negative values
+    message("Negative values detected. Adding pseudocount to all values..")
+    min_value <- abs(min(SummarizedExperiment::assay(se,abundance_col))) + 1
+    SummarizedExperiment::assay(se,abundance_col) <- SummarizedExperiment::assay(se,abundance_col) + min_value
+
+  }
 
   # Check for contrast input
   if (!is.null(contrasts)) {
@@ -206,8 +215,9 @@ scale_color_tidy_exp <- function(..., rev = F) {
 
       # Run differential abundance analysis
       contrast_results <- se |>
-        tidybulk::identify_abundant(minimum_counts = min_counts,
-                          minimum_proportion = min_proportion) |>
+        # Hard coding minimum counts and proportion to 0 since filtering is per omic
+        tidybulk::identify_abundant(minimum_counts = 0,
+                          minimum_proportion = 0) |>
         tidybulk::test_differential_abundance(
           formula,
           .abundance = !!sym(abundance_col),
@@ -226,9 +236,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
           feature = rownames(contrast_results),
           contrast = contrast,
           method = method,
-          scaling = scaling_method,
-          min_counts = min_counts,
-          min_proportion = min_proportion
+          scaling = scaling_method
         )
 
       res_list[[contrast]] <- res
@@ -236,9 +244,10 @@ scale_color_tidy_exp <- function(..., rev = F) {
     return(dplyr::bind_rows(res_list))
   } else {
     contrast_results <- se |>
+      # Hard coding minimum counts and proportion to 0 since filtering is per omic
       tidybulk::identify_abundant(
-        minimum_counts = min_counts,
-        minimum_proportion = min_proportion) |>
+        minimum_counts = 0,
+        minimum_proportion = 0) |>
       tidybulk::test_differential_abundance(
         formula,
         .abundance = !!sym(abundance_col),
@@ -256,9 +265,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
         feature = rownames(contrast_results),
         contrast = all.vars(formula)[1],
         method = method,
-        scaling = scaling_method,
-        min_counts = min_counts,
-        min_proportion = min_proportion
+        scaling = scaling_method
       )
 
     return(res)
@@ -279,7 +286,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
   # Extract sensitivity analysis results
   sensitivity_df <- sensitivity_df
 
-  message("Computing feature stability across sensitivity conditions...")
+  message("Computing feature stability across sensitivity conditions.")
 
   feature_stability_df <- sensitivity_df |>
     group_by(feature, exp_name) |>
@@ -335,7 +342,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
   require(Hmisc)
   require(reshape2)
 
-  message("Performing correlation analysis on summarized experiment...")
+  message("Performing correlation analysis on summarized experiment.")
 
   # Ensure colData has the specified exposures
   exposure_data <- SummarizedExperiment::colData(se) |>
@@ -373,7 +380,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
     tibble::column_to_rownames("id")
 
   # Perform correlation analysis
-  message("Running Spearman correlation analysis...")
+  message("Running Spearman correlation analysis.")
   correlation_matrix <- merged_data |>
     as.matrix() |>
     Hmisc::rcorr(type = correlation_method)
@@ -1280,7 +1287,7 @@ scale_color_tidy_exp <- function(..., rev = F) {
   }
 
   if (label) {
-    p <- p + geom_node_label(aes(label = label), repel = T)
+    p <- p + geom_node_label(aes(label = label),fontface = "italic", repel = T)
   }
 
   if (include_stats) {

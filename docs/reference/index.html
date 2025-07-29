@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,7 @@
           <code><a href="run_association.html">run_association()</a></code>
 
         </dt>
-        <dd>Generalized Association Analysis Across Data Sources</dd>
+        <dd>Run Association Analysis</dd>
       </dl><dl><dt>
 
           <code><a href="run_cluster_samples.html">run_cluster_samples()</a></code>
@@ -87,31 +87,31 @@
           <code><a href="run_correlation.html">run_correlation()</a></code>
 
         </dt>
-        <dd>Generalized Correlation Analysis Between Exposures and Features</dd>
+        <dd>Run Correlation Analysis</dd>
       </dl><dl><dt>
 
           <code><a href="run_create_network.html">run_create_network()</a></code>
 
         </dt>
-        <dd>Create and store a network from correlation results in a MultiAssayExperiment</dd>
+        <dd>Create Correlation Network from Feature Data</dd>
       </dl><dl><dt>
 
           <code><a href="run_differential_abundance.html">run_differential_abundance()</a></code>
 
         </dt>
-        <dd>Perform Differential Abundance Analysis</dd>
+        <dd>Run Differential Abundance Analysis</dd>
       </dl><dl><dt>
 
           <code><a href="run_enrichment.html">run_enrichment()</a></code>
 
         </dt>
-        <dd>Perform Functional Enrichment Analysis</dd>
+        <dd>Perform enrichment analysis on selected features from a expomicset object</dd>
       </dl><dl><dt>
 
           <code><a href="run_exposome_score.html">run_exposome_score()</a></code>
 
         </dt>
-        <dd>Calculate Exposome Score for a MultiAssayExperiment</dd>
+        <dd>Compute Composite Exposome Scores</dd>
       </dl><dl><dt>
 
           <code><a href="run_exposure_impact.html">run_exposure_impact()</a></code>
@@ -135,7 +135,7 @@
           <code><a href="run_multiomics_integration.html">run_multiomics_integration()</a></code>
 
         </dt>
-        <dd>Perform Multi-Omics Integration</dd>
+        <dd>Run Multi-Omics Integration</dd>
       </dl><dl><dt>
 
           <code><a href="run_normality_check.html">run_normality_check()</a></code>
@@ -159,7 +159,7 @@
           <code><a href="run_sensitivity_analysis.html">run_sensitivity_analysis()</a></code>
 
         </dt>
-        <dd>Perform Sensitivity Analysis for Differential Abundance</dd>
+        <dd>Run Sensitivity Analysis for Differential Abundance</dd>
       </dl><dl><dt>
 
           <code><a href="run_summarize_exposures.html">run_summarize_exposures()</a></code>
@@ -197,6 +197,12 @@
         <dd>Filter Non-Normal Exposure Variables</dd>
       </dl><dl><dt>
 
+          <code><a href="filter_omics.html">filter_omics()</a></code>
+
+        </dt>
+        <dd>Filter low-quality features in omics assays</dd>
+      </dl><dl><dt>
+
           <code><a href="filter_sample_outliers.html">filter_sample_outliers()</a></code>
 
         </dt>
@@ -209,6 +215,18 @@
         <dd>Extract Merged Omics and Exposure Data Frame</dd>
       </dl><dl><dt>
 
+          <code><a href="extract_results.html">extract_results()</a></code>
+
+        </dt>
+        <dd>Extract Results from <code>MultiAssayExperiment</code> Metadata</dd>
+      </dl><dl><dt>
+
+          <code><a href="extract_results_excel.html">extract_results_excel()</a></code>
+
+        </dt>
+        <dd>Export tidyexposomics Results to Excel</dd>
+      </dl><dl><dt>
+
           <code><a href="extract_top_factor_features.html">extract_top_factor_features()</a></code>
 
         </dt>
@@ -218,7 +236,7 @@
           <code><a href="transform_exposure.html">transform_exposure()</a></code>
 
         </dt>
-        <dd>Transform Exposure Variables in a MultiAssayExperiment</dd>
+        <dd>Transform Exposure Variables for Normality</dd>
       </dl><dl><dt>
 
           <code><a href="pivot_exp.html">pivot_exp()</a></code>
@@ -268,10 +286,16 @@
         <dd>Plot Correlation Summary from Exposure-Feature Correlations</dd>
       </dl><dl><dt>
 
-          <code><a href="plot_dotplot_enrichment.html">plot_dotplot_enrichment()</a></code>
+          <code><a href="plot_correlation_tile.html">plot_correlation_tile()</a></code>
 
         </dt>
-        <dd>Dotplot of Functional Enrichment Results</dd>
+        <dd>Plot Correlation Tilemap</dd>
+      </dl><dl><dt>
+
+          <code><a href="plot_enrichment.html">plot_enrichment()</a></code>
+
+        </dt>
+        <dd>Plot Enrichment Results from ExpOmicSet</dd>
       </dl><dl><dt>
 
           <code><a href="plot_exposures.html">plot_exposures()</a></code>
@@ -283,25 +307,13 @@
           <code><a href="plot_exposure_impact.html">plot_exposure_impact()</a></code>
 
         </dt>
-        <dd>Visualize Exposure Impact Metrics from DEG Centrality Analysis</dd>
-      </dl><dl><dt>
-
-          <code><a href="plot_factor_overlap.html">plot_factor_overlap()</a></code>
-
-        </dt>
-        <dd>Plot Overlap of Top Factor Features Across Experiments</dd>
+        <dd>Plot Exposure Impact on Network Centrality Metrics</dd>
       </dl><dl><dt>
 
           <code><a href="plot_factor_summary.html">plot_factor_summary()</a></code>
 
         </dt>
         <dd>Plot Summary of Factor Contributions from Multi-Omics Integration</dd>
-      </dl><dl><dt>
-
-          <code><a href="plot_go_group_exposures.html">plot_go_group_exposures()</a></code>
-
-        </dt>
-        <dd>Plot Exposures Associated with Features in GO Groups</dd>
       </dl><dl><dt>
 
           <code><a href="plot_heatmap_correlate_exposure.html">plot_heatmap_correlate_exposure()</a></code>
@@ -316,22 +328,22 @@
         <dd>Plot a Manhattan-style ExWAS summary across omics categories</dd>
       </dl><dl><dt>
 
-          <code><a href="plot_missing_summary.html">plot_missing_summary()</a></code>
+          <code><a href="plot_missing.html">plot_missing()</a></code>
 
         </dt>
-        <dd>Plot Summary of Missing Data Across Assays</dd>
+        <dd>Plot Missing Data Across Exposure and Omic Layers</dd>
       </dl><dl><dt>
 
           <code><a href="plot_network.html">plot_network()</a></code>
 
         </dt>
-        <dd>Plot Network Graph of Omics-Exposure Associations</dd>
+        <dd>Plot Network Graph of Features or Exposures</dd>
       </dl><dl><dt>
 
           <code><a href="plot_normality_summary.html">plot_normality_summary()</a></code>
 
         </dt>
-        <dd>Plot Summary of Normality Test for Exposure Variables</dd>
+        <dd>Plot Normality Summary of Exposure Variables</dd>
       </dl><dl><dt>
 
           <code><a href="plot_pca.html">plot_pca()</a></code>
@@ -379,6 +391,59 @@
 
         </dt>
         <dd>Launch Ontology Annotation Shiny App</dd>
+      </dl></div><div class="section level2">
+      <h2 id="example-data">Example Data<a class="anchor" aria-label="anchor" href="#example-data"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="chebi.html">chebi</a></code>
+
+        </dt>
+        <dd>ChEBI Ontology Table (Chemical Entities of Biological Interest)</dd>
+      </dl><dl><dt>
+
+          <code><a href="hpo.html">hpo</a></code>
+
+        </dt>
+        <dd>HPO Ontology Table (Human Phenotype Ontology)</dd>
+      </dl><dl><dt>
+
+          <code><a href="ecto.html">ecto</a></code>
+
+        </dt>
+        <dd>ECTO Ontology Table (Environmental Conditions, Treatments &amp; Exposures)</dd>
+      </dl><dl><dt>
+
+          <code><a href="annotated_cb.html">annotated_cb</a></code>
+
+        </dt>
+        <dd>Annotated Exposure Codebook (ISGlobal Exposome Challenge)</dd>
+      </dl><dl><dt>
+
+          <code><a href="meta.html">meta</a></code>
+
+        </dt>
+        <dd>Sample-Level Metadata for the Exposome Challenge Dataset</dd>
+      </dl><dl><dt>
+
+          <code><a href="fdata.html">fdata</a></code>
+
+        </dt>
+        <dd>Feature Metadata for Multi-Omics Assays</dd>
+      </dl><dl><dt>
+
+          <code><a href="omics_list.html">omics_list</a></code>
+
+        </dt>
+        <dd>Multi-Omics Assays for the Exposome Dataset</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

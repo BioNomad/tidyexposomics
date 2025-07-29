@@ -15,7 +15,7 @@ optionally grouped by a variable such as sex, smoking status, or exposure catego
 
     <a class="navbar-brand me-2" href="../index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@ optionally grouped by a variable such as sex, smoking status, or exposure catego
 
 
 <dt id="arg-exposure-cat">exposure_cat<a class="anchor" aria-label="anchor" href="#arg-exposure-cat"></a></dt>
-<dd><p>A character string or vector specifying exposure category names (from <code>var_info$category</code>) to include. Use <code>"all"</code> to include all exposures.</p></dd>
+<dd><p>A character string or vector specifying exposure category names (from <code>codebook$category</code>) to include. Use <code>"all"</code> to include all exposures.</p></dd>
 
 
 <dt id="arg-exposure-cols">exposure_cols<a class="anchor" aria-label="anchor" href="#arg-exposure-cols"></a></dt>
@@ -139,7 +139,7 @@ optionally grouped by a variable such as sex, smoking status, or exposure catego
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function:</p><ul><li><p>Filters exposure data based on category or selected columns.</p></li>
-<li><p>Merges variable metadata from <code>metadata(expomicset)$var_info</code>.</p></li>
+<li><p>Merges variable metadata from <code>metadata(expomicset)$codebook</code>.</p></li>
 <li><p>Supports either <strong>boxplot</strong> (vertical distributions per variable) or <strong>ridgeplot</strong> (horizontal density plots per variable).</p></li>
 <li><p>If <code>group_by</code> is specified, that variable defines the plot fill color; otherwise, the fill is based on exposure <code>category</code>.</p></li>
 <li><p>Facets by <code>category</code> using <code><a href="https://teunbrand.github.io/ggh4x/reference/facet_grid2.html" class="external-link">ggh4x::facet_grid2()</a></code> with color-coded strip backgrounds.</p></li>

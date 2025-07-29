@@ -48,5 +48,15 @@ reference:
   contents:
   - starts_with("ont")
 
+- title: Example Data
+  contents:
+  - starts_with("chebi")
+  - starts_with("hpo")
+  - starts_with("ecto")
+  - starts_with("annotated_cb")
+  - starts_with("meta")
+  - starts_with("fdata")
+  - starts_with("omics_list")
+
 
 

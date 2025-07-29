@@ -19,7 +19,7 @@
 #'   - 95% confidence interval of the mean
 #'   - Variance, standard deviation
 #'   - Coefficient of variation (`sd / mean`)
-#' - Merges the result with variable metadata stored in `metadata(expomicset)$var_info`.
+#' - Merges the result with variable metadata stored in `metadata(expomicset)$codebook`.
 #'
 #' @return
 #' A modified `MultiAssayExperiment` object (if `action = "add"`), or a data frame of summary statistics (if `action = "get"`).
@@ -34,7 +34,6 @@
 #' }
 #'
 #' @export
-
 run_summarize_exposures <- function(
     expomicset,
     exposure_cols = NULL,
@@ -89,7 +88,7 @@ run_summarize_exposures <- function(
     dplyr::inner_join(
       expomicset |>
     MultiAssayExperiment::metadata() |>
-    purrr::pluck("var_info"),
+    purrr::pluck("codebook"),
     by="variable") |>
     dplyr::mutate_if(is.numeric,~round(.,digits = 2))
 

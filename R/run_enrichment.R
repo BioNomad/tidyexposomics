@@ -1,164 +1,471 @@
-#' Perform Functional Enrichment Analysis
+#' Perform enrichment analysis on selected features from a expomicset object
 #'
-#' Runs functional enrichment analysis on differentially abundant features or correlated features in a `MultiAssayExperiment` object.
+#' This function performs enrichment analysis using selected features derived from differential expression,
+#' correlation analysis, or multi-omics factor features across experiments in an `expomicset`. It supports
+#' multiple enrichment databases (e.g., GO, KEGG, Reactome), applies FDR correction, and optionally clusters GO terms by Jaccard overlap.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics and exposure data.
-#' @param geneset A character string specifying the gene set to analyze. Options: `"deg"`, `"deg_exp_cor"`, `"factor_exp_cor"`, or `"factor"`.
-#' @param feature_col A character string specifying the column for feature names. Default is `"feature"`.
-#' @param mirna_assays A character vector specifying miRNA assays. Default is `NULL`.
-#' @param pval_col A character string specifying the column for p-values. Default is `"adj.P.Val"`.
-#' @param pval_threshold A numeric threshold for adjusted p-values. Default is `0.05`.
-#' @param logfc_col A character string specifying the column for log-fold changes. Default is `"logFC"`.
-#' @param logfc_threshold A numeric threshold for log-fold changes. Default is `log2(1)`.
-#' @param pAdjustMethod A character string specifying the p-value adjustment method. Default is `"fdr"`.
-#' @param pvalueCutoff A numeric threshold for significance in enrichment analysis. Default is `0.05`.
-#' @param qvalueCutoff A numeric threshold for false discovery rate control. Default is `0.1`.
-#' @param fun A character string specifying the enrichment function (`"enrichGO"`, `"enrichKEGG"`, etc.). Default is `"enrichGO"`.
-#' @param OrgDb A character string specifying the organism database. Default is `"org.Hs.eg.db"`.
-#' @param keyType A character string specifying the gene identifier type. Default is `"SYMBOL"`.
-#' @param ont A character string specifying the ontology for Gene Ontology analysis. Default is `"BP"` (Biological Process).
-#' @param clustering_approach A character string specifying the clustering approach for GO term grouping. Default is `"diana"`.
-#' @param action A character string specifying `"add"` (store results in metadata) or `"get"` (return results). Default is `"add"`.
+#' @param expomicset An `expomicset` (a `MultiAssayExperiment` object with metadata) containing omics and metadata.
+#' @param feature_type Character string indicating the feature source. One of `"degs"`, `"degs_robust"`,
+#'   `"omics"`, `"factor_features"`, `"degs_cor"`, `"omics_cor"`, or `"factor_features_cor"`.
+#' @param score_col Column name used for stability score filtering (only for `degs_robust`).
+#' @param score_threshold Optional numeric threshold for filtering stability scores. If `NULL`, the default
+#'   threshold stored in the metadata will be used.
+#' @param variable_map A data frame with `exp_name` and `feature` columns, used when `feature_type = "omics"`.
+#' @param factor_type Character string for selecting factor features: `"common_top_factor_features"` or
+#'   `"top_factor_features"`.
+#' @param feature_col The name of the feature column used to extract gene identifiers.
+#' @param deg_pval_col Column name for adjusted p-values from DEG analysis.
+#' @param deg_pval_threshold Threshold to select significant DEGs (default: 0.05).
+#' @param deg_logfc_col Column name for log-fold changes from DEG analysis.
+#' @param deg_logfc_threshold Threshold to select DEGs by absolute logFC (default: `log2(1.5)`).
+#' @param db Enrichment database to use. One of `"GO"`, `"KEGG"`, `"Reactome"`, `"BioPlanet"`, `"WikiPathways"`.
+#' @param species Species name (required for GO enrichment, e.g., `"Homo sapiens"`). Ignored for other databases.
+#' @param fenr_col Column name for gene IDs used by `fenr` (e.g., `"gene_symbol"`).
+#' @param padj_method Method for p-value adjustment (default: `"fdr"`).
+#' @param pval_thresh Adjusted p-value threshold for filtering enriched terms (default: 0.1).
+#' @param min_set Minimum number of selected genes overlapping an enriched term (default: 3).
+#' @param max_set Maximum number of selected genes overlapping an enriched term (default: 800).
+#' @param clustering_approach Clustering method for GO term grouping. Defaults to `"diana"`.
+#' @param action Either `"add"` to store results in the object's metadata or `"get"` to return results as a data frame.
 #'
-#' @return If `action="add"`, returns the updated `expomicset`.
-#' If `action="get"`, returns a `data.frame` with enrichment results.
+#' @return If `action = "add"`, returns the modified `ExpOmicSet` with enrichment results added to metadata.
+#'   If `action = "get"`, returns a `data.frame` of enrichment results with GO term clusters (if applicable).
+#'
+#' @details
+#' The function identifies selected features based on the chosen `feature_type`, determines the gene universe
+#' for each experiment, and performs enrichment analysis using the `fenr` package. Results are adjusted for
+#' multiple testing and optionally clustered by gene set overlap (for GO terms).
+#'
+#' If `feature_type` includes correlation-based results (ending in `_cor`), enrichment is performed for each
+#' exposure category separately.
+#'
+#' @examples
+#' \dontrun{
+#' expomicset <- run_enrichment(
+#'   expomicset,
+#'   feature_type = "degs",
+#'   db = "GO",
+#'   species = "Homo sapiens",
+#'   action = "add"
+#' )
+#'
+#' go_results <- run_enrichment(
+#'   expomicset,
+#'   feature_type = "factor_features_cor",
+#'   db = "GO",
+#'   species = "Homo sapiens",
+#'   action = "get"
+#' )
+#' }
 #'
 #' @export
 run_enrichment <- function(
     expomicset,
-    geneset,
-    robust = T,
+    feature_type = c("degs",
+                     "degs_robust",
+                     "omics",
+                     "factor_features",
+                     "degs_cor",
+                     "omics_cor",
+                     "factor_features_cor"),
     score_col = "stability_score",
     score_threshold = NULL,
+    variable_map = NULL,
+    factor_type = c("common_top_factor_features",
+                    "top_factor_features"),
     feature_col = "feature",
-    mirna_assays = NULL,
-    pval_col = "adj.P.Val",
-    pval_threshold = 0.05,
-    logfc_col = "logFC",
-    logfc_threshold = log2(1),
-    pAdjustMethod = "fdr",
-    pvalueCutoff = 0.05,
-    qvalueCutoff = 0.1,
-    fun = "enrichGO",
-    OrgDb = 'org.Hs.eg.db',
-    keyType = "SYMBOL",
-    ont = "BP",
+
+    deg_pval_col = "adj.P.Val",
+    deg_pval_threshold = 0.05,
+    deg_logfc_col = "logFC",
+    deg_logfc_threshold = log2(1.5),
+
+    db = c("GO", "KEGG", "Reactome", "BioPlanet", "WikiPathways"),
+    species = NULL,
+    fenr_col = "gene_symbol",
+    padj_method = "fdr",
+    pval_thresh = 0.1,
+    min_set = 3,
+    max_set = 800,
+
     clustering_approach = "diana",
     action = "add"
 ) {
-  # Run enrichment based on geneset type
-  enrich_res <- switch(
-    geneset,
-    "deg" = .da_functional_enrichment(
-      expomicset = expomicset,
-      robust = robust,
-      score_col = score_col,
-      score_threshold = score_threshold,
-      feature_col = feature_col,
-      mirna_assays = mirna_assays,
-      pval_col = pval_col,
-      pval_threshold = pval_threshold,
-      logfc_col = logfc_col,
-      logfc_threshold = logfc_threshold,
-      pAdjustMethod = pAdjustMethod,
-      pvalueCutoff = pvalueCutoff,
-      qvalueCutoff = qvalueCutoff,
-      OrgDb = OrgDb,
-      keyType = keyType,
-      ont = ont
-    ),
-    "deg_exp_cor" = .da_exposure_functional_enrichment(
-      expomicset = expomicset,
-      #feature_type = "degs",
-      feature_col = feature_col,
-      mirna_assays = mirna_assays,
-      pAdjustMethod = pAdjustMethod,
-      pvalueCutoff = pvalueCutoff,
-      qvalueCutoff = qvalueCutoff,
-      fun = fun,
-      OrgDb = OrgDb,
-      keyType = keyType,
-      ont = ont
-    ),
-    "factor_exp_cor" = .correlation_functional_enrichment(
-      expomicset = expomicset,
-      feature_type = "factors",
-      feature_col = feature_col,
-      mirna_assays = mirna_assays,
-      pAdjustMethod = pAdjustMethod,
-      pvalueCutoff = pvalueCutoff,
-      qvalueCutoff = qvalueCutoff,
-      fun = fun,
-      OrgDb = OrgDb,
-      keyType = keyType,
-      ont = ont
-    ),
-    "factor" = .factor_functional_enrichment(
-      expomicset = expomicset,
-      mirna_assays = mirna_assays,
-      pAdjustMethod = pAdjustMethod,
-      pvalueCutoff = pvalueCutoff,
-      qvalueCutoff = qvalueCutoff,
-      OrgDb = OrgDb,
-      keyType = keyType,
-      ont = ont
-    ),
-    stop("Invalid geneset. Choose from 'deg', 'deg_exp_cor', 'factor_exp_cor', or 'factor'.")
-  )
 
-  if (is.null(enrich_res) || nrow(enrich_res) == 0) {
-    warning("No enrichment results found for geneset '", geneset, "'. Skipping GO term clustering.")
-    if (action == "add") {
-      MultiAssayExperiment::metadata(expomicset)$enrichment[[geneset]] <- enrich_res
-      return(expomicset)
+  require(fenr)
+  db <- match.arg(db)
+  factor_type <- match.arg(factor_type)
+  feature_type <- match.arg(feature_type)
+
+  # Grab all feature meta data
+  fdata <- expomicset |>
+    pivot_feature()
+
+  if (feature_type %in% c("degs",
+                          "degs_robust",
+                          "omics",
+                          "factor_features")) {
+
+    # Get unique experiments
+    exps <- names(MultiAssayExperiment::experiments(expomicset))
+
+    # Set variable for enrichment results
+    enr_res <- list()
+
+    for (exp in exps) {
+      message("Working on '",
+              feature_type,
+              "' ",
+              exp,
+              " ",
+              db,
+              " enrichment analysis")
+      # Subset universe from rowData of experiment
+      universe_genes <- SummarizedExperiment::rowData(expomicset[[exp]])[[feature_col]] |>
+        unique()
+
+      # Select features per method
+      selected_genes <- switch(
+        feature_type,
+        "degs" = {
+          expomicset@metadata |>
+            purrr::pluck("differential_analysis") |>
+            purrr::pluck("differential_abundance") |>
+            dplyr::filter(exp_name == exp) |>
+            dplyr::filter(
+              !!rlang::sym(deg_pval_col) < deg_pval_threshold,
+              abs(!!rlang::sym(deg_logfc_col)) > deg_logfc_threshold
+            ) |>
+            pull(!!rlang::sym(feature_col)) |>
+            unique()
+        },
+
+        "degs_robust" = {
+          sens <- expomicset@metadata |>
+            purrr::pluck("differential_analysis") |>
+            purrr::pluck("sensitivity_analysis")
+
+          sens |>
+            purrr::pluck("feature_stability") |>
+            dplyr::filter(exp_name == exp,
+                   !!rlang::sym(score_col) > (score_threshold %||% sens$score_thresh)) |>
+            dplyr::select(feature,exp_name) |>
+            dplyr::inner_join(
+              fdata |>
+                dplyr::filter(.exp_name == exp),
+              # .update_assay_colData(expomicset,exp) |>
+              #   SummarizedExperiment::rowData() |>
+              #   as.data.frame() |>
+              #   tibble::rownames_to_column("feature"),
+              by=c("feature" = ".feature",
+                   "exp_name" = ".exp_name")
+            ) |>
+            dplyr::pull(!!dplyr::sym(feature_col)) |>
+            unique()
+        },
+
+        "factor_features" = {
+          expomicset@metadata |>
+            purrr::pluck("differential_analysis") |>
+            purrr::pluck("multiomics_integration") |>
+            purrr::pluck(factor_type) |>
+            dplyr::filter(exp_name == exp) |>
+            dplyr::inner_join(
+              fdata |>
+                dplyr::filter(.exp_name == exp),
+              # .update_assay_colData(expomicset,exp) |>
+              #   SummarizedExperiment::rowData() |>
+              #   as.data.frame() |>
+              #   tibble::rownames_to_column("feature"),
+              by=c("feature" = ".feature",
+                   "exp_name" = ".exp_name")
+            ) |>
+            dplyr::pull(!!dplyr::sym(feature_col)) |>
+            unique()
+
+        },
+
+        "omics" = {
+          variable_map |>
+            dplyr::filter(exp_name == exp) |>
+            dplyr::inner_join(
+              fdata |>
+                dplyr::filter(.exp_name == exp),
+              # .update_assay_colData(expomicset,exp) |>
+              #   SummarizedExperiment::rowData() |>
+              #   as.data.frame() |>
+              #   tibble::rownames_to_column("feature"),
+              by=c("feature" = ".feature",
+                   "exp_name" = ".exp_name")
+            ) |>
+            dplyr::pull(!!dplyr::sym(feature_col)) |>
+            unique()
+        }
+      )
+
+      if(length(selected_genes) < 1){
+        enr <- NULL
+      } else if (is.null(universe_genes) | all(is.na(universe_genes))){
+        enr <- NULL
+      }else {
+
+        # Run enrichment
+        enr <- .run_fenr(
+          selected_genes = selected_genes,
+          universe_genes = universe_genes,
+          db = db,
+          species = species,
+          fenr_col = fenr_col
+        ) |>
+          dplyr::mutate(exp_name = exp)
+      }
+
+      enr_res[[exp]] <- enr
+    }
+
+    # Multiple-hypothesis correction after all tests are done
+    enr_res <- enr_res |>
+      dplyr::bind_rows() |>
+      dplyr::mutate(padj = p.adjust(p_value,
+                             method = padj_method)) |>
+      dplyr::filter(padj < pval_thresh) |>
+      dplyr::filter(n_with_sel > min_set,
+                    n_with_sel < max_set)
+  }
+
+  if (feature_type %in% c("degs_cor",
+                          "omics_cor",
+                          "factor_features_cor")){
+
+    # Set the categories and experiment names to loop through
+    cor_table <- expomicset@metadata |>
+      purrr::pluck("correlation") |>
+      purrr::pluck(gsub("_.*","",feature_type))
+
+    exps <- unique(cor_table$exp_name)
+    categories <- unique(cor_table$category)
+
+    # Set variable for enrichment results
+    enr_res <- list()
+
+    for(cat in categories){
+
+      for(exp in exps){
+        message("Working on '",
+                feature_type,
+                "' ",
+                exp,
+                " ",
+                cat,
+                " ",
+                db,
+                " enrichment analysis")
+
+        # Subset universe from rowData of experiment
+        universe_genes <- SummarizedExperiment::rowData(expomicset[[exp]])[[feature_col]] |>
+          unique()
+
+        # Select features per feature type
+        selected_genes <- switch(
+          feature_type,
+          "degs_cor" = {
+            expomicset@metadata |>
+              purrr::pluck("correlation") |>
+              purrr::pluck("degs") |>
+              dplyr::filter(exp_name == exp,
+                            category == cat) |>
+              dplyr::inner_join(
+                fdata |>
+                  dplyr::filter(.exp_name == exp),
+                # .update_assay_colData(expomicset,exp) |>
+                #   SummarizedExperiment::rowData() |>
+                #   as.data.frame() |>
+                #   tibble::rownames_to_column("feature"),
+                by=c("feature" = ".feature",
+                     "exp_name" = ".exp_name")
+              ) |>
+              dplyr::pull(!!dplyr::sym(feature_col)) |>
+              unique()
+          },
+          "omics_cor" = {
+            expomicset@metadata |>
+              purrr::pluck("correlation") |>
+              purrr::pluck("omics") |>
+              dplyr::filter(exp_name == exp,
+                            category == cat) |>
+              dplyr::inner_join(
+                fdata |>
+                  dplyr::filter(.exp_name == exp),
+                # .update_assay_colData(expomicset,exp) |>
+                #   SummarizedExperiment::rowData() |>
+                #   as.data.frame() |>
+                #   tibble::rownames_to_column("feature"),
+                by=c("feature" = ".feature",
+                     "exp_name" = ".exp_name")
+              ) |>
+              dplyr::pull(!!dplyr::sym(feature_col)) |>
+              unique()
+          },
+          "factor_features_cor" = {
+            expomicset@metadata |>
+              purrr::pluck("correlation") |>
+              purrr::pluck("factor_features") |>
+              dplyr::filter(exp_name == exp,
+                            category == cat) |>
+              dplyr::inner_join(
+                fdata |>
+                  dplyr::filter(.exp_name == exp),
+                # .update_assay_colData(expomicset,exp) |>
+                #   SummarizedExperiment::rowData() |>
+                #   as.data.frame() |>
+                #   tibble::rownames_to_column("feature"),
+                by=c("feature" = ".feature",
+                     "exp_name" = ".exp_name")
+              ) |>
+              dplyr::pull(!!dplyr::sym(feature_col)) |>
+              unique()
+          })
+
+        if(length(selected_genes) < 1){
+          enr <- NULL
+        } else if (is.null(universe_genes) | all(is.na(universe_genes))){
+          enr <- NULL
+        }else {
+
+          # Run enrichment
+          enr <- .run_fenr(
+            selected_genes = selected_genes,
+            universe_genes = universe_genes,
+            db = db,
+            species = species,
+            fenr_col = fenr_col
+          ) |>
+            dplyr::mutate(exp_name = exp) |>
+            dplyr::mutate(category = cat)
+        }
+
+        enr_res[[exp]] <- enr
+      }
+    }
+    # Multiple-hypothesis correction after all tests are done
+    enr_res <- enr_res |>
+      dplyr::bind_rows() |>
+      dplyr::mutate(padj = p.adjust(p_value,
+                             method = padj_method)) |>
+      dplyr::filter(padj < pval_thresh) |>
+      dplyr::filter(n_with_sel > min_set,
+                    n_with_sel < max_set)
+  }
+
+  # --- Group Terms ------------
+  if (nrow(enr_res) < 2) {
+    message("GO clustering skipped — fewer than 2 enriched terms.")
+    enr_res$go_group <- NA_character_
+
+  } else {
+    # Proceed with clustering
+    message("Determining Number of GO Term Clusters...")
+
+    go_term_list <- enr_res |>
+      dplyr::mutate(gene_list = stringr::str_split(ids, ",")) |>
+      tidyr::unnest(gene_list) |>
+      dplyr::mutate(gene_list = stringr::str_trim(gene_list)) |>
+      dplyr::distinct(term_name, gene_list) |>
+      dplyr::group_by(term_name) |>
+      dplyr::summarise(genes = list(unique(gene_list)),
+                       .groups = "drop")
+
+    if (nrow(go_term_list) < 2) {
+      message("GO clustering skipped — fewer than 2 unique terms.")
+      enr_res$go_group <- NA_character_
     } else {
-      return(enrich_res)
+      # Proceed with Jaccard overlap and clustering
+      go_groups <- go_term_list$genes |>
+        rlang::set_names(go_term_list$term_name) |>
+        .get_pairwise_overlaps() |>
+        dplyr::select(source, target, jaccard) |>
+        tidyr::pivot_wider(names_from = "target", values_from = "jaccard") |>
+        tibble::column_to_rownames("source") |>
+        as.matrix() |>
+        .cluster_mat(clustering_approach = clustering_approach) |>
+        (\(x) data.frame(term_name = names(x),
+                         go_group = paste0("Group_", as.numeric(x))))()
+
+      if (is.null(go_groups) || nrow(go_groups) == 0) {
+        message("GO clustering failed — no clusters found.")
+        enr_res$go_group <- NA_character_
+      } else {
+        enr_res <- dplyr::inner_join(enr_res,
+                                     go_groups,
+                                     by = "term_name")
+      }
     }
   }
 
-  message("Determining Number of GO Term Clusters...")
+  # message("Determining Number of GO Term Clusters...")
+  #
+  # # Deduplicate GO terms by Description
+  # go_term_list <- enr_res |>
+  #   dplyr::mutate(gene_list = stringr::str_split(ids, ",")) |>
+  #   tidyr::unnest(gene_list) |>
+  #   dplyr::mutate(gene_list = stringr::str_trim(gene_list)) |>
+  #   dplyr::distinct(term_name, gene_list) |>
+  #   dplyr::group_by(term_name) |>
+  #   dplyr::summarise(genes = list(unique(gene_list)),
+  #                    .groups = "drop")
+  #
+  # # Compute Jaccard matrix and cluster
+  # go_groups <- go_term_list$genes |>
+  #   rlang::set_names(go_term_list$term_name) |>
+  #   .get_pairwise_overlaps() |>
+  #   dplyr::select(source,
+  #                 target,
+  #                 jaccard) |>
+  #   tidyr::pivot_wider(names_from = "target",
+  #                      values_from = "jaccard") |>
+  #   tibble::column_to_rownames("source") |>
+  #   as.matrix() |>
+  #   .cluster_mat(clustering_approach = clustering_approach) |>
+  #   (\(x) data.frame(term_name = names(x), go_group = paste0("Group_", as.numeric(x))))()
+  #
+  # if (is.null(go_groups) || nrow(go_groups) == 0) {
+  #   warning("GO clustering failed — no clusters found.")
+  #   enr_res$go_group <- NA_character_
+  # } else {
+  #   enr_res <- dplyr::inner_join(enr_res,
+  #                                go_groups,
+  #                                by = "term_name")
+  # }
 
-  # Deduplicate GO terms by Description
-  go_term_list <- enrich_res |>
-    dplyr::mutate(gene_list = stringr::str_split(geneID, "/")) |>
-    tidyr::unnest(gene_list) |>
-    dplyr::mutate(gene_list = stringr::str_trim(gene_list)) |>
-    dplyr::distinct(Description, gene_list) |>
-    dplyr::group_by(Description) |>
-    dplyr::summarise(genes = list(unique(gene_list)), .groups = "drop")
-
-  # Compute Jaccard matrix and cluster
-  go_groups <- go_term_list$genes |>
-    rlang::set_names(go_term_list$Description) |>
-    .get_pairwise_overlaps() |>
-    dplyr::select(source, target, jaccard) |>
-    tidyr::pivot_wider(names_from = "target", values_from = "jaccard") |>
-    tibble::column_to_rownames("source") |>
-    as.matrix() |>
-    .cluster_mat(clustering_approach = clustering_approach) |>
-    (\(x) data.frame(Description = names(x), go_group = paste0("Group_", as.numeric(x))))()
-
-  if (is.null(go_groups) || nrow(go_groups) == 0) {
-    warning("GO clustering failed — no clusters found.")
-    enrich_res$go_group <- NA_character_
-  } else {
-    enrich_res <- dplyr::inner_join(enrich_res, go_groups, by = "Description")
-  }
-
+  # --- Store or return ---
   if (action == "add") {
-    MultiAssayExperiment::metadata(expomicset)$enrichment[[geneset]] <- enrich_res
+    MultiAssayExperiment::metadata(expomicset)$enrichment[[feature_type]] <- enr_res
 
     step_record <- list(
       run_enrichment = list(
         timestamp = Sys.time(),
         params = list(
-          geneset = geneset,
-          enrichment_fun = fun,
-          pvalueCutoff = pvalueCutoff,
-          qvalueCutoff = qvalueCutoff,
+          feature_type = feature_type,
+          score_col = score_col,
+          score_threshold = score_threshold,
+          variable_map = variable_map,
+          factor_type = factor_type,
+          feature_col = feature_col,
+
+          deg_pval_col = deg_pval_col,
+          deg_pval_threshold = deg_pval_threshold,
+          deg_logfc_col = deg_logfc_col,
+          deg_logfc_threshold = deg_logfc_threshold,
+
+          db = db,
+          species = species,
+          fenr_col = fenr_col,
+          padj_method = padj_method,
+          pval_thresh = pval_thresh,
+
           clustering_approach = clustering_approach
         ),
-        notes = paste0("Performed enrichment on ", geneset, " features.")
+        notes = paste0("Performed ",db, " enrichment on ", feature_type, " features.")
       )
     )
 
@@ -169,8 +476,98 @@ run_enrichment <- function(
 
     return(expomicset)
   } else if (action == "get") {
-    return(enrich_res)
+    return(enr_res)
   } else {
     stop("Invalid action. Choose from 'add' or 'get'.")
   }
+}
+
+
+#' @noRd
+#'
+#' @title Internal wrapper to run functional enrichment using `fenr`
+#'
+#' @description
+#' Helper function to fetch database-specific term data, prepare term mappings,
+#' and perform enrichment analysis using the `fenr` package.
+#'
+#' @param selected_genes Character vector of selected gene identifiers.
+#' @param universe_genes Character vector of all background/universe gene identifiers.
+#' @param db Character string specifying the database. One of `"GO"`, `"KEGG"`, `"Reactome"`, `"BioPlanet"`, or `"WikiPathways"`.
+#' @param species Optional character string specifying species name (required for GO).
+#' @param fenr_col Column name in the term mappings corresponding to gene IDs (default `"gene_symbol"`).
+#'
+#' @return A data frame of enrichment results from `fenr::functional_enrichment()`, or `NULL` if enrichment fails.
+#'
+#' @keywords internal
+.run_fenr <- function(
+    selected_genes,
+    universe_genes,
+    db = c("GO", "KEGG", "Reactome", "BioPlanet", "WikiPathways"),
+    species = NULL,
+    fenr_col = "gene_symbol"
+) {
+  require(fenr)
+
+  db <- match.arg(db)
+
+  # Fetch functional terms + mapping
+  fetch_fun <- switch(db,
+                      GO = fenr::fetch_go,
+                      KEGG = fenr::fetch_kegg,
+                      Reactome = fenr::fetch_reactome,
+                      BioPlanet = fenr::fetch_bioplanet,
+                      WikiPathways = fenr::fetch_wikipathways
+  )
+
+  # Handle species if required
+  if (db == "GO" && is.null(species)) {
+    stop("Please specify a species designation for GO. Use `fetch_go_species()` to see options.")
+  }
+
+  if (db == "GO") {
+    term_data <- fetch_fun(species = species)
+  } else {
+    term_data <- fetch_fun()
+  }
+
+  # Prepare for enrichment
+  # terms_obj <- fenr::prepare_for_enrichment(
+  #   terms = term_data$terms,
+  #   mapping = term_data$mapping,
+  #   all_features = universe_genes,
+  #   feature_name = fenr_col
+  # )
+
+  # Prepare for enrichment
+  terms_obj <- tryCatch(
+    {
+      # may fail if there are no mappings
+      fenr::prepare_for_enrichment(
+        terms = term_data$terms,
+        mapping = term_data$mapping,
+        all_features = universe_genes,
+        feature_name = fenr_col
+      )
+    },
+    error = function(e) {
+      message("Error: ", e$message)
+      return(NULL)
+    }
+  )
+
+
+  # Run enrichment
+
+  if(!is.null(terms_obj)){
+    enrichment_results <- fenr::functional_enrichment(
+      feat_all = universe_genes,
+      feat_sel = selected_genes,
+      term_data = terms_obj
+    )
+  } else {
+    enrichment_results <- NULL
+  }
+
+  return(enrichment_results)
 }

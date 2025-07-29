@@ -6,7 +6,9 @@
 \usage{
 extract_top_factor_features(
   expomicset,
-  factors,
+  factors = NULL,
+  pval_col = "p_adjust",
+  pval_thresh = 0.05,
   method = "percentile",
   percentile = 0.9,
   threshold = 0.3,

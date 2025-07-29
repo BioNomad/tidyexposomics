@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_sensitivity_analysis.R
 \name{run_sensitivity_analysis}
 \alias{run_sensitivity_analysis}
-\title{Perform Sensitivity Analysis for Differential Abundance}
+\title{Run Sensitivity Analysis for Differential Abundance}
 \usage{
 run_sensitivity_analysis(
   expomicset,
@@ -10,83 +10,80 @@ run_sensitivity_analysis(
   abundance_col = "counts",
   methods = c("limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
   scaling_methods = c("none", "TMM", "quantile"),
-  min_counts_range = c(1, 5, 10),
-  min_proportion_range = c(0.1, 0.2, 0.3),
   contrasts = NULL,
   covariates_to_remove = NULL,
   pval_col = "adj.P.Val",
   logfc_col = "logFC",
   pval_threshold = 0.05,
-  logFC_threshold = log2(1.5),
+  logFC_threshold = log2(1),
   score_thresh = NULL,
   score_quantile = 0.9,
   stability_metric = "stability_score",
   action = "add",
-  bootstrap_n = 0
+  bootstrap_n = 1
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics and exposure data.}
+\item{expomicset}{A \code{MultiAssayExperiment} containing the assays to analyze.}
 
-\item{base_formula}{A formula specifying the base model for differential abundance analysis.}
+\item{base_formula}{The base model formula used for differential analysis.}
 
-\item{abundance_col}{A character string specifying the assay column to use for abundance values. Default is \code{"counts"}.}
+\item{abundance_col}{Character. Name of the column in the assays representing abundance. Default is \code{"counts"}.}
 
-\item{methods}{A character vector of methods for differential abundance testing (e.g., \code{"limma_voom"}, \code{"DESeq2"}, \code{"edgeR_quasi_likelihood"}).}
+\item{methods}{Character vector of differential expression methods. Options include \code{"limma_voom"}, \code{"DESeq2"}, and \code{"edgeR_quasi_likelihood"}.}
 
-\item{scaling_methods}{A character vector of normalization methods to apply (e.g., \code{"none"}, \code{"TMM"}, \code{"quantile"}).}
+\item{scaling_methods}{Character vector of normalization methods to try. Options include \code{"none"}, \code{"TMM"}, and \code{"quantile"}.}
 
-\item{min_counts_range}{A numeric vector of minimum count thresholds to test. Default is \code{c(1, 5, 10)}.}
+\item{contrasts}{Optional list of contrasts to apply for differential testing.}
 
-\item{min_proportion_range}{A numeric vector of minimum sample proportion thresholds to test. Default is \code{c(0.1, 0.2, 0.3)}.}
+\item{covariates_to_remove}{Optional character vector of covariates to remove from the base formula to generate model variants.}
 
-\item{contrasts}{A character vector specifying contrasts for the differential analysis. Default is \code{NULL}.}
+\item{pval_col}{Name of the column containing p-values or adjusted p-values used to define significance.}
 
-\item{covariates_to_remove}{A character vector of covariates to iteratively remove from the model for sensitivity testing. Default is \code{NULL}.}
+\item{logfc_col}{Name of the column containing log fold changes.}
 
-\item{pval_col}{Name of the column containing adjusted p-values. Default is \code{"adj.P.Val"}.}
+\item{pval_threshold}{Numeric threshold for significance. Default is 0.05.}
 
-\item{logfc_col}{Name of the column containing log fold changes. Default is \code{"logFC"}.}
+\item{logFC_threshold}{Numeric threshold for absolute log fold change. Default is \code{log2(1)} (i.e., 0).}
 
-\item{pval_threshold}{Numeric threshold to consider a p-value significant. Default is \code{0.05}.}
+\item{score_thresh}{Optional threshold for the selected stability metric. If not provided, calculated using \code{score_quantile}.}
 
-\item{logFC_threshold}{Minimum absolute log fold change for filtering. Default is \code{log2(1.5)}.}
+\item{score_quantile}{Quantile used to define the threshold if \code{score_thresh} is not provided. Default is 0.9.}
 
-\item{score_thresh}{A numeric value specifying a fixed threshold for feature stability. If \code{NULL}, it is determined based on \code{score_quantile}.}
+\item{stability_metric}{Character. Name of the column in \code{feature_stability} to use as the scoring metric. Default is \code{"stability_score"}.}
 
-\item{score_quantile}{A numeric value (between 0 and 1) specifying the quantile to define stability threshold. Default is \code{0.9}.}
+\item{action}{Whether to \code{"add"} results to \code{metadata()} or \code{"get"} them as a list. Default is \code{"add"}.}
 
-\item{stability_metric}{The name of the column in the stability table to use for scoring (e.g., \code{"stability_score"}, \code{"logp_weighted_score"}). Default is \code{"stability_score"}.}
-
-\item{action}{Whether to \code{"add"} results to the \code{MultiAssayExperiment} metadata or \code{"get"} them as a list. Default is \code{"add"}.}
-
-\item{bootstrap_n}{Number of bootstrap iterations. Set to \code{0} to disable bootstrapping. Default is \code{0}.}
+\item{bootstrap_n}{Integer. Number of bootstrap iterations. If 0, no resampling is performed. Default is 1.}
 }
 \value{
-Either a \code{MultiAssayExperiment} object with results added to metadata (if \code{action = "add"}) or a list with:
-\item{sensitivity_df}{A dataframe of differential abundance results across all tested conditions.}
-\item{feature_stability}{A dataframe summarizing stability scores for each feature.}
-\item{score_thresh}{The threshold used for stable feature selection.}
+If \code{action = "add"}, returns a \code{MultiAssayExperiment} with results stored in
+\code{metadata(expomicset)$differential_analysis$sensitivity_analysis}. If \code{action = "get"},
+returns a list with three elements:
+\describe{
+\item{\code{sensitivity_df}}{Data frame of all differential results across model/method combinations.}
+\item{\code{feature_stability}}{Data frame summarizing feature stability scores.}
+\item{\code{score_thresh}}{The threshold used to define stable features.}
+}
 }
 \description{
-Runs differential abundance testing across multiple models, statistical methods,
-scaling approaches, and filtering criteria to assess feature stability.
-}
-\details{
-The stability score can be calculated in various ways. By default, \code{stability_score} is used, which multiplies the proportion of significant p-values across runs (\code{presence_rate}) by a consistency metric (\code{effect_consistency}). Users may specify alternative metrics like \code{logp_weighted_score} for more conservative feature prioritization.
-
-If \code{bootstrap_n > 0}, the entire sensitivity analysis is repeated \code{bootstrap_n} times on resampled versions of the dataset, and summary statistics are returned for each feature's stability.
+Performs sensitivity analysis by systematically varying statistical methods,
+scaling strategies, and model formulas (with optional bootstrap sampling) to
+assess the stability of differentially abundant features.
 }
 \examples{
 \dontrun{
-result <- run_sensitivity_analysis(
-  expomicset = expom,
-  base_formula = ~ condition + batch,
-  methods = c("limma_voom", "DESeq2"),
-  min_counts_range = c(5, 10),
-  stability_metric = "logp_weighted_score",
-  action = "get"
+expomicset <- run_sensitivity_analysis(
+  expomicset,
+  base_formula = ~ sex + age + asthma,
+  methods = c("limma_voom"),
+  scaling_methods = c("TMM", "none"),
+  covariates_to_remove = c("age", "sex"),
+  bootstrap_n = 10
 )
 }
 
+}
+\seealso{
+\code{\link{run_differential_abundance}}, \code{\link{.run_se_differential_abundance}}
 }

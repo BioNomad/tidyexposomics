@@ -64,7 +64,9 @@ plot_pca <- function(
                                colour = "category") +
     ggpubr::theme_pubr(legend="right") +
     ggsci::scale_color_aaas() +
-    labs(title = "PCA of Feature Space", color = "")
+    labs(title = "PCA of Feature Space", color = "")+
+    theme(plot.title = element_text(face = "bold.italic"),
+          plot.subtitle = element_text(face = "italic"))
 
   # PCA Feature Scree Plot
   scree_feature <- factoextra::fviz_eig(
@@ -72,7 +74,9 @@ plot_pca <- function(
     barfill = feature_col,
     barcolor = feature_col,
     main = "Scree Plot of Feature Space"
-  )
+  ) +
+    theme(plot.title = element_text(face = "bold.italic"),
+          plot.subtitle = element_text(face = "italic"))
 
   # Define outliers
   outlier_samples <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$outliers
@@ -85,7 +89,9 @@ plot_pca <- function(
       label=ifelse(rownames %in% outlier_samples, rownames, NA)),
     color = sample_outlier_col) +
     ggpubr::theme_pubr() +
-    labs(title = "PCA of Sample Space")
+    labs(title = "PCA of Sample Space")+
+    theme(plot.title = element_text(face = "bold.italic"),
+          plot.subtitle = element_text(face = "italic"))
 
 
   # Sample Scree Plot
@@ -94,7 +100,9 @@ plot_pca <- function(
     barfill = sample_col,
     barcolor = sample_col,
     main = "Scree Plot of Sample Space"
-  )
+  )+
+    theme(plot.title = element_text(face = "bold.italic"),
+          plot.subtitle = element_text(face = "italic"))
 
   # Combine plots
   combined_plot <- patchwork::wrap_plots(

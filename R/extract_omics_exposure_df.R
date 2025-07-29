@@ -22,7 +22,7 @@
 #' @export
 extract_omics_exposure_df <- function(
     expomicset,
-    variable_map,
+    variable_map=NULL,
     log2_trans=TRUE){
 
   # Validate variable_map
@@ -71,7 +71,7 @@ extract_omics_exposure_df <- function(
   }
 
   # Extract and filter omics
-  omics_df <- lapply(
+  omics_list <- lapply(
     names(MultiAssayExperiment::experiments(omics_data)),
     function(name) {
       # Extract omics data for each dataset
@@ -83,8 +83,15 @@ extract_omics_exposure_df <- function(
     # If no features are selected, return NULL
     if (is.null(feats)) return(NULL)
 
-    # Filter se for selected features
-    se <- se[rownames(se) %in% feats, , drop = FALSE]
+    ###
+    # Filter features based on selected features
+    feats <- intersect(feats, rownames(se))  # ensure features exist in assay
+
+    # If no features are selected or found, return NULL
+    if (length(feats) == 0) return(NULL)
+
+    # Subset assay
+    se <- se[feats, , drop = FALSE]
 
     df <- se |>
       SummarizedExperiment::assay() |>
@@ -93,16 +100,21 @@ extract_omics_exposure_df <- function(
 
     # Set column names with prefix
     colnames(df) <- paste0(name, "_", colnames(df))
+
+    ###
     colnames(df) <- gsub(" |-", "_", colnames(df))
     df <- df |> tibble::rownames_to_column("id")
     return(df)
   }) |>
     # Remove NULL entries
-    purrr::compact() |>
+    purrr::compact()
 
-    # Reduce to a single data frame
-    purrr::reduce(dplyr::full_join,
-                  by = "id")
+  # Check if any omics were retained
+  if (length(omics_list) == 0) {
+    stop("No omics features matched the variable_map. Please check your feature names.")
+  }
+
+  omics_df <- purrr::reduce(omics_list, dplyr::full_join, by = "id")
 
   # Merge with exposures
   merged_data <- exposure_data |>

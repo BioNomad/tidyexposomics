@@ -2,70 +2,110 @@
 % Please edit documentation in R/run_enrichment.R
 \name{run_enrichment}
 \alias{run_enrichment}
-\title{Perform Functional Enrichment Analysis}
+\title{Perform enrichment analysis on selected features from a expomicset object}
 \usage{
 run_enrichment(
   expomicset,
-  geneset,
-  robust = T,
+  feature_type = c("degs", "degs_robust", "omics", "factor_features", "degs_cor",
+    "omics_cor", "factor_features_cor"),
   score_col = "stability_score",
   score_threshold = NULL,
+  variable_map = NULL,
+  factor_type = c("common_top_factor_features", "top_factor_features"),
   feature_col = "feature",
-  mirna_assays = NULL,
-  pval_col = "adj.P.Val",
-  pval_threshold = 0.05,
-  logfc_col = "logFC",
-  logfc_threshold = log2(1),
-  pAdjustMethod = "fdr",
-  pvalueCutoff = 0.05,
-  qvalueCutoff = 0.1,
-  fun = "enrichGO",
-  OrgDb = "org.Hs.eg.db",
-  keyType = "SYMBOL",
-  ont = "BP",
+  deg_pval_col = "adj.P.Val",
+  deg_pval_threshold = 0.05,
+  deg_logfc_col = "logFC",
+  deg_logfc_threshold = log2(1.5),
+  db = c("GO", "KEGG", "Reactome", "BioPlanet", "WikiPathways"),
+  species = NULL,
+  fenr_col = "gene_symbol",
+  padj_method = "fdr",
+  pval_thresh = 0.1,
+  min_set = 3,
+  max_set = 800,
   clustering_approach = "diana",
   action = "add"
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics and exposure data.}
+\item{expomicset}{An \code{expomicset} (a \code{MultiAssayExperiment} object with metadata) containing omics and metadata.}
 
-\item{geneset}{A character string specifying the gene set to analyze. Options: \code{"deg"}, \code{"deg_exp_cor"}, \code{"factor_exp_cor"}, or \code{"factor"}.}
+\item{feature_type}{Character string indicating the feature source. One of \code{"degs"}, \code{"degs_robust"},
+\code{"omics"}, \code{"factor_features"}, \code{"degs_cor"}, \code{"omics_cor"}, or \code{"factor_features_cor"}.}
 
-\item{feature_col}{A character string specifying the column for feature names. Default is \code{"feature"}.}
+\item{score_col}{Column name used for stability score filtering (only for \code{degs_robust}).}
 
-\item{mirna_assays}{A character vector specifying miRNA assays. Default is \code{NULL}.}
+\item{score_threshold}{Optional numeric threshold for filtering stability scores. If \code{NULL}, the default
+threshold stored in the metadata will be used.}
 
-\item{pval_col}{A character string specifying the column for p-values. Default is \code{"adj.P.Val"}.}
+\item{variable_map}{A data frame with \code{exp_name} and \code{feature} columns, used when \code{feature_type = "omics"}.}
 
-\item{pval_threshold}{A numeric threshold for adjusted p-values. Default is \code{0.05}.}
+\item{factor_type}{Character string for selecting factor features: \code{"common_top_factor_features"} or
+\code{"top_factor_features"}.}
 
-\item{logfc_col}{A character string specifying the column for log-fold changes. Default is \code{"logFC"}.}
+\item{feature_col}{The name of the feature column used to extract gene identifiers.}
 
-\item{logfc_threshold}{A numeric threshold for log-fold changes. Default is \code{log2(1)}.}
+\item{deg_pval_col}{Column name for adjusted p-values from DEG analysis.}
 
-\item{pAdjustMethod}{A character string specifying the p-value adjustment method. Default is \code{"fdr"}.}
+\item{deg_pval_threshold}{Threshold to select significant DEGs (default: 0.05).}
 
-\item{pvalueCutoff}{A numeric threshold for significance in enrichment analysis. Default is \code{0.05}.}
+\item{deg_logfc_col}{Column name for log-fold changes from DEG analysis.}
 
-\item{qvalueCutoff}{A numeric threshold for false discovery rate control. Default is \code{0.1}.}
+\item{deg_logfc_threshold}{Threshold to select DEGs by absolute logFC (default: \code{log2(1.5)}).}
 
-\item{fun}{A character string specifying the enrichment function (\code{"enrichGO"}, \code{"enrichKEGG"}, etc.). Default is \code{"enrichGO"}.}
+\item{db}{Enrichment database to use. One of \code{"GO"}, \code{"KEGG"}, \code{"Reactome"}, \code{"BioPlanet"}, \code{"WikiPathways"}.}
 
-\item{OrgDb}{A character string specifying the organism database. Default is \code{"org.Hs.eg.db"}.}
+\item{species}{Species name (required for GO enrichment, e.g., \code{"Homo sapiens"}). Ignored for other databases.}
 
-\item{keyType}{A character string specifying the gene identifier type. Default is \code{"SYMBOL"}.}
+\item{fenr_col}{Column name for gene IDs used by \code{fenr} (e.g., \code{"gene_symbol"}).}
 
-\item{ont}{A character string specifying the ontology for Gene Ontology analysis. Default is \code{"BP"} (Biological Process).}
+\item{padj_method}{Method for p-value adjustment (default: \code{"fdr"}).}
 
-\item{clustering_approach}{A character string specifying the clustering approach for GO term grouping. Default is \code{"diana"}.}
+\item{pval_thresh}{Adjusted p-value threshold for filtering enriched terms (default: 0.1).}
 
-\item{action}{A character string specifying \code{"add"} (store results in metadata) or \code{"get"} (return results). Default is \code{"add"}.}
+\item{min_set}{Minimum number of selected genes overlapping an enriched term (default: 3).}
+
+\item{max_set}{Maximum number of selected genes overlapping an enriched term (default: 800).}
+
+\item{clustering_approach}{Clustering method for GO term grouping. Defaults to \code{"diana"}.}
+
+\item{action}{Either \code{"add"} to store results in the object's metadata or \code{"get"} to return results as a data frame.}
 }
 \value{
-If \code{action="add"}, returns the updated \code{expomicset}.
-If \code{action="get"}, returns a \code{data.frame} with enrichment results.
+If \code{action = "add"}, returns the modified \code{ExpOmicSet} with enrichment results added to metadata.
+If \code{action = "get"}, returns a \code{data.frame} of enrichment results with GO term clusters (if applicable).
 }
 \description{
-Runs functional enrichment analysis on differentially abundant features or correlated features in a \code{MultiAssayExperiment} object.
+This function performs enrichment analysis using selected features derived from differential expression,
+correlation analysis, or multi-omics factor features across experiments in an \code{expomicset}. It supports
+multiple enrichment databases (e.g., GO, KEGG, Reactome), applies FDR correction, and optionally clusters GO terms by Jaccard overlap.
+}
+\details{
+The function identifies selected features based on the chosen \code{feature_type}, determines the gene universe
+for each experiment, and performs enrichment analysis using the \code{fenr} package. Results are adjusted for
+multiple testing and optionally clustered by gene set overlap (for GO terms).
+
+If \code{feature_type} includes correlation-based results (ending in \verb{_cor}), enrichment is performed for each
+exposure category separately.
+}
+\examples{
+\dontrun{
+expomicset <- run_enrichment(
+  expomicset,
+  feature_type = "degs",
+  db = "GO",
+  species = "Homo sapiens",
+  action = "add"
+)
+
+go_results <- run_enrichment(
+  expomicset,
+  feature_type = "factor_features_cor",
+  db = "GO",
+  species = "Homo sapiens",
+  action = "get"
+)
+}
+
 }

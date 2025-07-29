@@ -4,6 +4,8 @@
 #' identifying outliers based on Mahalanobis distance.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing omics and exposure data.
+#' @param log_trans_exp A boolean value specifying whether to log2 transform the exposure data
+#' @param log_trans_omics a boolean value specifying whether to log2 transform the omics data
 #' @param action A character string specifying whether to store (`"add"`) or return (`"get"`) the results. Default is `"add"`.
 #'
 #' @details
@@ -30,10 +32,12 @@
 #' @export
 run_pca <- function(
     expomicset,
+    log_trans_exp=FALSE,
+    log_trans_omics=TRUE,
     action="add") {
 
   # Identify common samples across all data
-  message("Identifying common samples...")
+  message("Identifying common samples.")
 
   common_samples <- rownames(MultiAssayExperiment::colData(expomicset))
   for (omics_name in names(MultiAssayExperiment::experiments(expomicset))) {
@@ -45,7 +49,7 @@ run_pca <- function(
   }
 
   # Subset colData to common samples
-  message("Subsetting exposure data...")
+  message("Subsetting exposure data.")
 
   exposure_data <- MultiAssayExperiment::colData(expomicset)[common_samples, ] |>
     as.data.frame() |>
@@ -54,8 +58,13 @@ run_pca <- function(
     as.data.frame()
   exposure_data <- transform(exposure_data, category = "exposure")
 
+  if(log_trans_exp){
+    exposure_data <- exposure_data |>
+      dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
+  }
+
   # Subset omics data to common samples
-  message("Subsetting omics data...")
+  message("Subsetting omics data.")
 
   omics_data <- lapply(
     names(MultiAssayExperiment::experiments(expomicset)),
@@ -67,6 +76,11 @@ run_pca <- function(
     }) |>
     dplyr::bind_rows()
 
+  if(log_trans_omics){
+    omics_data <- omics_data |>
+      dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
+  }
+
   # Combine datasets
   dat <- exposure_data |>
     dplyr::bind_rows(omics_data)
@@ -75,16 +89,16 @@ run_pca <- function(
   # Remove zero-variance columns
   feature_data <- dat |>
     dplyr::select(-c(category, id)) |>
-    dplyr::select(where(\(x) var(x, na.rm = TRUE) > 0)) |>
-    dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
+    dplyr::select(where(\(x) var(x, na.rm = TRUE) > 0))
+    #dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
 
   # PCA analysis: feature space
-  message("Performing PCA on Feature Space...")
+  message("Performing PCA on Feature Space.")
   pca_feature <- prcomp(feature_data, center = TRUE, scale. = TRUE)
 
 
   # PCA analysis: sample space
-  message("Performing PCA on Sample Space...")
+  message("Performing PCA on Sample Space.")
   sample_data <- dat |>
     dplyr::select(-c(category, id)) |>
     t() |>
@@ -92,8 +106,8 @@ run_pca <- function(
 
   sample_vars <- apply(sample_data, 2, \(x) var(x, na.rm = TRUE))
   sample_data <- sample_data |>
-    dplyr::select(names(sample_vars[sample_vars > 0])) |>
-    dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
+    dplyr::select(names(sample_vars[sample_vars > 0]))
+    #dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
 
   pca_sample <- prcomp(sample_data, center = TRUE, scale. = TRUE)
 

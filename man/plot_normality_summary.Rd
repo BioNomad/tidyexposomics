@@ -2,34 +2,38 @@
 % Please edit documentation in R/plot_normality_summary.R
 \name{plot_normality_summary}
 \alias{plot_normality_summary}
-\title{Plot Summary of Normality Test for Exposure Variables}
+\title{Plot Normality Summary of Exposure Variables}
 \usage{
 plot_normality_summary(expomicset, transformed = FALSE)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing normality test results
-in \code{metadata(expomicset)$normality$norm_df} and \code{metadata(expomicset)$transformation$norm_summary}.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with quality control metadata.}
+
+\item{transformed}{Logical; if \code{TRUE}, use results after transformation. Default is \code{FALSE}.}
 }
 \value{
-A \code{ggplot} object showing normality test results and transformation effects.
+A \code{ggplot} object summarizing the number of exposures classified as normal or not normal.
 }
 \description{
-Visualizes the results of the Shapiro-Wilk normality test on exposure variables,
-and displays how different transformations affect normality.
+Generates a bar plot summarizing the number of exposure variables that pass or fail normality
+tests (e.g., Shapiro-Wilk) before or after transformation.
 }
 \details{
-This function generates two visualizations:
-\itemize{
-\item A \strong{bar plot} summarizing the number of normally and non-normally distributed exposure variables.
-\item A \strong{transformation effect plot} showing the number of exposures classified as normal
-under different transformations (e.g., Log2, Square Root, X^(1/3), No Transformation).
-}
+This function assumes that \code{run_normality_check()} has been executed and that the results are
+stored in \code{metadata(expomicset)$quality_control$normality}. If \code{transformed = TRUE}, the function will
+instead plot the transformation summary stored in \code{metadata(expomicset)$quality_control$transformation$norm_summary},
+which is populated by \code{transform_exposure()}.
 
-The normality assessment is based on the \strong{Shapiro-Wilk test} (p-value threshold of 0.05).
+The plot includes both bar heights and overlaid line segments to reinforce the counts.
+Colors are drawn from the Lancet or UChicago palettes via \code{ggsci} and \code{ggpubr}.
 }
 \examples{
 \dontrun{
-plot_normality_summary(expom)
+# Plot original exposure normality results
+plot_normality_summary(expomicset)
+
+# Plot post-transformation normality summary
+plot_normality_summary(expomicset, transformed = TRUE)
 }
 
 }

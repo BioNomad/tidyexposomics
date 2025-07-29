@@ -2,11 +2,12 @@
 % Please edit documentation in R/plot_network.R
 \name{plot_network}
 \alias{plot_network}
-\title{Plot Network Graph of Omics-Exposure Associations}
+\title{Plot Network Graph of Features or Exposures}
 \usage{
 plot_network(
   expomicset,
-  network = c("degs", "omics", "factors", "exposures"),
+  network = c("degs", "omics", "factors", "factor_features", "exposures",
+    "degs_feature_cor", "omics_feature_cor", "factor_features_feature_cor"),
   include_stats = TRUE,
   nodes_to_include = NULL,
   centrality_thresh = NULL,
@@ -26,73 +27,62 @@ plot_network(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing network metadata (e.g., \code{"omics_exposure_network"}).}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing network results in metadata.}
 
-\item{network}{A character string specifying which network to plot. Options are:
-\describe{
-\item{"omics_exposure_network"}{The full correlation network.}
-\item{"omics_exposure_deg_network"}{Subset of the network for DEGs.}
-\item{"omics_exposure_factor_network"}{Subset of the network involving factor features.}
-}}
+\item{network}{Character string specifying the network type. One of \code{"degs"}, \code{"omics"}, \code{"factors"},
+\code{"factor_features"}, \code{"exposures"}, \code{"degs_feature_cor"}, \code{"omics_feature_cor"}, \code{"factor_features_feature_cor"}.}
 
-\item{include_stats}{Logical; whether to compute and visualize centrality statistics. Default is \code{TRUE}.}
+\item{include_stats}{Logical; if \code{TRUE}, include edge weights and node centrality metrics in the plot aesthetics. Default is \code{TRUE}.}
 
-\item{nodes_to_include}{A character vector of node names to retain. If \code{NULL}, include all nodes.}
+\item{nodes_to_include}{Optional character vector of node names to include (subset of \code{name}).}
 
-\item{centrality_thresh}{Numeric threshold to retain only nodes above a minimum centrality value.}
+\item{centrality_thresh}{Optional numeric threshold to filter nodes by centrality degree.}
 
-\item{top_n_nodes}{Integer; retain only the top N most central nodes.}
+\item{top_n_nodes}{Optional integer to keep only the top N nodes by centrality.}
 
-\item{cor_thresh}{Numeric; threshold for filtering edges by absolute correlation.}
+\item{cor_thresh}{Optional numeric threshold to filter edges by minimum absolute correlation.}
 
-\item{label}{Logical; whether to display node labels. Default is \code{FALSE}.}
+\item{label}{Logical; whether to label nodes. If \code{TRUE}, top nodes will be labeled.}
 
-\item{label_top_n}{Integer; number of top central nodes to label if \code{label = TRUE} and \code{nodes_to_label} is \code{NULL}. Default is \code{5}.}
+\item{label_top_n}{Integer; number of top-centrality nodes to label if \code{label = TRUE}. Default is \code{5}.}
 
-\item{nodes_to_label}{A character vector of node names to label. Overrides \code{label_top_n} if provided.}
+\item{nodes_to_label}{Optional character vector of specific nodes to label.}
 
-\item{facet_var}{Optional column name (in the node data) to use for faceting the layout.}
+\item{facet_var}{Optional node metadata column to facet the network layout by.}
 
-\item{foreground}{Color of the label highlight. Default is \code{"steelblue"}.}
+\item{foreground}{Color for node outlines and edge borders. Default is \code{"steelblue"}.}
 
-\item{fg_text_colour}{Text color for node labels. Default is \code{"grey25"}.}
+\item{fg_text_colour}{Color of node label text. Default is \code{"grey25"}.}
 
-\item{node_colors}{Optional named vector for manually setting node colors by group.}
+\item{node_colors}{Optional named vector of colors for node groups.}
 
-\item{node_color_var}{A column name in node metadata used for color mapping (e.g., \code{"type"} or \code{"category"}).}
+\item{node_color_var}{Optional node attribute used for node color mapping.}
 
-\item{alpha}{Transparency for nodes. Default is \code{0.5}.}
+\item{alpha}{Alpha transparency for nodes and edges. Default is \code{0.5}.}
 
-\item{size_lab}{Label for the node size legend. Default is \code{"Centrality"}.}
+\item{size_lab}{Legend title for node size (typically centrality). Default is \code{"Centrality"}.}
 
-\item{color_lab}{Label for the node color legend. Default is \code{"Group"}.}
+\item{color_lab}{Legend title for node color group. Default is \code{"Group"}.}
 }
 \value{
-A \code{ggraph} object for plotting.
+A \code{ggraph} plot object.
 }
 \description{
-Visualizes a tidygraph network stored in the \code{MultiAssayExperiment} metadata using \code{ggraph}.
+Visualizes network structures created by \code{run_create_network()} from the metadata of a \code{MultiAssayExperiment} object.
+Nodes can represent features (e.g., genes or factors) or exposures, and edges represent correlations or shared connections.
 }
 \details{
-This function:
-\itemize{
-\item Selects a stored network from \code{metadata(expomicset)}.
-\item Applies optional node and edge filters (e.g., correlation threshold, centrality, node list).
-\item Prunes unconnected nodes (nodes not involved in any remaining edges).
-\item Computes node centrality for sizing or filtering if requested.
-\item Generates a \code{ggraph} layout using \code{.build_ggraph_plot()}.
-}
-Node color and label aesthetics are customizable. Labeling can be automatic (e.g., top 5 by centrality) or manual via \code{nodes_to_label}.
+This function retrieves the stored graph object and optionally filters or labels nodes based on:
+centrality, correlation, user input, or group-specific attributes. It supports layout faceting,
+custom color mappings, and highlights highly central nodes.
+
+Large graphs (> 500 nodes) will prompt the user before plotting.
 }
 \examples{
 \dontrun{
-plot_network(
-  expomicset,
-  network = "omics_exposure_network",
-  cor_thresh = 0.4,
-  top_n_nodes = 100,
-  label = TRUE
-)
+plot_network(expomicset, network = "degs", label = TRUE)
+plot_network(expomicset, network = "exposures", cor_thresh = 0.4)
+plot_network(expomicset, network = "omics", top_n_nodes = 50, node_color_var = "exp_name")
 }
 
 }

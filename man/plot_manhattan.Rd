@@ -7,6 +7,7 @@
 plot_manhattan(
   expomicset,
   pval_thresh = 0.05,
+  feature_col = "term",
   alpha = 0.5,
   min_per_cat = 1,
   vars_to_label = NULL,

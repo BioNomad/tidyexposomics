@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Summary of Factor Contributions from Multi-Omics Integration — plot_factor_summary"><meta name="description" content="Generates a summary plot of factor contributions from multi-omics integration results."><meta property="og:description" content="Generates a summary plot of factor contributions from multi-omics integration results."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Summary of Factor Contributions from Multi-Omics Integration — plot_factor_summary"><meta name="description" content="Generates a summary plot of factor contributions from multi-omics integration results
+stored in a MultiAssayExperiment object."><meta property="og:description" content="Generates a summary plot of factor contributions from multi-omics integration results
+stored in a MultiAssayExperiment object."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -13,7 +15,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,12 +52,19 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Generates a summary plot of factor contributions from multi-omics integration results.</p>
+    <p>Generates a summary plot of factor contributions from multi-omics integration results
+stored in a <code>MultiAssayExperiment</code> object.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_factor_summary</span><span class="op">(</span><span class="va">expomicset</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_factor_summary</span><span class="op">(</span></span>
+<span>  <span class="va">expomicset</span>,</span>
+<span>  low <span class="op">=</span> <span class="st">"#006666"</span>,</span>
+<span>  mid <span class="op">=</span> <span class="st">"white"</span>,</span>
+<span>  high <span class="op">=</span> <span class="st">"#8E0152"</span>,</span>
+<span>  midpoint <span class="op">=</span> <span class="fl">0.5</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -63,26 +72,44 @@
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object containing multi-omics integration results.</p></dd>
+<dd><p>A <code>MultiAssayExperiment</code> object containing integration results in
+<code>metadata(expomicset)$multiomics_integration$integration_results</code>.</p></dd>
+
+
+<dt id="arg-low">low<a class="anchor" aria-label="anchor" href="#arg-low"></a></dt>
+<dd><p>Color for low values in the fill gradient. Default is <code>"#006666"</code>.</p></dd>
+
+
+<dt id="arg-mid">mid<a class="anchor" aria-label="anchor" href="#arg-mid"></a></dt>
+<dd><p>Color for midpoint in the fill gradient. Default is <code>"white"</code>.</p></dd>
+
+
+<dt id="arg-high">high<a class="anchor" aria-label="anchor" href="#arg-high"></a></dt>
+<dd><p>Color for high values in the fill gradient. Default is <code>"#8E0152"</code>.</p></dd>
+
+
+<dt id="arg-midpoint">midpoint<a class="anchor" aria-label="anchor" href="#arg-midpoint"></a></dt>
+<dd><p>Midpoint value for the gradient color scale. Default is <code>0.5</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>ggplot</code> object displaying factor contributions for MOFA or a block weight heatmap for MCIA.</p>
+    <p>A <code>ggplot</code> object showing factor contributions based on the integration method.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function extracts integration results from <code>metadata(expomicset)$integration_results</code> and
-generates a summary plot of factor contributions. The visualization method depends on the
-integration approach used:</p><ul><li><p><strong>MOFA</strong>: Uses <code><a href="https://rdrr.io/pkg/MOFA2/man/plot_variance_explained.html" class="external-link">MOFA2::plot_variance_explained()</a></code> to display variance explained by factors.</p></li>
-<li><p><strong>MCIA</strong>: Uses <code><a href="https://rdrr.io/pkg/nipalsMCIA/man/block_weights_heatmap.html" class="external-link">nipalsMCIA::block_weights_heatmap()</a></code> to show block loadings.</p></li>
-</ul><p>The function automatically selects the appropriate visualization based on the integration method.</p>
+    <p>This function visualizes factor contributions based on the integration method:</p><ul><li><p><strong>MOFA</strong>: Variance explained per factor and view.</p></li>
+<li><p><strong>MCIA</strong>: Block score weights per omic.</p></li>
+<li><p><strong>DIABLO</strong>: Mean absolute sample score per omic and factor (from block-specific variates).</p></li>
+<li><p><strong>RGCCA</strong>: Mean absolute sample score per omic and factor (from aligned block scores).</p></li>
+</ul><p>The color gradient can be customized using the <code>low</code>, <code>mid</code>, <code>high</code>, and <code>midpoint</code> parameters.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="fu">plot_factor_summary</span><span class="op">(</span><span class="va">expom</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_factor_summary</span><span class="op">(</span><span class="va">expom</span>, low <span class="op">=</span> <span class="st">"blue"</span>, mid <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

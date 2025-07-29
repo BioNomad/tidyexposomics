@@ -1,111 +1,142 @@
 #' Plot Summary of Factor Contributions from Multi-Omics Integration
 #'
-#' Generates a summary plot of factor contributions from multi-omics integration results.
+#' Generates a summary plot of factor contributions from multi-omics integration results
+#' stored in a `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing multi-omics integration results.
+#' @param expomicset A `MultiAssayExperiment` object containing integration results in
+#'   `metadata(expomicset)$multiomics_integration$integration_results`.
+#' @param low Color for low values in the fill gradient. Default is `"#006666"`.
+#' @param mid Color for midpoint in the fill gradient. Default is `"white"`.
+#' @param high Color for high values in the fill gradient. Default is `"#8E0152"`.
+#' @param midpoint Midpoint value for the gradient color scale. Default is `0.5`.
 #'
 #' @details
-#' This function extracts integration results from `metadata(expomicset)$integration_results` and
-#' generates a summary plot of factor contributions. The visualization method depends on the
-#' integration approach used:
+#' This function visualizes factor contributions based on the integration method:
 #'
-#' - **MOFA**: Uses `MOFA2::plot_variance_explained()` to display variance explained by factors.
-#' - **MCIA**: Uses `nipalsMCIA::block_weights_heatmap()` to show block loadings.
+#' - **MOFA**: Variance explained per factor and view.
+#' - **MCIA**: Block score weights per omic.
+#' - **DIABLO**: Mean absolute sample score per omic and factor (from block-specific variates).
+#' - **RGCCA**: Mean absolute sample score per omic and factor (from aligned block scores).
 #'
-#' The function automatically selects the appropriate visualization based on the integration method.
+#' The color gradient can be customized using the `low`, `mid`, `high`, and `midpoint` parameters.
 #'
-#' @return A `ggplot` object displaying factor contributions for MOFA or a block weight heatmap for MCIA.
+#' @return A `ggplot` object showing factor contributions based on the integration method.
 #'
 #' @examples
 #' \dontrun{
 #' plot_factor_summary(expom)
+#' plot_factor_summary(expom, low = "blue", mid = "white", high = "red")
 #' }
 #'
 #' @export
 plot_factor_summary <- function(
-    expomicset
-    ){
-  if(!"integration_results" %in% names(MultiAssayExperiment::metadata(expomicset)$multiomics_integration)){
-    stop("Please run `multiomics_integration()` first.")
+    expomicset,
+    low = "#006666",
+    mid = "white",
+    high = "#8E0152",
+    midpoint = 0.5
+) {
+  require("ggplot2")
+  require("ggpubr")
+
+  integration <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results
+
+  if (is.null(integration) || is.null(integration$result)) {
+    stop("Integration results not found. Please run `run_multiomics_integration()` first.")
   }
 
-  require(ggplot2)
+  method <- integration$method
+  result <- integration$result
 
-  if(MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method == "MOFA"){
-    factor_contrib_plot <- MOFA2::plot_variance_explained(
-      MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result,
-      x="view",
-      y="factor")+
-      scale_fill_gradient2(low="#006666",
-                           mid="white",
-                           high="#8E0152",
-                           midpoint = 0.5)+
-      ggpubr::rotate_x_text(angle = 45)
+  factor_contrib_plot <- switch(
+    method,
 
-  }else if(MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method == "MCIA"){
-    # factor_contrib_plot <- nipalsMCIA::block_weights_heatmap(
-    #   MultiAssayExperiment::metadata(expomicset)$integration_results$result)
+    "MOFA" = {
+      MOFA2::plot_variance_explained(
+        result,
+        x = "view",
+        y = "factor"
+      ) +
+        ggpubr::rotate_x_text(45) +
+        scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint)
+    },
 
-    factor_contrib_plot <- expomicset |>
-      MultiAssayExperiment::metadata() |>
-      purrr::pluck("multiomics_integration") |>
-      purrr::pluck("integration_results") |>
-      purrr::pluck("result") |>
-      purrr::pluck("block_score_weights") |>
-      as.data.frame() |>
-      tibble::rownames_to_column("omic") |>
-      tidyr::pivot_longer(!omic,names_to = "factor",values_to = "weight") |>
-      dplyr::mutate(factor=gsub("V","",factor),
-             factor=factor(as.numeric(factor), levels = sort(unique(as.numeric(factor))))) |>
-      ggplot(aes(x = factor,
-                 y = omic,
-                 fill = weight)) +
-      geom_tile() +
-      ggpubr::theme_pubr(legend = "right")+
-      scale_fill_gradient2(low="#006666",
-                           mid="white",
-                           high="#8E0152",
-                           midpoint = 0.5)+
-      labs(
-        x="Factor",
-        y="",
-        fill="Weight"
-      )
-  }else if (MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method == "MCCA"){
+    "MCIA" = {
+      result$block_score_weights |>
+        as.data.frame() |>
+        tibble::rownames_to_column("omic") |>
+        tidyr::pivot_longer(!omic, names_to = "factor", values_to = "weight") |>
+        dplyr::mutate(
+          factor = gsub("V", "", factor),
+          factor = factor(as.numeric(factor), levels = sort(unique(as.numeric(factor))))
+        ) |>
+        ggplot(aes(x = factor, y = omic, fill = weight)) +
+        geom_tile() +
+        ggpubr::theme_pubr(legend = "right") +
+        scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
+        labs(x = "Factor", y = NULL, fill = "Weight")
+    },
 
-    expomicset |>
-      MultiAssayExperiment::metadata() |>
-      purrr::pluck("multiomics_integration") |>
-      purrr::pluck("integration_results") |>
-      purrr::pluck("result") |>
-      map(~ {.x |> colMeans()}) |>
-      bind_rows() |>
-      mutate_all(~ abs(.)) |>
-      rownames_to_column("factor") |>
-      pivot_longer(-factor,names_to = "omic",values_to = "weight") |>
-      dplyr::mutate(factor=factor(
-        as.numeric(factor),
-        levels = sort(unique(as.numeric(factor))))) |>
-      # group_by(factor,.drop = T) |>
-      # mutate(perc=weight/sum(weight)) |>
-      ggplot(aes(x = factor,
-                 y = omic,
-                 fill = weight)) +
-      geom_tile() +
-      ggpubr::theme_pubr(legend = "right")+
-      scale_fill_gradient2(low="#006666",
-                           mid="white",
-                           high="#8E0152",
-                           midpoint = 0.5)+
-      labs(
-        x="Factor",
-        y="",
-        fill="Weight"
-      )
+    # "MCCA" = {
+    #   result$sample_scores |>
+    #     purrr::map(~ apply(.x, 2, function(x) mean(abs(x))) |>
+    #                  as.data.frame() |>
+    #                  tibble::rownames_to_column("factor") |>
+    #                  setNames(c("factor", "weight"))) |>
+    #     dplyr::bind_rows(.id = "omic") |>
+    #     dplyr::mutate(
+    #       factor = factor(as.numeric(factor),
+    #                       levels = sort(unique(as.numeric(factor))))
+    #     ) |>
+    #     ggplot(aes(x = factor, y = omic, fill = weight)) +
+    #     geom_tile() +
+    #     ggpubr::theme_pubr(legend = "right") +
+    #     scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
+    #     labs(x = "Factor", y = "", fill = "Avg |Score|")
+    # },
 
-  } else {
-    stop("Method not supported.")
-  }
+    "DIABLO" = {
+      result$variates |>
+        (\(lst) lst[names(lst) != "Y"])() |>
+        purrr::discard(~ is.null(.x) || is.character(.x) || is.factor(.x)) |>
+        purrr::imap(~ apply(.x, 2, function(x) mean(abs(x))) |>
+                      as.data.frame() |>
+                      tibble::rownames_to_column("factor") |>
+                      setNames(c("factor", "weight"))) |>
+        dplyr::bind_rows(.id = "omic") |>
+        dplyr::mutate(
+          factor = gsub("comp", "", factor),
+          factor = factor(as.numeric(factor),
+                          levels = sort(unique(as.numeric(factor))))
+        ) |>
+        ggplot(aes(x = factor, y = omic, fill = weight)) +
+        geom_tile() +
+        ggpubr::theme_pubr(legend = "right") +
+        scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
+        labs(x = "Factor", y = "", fill = "Avg. |Score|")
+    },
+
+    "RGCCA" = {
+      result$Y |>
+        purrr::imap(~ apply(.x, 2, function(x) mean(abs(x))) |>
+                      as.data.frame() |>
+                      tibble::rownames_to_column("factor") |>
+                      setNames(c("factor", "weight"))) |>
+        dplyr::bind_rows(.id = "omic") |>
+        dplyr::mutate(
+          factor = gsub("comp", "", factor),
+          factor = factor(as.numeric(factor),
+                          levels = sort(unique(as.numeric(factor))))
+        ) |>
+        ggplot(aes(x = factor, y = omic, fill = weight)) +
+        geom_tile() +
+        ggpubr::theme_pubr(legend = "right") +
+        scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
+        labs(x = "Factor", y = "", fill = "Avg. |Score|")
+    },
+
+    stop("Integration method not supported in plot_factor_summary().")
+  )
+
   return(factor_contrib_plot)
-
 }

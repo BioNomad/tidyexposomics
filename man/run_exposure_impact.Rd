@@ -6,7 +6,7 @@
 \usage{
 run_exposure_impact(
   expomicset,
-  feature_type = c("degs", "omics", "factors"),
+  feature_type = c("degs", "omics", "factor_features"),
   pval_col = "adj.P.Val",
   pval_thresh = 0.1,
   action = c("add", "get")
@@ -15,7 +15,7 @@ run_exposure_impact(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object with correlation and network metadata.}
 
-\item{feature_type}{One of \code{"degs"}, \code{"omics"}, or \code{"factors"}.}
+\item{feature_type}{One of \code{"degs"}, \code{"omics"}, or \code{"factor_features"}.}
 
 \item{pval_col}{Column in differential abundance results to filter DEGs. Default = \code{"adj.P.Val"}.}
 

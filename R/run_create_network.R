@@ -1,18 +1,42 @@
-#' Create and store a network from correlation results in a MultiAssayExperiment
+#' Create Correlation Network from Feature Data
 #'
-#' Constructs an undirected network based on correlation results between exposures
-#' and features (e.g., DEGs, omics, latent factors, exposures) and optionally stores it
-#' in the metadata of a `MultiAssayExperiment` object.
+#' Constructs an undirected feature–feature or feature–exposure correlation network
+#' from correlation results stored in a `MultiAssayExperiment` object. The function
+#' supports multiple correlation formats depending on `feature_type`, and stores or returns
+#' an `igraph` object with associated node and edge metadata.
 #'
-#' @param expomicset A `MultiAssayExperiment` object.
-#' @param feature_type One of "degs", "omics", "factors", or "exposures". Used to select correlation results.
-#' @param action "add" to store the graph in metadata, or "get" to return it.
+#' @param expomicset A `MultiAssayExperiment` object containing correlation results in metadata.
+#' @param feature_type Type of correlation result to convert to a network. One of:
+#'   `"degs"`, `"omics"`, `"factors"`, `"factor_features"`, `"exposures"`,
+#'   `"degs_feature_cor"`, `"omics_feature_cor"`, or `"factor_features_feature_cor"`.
+#' @param action Whether to `"add"` the network to the object or `"get"` it as a list.
 #'
-#' @return If `action = "add"`, returns modified `MultiAssayExperiment`. Otherwise, returns a list with `graph` and `summary`.
+#' @return If `action = "add"`, returns the updated `MultiAssayExperiment` with a new `network` entry in metadata.
+#'         If `action = "get"`, returns a list with `graph` (an `igraph` object) and `summary` (a tibble).
+#'
+#' @details The function detects the appropriate edge and node structure based on column names
+#' in the correlation results. Edge weights are based on correlation coefficients and include FDR values.
+#'
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' expomicset <- run_correlation(expomicset, feature_type = "omics", feature_cors = TRUE)
+#' expomicset <- run_create_network(expomicset, feature_type = "omics_feature_cor")
+#' net <- run_create_network(expomicset, feature_type = "omics_feature_cor", action = "get")
+#' plot(net$graph)
+#' }
 run_create_network <- function(expomicset,
-                               feature_type = c("degs", "omics", "factors", "exposures"),
-                               action = c("add", "get")) {
+                               feature_type = c("degs",
+                                                "omics",
+                                                "factors",
+                                                "factor_features",
+                                                "exposures",
+                                                "degs_feature_cor",
+                                                "omics_feature_cor",
+                                                "factor_features_feature_cor"),
+                               action = c("add",
+                                          "get")) {
   require(igraph)
   require(tidygraph)
 
@@ -25,7 +49,7 @@ run_create_network <- function(expomicset,
     stop(paste0("No correlation data found for feature_type = '", feature_type, "'"))
   }
 
-  message("Creating network from correlation results...")
+  message("Creating network from correlation results.")
 
   # Detect variable structure
   if (all(c("feature", "exposure", "exp_name", "category") %in% colnames(cor_data))) {
@@ -44,6 +68,13 @@ run_create_network <- function(expomicset,
 
     edge_df <- dplyr::select(cor_data, from = var1, to = var2, correlation, FDR)
 
+  } else if (all(c("var1", "var2", "exp_name_1", "exp_name_2") %in% colnames(cor_data))){
+    node_tbl <- dplyr::bind_rows(
+      dplyr::select(cor_data, name = var1, group = exp_name_1),
+      dplyr::select(cor_data, name = var2, group = exp_name_2)
+    ) |> dplyr::distinct()
+
+    edge_df <- dplyr::select(cor_data, from = var1, to = var2, correlation, FDR)
   } else {
     stop("Unrecognized correlation format.")
   }

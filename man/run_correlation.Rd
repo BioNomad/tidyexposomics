@@ -2,13 +2,15 @@
 % Please edit documentation in R/run_correlation.R
 \name{run_correlation}
 \alias{run_correlation}
-\title{Generalized Correlation Analysis Between Exposures and Features}
+\title{Run Correlation Analysis}
 \usage{
 run_correlation(
   expomicset,
-  feature_type = c("degs", "omics", "factors", "factor_features", "exposures"),
+  feature_type = c("degs", "omics", "factors", "factor_features", "exposures", "pcs"),
   exposure_cols = NULL,
   variable_map = NULL,
+  n_pcs = NULL,
+  feature_cors = FALSE,
   robust = FALSE,
   score_col = "stability_score",
   score_thresh = NULL,
@@ -25,43 +27,56 @@ run_correlation(
 )
 }
 \arguments{
-\item{expomicset}{A MultiAssayExperiment object.}
+\item{expomicset}{A \code{MultiAssayExperiment} object.}
 
-\item{feature_type}{One of "degs", "omics", "factors", "factor_features", or "exposures".}
+\item{feature_type}{Type of features to correlate. One of \code{"degs"}, \code{"omics"}, \code{"factors"}, \code{"factor_features"}, \code{"exposures"}, or \code{"pcs"}.}
 
-\item{exposure_cols}{Optional character vector of exposure variable names. If NULL, all numeric exposures are used.}
+\item{exposure_cols}{Optional vector of exposure column names (from \code{colData}) to use.}
 
-\item{variable_map}{Optional variable mapping table (only for omics).}
+\item{variable_map}{Optional mapping of features to include by assay for \code{omics} mode.}
 
-\item{robust}{If TRUE and feature_type == "degs", restrict to stable DEGs.}
+\item{n_pcs}{Number of PCs to use when \code{feature_type = "pcs"}.}
 
-\item{score_col}{Column name for stability scores in sensitivity analysis.}
+\item{feature_cors}{Logical; if \code{TRUE}, compute correlations between features rather than with exposures.}
 
-\item{score_thresh}{Optional numeric threshold for feature stability scores.}
+\item{robust}{Logical; restrict DEGs to those passing sensitivity threshold.}
 
-\item{correlation_method}{Correlation method ("spearman", "pearson", etc.).}
+\item{score_col}{Column name in sensitivity analysis with feature stability score.}
 
-\item{correlation_cutoff}{Threshold for absolute correlation.}
+\item{score_thresh}{Threshold for filtering robust features.}
 
-\item{cor_pval_column}{Which p-value column to apply cutoff to.}
+\item{correlation_method}{One of \code{"pearson"}, \code{"spearman"}, or \code{"kendall"}.}
 
-\item{pval_cutoff}{Significance threshold for p-values.}
+\item{correlation_cutoff}{Minimum absolute correlation to retain.}
 
-\item{deg_pval_col}{DEG p-value column name.}
+\item{cor_pval_column}{Column in output to filter by p-value (default: \code{"p.value"}).}
 
-\item{deg_logfc_col}{DEG logFC column name.}
+\item{pval_cutoff}{Maximum p-value or FDR threshold to retain a correlation.}
 
-\item{deg_pval_thresh}{DEG p-value filter threshold.}
+\item{deg_pval_col}{Column with DEG adjusted p-values.}
 
-\item{deg_logfc_thresh}{DEG logFC filter threshold.}
+\item{deg_logfc_col}{Column with DEG log fold-changes.}
 
-\item{batch_size}{Features per correlation batch.}
+\item{deg_pval_thresh}{P-value cutoff for DEGs.}
 
-\item{action}{Either "get" (return table) or "add" (update metadata).}
+\item{deg_logfc_thresh}{Log fold-change cutoff for DEGs.}
+
+\item{batch_size}{Number of features to process per batch (default: 1500).}
+
+\item{action}{Whether to \code{"add"} results to metadata or \code{"get"} as a data frame.}
 }
 \value{
-If action = "add", returns modified MultiAssayExperiment. Else, returns correlation result table.
+If \code{action = "add"}, returns updated \code{MultiAssayExperiment} with results added to metadata.
+If \code{action = "get"}, returns a tidy \code{data.frame} of correlations.
 }
 \description{
-Performs correlation analysis between exposures and a selected feature set (DEGs, omics, latent factors, or exposures).
+Computes correlations between exposures and feature types including DEGs, omics, latent factors,
+top factor features, or principal components (PCs). Optionally computes feature–feature correlations
+to support network analysis.
+}
+\examples{
+\dontrun{
+run_correlation(expomicset, feature_type = "omics", correlation_method = "spearman")
+run_correlation(expomicset, feature_type = "degs", feature_cors = TRUE)
+}
 }

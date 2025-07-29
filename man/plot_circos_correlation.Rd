@@ -6,7 +6,7 @@
 \usage{
 plot_circos_correlation(
   expomicset,
-  feature_type = c("exposures", "degs", "factors"),
+  feature_type = c("degs", "omics", "factors", "factor_features", "exposures", "pcs"),
   exposure_cols = NULL,
   corr_threshold = NULL,
   shared_cutoff = 10,
@@ -30,7 +30,11 @@ plot_circos_correlation(
 
 \item{annotation_colors}{Optional named vector of colors for categories.}
 
-\item{low, }{mid, high Colors for edge color scale.}
+\item{low}{low value color for edges.}
+
+\item{mid}{middle value color for edges.}
+
+\item{high}{high value color for edges.}
 
 \item{midpoint}{Midpoint for edge color gradient. Defaults to 0 (for correlations) or mean shared features.}
 }

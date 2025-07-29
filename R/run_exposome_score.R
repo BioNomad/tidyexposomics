@@ -1,30 +1,35 @@
-#' Calculate Exposome Score for a MultiAssayExperiment
+#' Compute Composite Exposome Scores
 #'
-#' This function calculates exposome scores using various methods (mean, median, PCA, IRT, quantile, variance)
-#' based on numeric exposure variables found in the `colData` of a `MultiAssayExperiment` object.
+#' Calculates a summary exposome score per sample using one of several methods including
+#' mean, sum, median, PCA (first principal component), IRT (Item Response Theory), quantile
+#' binning, or row-wise variance. The resulting score is added to the `colData` of the
+#' `MultiAssayExperiment` object.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing exposure data in its `colData`.
-#' @param exposure_cols Optional character vector specifying which exposure columns to use. If `NULL`, all numeric columns (excluding those starting with "PC") are used.
-#' @param scale Logical; if `TRUE`, standardizes (z-scores) the selected exposures before scoring. Default is `TRUE`.
-#' @param score_type Character string indicating the scoring method to use. One of `"mean"`, `"median"`, `"pca"`, `"irt"`, `"quantile"`, or `"var"`.
-#' @param score_column_name Optional string to rename the resulting exposome score column in the output `colData`. If `NULL`, a default name based on `score_type` is used.
+#' @param score_type Character. The method used to compute the score. Options are:
+#'   `"mean"`, `"sum"`, `"median"`, `"pca"`, `"irt"`, `"quantile"`, `"var"`.
+#' @param exposure_cols Optional character vector. Specific exposure column names to include. If `NULL`, all numeric columns are used.
+#' @param scale Logical. Whether to scale the exposures before computing the score. Default is `TRUE`.
+#' @param score_column_name Optional name for the resulting score column. If `NULL`, an automatic name is used (e.g., `"exposome_score_pca"`).
 #'
-#' @return A `MultiAssayExperiment` object with a new column added to its `colData`, containing the computed exposome score.
+#' @return A `MultiAssayExperiment` object with the exposome score added to `colData()`.
 #'
 #' @details
-#' - `"mean"`: Computes the row-wise mean across exposure values.
-#' - `"sum"`: Computes the row-wise sum across exposure values.
-#' - `"median"`: Computes the row-wise median across exposure values.
-#' - `"pca"`: Performs PCA on exposures and uses the first principal component.
-#' - `"irt"`: Fits a unidimensional graded IRT model using decile-binned exposures.
-#' - `"quantile"`: Converts each exposure to deciles (1–10) and sums them row-wise.
-#' - `"var"`: Computes the row-wise variance across exposure values.
-#'
-#' Note: IRT-based scoring requires the `mirt` package.
+#' - `"pca"` uses the first principal component from `prcomp()`.
+#' - `"irt"` uses the `mirt` package to fit a graded response model to discretized exposures.
+#' - `"quantile"` assigns decile bins (1–10) to each variable and sums them row-wise.
+#' - `"var"` computes the row-wise variance across exposures.
 #'
 #' @examples
-#' # Compute a PCA-based exposome score using specific exposure columns
-#' # mae <- run_exposome_score(mae, exposure_cols = c("no2", "pm25"), score_type = "pca", score_column_name = "pca_score")
+#' \dontrun{
+#' expomicset <- run_exposome_score(
+#'   expomicset,
+#'   score_type = "pca",
+#'   exposure_cols = c("pm25", "no2", "o3"),
+#'   scale = TRUE,
+#'   score_column_name = "air_pollution_score"
+#' )
+#' }
 #'
 #' @export
 run_exposome_score <- function(

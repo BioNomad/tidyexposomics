@@ -25,14 +25,6 @@
 #'
 #' @return A \code{MultiAssayExperiment} object with imputed exposure and/or omics data.
 #'
-#' @importFrom MultiAssayExperiment colData metadata experiments
-#' @importFrom SummarizedExperiment assays
-#' @importFrom naniar impute_median_all impute_mean_all
-#' @importFrom impute impute.knn
-#' @importFrom mice mice complete
-#' @importFrom DEP impute
-#' @importFrom missForest missForest
-#' @importFrom S4Vectors DataFrame
 #' @export
 #'
 #' @examples
@@ -47,7 +39,7 @@
 run_impute_missing <- function(expomicset,
                                exposure_impute_method = "median",
                                exposure_cols = NULL,
-                               omics_impute_method = "knn",
+                               omics_impute_method = NULL,
                                omics_to_impute = NULL) {
 
   # Helper for LOD/sqrt(2) imputation
@@ -101,17 +93,19 @@ run_impute_missing <- function(expomicset,
     MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(metadata_df)
   }
 
-  # Impute omics data
-  all_omics <- setdiff(names(MultiAssayExperiment::experiments(expomicset)), "exposure")
-  omics_to_use <- if (is.null(omics_to_impute)) all_omics else intersect(all_omics, omics_to_impute)
+  if(!is.null(omics_to_impute)){
+    # Impute omics data
+    all_omics <- setdiff(names(MultiAssayExperiment::experiments(expomicset)), "exposure")
+    omics_to_use <- if (is.null(omics_to_impute)) all_omics else intersect(all_omics, omics_to_impute)
 
-  for (omics_name in omics_to_use) {
-    message("Imputing omics dataset: ", omics_name, " using method: ", omics_impute_method)
-    experiment <- MultiAssayExperiment::experiments(expomicset)[[omics_name]]
-    assay_data <- as.data.frame(SummarizedExperiment::assays(experiment)[[1]])
-    imputed_data <- impute_data(assay_data, omics_impute_method)
-    SummarizedExperiment::assays(experiment)[[1]] <- as.matrix(imputed_data)
-    MultiAssayExperiment::experiments(expomicset)[[omics_name]] <- experiment
+    for (omics_name in omics_to_use) {
+      message("Imputing omics dataset: ", omics_name, " using method: ", omics_impute_method)
+      experiment <- MultiAssayExperiment::experiments(expomicset)[[omics_name]]
+      assay_data <- as.data.frame(SummarizedExperiment::assays(experiment)[[1]])
+      imputed_data <- impute_data(assay_data, omics_impute_method)
+      SummarizedExperiment::assays(experiment)[[1]] <- as.matrix(imputed_data)
+      MultiAssayExperiment::experiments(expomicset)[[omics_name]] <- experiment
+    }
   }
 
   # Add analysis steps taken to metadata

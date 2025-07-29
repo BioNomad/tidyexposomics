@@ -133,29 +133,49 @@ plot_volcano <- function(
   if(!is.null(top_n_label)){
     # Label the top n points
     volcano <- volcano +
-      ggrepel::geom_text_repel(
+      ggrepel::geom_label_repel(
         data = plot_df |>
           group_by(exp_name) |>
           dplyr::arrange(!!sym(pval_col)) |>
           dplyr::slice_head(n = top_n_label),
-        aes(label = !!sym(feature_col)),
+        aes(label = paste0("italic('", !!sym(feature_col), "')")),
+        parse = TRUE,
         size = 3,
         max.overlaps = Inf,
         show.legend = FALSE
       )
+      # ggrepel::geom_label_repel(
+      #   data = plot_df |>
+      #     group_by(exp_name) |>
+      #     dplyr::arrange(!!sym(pval_col)) |>
+      #     dplyr::slice_head(n = top_n_label),
+      #   aes(label = !!sym(feature_col)),
+      #   size = 3,
+      #   max.overlaps = Inf,
+      #   show.legend = FALSE
+      # )
   }
 
   if(!is.null(features_to_label)) {
     # Label specific features
     volcano <- volcano +
-      ggrepel::geom_text_repel(
+      ggrepel::geom_label_repel(
         data = plot_df |>
           dplyr::filter(!!sym(feature_col) %in% features_to_label),
-        aes(label = !!sym(feature_col)),
+        aes(label = paste0("italic('", !!sym(feature_col), "')")),
+        parse = TRUE,
         size = 3,
         max.overlaps = Inf,
         show.legend = FALSE
       )
+      # ggrepel::geom_label_repel(
+      #   data = plot_df |>
+      #     dplyr::filter(!!sym(feature_col) %in% features_to_label),
+      #   aes(label = !!sym(feature_col)),
+      #   size = 3,
+      #   max.overlaps = Inf,
+      #   show.legend = FALSE
+      # )
   }
 
   volcano

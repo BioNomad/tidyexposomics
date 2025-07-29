@@ -6,17 +6,17 @@ library(ontologyIndex)
 library(httr)
 library(jsonlite)
 
-# ---- Load your lightweight annotation ontology ----
-#load("../../../data/ont.RData")
+# ---- Load lightweight annotation ontology ----
+# data("hpo", package = "tidyexposomics")
+# data("ecto", package = "tidyexposomics")
+# data("chebi", package = "tidyexposomics")
 
-data("ont", package = "tidyexposomics")
-data("hpo", package = "tidyexposomics")
-data("ecto", package = "tidyexposomics")
-data("chebi", package = "tidyexposomics")
+load_annotation_data()
+
 #data("ont")
-ontology_df <- ontology_df |>
-  dplyr::select(id, name) |>
-  dplyr::distinct()
+# ontology_df <- ontology_df |>
+#   dplyr::select(id, name) |>
+#   dplyr::distinct()
 
 # ---- Load & preprocess the full ontologies ONCE ----
 preprocess_ont <- function(ont) {
@@ -227,6 +227,16 @@ server <- function(input, output, session) {
              actionButton("apply_categorization","Apply Categorization"),
              hr(),
              h4("Step 3: Download Annotated Data"),
+             hr(),
+             h4("Legend"),
+             div(style="padding-left:10px;",
+                 tags$div(style="background:#fde0dc;padding:4px;border-radius:3px;margin-bottom:4px;",
+                          "Missing ontology annotation"),
+                 tags$div(style="background:#fff2cc;padding:4px;border-radius:3px;margin-bottom:4px;",
+                          "Missing category"),
+                 tags$div(style="background:#fff7e6;padding:4px;border-radius:3px;",
+                          "Manually categorized")
+             ),
              downloadButton("save_csv","Download Annotated CSV")
       ),
       column(8,
@@ -246,34 +256,71 @@ server <- function(input, output, session) {
     else HTML("<em>No row selected</em>")
   })
 
+  # output$table <- renderDT({
+  #   req(rv$data)
+  #
+  #   # Identify index of 'category' column
+  #   category_col_index <- which(colnames(rv$data) == "category")
+  #
+  #   # All other columns should be disabled for editing
+  #   disabled_cols <- setdiff(seq_along(rv$data), category_col_index) - 1
+  #
+  #
+  #   datatable(
+  #     rv$data,
+  #     selection = "multiple",
+  #     rownames = FALSE,
+  #     editable = list(target = "cell", disable = list(columns = disabled_cols)),
+  #     options = list(
+  #       pageLength = 2000,
+  #       scrollY = "400px",
+  #       scrollX = TRUE,
+  #       autoWidth = TRUE,
+  #       stateSave = TRUE
+  #     ),
+  #     class = 'stripe nowrap'
+  #   ) %>%
+  #     formatStyle(
+  #       'category_source',
+  #       target = 'row',
+  #       backgroundColor = styleEqual("manual", '#fff7e6')
+  #     )
+  # }, server = TRUE)
+
   output$table <- renderDT({
     req(rv$data)
 
-    # Identify index of 'category' column
-    category_col_index <- which(colnames(rv$data) == "category")
-
-    # All other columns should be disabled for editing
-    disabled_cols <- setdiff(seq_along(rv$data), category_col_index) - 1
-
+    # Determine row status
+    display_data <- rv$data
+    display_data$row_status <- case_when(
+      is.na(display_data$selected_ontology_id) ~ "Missing Annotation",
+      is.na(display_data$category)             ~ "Missing Category",
+      display_data$category_source == "manual" ~ "Manual",
+      TRUE                                     ~ "OK"
+    )
 
     datatable(
-      rv$data,
+      display_data,
       selection = "multiple",
       rownames = FALSE,
-      editable = list(target = "cell", disable = list(columns = disabled_cols)),
+      editable = list(target = "cell", disable = list(columns = which(names(display_data) != "category") - 1)),
       options = list(
         pageLength = 2000,
         scrollY = "400px",
         scrollX = TRUE,
         autoWidth = TRUE,
-        stateSave = TRUE
+        stateSave = TRUE,
+        columnDefs = list(list(visible = FALSE, targets = which(names(display_data) == "row_status") - 1))
       ),
       class = 'stripe nowrap'
     ) %>%
       formatStyle(
-        'category_source',
+        'row_status',
         target = 'row',
-        backgroundColor = styleEqual("manual", '#fff7e6')
+        backgroundColor = styleEqual(
+          c("Missing Annotation", "Missing Category", "Manual"),
+          c("#fde0dc",             "#fff2cc",          "#fff7e6")
+        )
       )
   }, server = TRUE)
 
@@ -314,20 +361,28 @@ server <- function(input, output, session) {
       return()
     }
     root_lvl <- as.numeric(input$cat_root_depth)
+    rows <- input$table_rows_selected
+    if (length(rows) == 0) {
+      showModal(modalDialog("Please select one or more rows to categorize.", easyClose = TRUE))
+      return()
+    }
+
+    # Only run categorization on selected rows
+    data_subset <- rv$data[rows, , drop = FALSE]
     updated <- run_categorize_ontology(
-      data          = rv$data,
+      data          = data_subset,
       id_col        = "selected_ontology_id",
       ontology      = input$cat_ontology,
       root_level    = root_lvl,
       assign_label  = TRUE
     )
 
-    # Update only rows where selected_ontology_id is not NA and matches current ontology
-    to_update <- !is.na(rv$data$selected_ontology_id)
-    rv$data$root_id[to_update]         <- updated$root_id[to_update]
-    rv$data$root_label[to_update]      <- updated$root_label[to_update]
-    rv$data$category[to_update]        <- updated$category[to_update]
-    rv$data$category_source[to_update] <- updated$category_source[to_update]
+    # Only update selected rows
+    rv$data$root_id[rows]         <- updated$root_id
+    rv$data$root_label[rows]      <- updated$root_label
+    rv$data$category[rows]        <- updated$category
+    rv$data$category_source[rows] <- updated$category_source
+
 
     replaceData(proxy, rv$data, resetPaging = FALSE, rownames = FALSE)
 

@@ -6,7 +6,7 @@
 \usage{
 plot_correlation_summary(
   expomicset,
-  feature_type = c("degs", "factors"),
+  feature_type = c("degs", "omics", "factors", "factor_features", "exposures", "pcs"),
   mode = c("top_exposures", "top_features", "exposure_category", "assay", "summary"),
   top_n = 15
 )

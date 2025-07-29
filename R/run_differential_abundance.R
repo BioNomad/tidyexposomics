@@ -1,38 +1,25 @@
-#' Perform Differential Abundance Analysis
+#' Run Differential Abundance Analysis
 #'
-#' Runs differential abundance testing across all assays in a `MultiAssayExperiment` object.
+#' Performs differential abundance testing across all assays in a `MultiAssayExperiment`
+#' object using a specified statistical method such as `limma_voom`. The function updates
+#' each assay with its corresponding `colData`, fits the model using the provided formula,
+#' and combines the results into a unified table.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics and exposure data.
-#' @param formula A model formula for differential testing.
-#' @param abundance_col A character string specifying the assay data column to use. Default is `"counts"`.
-#' @param minimum_counts An integer specifying the minimum count threshold for feature filtering. Default is `10`.
-#' @param minimum_proportion A numeric specifying the minimum proportion of samples with nonzero counts. Default is `0.3`.
-#' @param method A character string specifying the differential abundance method (`"limma_voom"`, `"DESeq2"`, etc.). Default is `"limma_voom"`.
-#' @param contrasts A character vector specifying contrasts for differential testing. Default is `NULL`.
-#' @param scaling_method A character string specifying normalization/scaling. Default is `"none"`.
-#' @param action A character string specifying `"add"` (store results in metadata) or `"get"` (return results). Default is `"add"`.
+#' @param expomicset A `MultiAssayExperiment` containing assays to test.
+#' @param formula A model formula for the differential analysis (e.g., ~ group + batch).
+#' @param abundance_col Character. The name of the assay matrix to use for abundance values. Default is `"counts"`.
+#' @param method Character. Differential analysis method to use. Currently supports `"limma_voom"` (default).
+#' @param contrasts A named list of contrasts for pairwise comparisons. Default is `NULL` (uses default group comparisons).
+#' @param scaling_method Character. Scaling method to apply before modeling. Options include `"none"` (default), `"zscore"`, etc.
+#' @param action Character. Whether to `"add"` results to `expomicset` metadata or `"get"` the results as a data frame. Default is `"add"`.
 #'
-#' @details
-#' This function:
-#' - Iterates over all assays in `expomicset`.
-#' - Updates sample metadata in each assay.
-#' - Runs `.run_se_differential_abundance()` for differential testing.
-#' - Filters results based on `minimum_counts` and `minimum_proportion`.
-#' - Combines results across assays.
-#' - Stores results in `metadata(expomicset)$differential_abundance` when `action="add"`.
-#'
-#' @return If `action="add"`, returns the updated `expomicset`.
-#' If `action="get"`, returns a `data.frame` with differential abundance results, including:
-#' \item{feature}{Feature identifier.}
-#' \item{exp_name}{Assay name.}
-#' \item{logFC}{Log-fold change.}
-#' \item{adj.P.Val}{Adjusted p-value.}
+#' @return Either the updated `MultiAssayExperiment` (if `action = "add"`) or a tibble with differential abundance results (if `action = "get"`).
 #'
 #' @examples
 #' \dontrun{
 #' expom <- run_differential_abundance(
 #'   expomicset = expom,
-#'   formula = ~ condition,
+#'   formula = ~ exposure_group,
 #'   abundance_col = "counts",
 #'   method = "limma_voom"
 #' )
@@ -43,15 +30,13 @@ run_differential_abundance <- function(
     expomicset,
     formula,
     abundance_col = "counts",
-    minimum_counts = 10,
-    minimum_proportion = 0.3,
     method = "limma_voom",
     contrasts = NULL,
     scaling_method = "none",
     action="add"
 ) {
 
-  message("Running differential abundance testing...")
+  message("Running differential abundance testing.")
 
   # Initialize a data frame to store results
   da_results_df <- list()
@@ -70,8 +55,6 @@ run_differential_abundance <- function(
       abundance_col = abundance_col,
       method = method,
       scaling_method = scaling_method,
-      min_counts = minimum_counts,
-      min_proportion = minimum_proportion,
       contrasts = contrasts
     )
 
@@ -87,7 +70,8 @@ run_differential_abundance <- function(
 
   # Combine results across assays
   final_results <- da_results_df |>
-    dplyr::bind_rows()
+    dplyr::bind_rows() |>
+    as_tibble()
 
   message("Differential abundance testing completed.")
 
@@ -103,8 +87,6 @@ run_differential_abundance <- function(
           method = method,
           scaling_method = scaling_method,
           abundance_col = abundance_col,
-          minimum_counts = minimum_counts,
-          minimum_proportion = minimum_proportion,
           contrasts = contrasts
         ),
         notes = "Performed differential abundance analysis across all assays."

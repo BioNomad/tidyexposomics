@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_exposure_impact.R
 \name{plot_exposure_impact}
 \alias{plot_exposure_impact}
-\title{Visualize Exposure Impact Metrics from DEG Centrality Analysis}
+\title{Plot Exposure Impact on Network Centrality Metrics}
 \usage{
 plot_exposure_impact(
   expomicset,
@@ -18,55 +18,44 @@ plot_exposure_impact(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing the output
-from \code{\link{run_exposure_impact}} in its metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with results from \code{run_exposure_impact()}.}
 
-\item{min_per_group}{Integer. Minimum number of features required for an
-exposure group to be included in the boxplot. Default is \code{5}.}
+\item{feature_type}{Character string specifying the feature type. One of \code{"degs"}, \code{"omics"}, or \code{"factors"}.}
 
-\item{facet_cols}{Optional vector of colors for the exposure category facets.
-If \code{NULL}, defaults to \code{ggsci::pal_jco()} colors.}
+\item{min_per_group}{Minimum number of features per exposure for inclusion (not currently used). Default is \code{5}.}
 
-\item{bar_cols}{Optional vector of colors for the bar plot groups. If \code{NULL},
-defaults to \code{ggsci::pal_uchicago()} colors.}
+\item{facet_cols}{Optional named vector of colors for exposure categories.}
 
-\item{alpha}{Numeric between 0 and 1. Transparency of facet background fill.
-Default is \code{0.5}.}
+\item{bar_cols}{Optional vector of colors for bar plots (if enabled).}
 
-\item{ncol}{Integer. Number of columns in the combined patchwork layout.
-Default is \code{2}.}
+\item{alpha}{Transparency level for category strips (if enabled). Default is \code{0.3}.}
 
-\item{nrow}{Integer. Number of rows in the combined patchwork layout.
-Default is \code{1}.}
+\item{ncol, nrow}{Layout for optional patchwork combination (currently unused). Default: \code{ncol = 2}, \code{nrow = 1}.}
 
-\item{heights}{Numeric vector. Relative heights of the patchwork panels.
-Default is \code{c(1, 1)}.}
-
-\item{widths}{Numeric vector. Relative widths of the patchwork panels.
-Default is \code{c(2, 1)}.}
+\item{heights, }{widths Relative heights and widths for combined plots (currently unused). Defaults: \code{c(1,1)}, \code{c(2,1)}.}
 }
 \value{
-A \code{ggplot} object composed with \code{patchwork} that includes:
-\enumerate{
-\item A boxplot of degree centrality values for features associated with each exposure.
-\item A barplot showing the number of DEGs associated and not associated with exposures.
-}
+A \code{ggplot}/\code{patchwork} object showing a heatmap of scaled network centrality scores per exposure, annotated by category.
 }
 \description{
-This function generates a two-panel visualization of the results from
-\code{\link{run_exposure_impact}}. It displays (1) the degree centrality
-of features associated with each exposure as a boxplot, and (2) a stacked
-bar plot summarizing how many differentially expressed features are associated
-with exposures.
+Visualizes the impact of exposures on network centrality measures of associated features
+(e.g., genes or latent factors) as a heatmap. Each exposure is scored by four centrality metrics,
+scaled within metric, and grouped by exposure category.
 }
 \details{
-This function assumes that \code{\link{run_exposure_impact}} has already been run and that
-the resulting exposure impact metrics are stored in the \code{metadata(expomicset)} list
-under the \code{"exposure_impact"} entry.
-
-The left panel (boxplot) stratifies centrality by exposure and facet category.
-The right panel (barplot) summarizes the total and associated DEG counts.
+This function uses the output of \code{run_exposure_impact()} to calculate and visualize the mean centrality
+values for each exposure across its associated features. The following network centrality metrics are shown:
+\itemize{
+\item Degree centrality
+\item Eigenvector centrality
+\item Closeness centrality
+\item Betweenness centrality
 }
-\seealso{
-\code{\link{run_exposure_impact}}, \code{\link[patchwork]{wrap_plots}}
+All values are scaled within metric across exposures. A side bar indicates the category of each exposure.
+}
+\examples{
+\dontrun{
+plot_exposure_impact(expomicset, feature_type = "degs")
+}
+
 }

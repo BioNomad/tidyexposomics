@@ -178,7 +178,7 @@ Differentially abundant analysis is also supported in `tidyexposomics`. Here we 
 
 ```R
 # Run differential abundance analysis
-expom_1 <- expom_1 |> 
+expom <- expom |> 
   run_differential_abundance(
     formula = ~ hs_asthma + hs_child_age_None + e3_sex_None + h_cohort,
     method = "limma_voom",
@@ -186,7 +186,7 @@ expom_1 <- expom_1 |>
     action = "add")
     
 # Plot Differential Abundance Results
-expom_1 |> 
+expom |> 
   plot_volcano(
     top_n_label = 3,
     feature_col = "feature_clean",
@@ -205,14 +205,14 @@ If several omics are present, we provide functionality to perform multiomics int
 
 ```R
 # Perform Multi-Omics Integration
-expom_1 <- expom_1 |> 
+expom <- expom |> 
   run_multiomics_integration(method = "DIABLO",
                              n_factors = 5,
                              outcome = "hs_asthma",
                              action = "add")
                              
 # Identify factors that correlate with the outcome
-expom_1 <- expom_1 |> 
+expom <- expom |> 
   run_association(
     source = "factors",
     outcome = "hs_asthma",
@@ -225,7 +225,7 @@ expom_1 <- expom_1 |>
     family = "binomial")
     
 # Extract top features that contribute to a factor
-expom_1 <- expom_1 |> 
+expom <- expom |> 
   extract_top_factor_features(method = "percentile",
                               pval_col = "p_adjust",
                               pval_thresh = 0.05, 
@@ -233,7 +233,7 @@ expom_1 <- expom_1 |>
                               action = "add") 
                               
 # Determine which features drive multiple factors
-expom_1 <- expom_1 |> 
+expom <- expom |> 
   run_factor_overlap()
 ```
 
@@ -245,14 +245,14 @@ Now that we have our multiomics features associated with asthma status, we can c
 ```R
 # Grab top common factor features and ensure 
 # feature is renamed to variable for the variable_map
-top_factor_features <- expom_1 |> 
+top_factor_features <- expom |> 
   extract_results(result = "multiomics_integration") |> 
   pluck("common_top_factor_features") |> 
   dplyr::select(variable=feature,
                       exp_name)
 
 # Correlate top factor features with exposures
-expom_1  <- expom_1 |> 
+expom  <- expom |> 
   # Perform correlation analysis between factor features 
   # and exposures
   run_correlation(feature_type = "omics",
@@ -279,7 +279,7 @@ After identifying features associated with asthma and exposures, we can perform 
 
 ```R
 # Run enrichment analysis on factor features correlated with exposures
-expom_1  <- expom_1  |> 
+expom  <- expom  |> 
   run_enrichment(
     feature_type = c("omics_cor"),
     feature_col = "feature_clean",
@@ -297,7 +297,7 @@ expom_1  <- expom_1  |>
   )
 
 # Plot enrichment term network plot
-expom_1    |> 
+expom    |> 
   plot_enrichment(
     feature_type = "omics_cor",
     plot_type = "network",

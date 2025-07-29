@@ -4,7 +4,7 @@
 #' optionally grouped by a variable such as sex, smoking status, or exposure category.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing exposure data.
-#' @param exposure_cat A character string or vector specifying exposure category names (from `var_info$category`) to include. Use `"all"` to include all exposures.
+#' @param exposure_cat A character string or vector specifying exposure category names (from `codebook$category`) to include. Use `"all"` to include all exposures.
 #' @param exposure_cols Optional character vector specifying exact exposure variables to plot.
 #' @param group_by A string specifying the column in `colData(expomicset)` used to fill the plot (e.g., `"sex"`). Defaults to `NULL`, in which case exposures are colored by `category`.
 #' @param plot_type Type of plot: `"boxplot"` (default) or `"ridge"`.
@@ -20,7 +20,7 @@
 #' @details
 #' This function:
 #' - Filters exposure data based on category or selected columns.
-#' - Merges variable metadata from `metadata(expomicset)$var_info`.
+#' - Merges variable metadata from `metadata(expomicset)$codebook`.
 #' - Supports either **boxplot** (vertical distributions per variable) or **ridgeplot** (horizontal density plots per variable).
 #' - If `group_by` is specified, that variable defines the plot fill color; otherwise, the fill is based on exposure `category`.
 #' - Facets by `category` using `ggh4x::facet_grid2()` with color-coded strip backgrounds.
@@ -59,14 +59,19 @@ plot_exposures <- function(
 
   # Extract variable description file
   des <- MultiAssayExperiment::metadata(expomicset) |>
-    purrr::pluck("var_info")
+    purrr::pluck("codebook")
 
   # Filter by exposure category if specified
   if (exposure_cat == "all") {
     exposure_data <- exposure_data
   } else {
-    vars_to_keep <- des[des$category %in% exposure_cat, "variable"]
-    exposure_data <- exposure_data[, c(".sample",group_by, vars_to_keep)]
+    vars_to_keep <- des |>
+      dplyr::filter(category %in% exposure_cat) |>
+      dplyr::pull(variable)
+    cols_to_keep <- c(".sample", vars_to_keep)
+    if (!is.null(group_by)) cols_to_keep <- c(cols_to_keep, group_by)
+    cols_to_keep <- intersect(cols_to_keep, colnames(exposure_data))
+    exposure_data <- exposure_data[, cols_to_keep]
   }
 
   # If specific columns are provided, filter to those
@@ -113,6 +118,8 @@ plot_exposures <- function(
 
   if( plot_type == "boxplot"){
 
+    legend_logic <- ifelse(!is.null(group_by),"right","none")
+
     # Create boxplot
     sample_metadata |>
       dplyr::filter(value>0) |>
@@ -137,8 +144,8 @@ plot_exposures <- function(
           )
         )
       ) +
-      scale_color_manual(values=facet_cols)+
-      scale_fill_manual(values = group_cols)+
+      scale_color_manual(values = group_cols) +
+      scale_fill_manual(values = group_cols) +
       ggh4x::force_panelsizes(cols = panel_sizes)+
       labs(
         title = title,
@@ -148,10 +155,11 @@ plot_exposures <- function(
       ) +
       #ggpubr::theme_pubclean() +
       theme_minimal()+
-      theme(axis.text.x = element_text(angle = 45, hjust = 1),
-            legend.position = ifelse(is.null(group_var),"right","none"),
+      theme(axis.text.x = element_text(angle = 55, hjust = 1),
+            legend.position = legend_logic,
             strip.text.x = element_text(face = "bold.italic"),
             plot.title = element_text(face = "bold.italic"))+
+      guides(color = "none")+
       scale_y_log10()
 
   } else if (plot_type == "ridge"){

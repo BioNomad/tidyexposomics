@@ -5,9 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Identify and Annotate Shared Top Features Across Integration Factors — run_factor_overlap"><meta name="description" content="Identifies top features that are shared (overlapping) across all integration factors (e.g., MOFA or MCIA),
-and optionally annotates whether these features are also robustly associated with the outcome (e.g., DEGs or stability-selected)."><meta property="og:description" content="Identifies top features that are shared (overlapping) across all integration factors (e.g., MOFA or MCIA),
-and optionally annotates whether these features are also robustly associated with the outcome (e.g., DEGs or stability-selected)."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Identify and Annotate Shared Top Features Across Integration Factors — run_factor_overlap"><meta name="description" content="Identifies top features shared across factors based on integration method.
+For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA, takes features recurring in ≥2 block-specific components."><meta property="og:description" content="Identifies top features shared across factors based on integration method.
+For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA, takes features recurring in ≥2 block-specific components."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -15,7 +15,7 @@ and optionally annotates whether these features are also robustly associated wit
 
     <a class="navbar-brand me-2" href="../index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,15 +52,15 @@ and optionally annotates whether these features are also robustly associated wit
     </div>
 
     <div class="ref-description section level2">
-    <p>Identifies top features that are shared (overlapping) across all integration factors (e.g., MOFA or MCIA),
-and optionally annotates whether these features are also robustly associated with the outcome (e.g., DEGs or stability-selected).</p>
+    <p>Identifies top features shared across factors based on integration method.
+For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA, takes features recurring in ≥2 block-specific components.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_factor_overlap</span><span class="op">(</span></span>
 <span>  <span class="va">expomicset</span>,</span>
-<span>  robust_comparison <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  robust <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  stability_score <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  score_col <span class="op">=</span> <span class="st">"stability_score"</span>,</span>
 <span>  pval_thresh <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -76,51 +76,44 @@ and optionally annotates whether these features are also robustly associated wit
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> containing <code>top_factor_features</code> in its metadata (usually generated by <code><a href="extract_top_factor_features.html">extract_top_factor_features()</a></code>).</p></dd>
+<dd><p>A <code>MultiAssayExperiment</code> with integration results and top factor features.</p></dd>
 
 
-<dt id="arg-robust-comparison">robust_comparison<a class="anchor" aria-label="anchor" href="#arg-robust-comparison"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, uses sensitivity analysis (if available) to define robust associations. If <code>FALSE</code>, uses traditional DEG filters. Default is <code>TRUE</code>.</p></dd>
+<dt id="arg-robust">robust<a class="anchor" aria-label="anchor" href="#arg-robust"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, uses sensitivity score. Otherwise, uses DEG thresholds.</p></dd>
 
 
 <dt id="arg-stability-score">stability_score<a class="anchor" aria-label="anchor" href="#arg-stability-score"></a></dt>
-<dd><p>Optional numeric threshold for robust filtering. If <code>NULL</code>, uses the <code>score_thresh</code> stored in <code>metadata(expomicset)$sensitivity_analysis</code>.</p></dd>
+<dd><p>Optional numeric threshold (overrides default from metadata).</p></dd>
 
 
 <dt id="arg-score-col">score_col<a class="anchor" aria-label="anchor" href="#arg-score-col"></a></dt>
-<dd><p>Character string specifying which score column to use from sensitivity analysis. Default is <code>"stability_score"</code>.</p></dd>
+<dd><p>Column name for sensitivity score. Default is <code>"stability_score"</code>.</p></dd>
 
 
 <dt id="arg-pval-thresh">pval_thresh<a class="anchor" aria-label="anchor" href="#arg-pval-thresh"></a></dt>
-<dd><p>P-value threshold for differential abundance filtering. Used if <code>robust_comparison = FALSE</code>. Default is <code>0.05</code>.</p></dd>
+<dd><p>DEG p-value threshold (if <code>robust = FALSE</code>). Default is <code>0.05</code>.</p></dd>
 
 
 <dt id="arg-logfc-thresh">logfc_thresh<a class="anchor" aria-label="anchor" href="#arg-logfc-thresh"></a></dt>
-<dd><p>Log fold change threshold for differential abundance filtering. Used if <code>robust_comparison = FALSE</code>. Default is <code>log2(1.5)</code>.</p></dd>
+<dd><p>DEG logFC threshold (if <code>robust = FALSE</code>). Default is <code>log2(1.5)</code>.</p></dd>
 
 
 <dt id="arg-pval-col">pval_col<a class="anchor" aria-label="anchor" href="#arg-pval-col"></a></dt>
-<dd><p>Character string specifying the column in the differential abundance table containing p-values. Default is <code>"padj"</code>.</p></dd>
+<dd><p>Column name for p-value. Default is <code>"padj"</code>.</p></dd>
 
 
 <dt id="arg-logfc-col">logfc_col<a class="anchor" aria-label="anchor" href="#arg-logfc-col"></a></dt>
-<dd><p>Character string specifying the column in the differential abundance table containing log fold changes. Default is <code>"logFC"</code>.</p></dd>
+<dd><p>Column name for logFC. Default is <code>"logFC"</code>.</p></dd>
 
 
 <dt id="arg-action">action<a class="anchor" aria-label="anchor" href="#arg-action"></a></dt>
-<dd><p>What to do with the results:</p><dl><dt>"add"</dt>
-<dd><p>Store shared top features in <code>metadata(expomicset)$common_top_factor_features</code> and return the updated object.</p></dd>
-
-<dt>"get"</dt>
-<dd><p>Return the data frame of shared top features across all factors, including an <code>is_deg</code> column indicating outcome association.</p></dd>
-
-
-</dl></dd>
+<dd><p><code>"add"</code> to return modified object, <code>"get"</code> to return data.frame.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Either a modified <code>MultiAssayExperiment</code> object (if <code>action = "add"</code>), or a <code>data.frame</code> of overlapping top features (if <code>action = "get"</code>).</p>
+    <p>Modified <code>MultiAssayExperiment</code> or <code>data.frame</code> of shared top features.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

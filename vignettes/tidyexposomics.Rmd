@@ -1,15 +1,13 @@
 ---
 title: "Introduction to tidyexposomics"
+author: "Jason Laird"
 header-includes:
    - \usepackage{amsmath}
    - \usepackage{amsfonts}
-output: 
-  html_document:
-    toc: true
-    toc_depth: 3
+output:
+  BiocStyle::html_document:
     toc_float: true
-    self_contained: yes
-    highlight: pygments
+    toc: true
 vignette: >
   %\VignetteIndexEntry{tidyexposomics: integrated exposure-omics analysis powered by tidy principles}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,31 +16,14 @@ vignette: >
 
 
 
-```{r, echo=FALSE}
-htmltools::img(src = knitr::image_uri(file.path("./logo.png")),
-               alt = 'logo',
-               style = 'position:absolute; top:0; right:0; padding:10px; height:1.5%')
-```
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r,echo=FALSE,message=FALSE,warning=FALSE}
-# Load data
-#load("~/jhu/projects/useful_functions/expom.RData")
-#load("../data/expom_complete_v2.RData")
-load("../data/expom_complete.RData")
-invisible(lapply(
-  list.files(path = "~/jhu/projects/tidyexposomics/R/",
-             pattern="*.R",full.names = TRUE),
-  source))
 ```
 
 
 Exposure to environmental factors is a major determinant of health and disease. The exposome is a term that represents the totality of environmental exposures that drive disease and overall health [(Wild et al. 2005)](https://pubmed.ncbi.nlm.nih.gov/16103423/). To tackle the daunting task of characterizing the relationship between a multiplicity of exposures and disease outcomes, epidemiological studies have moved towards exposure wide association studies (ExWAS) where sets of exposures are associated with an outcome [(Chung et al. 2024)](https://academic.oup.com/exposome/article/4/1/osae001/7574628). The advent of high-throughput technologies has enabled profiling of several layers of biological information. These layers too can be integrated to better understand the relationship between exposures and disease outcomes.
 
-The `tidyexposomics` package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. We structure our commands to fit into the `tidyverse` framework, where commands are designed to be simplified and intuitive. Here we provide functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
+The `tidyexposomics` package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations and their relevance to health outcomes. We structure our commands to fit into the `tidyverse` framework, where commands are designed to be simplified and intuitive. Here we provide functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
 
 ```{r echo = FALSE, message=FALSE, out.width="120%",fig.align='center', fig.cap='**tidyexposomics pipeline overview.** Exposure and omics data are stored in a MultiAssayExperiment. Data then undergoes quality control, sample and exposure associations, differential abundance analysis, multi-omics integration, and functional enrichment analysis. The pipeline is designed to be flexible and modular, allowing users to customize their analysis.',}
 knitr::include_graphics("./overview.png")
@@ -50,9 +31,12 @@ knitr::include_graphics("./overview.png")
 
 # Installation
 
-```{r, eval=FALSE}
+```{r,eval=F}
 # install the current development version
-devtools::install_github("BioNomad/tidyexposomics")
+remotes::install_github("BioNomad/tidyexposomics")
+
+# load the package
+library(tidyexposomics)
 ```
 
 # Command Structure
@@ -60,7 +44,7 @@ devtools::install_github("BioNomad/tidyexposomics")
 
 To make the package more user-friendly, we have named our functions to be more intuitive. For example, we use the following naming conventions:
 
-```{r echo = FALSE, message=FALSE, out.width="80%",fig.align='center'}
+```{r echo = FALSE, message=FALSE,fig.align='center'}
 knitr::include_graphics("./command_str.png")
 ```
 
@@ -70,7 +54,9 @@ We provide functionality to either `add` results to the existing object storing 
 # Exposure Meta data and Ontology Annotation
 <hr>
 
-So before starting an exposomics data analysis we recommend having a codebook about your exposure variables. Some suggestions:
+## Codebook Setup
+
+Before starting an exposomics data analysis we recommend having a codebook, with information on your exposure variables. Some suggestions:
 
 - **Variable Name**: The name of the variable in the data set.
 
@@ -84,7 +70,9 @@ So before starting an exposomics data analysis we recommend having a codebook ab
 
 - **Variable Ontology**: The ontology term associated with the variable.
 
-Now the ontology is very important and we recommend:
+## Ontology Choices
+
+Variables captured in the codebook should be annotated with ontology terms to provide a standardized vocabulary for the variables. We recommend using the following ontologies for exposure and outcome variables:
 
 - [Environment Exposure Ontology](https://www.ebi.ac.uk/ols4/ontologies/ecto) to annotate your exposure variables. 
 
@@ -100,32 +88,34 @@ Now the ontology is very important and we recommend:
 
 - **Grouping**: Ontologies allow you to collapse fine-grained exposures into broader categories.
 
-- **Integration**: Many public tools, knowledge graphs, and repositories (e.g., EBI OLS, GO, or ChEBI) are ontology-aware. This can make your results more interoperable and reusable.
+- **Integration**: Many public tools, knowledge graphs, and repositories are ontology-aware. This can make your results more interoperable and reusable.
 
-To help you annotate your exposure variables, we provide a lightweight shiny app that will help you decide which ontology terms to use and how to annotate your variable:
+## Ontology Annotation App
 
-```{r,eval=F,message=FALSE,warning=FALSE}
+To help annotate exposure variables, we provide a lightweight shiny app:
+
+```{r,message=FALSE,warning=FALSE,eval=F}
 # Launch the shiny app to annotate exposure variables
 ont_annot_app()
 ```
 
-**Now to use the app:**
+**To use the app:**
 
-- Click "Browse" to select your exposure metadata file. 
+- Click **Browse** to select your exposure metadata file. 
 
-- Then you can click the variable you'd like to link to an annotation term and search in the "Choose Ontology Term" dropdown. 
+- Then you can click the variable you'd like to link to an annotation term and search in the **Choose Ontology Term** dropdown. 
 
 - After you select a term you will see a short description of the the term. 
 
-- After your are done click "Apply Annotate" to save the annotation.
+- After your are done click **Apply Annotate** to save the annotation.
 
 - Now you can group exposures into larger categories by selecting each line and then your ontology, and root depth level (where a lower number means a more general term).
 
-- Then you can click "Apply Categorization" to apply the changes to the selected rows.
+- Then you can click **Apply Categorization** to apply the changes to the selected rows.
 
-- If the ontology has nothing to do with your variable, you may manually enter a category in the "Category" column. This will change the "Category Source" to "manual" and will not be linked to the ontology.
+- If the ontology has nothing to do with your variable, you may manually enter a category in the **Category** column. This will change the **Category Source** to `manual` and will not be linked to the ontology.
 
-- Once you have annotated all your variables click "Download Annotated CSV" to save the annotated metadata file.
+- Once you have annotated all your variables click **Download Annotated CSV** to save the annotated metadata file.
 
 ```{r echo = FALSE, message=FALSE, out.width="150%",fig.align='center'}
 knitr::include_graphics("./ont_annot.png")
@@ -138,14 +128,14 @@ knitr::include_graphics("./ont_annot.png")
 To get started we need to load the data. The `create_expomicset` function is used to create a MultiAssayExperiment object that contains exposure and omics data. As a quick introduction, a MultiAssayExperiment object is a container for storing multiple assays (e.g., omics data) and their associated metadata:
 
 
-```{r , echo = FALSE, message=FALSE,out.width='60%', fig.align='center', fig.cap='**Overview of the MultiAssayExperiment Object Structure.** Subject level data is captured within the `colData` of the MultiAssayExperiment. Observations are stored within `experiments` slots in the MultiAssayExperiment and `sampleMap` is used to link the data ( [MultiAssay Special Interest Group 2024](https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) ).'}
+```{r , echo = FALSE, message=FALSE, fig.align='center', fig.cap='**Overview of the MultiAssayExperiment Object Structure.** Subject level data is captured within the `colData` of the MultiAssayExperiment. Observations are stored within `experiments` slots in the MultiAssayExperiment and `sampleMap` is used to link the data ( [MultiAssay Special Interest Group 2024](https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) ).'}
 
 knitr::include_graphics("./mae_rep.png")
 ```
 
 We use the MultiAssayExperiment object to store the exposure and omics data. The `create_expomicset` function has several arguments:
 
-- The `var_info` argument is a data frame that contains information about the variables in the exposure meta data. The column names must contain `variable` where the values are the column names of the exposure data frame, and `category` which contains general categories for the variable names. This is the data frame you created with the ontology annotation app!
+- The `codebook` argument is a data frame that contains information about the variables in the exposure meta data. **The column names must contain `variable`** where the values are the column names of the exposure data frame, **and `category`** which contains general categories for the variable names. This is the data frame you created with the ontology annotation app!
 
 - The `exposure` argument is a data frame that contains the exposure and other metadata. 
 
@@ -155,44 +145,48 @@ We use the MultiAssayExperiment object to store the exposure and omics data. The
 
 We are going to start by loading in example data pulled from the [ISGlobal Exposome data challenge 2021](https://www.sciencedirect.com/science/article/pii/S016041202200349X?via%3Dihub). Specifically, we will examine how exposures and omics features relate to asthma status.
 
-```{r,eval=FALSE}
+```{r,warning=FALSE,message=F}
 # Load Libraries
 library(tidyverse)
 library(tidyexposomics)
 
-# Create list of omics data frames
-omics_list <- list(
-  "Gene Expression" = exp,
-  "Metabolomics" = met,
-  "Proteomics" = prot
-)
-
-# Create list of omics row data data frames
-fdata <- list(
-  "Gene Expression" = exp_fdata,
-  "Metabolomics" = met_fdata,
-  "Proteomics" = prot_fdata
-)
+# Load the example data
+load_example_data()
 
 # Create the expomicset object
 expom <- create_expomicset(
-  var_info = des,
+  codebook = annotated_cb,
   exposure = meta,
   omics = omics_list,
   row_data = fdata)
+```
 
-# Define our exposure variables
-exp_vars <- des |> 
-  filter(grepl("exposure|chemical",category,ignore.case = TRUE)) |> 
+
+In this tutorial we will focus on asthma patients with a lower socioeconomic status (SES):
+
+```{r,warning=FALSE,message=F}
+# Keeping only samples with asthma status
+expom <- expom[,!is.na(expom$hs_asthma)]
+expom_1 <- expom[,expom$FAS_cat_None %in% c("Low")]
+rm(expom)
+```
+
+We are interested in how exposure affects health outcomes, so let's define which meta data variables are our exposure variables of interest.
+
+```{r,warning=FALSE,message=F}
+# Grab exposure variables
+exp_vars <- annotated_cb |> 
+  filter(category %in% c(
+    "exposure to oxygen molecular entity",
+    "aerosol",
+    "environmental zone",
+    "main group molecular entity",
+    "transition element molecular entity",
+    "exposure to environmental process",
+    "polyatomic entity" 
+  )) |> 
   pull(variable) |> 
   as.character()
-```
-
-```
-Ensuring all omics datasets are matrices with column names...
-Creating SummarizedExperiment objects with ordered samples and matching rowData...
-Creating MultiAssayExperiment object...
-MultiAssayExperiment created successfully with ordered samples and rowData.
 ```
 
 
@@ -201,35 +195,38 @@ MultiAssayExperiment created successfully with ordered samples and rowData.
 
 ## Missingness
 
-Oftentimes when collecting data, there are missing values. The `filter_missing` function is used to filter out variables with too many missing values. The `na_thresh` argument is used to set the threshold for missing values. For example, if `na_thresh = 20`, then any variable with more than 20% missing values will be removed. Here we set the threshold to 1% to filter out variables with more than 1% missing values.
+Oftentimes when collecting data, there are missing values. Let's use the `plot_missing` function to determine where are missing values are:
 
-```{r,eval=FALSE}
+```{r,warning=FALSE,message=FALSE,fig.height=4.5,fig.width=6}
+expom_1 |> 
+    plot_missing(plot_type = "summary",
+                 threshold = 0)
+```
+
+Here we see that there are 10 variables in the exposure data that are missing data. Let's take a look at them:
+
+```{r,warning=FALSE,message=FALSE,fig.height=4,fig.width=4}
+expom_1 |> 
+    plot_missing(plot_type = "lollipop",
+                 threshold = 0,
+                 layers = "Exposure")
+```
+
+Here we see that one variable, `hs_wgtgain_None`, has nearly 30% missing values! We can apply a missingness filter using the `filter_missing` function. The `na_thresh` argument is used to set the threshold for missing values. For example, if `na_thresh = 20`, then any variable with more than 20% missing values will be removed. Here we set the threshold to 5% to filter out variables with more than 5% missing values.
+
+```{r,warning=FALSE,message=F}
 # Filter out variables with too many missing values
-expom <- expom |> 
-  filter_missing(na_thresh = 1)
+expom_1 <- expom_1 |> 
+  filter_missing(na_thresh = 5)
 ```
-
-```
-Missing Data Filter threshold: 1%
-Filtered metadata variables: h_parity
-Filtered rows with high missingness in Gene Expression: 0
-Filtered rows with high missingness in Metabolomics: 0
-Filtered rows with high missingness in Proteomics: 0
-```
-
-We can plot the number of missing values using the `plot_missing_summary` function. This function plots the number of missing values for each variable in the exposure data. The `threshold` argument is used to set the threshold for missing values. 
-
-```{r,warning=FALSE,message=FALSE,fig.width=6,fig.height=4,out.width="70%",fig.align='center'}
-# Check the number of missing values
-expom |> 
-  plot_missing_summary(threshold = 1)
-```
-
-Here we see that only our exposure data has missing values, and that the majority of variables have less than 1% missing values.
 
 ## Imputation
 
-Now that we have filtered out the variables with too many missing values, we can impute the missing values. The `run_impute_missing` function is used to impute missing values. While we impute using `median` here for the speed, we recommend trying the other imputation options:
+Now that we have filtered out the variables with too many missing values, we can impute the missing values. The `run_impute_missing` function is used to impute missing values. Here we can specify the imputation method for exposure and omics data separately.
+
+The `exposure_impute_method` argument is used to set the imputation method for exposure data, and the `omics_impute_method` argument is used to set the imputation method for omics data. The `omics_to_impute` argument is used to specify which omics data to impute. Here we will impute the exposure data given using the `missforest` method, but other options for imputation methods include:
+
+- `median`: Imputes missing values with the median of the variable.
 
 - `mean`: Imputes missing values with the mean of the variable.
 
@@ -243,68 +240,59 @@ Now that we have filtered out the variables with too many missing values, we can
 
 - `lod_sqrt2`: Imputes missing values using the square root of the lower limit of detection (LOD) for each variable. This is useful for variables that have a lower limit of detection, such as chemical exposures.
 
-```{r,eval=FALSE}
+```{r,warning=FALSE,message=F}
 # Impute missing values
-expom <- expom |> 
+expom_1 <- expom_1 |> 
   run_impute_missing(
-    exposure_impute_method = "median",
-    omics_impute_method = "median")
+    exposure_impute_method = "missforest")
 ```
 
+## Filtering Omics Features
+
+We can filter omics features based on variance or expression levels. The `filter_omics` function is used to filter omics features. The `method` argument is used to set the method for filtering. Here we can use either:
+
+- **Variance**: Filters features based on variance. We recommend this for omics based on continuous measurements, such as log-transformed counts, M-values, protein intensities, or metabolite concentrations.
+
+- **Expression**: Filters features based on expression levels. We recommend this for omics where many values may be near-zero or zero, such as RNA-seq data.
+
+
+The `assays` argument is used to specify which omics data to filter. The `assay_name` argument is used to specify which assay to filter. The `min_var`, `min_value`, and `min_prop` arguments are used to set the minimum variance, minimum expression value, and minimum proportion of samples exceeding the minimum value, respectively.
+
+
+```{r,warning=FALSE,message=F}
+# filter omics layers by variance and expression
+expom_1 <- expom_1 |> 
+  filter_omics(
+    method = "variance",
+    assays = "Methylation",
+    assay_name = 1,
+    min_var = 0.05
+  ) |> 
+  filter_omics(
+    method = "variance",
+    assays = "Metabolomics",
+    assay_name = 1,
+    min_var = 0.1
+  ) |>
+  filter_omics(
+    method = "expression",
+    assays = "Gene Expression",
+    assay_name = 1,
+    min_value = 1,
+    min_prop = 0.3
+  )
 ```
-Imputing exposure data using method: median
-Imputing omics dataset: Gene Expression using method: median
-Imputing omics dataset: Metabolomics using method: median
-Imputing omics dataset: Proteomics using method: median
-```
-
-## PCA Analysis
-
-To identify the spread of the data, we can perform a principal component analysis (PCA). The `run_pca` function is used to perform PCA on samples with observations in each omics data frame. The `plot_pca` function is used to plot the PCA results. We automatically identify sample outliers based on the Mahalanobis distance, a measure of the distance between a point and a distribution. 
-
-
-```{r,eval=FALSE}
-# Perform principal component analysis
-expom <- expom |> 
-    run_pca(action = "add") 
-```
-
-
-```
-Identifying common samples...
-Subsetting exposure data...
-Subsetting omics data...
-Performing PCA on Feature Space...
-Performing PCA on Sample Space...
-[1] "Outliers detected: s936, s764, s588, s857, s378, s411, s918"
-```
-
-```{r,warning=FALSE,message=FALSE,fig.align='center',fig.width=9,fig.height=7}
-# Plot principal component analysis results
-expom |> 
-  plot_pca()
-```
-
-Here we see have a few sample outliers, and that most variation is captured in the first two principal components for both features and samples. We can filter out these samples using the `filter_sample_outliers` function. 
-
-```{r,eval=FALSE}
-# Filter out sample outliers
-expom <- expom |> 
-  filter_sample_outliers(
-    outliers = c("s411","s378", "s588",
-                 "s764", "s857", "s918",
-                 "s936"))
-```
-
 
 ## Normality Check
 
-When determining variable associations, it is important to check the normality of the data. The `run_check_normality` function is used to check the normality of the data. The `transform_exposure` function is used to transform the data to make it more normal. Here the `transform_method` is set to `boxcox_best` as it will automatically select the best transformation method based on the data. The `transform_method` can be manually set to `log2`, `sqrt`, or `x_1_3` as well. 
+When determining variable associations, it is important to check the normality of the data. The `run_check_normality` function is used to check the normality of the data. 
+
+The `transform_exposure` function is used to transform the data to make it more normal. Here the `transform_method` is set to `boxcox_best` as it will automatically select the best transformation method based on the data. The `transform_method` can be manually set to `log2`, `sqrt`, or `x_1_3` as well. We specify the `exposure_cols` argument to set the columns to transform.
 
 
-```{r,eval=FALSE}
+```{r,warning=FALSE,message=F}
 # Check variable normality & transform variables
-expom <- expom |> 
+expom_1 <- expom_1 |> 
   # Check variable normality
   run_normality_check(action = "add") |> 
   
@@ -313,30 +301,84 @@ expom <- expom |>
                      exposure_cols = exp_vars) 
 ```
 
-```
-Checking Normality Using Shapiro-Wilk Test
-0 Exposure Variables are Normally Distributed
-37 Exposure Variables are NOT Normally Distributed
-Applying the boxcox_best transformation.
-```
+To check the normality of the exposure data, we can use the `plot_normality_summary` function. This function plots the normality of the data before and after transformation. The `transformed` argument is set to `TRUE` to plot the normality status of the transformed data.
 
-To check the normality of the data, we can use the `plot_normality_summary` function. This function plots the normality of the data before and after transformation. The `transformed` argument is set to `TRUE` to plot the transformed data.
-
-```{r,warning=FALSE,message=FALSE,fig.width=4,fig.height=4,out.width="60%"}
-expom |>
+```{r,warning=FALSE,message=FALSE,fig.width=4,fig.height=4}
+expom_1 |>
   plot_normality_summary(
     transformed = TRUE
   )
 ```
 
+
+## Principal Component Analysis
+
+To identify the spread of the data, we can perform a principal component analysis (PCA). The `run_pca` function is used to perform PCA on samples with observations in each omics data frame. Here we specify that we would like to log-transform the exposure and omics data before performing PCA using the `log_trans_exp` and the `log_trans_omics` arguments, respectively. We automatically identify sample outliers based on the Mahalanobis distance, a measure of the distance between a point and a distribution. 
+
+
+```{r,warning=FALSE,message=F}
+# Perform principal component analysis
+expom_1 <- expom_1 |> 
+    run_pca(log_trans_exp = T,
+            log_trans_omics = T,
+            action = "add") 
+```
+
+
+```{r,warning=FALSE,message=FALSE,fig.align='center',fig.width=9,fig.height=7}
+# Plot principal component analysis results
+expom_1 |> 
+  plot_pca()
+```
+
+Here we see have a few sample outliers, and that most variation is captured in the first two principal components for both features and samples. We can filter out these samples using the `filter_sample_outliers` function. 
+
+```{r,warning=FALSE,message=F}
+# Filter out sample outliers
+expom_1 <- expom_1 |> 
+  filter_sample_outliers(
+    outliers = c("s73", "s1183", "s376", "s899", "s828", "s993"))
+```
+
+To understand the relationship between the principal components and exposures we can correlate them using the `run_corrleation` function. Here we specify that the `feature_type` is `pcs` for principal components, specify a set of exposure variables, `exp_vars`, and the number of principal components, `n_pcs`. We set `correlation_cutoff` to 0 and `pval_cutoff` to ` to initially include all correlations.
+
+
+```{r,,warning=FALSE,message=FALSE}
+expom_1 <- expom_1 |> 
+  run_correlation(
+  feature_type = "pcs",
+  exposure_cols = exp_vars,
+  n_pcs = 20,
+  action = "add",
+  correlation_cutoff = 0,
+  pval_cutoff = 1
+)
+```
+
+
+We can visualize these correlations with the `plot_correlation_tile` function. We specify we are plotting the `feature_type` of `pcs` to grab the principal component correlation results. We then set the significance threshold to 0.05 with the `pval_cutoff` argument. 
+
+
+```{r,warning=FALSE,message=FALSE,fig.width=7,fig.height=4}
+expom_1 |> 
+  plot_correlation_tile(
+    feature_type = "pcs",
+    pval_cutoff = 0.05
+)
+```
+
+Here we note that particulate matter exposure and PFHXS exposure (`hs_pfhxs_m_Log2`) are associated with the most principal components, indicating these exposures are driving variation in the data.
+
 ## Exposure Summary
 
-We can summarize the exposure data using the `run_summarize_exposures` function. This function calculates summary statistics for each exposure variable, including the number of values, number of missing values, minimum, maximum, range, sum, median, mean, standard error, and confidence intervals. The `action` argument is set to `get` to return the summary statistics as a data frame. If `action = "add"`, the results are added to the metadata of the MultiAssayExperiment object.
+We can summarize the exposure data using the `run_summarize_exposures` function. This function calculates summary statistics for each exposure variable, including the number of values, number of missing values, minimum, maximum, range, sum, median, mean, standard error, and confidence intervals. The `action` argument is set to `get` to return the summary statistics as a data frame. We specify the `exposure_cols` argument to set the columns to summarize. 
+
 
 ```{r, warning=FALSE,message=FALSE,fig.width=6,fig.height=4}
 # Summarize exposure data
-expom |> 
-  run_summarize_exposures(action = "get") |> 
+expom_1 |> 
+  run_summarize_exposures(action = "get",
+                          exposure_cols = exp_vars) |> 
   head()
 ```
 
@@ -344,17 +386,20 @@ expom |>
 ## Exposure Visualization
 <hr>
 
-To visualize our exposure data, we can use the `plot_exposures` function. This function allows us to plot the exposure data in a variety of ways. Here we will plot the exposure data using a boxplot. The `exposure_cols` argument is used to set the columns to plot. Additionally, we could specify, `exposure_cat` to only plot exposures of a certain category. The `panel_sizes` argument is used to set the size of each panel in the plot. The `plot_type` argument is used to set the type of plot to create. Here we use a boxplot, but we could also use a ridge plot. The `ylab` argument is used to set the y-axis label.
+To visualize our exposure data, we can use the `plot_exposures` function. This function allows us to plot the exposure data in a variety of ways. Here we will plot the exposure data using a boxplot. The `exposure_cat` argument is used to set the exposure category to plot. Additionally, we could specify, `exposure_cols` to only plot certain exposures. The `plot_type` argument is used to set the type of plot to create. Here we use a boxplot, but we could also use a ridge plot. 
 
-```{r,fig.width=10,fig.height=3.5,message=FALSE,warning=FALSE}
+```{r,fig.width=6.5,fig.height=3.5,message=FALSE,warning=FALSE}
 # Plot exposure data
-expom |> 
+expom_1 |> 
   plot_exposures(
-    panel_sizes = c(3,4),
-    exposure_cols = exp_vars,
+    group_by = "e3_sex_None",
+    exposure_cat = "aerosol",
     plot_type = "boxplot",
-    ylab = "Values")
+    ylab = "Values",
+    title = "Aerosol Exposure by Sex")
 ```
+
+Here we see that there are not significant differences in aerosol exposure between males and females.
 
 # Sample-Exposure Association
 <hr>
@@ -373,117 +418,120 @@ The `run_cluster_samples` function is used to cluster samples based on the expos
 
 - `density`: **Density-based clustering** (via `densityClust`); identifies clusters based on local density peaks in distance space.
 
-```{r,eval=FALSE}
+```{r,warning=FALSE,message=F}
 # Sample clustering
-expom <- expom |> 
-  run_cluster_samples(exposure_cols = exp_vars,
-                  clustering_approach = "dynamic",
-                  action = "add") 
+expom_1 <- expom_1 |> 
+  run_cluster_samples(
+    exposure_cols = exp_vars,
+    clustering_approach = "dynamic",
+    action = "add") 
 ```
 
-```
-Starting clustering analysis...
- ..cutHeight not given, setting it to 8730  ===>  99% of the (truncated) height range in dendro.
- ..done.
-Optimal number of clusters for samples: 6
-```
+We plot the sample clusters using the `plot_sample_clusters` function. This function plots z-scored values of the exposure data for each sample, colored by the cluster assignment. The `exposure_cols` argument is used to set the columns to plot. 
+
 
 ```{r,message=FALSE,warning=FALSE,fig.height=8,fig.width=12,out.width="170%"}
 # Plot sample clusters
-expom |> 
+expom_1 |> 
   plot_sample_clusters(
     exposure_cols = exp_vars)
 ```
 
-Here we see seven clusters, largely driven by particulate matter and chemical exposure.
+Here we see five clusters, largely driven by particulate matter/aerosol exposure. Although it is worth noting that maternal PFHXS exposure (`hs_pfhxs_m_Log2`) appears to strongly drive Groups 3 and 4.
 
 ## Exposure Correlations
 
-The `correlate_exposures` function is used to correlate exposures with each other. The `exposure_cols` argument is used to set the columns to correlate. The `correlation_cutoff` argument is used to set the minimum correlation score for the association. Here we use a cutoff of 0.3, but this can be adjusted based on the data.
+The `run_correlation` function can be used to correlate exposure variables. The `feature_type` argument is used to set the type of features to correlate. Here we use `exposures` to indicate that we are correlating exposure variables. The `correlation_cutoff` argument is used to set the minimum correlation score for the association. Here we use a cutoff of 0.3, but this can be adjusted based on the data.
 
-
-```{r,eval=FALSE,message=FALSE,warning=FALSE}
-expom <- expom |> 
+```{r,,message=FALSE,warning=FALSE}
+expom_1 <- expom_1 |> 
   run_correlation(feature_type = "exposures",
                   action = "add",
+                  exposure_cols = exp_vars,
                   correlation_cutoff = 0.3)
 ```
 
 
-To visualize the exposure correlations, we can use the `plot_circos_correlation` or `plot_heatmap_correlate_exposure` functions. Here we will plot the circos plot. This function creates a circular plot of the exposure correlations. The `correlation_cutoff` argument is used to set the minimum correlation score for the association. Here we use a cutoff of 0.3, but this can be adjusted based on the data.
+To visualize the exposure correlations, we can use the `plot_circos_correlation` or `plot_heatmap_correlate_exposure` functions. Here we will plot the circos plot. This function creates a circular plot of the exposure correlations. The `correlation_cutoff` argument is used to set the minimum correlation score for the association. Here we use a cutoff of 0.3.
 
 ```{r,warning=FALSE,message=FALSE,fig.height=10,fig.width=10,fig.align='center'}
-expom |> 
+expom_1 |> 
   plot_circos_correlation(feature_type = "exposures",
                           corr_threshold = 0.3,
                           exposure_cols = exp_vars)
 ```
 
+Here we see that particulate matter exposure variables are highly correlated and also correlated with maternalpregnancy BPA (`hs_bpa_madj_Log2`) and childhood PCB-153 (`hs_pcb153_cadj_Log2`) exposure.
 
 ## ExWAS Association
 
-The `perform_exwas` function is used to perform ExWAS analysis. The `source` argument is used to set the source of the data. Here we use `exposures` to indicate that we are using the exposure data. The `outcome` argument is used to set the outcome variable. The `feature_set` argument is used to set the features to include in the analysis. The `covariates` argument is used to set the covariates to include in the analysis. The `family` argument is used to set the family of the model. Here we use `binomial` for a binary outcome.
+The `run_association` function is used to run the association analysis. The `source` argument is used to set the source of the data to associate. The `outcome` argument is used to set the outcome variable. The `feature_set` argument is used to set the features to include in the analysis. The `covariates` argument is used to set the covariates to include in the analysis. The `action` argument is set to `add` to add the results to the existing object. The `family` argument is used to set the family of the model. Here we use `binomial` for a binary outcome.
 
-```{r,eval=FALSE}
+
+```{r,warning=FALSE,message=F}
 # Perform ExWAS Analysis
-expom <- expom |> 
+expom_1 <- expom_1 |> 
   run_association(
     source = "exposures",
     outcome = "hs_asthma",
-    feature_set = exp_vars[
-      !exp_vars %in% c("hs_asthma",
-                       "hs_child_age",
-                       "e3_sex")],
-    covariates = c("hs_child_age",
-                       "e3_sex"),
+    feature_set = exp_vars,
+    covariates = c("hs_child_age_None",
+                   "e3_sex_None",
+                   "h_cohort"),
     action = "add",
     family = "binomial")
 ```
 
-```
-Running GLMs...
-```
-
-To visualize the results of the ExWAS analysis, we can use the `plot_associate_exposure_outcome` function. This function plots the association results for the exposure data. The `source` argument is used to set the source of the data. Here we use `exposures` to indicate that we are using the exposure data. The `subtitle` argument is used to set the subtitle of the plot. The `filter_thresh` argument is used to set the p-value threshold for significance.
+To visualize the results of the ExWAS analysis, we can use the `plot_association` function. This function plots the association results for the specified features. The `terms` argument is used to set the features to plot. The `filter_thresh` argument is used to set the threshold for filtering the results. The `filter_col` argument is used to set the column to filter on. Here we use `p.value` to filter on the p-value of the association. We can also include the adjusted R^2 using the `r2_col` argument.
 
 
-```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=4.5,fig.align='center',out.width="60%"}
-expom |> 
+```{r,warning=FALSE,message=FALSE,fig.height=6,fig.width=5,fig.align='center'}
+expom_1 |> 
   plot_association(
-    subtitle = paste("Covariates:","Age,","Sex"),
+    subtitle = paste("Covariates:",
+                     "Age,",
+                     "Biological Sex, ",
+                     "Cohort"),
     source = "exposures",
-    filter_thresh = 0.05)
+    terms = exp_vars,
+    filter_thresh = 0.15,
+    filter_col = "p.value",
+    r2_col = "adj_r2")
 ```
 
-Here we see that particulate matter, PBDE, and disinfection byproduct levels are associated with asthma status after adjusting for age and sex. We can also associate our omics features with an outcome of interest using the `run_association()` function.
+Here we see that particulate matter and PFNA (`hs_pfna_c_Log2`) are associated with asthma status after adjusting for age, biological sex, and cohort. Although the p-value threshold for this association is quite generous.
 
-```{r,eval=F,warning=FALSE,message=FALSE,fig.height=3,fig.width=4.5,fig.align='center',out.width="60%"}
+We can also associate our omics features with an outcome of interest using the `run_association()` function. Here we specify an additional argument, `top_n`, which is used to set the top number of omics features to include per omic layer.
+
+```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=4.5,fig.align='center'}
 # Perform ExWAS Analysis
-expom  <- expom |> 
+expom_1  <- expom_1 |> 
     run_association(
         outcome = "hs_asthma",
         source = "omics",
-        covariates = c("hs_child_age",
-                       "e3_sex"),
+        covariates = c("hs_child_age_None",
+                       "e3_sex_None",
+                       "h_cohort"),
         top_n = 500,
         action = "add",
         family = "binomial")
 ```
-```
-Log2-Transforming each assay in MultiAssayExperiment...
-Scaling each assay in MultiAssayExperiment...
-Running GLMs...
-```
+
 
 We can visualize the results using a Manhattan plot. The `plot_manhattan` function is used to plot the results. The `pval_thresh` argument is used to set the p-value threshold for significance. The `vars_to_label` argument is used to set the variables to label on the plot. The `min_per_cat` argument is used to set the minimum number of significant features per category to include in the plot. The `panel_sizes` argument is used to set the size of each panel in the plot. 
 
 
-```{r,warning=FALSE,message=FALSE,fig.height=5,fig.width=9,fig.align='center'}
-expom |> 
+```{r,warning=FALSE,message=FALSE,fig.height=7,fig.width=5,fig.align='center'}
+expom_1 |> 
   plot_manhattan(
     min_per_cat = 0,
-    vars_to_label = c("TC17001579.hg.1","TC02003949.hg.1","HMGN2P28"),
-    panel_sizes = c(1,4,2,1,3))
+    feature_col = "feature_clean",
+    vars_to_label = c("TC01000261.hg.1",
+                      "TC15000063.hg.1",
+                      "cg14780466",
+                      "hs_pfna_c_Log2"),
+    panel_sizes = c(1,3,1,1,3,1,1),
+    facet_angle = 0)
 ```
 
 ## Exposome Scores
@@ -503,80 +551,69 @@ We can also calculate exposome scores, which are a summary measure of exposure. 
 
 - `quantile`: Calculates the quantile of the exposure variables.
 
-The `score_column_name` argument is used to set the name of the column to store the exposome score in.
+The `score_column_name` argument is used to set the name of the column to store the exposome score in. Here we will define a score for PFAS using a variety of different methods and demonstrate their use in association with asthma status.
 
-```{r,eval=FALSE}
-# Calculate Exposome Scores
-expom <- expom |> 
-  run_exposome_score(exposure_cols = exp_vars,
+```{r,warning=FALSE,message=FALSE,results = 'hide'}
+# determine which PFAS to use
+pfas <- c("hs_pfhxs_m_Log2","hs_pfna_c_Log2")
+
+expom_1 <- expom_1 |> 
+  run_exposome_score(exposure_cols = pfas,
                      score_type = "median",
                      score_column_name = "exposome_median_score") |> 
-  run_exposome_score(exposure_cols = exp_vars,
+  run_exposome_score(exposure_cols = pfas,
                      score_type = "pca",
                      score_column_name = "exposome_pca_score") |> 
-  run_exposome_score(exposure_cols = exp_vars,
+  run_exposome_score(exposure_cols = pfas,
                      score_type = "irt",
                      score_column_name = "exposome_irt_score") |> 
-  run_exposome_score(exposure_cols = exp_vars,
+  run_exposome_score(exposure_cols = pfas,
                      score_type = "quantile",
                      score_column_name = "exposome_quantile_score") |> 
-  run_exposome_score(exposure_cols = exp_vars,
+  run_exposome_score(exposure_cols = pfas,
                      score_type = "var",
                      score_column_name = "exposome_var_score")
 ```
-```
-Extracting exposure data...
-Extracting exposure data...
-Extracting exposure data...
-Extracting exposure data...
-Extracting exposure data...
-Calculating median exposure scores...
-Calculating PCA exposure scores...
-Calculating IRT exposure scores...
-Iteration: 52, Log-Lik: -21076.825, Max-Change: 0.00010
-Calculating quantile exposure scores...
-Calculating variance exposure scores...
-```
+
 
 We can then associate these exposome scores with the outcome of interest using the `run_association` function, just like we did before. However, this time we specify our `feature_set` to be the exposome scores we just calculated. 
 
-```{r,eval=FALSE}
+```{r,warning=FALSE,message=F}
 # Associate Exposome Scores with Outcome
-expom <- expom |> 
+expom_1 <- expom_1 |> 
   run_association(
     outcome = "hs_asthma",
     source = "exposures",
     feature_set = c("exposome_median_score",
-                  "exposome_pca_score",
-                  "exposome_irt_score",
-                  "exposome_quantile_score",
-                  "exposome_var_score"),
-    covariates = c("hs_child_age",
-                       "e3_sex"),
+                    "exposome_pca_score",
+                    "exposome_irt_score",
+                    "exposome_quantile_score",
+                    "exposome_var_score"),
+    covariates = c("hs_child_age_None",
+                   "e3_sex_None",
+                   "h_cohort"),
     action = "add",
     family = "binomial")
 ```
 
-```
-Running GLMs...
-```
 
 To plot the results of the exposome score association with the outcome, we can use the `plot_association` function:
 
-```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=4.5,fig.align='center',out.width="60%"}
-expom |> 
+```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=5,fig.align='center'}
+expom_1 |> 
   plot_association(
-    subtitle = paste("Covariates:","Age,","Sex"),
+    subtitle = c("Covariates: Age, Biological Sex, Cohort"),
     source = "exposures",
     terms = c("exposome_median_score",
                         "exposome_pca_score",
                         "exposome_irt_score",
                         "exposome_quantile_score",
                         "exposome_var_score"),
-    filter_thresh = 1)
+    filter_col = "p.value",
+    filter_thresh = 0.05)
 ```
 
-Here we see that most scores are associated with a decreased probability of asthma.
+Here we see that most scores are associated with a increased probability of asthma. The item response theory (IRT) score is the only one that is significant.
 
 # Differential Abundance
 <hr>
@@ -585,37 +622,36 @@ Here we see that most scores are associated with a decreased probability of asth
 
 We also provide functionality to assess differentially abundant features associated with a particular outcome across several omics' layers. The `run_differential_abundance` function is used to run the differential abundance analysis. The `formula` argument is used to set the formula for the model. The `method` argument is used to set the method to use for the differential abundance analysis. Here we use the `limma_voom` method, which is a popular method for differential abundance analysis. The `minimum_counts` and `minimum_proportion` arguments are used to filter out features with low counts or low proportions. The `scaling_method` argument is used to set the scaling method to use. Here we use `none`, but we could also use `quantile` or `TMM`. The `action` argument is set to `add` to add the results to the existing object.
 
-```{r,eval=FALSE}
+```{r,warning=FALSE,message=FALSE,results = 'hide'}
 # Run differential abundance analysis
-expom <- expom |> 
+expom_1 <- expom_1 |> 
   run_differential_abundance(
-    formula = ~ hs_asthma + hs_child_age + e3_sex,
+    formula = ~ hs_asthma + hs_child_age_None + e3_sex_None + h_cohort,
     method = "limma_voom",
-    minimum_counts = 1,
-    minimum_proportion = 0.1,
     scaling_method = "none",
     action = "add") 
 ```
 
-```
-Running differential abundance testing...
-Processing assay: Gene Expression
-No group or design set. Assuming all samples belong to one group.
-...
-Differential abundance testing completed.
-```
 
-Using a volcano plot, we can visualize the results of the differential abundance analysis. The `plot_volcano` function is used to plot the results. The `pval_thresh` argument is used to set the p-value threshold for significance. The `logFC_thresh` argument is used to set the log fold change threshold for significance. The `top_n_label` argument is used to set the number of top features to label on the plot. The `nrow` argument is used to set the number of rows in the facet layout.
+
+Using a volcano plot, we can visualize the results of the differential abundance analysis. The `plot_volcano` function is used to plot the results. The `pval_col` argument is used to set the column containing the p-values. The `pval_thresh` argument is used to set the p-value threshold for significance. The `logFC_thresh` argument is used to set the log fold change threshold for significance. The `top_n_label` argument is used to set the number of top features to label on the plot. The `nrow` argument is used to set the number of rows in the facet layout. We can use the `feature_col` to specify which feature name column to plot. Here we set it to `feature_clean` as this column contains the gene/metabolite name information per feature.
+
+**Note:** we set the `pval_col` to `P.Value` for the purposes of this example, but we recommend keeping the default of `adj.P.Val` to use the adjusted p-values.
+
 
 ```{r,warning=FALSE,message=FALSE,fig.height=4,fig.width=7,fig.align='center'}
 # Plot Differential Abundance Results
-expom |> 
+expom_1 |> 
   plot_volcano(
     top_n_label = 3,
+    feature_col = "feature_clean",
     logFC_thresh = log2(1),
     pval_thresh = 0.05,
+    pval_col = "P.Value",
+    logFC_col = "logFC",
     nrow = 1)
 ```
+
 
 ## Sensitivity Analysis
 
@@ -660,44 +696,34 @@ A stability score of 1 indicates that the feature is always found to be differen
 - `sd_log_p`: Standard deviation of log-transformed p-values; indicates variability in statistical signal.
 
 
-```{r,eval=FALSE,message=FALSE}
+```{r,,message=FALSE,warning=FALSE,results = 'hide'}
 # Perform Sensitivity Analysis
-expom <- expom |> 
+expom_1 <- expom_1 |> 
   run_sensitivity_analysis(
-    base_formula = ~ hs_asthma + hs_child_age + e3_sex, 
+    base_formula = ~ hs_asthma + hs_child_age_None + h_cohort, 
     methods = c("limma_voom"),
     scaling_methods = c("none"),
-    min_counts_range = c(1,5),
-    min_proportion_range = c(0.1,0.3),
-    covariates_to_remove = c("hs_child_age" , "e3_sex"),
-    pval_col = "adj.P.Val",
+    covariates_to_remove = c(
+      "hs_child_age_None",
+      "e3_sex_None",
+      "h_cohort"),
+    pval_col = "P.Value",
     logfc_col = "logFC",
+    logFC_threshold = log2(1),
     pval_threshold = 0.05,
     stability_metric = "stability_score",
     bootstrap_n = 10,
     action = "add") 
 ```
 
-```
-Running differential abundance testing...
-Processing assay: Gene Expression
-...
-Feature stability analysis completed.
-Number of features above threshold of 0:
------------------------------------------
-Proteomics: 50/3126
-Gene Expression: 996/28738
-Metabolomics: 0/177
-Sensitivity analysis completed.
-```
 
-Here we plot the sensitivity analysis results using the `plot_sensitivity_summary` function. The `stability_score_thresh` argument is used to set the stability score threshold for significance. Here we use a threshold of 0.25, but this can be adjusted based on the data. Here we set the threshold to be quite liberal based given this is highly subsampled data.
+Here we plot the sensitivity analysis results using the `plot_sensitivity_summary` function. The `stability_score_thresh` argument is used to set the stability score threshold for significance. Here we use a threshold of 0.1, but this can again be adjusted as needed.
 
 
-```{r,warning=FALSE,message=FALSE,out.width='80%',fig.align='center',fig.width=8,fig.height=3}
+```{r,warning=FALSE,message=FALSE,fig.align='center',fig.width=8,fig.height=3}
 # Plot sensitivity analysis results
-expom |> 
-  plot_sensitivity_summary(stability_score_thresh = 0.25,
+expom_1 |> 
+  plot_sensitivity_summary(stability_score_thresh = 0.1,
                            stability_metric = "stability_score")
 ```
 
@@ -707,197 +733,176 @@ expom |>
 
 ## Multi-Omics Integration
 
-While differential abundance analysis per omic can deliver insights into how each omic is associated with a particular outcome, we may want to leverage methods which integrate multiple omics layers. The `run_multiomics_integration` function is used to integrate multiple omics layers. Here we use either `MCIA`, `MCCA` or the `MOFA` method to integrate omics layers:
+While differential abundance analysis per omic can deliver insights into how each omic is associated with a particular outcome, we may want to leverage methods which integrate multiple omics layers. The `run_multiomics_integration` function is used to integrate multiple omics layers. Here we use either `MCIA`, `RGCCA`, `MOFA`, or the `DIABLO` method to integrate omics layers:
 
 - `MCIA`: Multiple Co-inertia Analysis, a method that uses canonical correlation analysis to integrate multiple omics layers. We use the nipalsMCIA algorithm to compute the co-inertia scores from the [nipalsMCIA package](https://www.bioconductor.org/packages/release/bioc/html/nipalsMCIA.html).
 
-- `MCCA`: Multi-Omics Canonical Correlation Analysis, a method that uses canonical correlation analysis to integrate multiple omics layers. We use the [PMA package](https://github.com/bnaras/PMA) to compute the canonical correlation score.
+- `RGCCA` : Generalized canonical correlation for flexible multi-block integration implemented using the [RGCCA package](https://rgcca-factory.github.io/RGCCA/).
 
 - `MOFA`: Multi-Omics Factor Analysis, a method that uses factor analysis to integrate multiple omics layers. MOFA is implemented using the [MOFA2 package](https://www.bioconductor.org/packages/release/bioc/html/MOFA2.html).
 
+- `DIABLO`: DIABLO: Supervised multi-block PLS for outcome-aligned latent factors implemented using the [mixOmics package](https://www.bioconductor.org/packages/devel/bioc/html/mixOmics.html).
 
-```{r,eval=FALSE}
+
+Here we are interested in integrating our omics layers with the end goal of identifying multiomics features that are associated with asthma status. So we will use the `DIABLO` method.
+
+```{r,warning=FALSE,message=F}
 # Perform Multi-Omics Integration
-expom <- expom |> 
-  run_multiomics_integration(method = "MCIA",
+expom_1 <- expom_1 |> 
+  run_multiomics_integration(method = "DIABLO",
+                             n_factors = 5,
+                             outcome = "hs_asthma",
                              action = "add") 
-```
-
-```
-Scaling each assay in MultiAssayExperiment...
-Running multi-omics integration using MCIA...
-Applying MCIA with NIPALS...
-Performing column-level pre-processing...
-Column pre-processing completed.
-Performing block-level preprocessing...
-Block pre-processing completed.
-Computing order 1 scores
-Computing order 2 scores
-Computing order 3 scores
-Computing order 4 scores
-Computing order 5 scores
-Computing order 6 scores
-Computing order 7 scores
-Computing order 8 scores
-Computing order 9 scores
-Computing order 10 scores
 ```
 
 We can then use `plot_factor_summary()` to visualize which omics contribute most to which factors. 
 
-```{r,warning=FALSE,message=FALSE,fig.height=2,fig.width=6,fig.align='center'}
+```{r,warning=FALSE,message=FALSE,fig.height=2,fig.width=5,fig.align='center'}
 # Plot multi-omics factor summary
-expom |> 
-  plot_factor_summary()
+expom_1 |> 
+  plot_factor_summary(midpoint = 4)
 ```
+
+Here we see that these factors are largely driven by features in the methylation and gene expression assays.
 
 ## Factor Analysis
 
-These methods are designed to identify factors that we can then associate with an outcome variable. Here we will use the `associate_factor_outcome` function to identify factors that are associated with asthma status after controlling for the child age and sex. Additionally, we will set the p-value threshold, `pval_thresh`, to 1 to include all factors. The `action` argument is set to `add` to add the results to the existing object. Here we print the results to the console, but this can be set to `FALSE` to suppress the output.
+These methods are designed to identify factors that we can then associate with an outcome variable. Here we will use the `run_association` function to identify factors that are associated with asthma status after controlling for child age, sex, and cohort. 
 
-```{r,eval=FALSE,warning=FALSE,message=FALSE}
+```{r,,warning=FALSE,message=FALSE}
 # Identify factors that correlate with the outcome
-expom <- expom |> 
+expom_1 <- expom_1 |> 
   run_association(
     source = "factors",
     outcome = "hs_asthma",
-    feature_set = exp_vars[
-      !exp_vars %in% c("hs_asthma",
-                       "hs_child_age",
-                       "e3_sex")],
-    covariates = c("hs_child_age",
-                       "e3_sex"),
+    feature_set = exp_vars,
+    covariates = c(
+      "hs_child_age_None",
+      "e3_sex_None",
+      "h_cohort"),
     action = "add",
-    family = "binomial",
-    print = TRUE)
+    family = "binomial")
 
 
 ```
 
-```
-term    p.value 
-<chr>   <dbl>
-V1	0.17083208			
-V2	0.79768883			
-V3	0.97476037			
-V4	0.59766388			
-V5	0.22535931			
-V6	0.05436188			
-V7	0.59501506			
-V8	0.83149295			
-V9	0.14050018			
-V10	0.47106052
+
+Now let's see if any of our factors are associated with asthma status after adjusting for child age, sex, and cohort:
+
+```{r,warning=FALSE,message=FALSE,fig.width=5,fig.height=5}
+expom_1 |> 
+  plot_association(
+    source = "factors",
+    subtitle = c("Covariates: Age, Sex, Cohort"),
+    filter_col = "p_adjust",
+    filter_thresh = 0.05,
+    r2_col = "adj_r2")
 ```
 
-We see that the first, sixth and ninth factor are associated with asthma status at a p-value below 0.2. Factors have loading scores which indicate the strength of the association between the factor and the features. Here we can extract the top features, those in the 90th percentile, per omic, associated with our factors of interest.  
+We see that several factors are associated with our outcome. Factors have loading scores which indicate the strength of the association between the factor and the features. Here we can extract the top features, those in the 90th percentile, per omic, associated with our factors of interest. We set the `pval_col` and `pva_thresh` to filter our association results to grab the factors that pass our thresholds. However, we could specify specific factors with the `factors` argument too.
 
-```{r,eval=FALSE,warning=FALSE,message=FALSE}
+```{r,,warning=FALSE,message=FALSE}
 # Extract top features that contribute to a factor
-expom <- expom |> 
-  extract_top_factor_features(factors = c("V1", "V6", "V9"), 
-                              method = "percentile",
-                              percentile = 0.9,
+expom_1 <- expom_1 |> 
+  extract_top_factor_features(method = "percentile",
+                              pval_col = "p_adjust",
+                              pval_thresh = 0.05, 
+                              percentile = 0.95,
                               action = "add") 
-```
-
-```
-Extracting top contributing features for specified factors...
-Using MCIA block loadings...
-Selected 9612 features contributing to specified factors.
 ```
 
 We can visualize the top features associated with each factor using the `plot_top_factor_features` function. The `top_n` argument is used to set the number of top features to plot. The `factors` argument is used to set the factors to plot.
 
-```{r,warning=FALSE,message=FALSE,fig.height=8,fig.width=5,fig.align='center'}
+```{r,warning=FALSE,message=FALSE,fig.height=8,fig.width=6,fig.align='center'}
 # Plot top factor features
-expom |> 
+expom_1 |> 
   plot_top_factor_features(
     top_n = 15,
-    factors = c("V1", "V6", "V9"))
+    factors = c("Methylation comp3",
+                "Gene Expression comp3",
+                "Methylation comp1"),
+    feature_col = "feature_clean")
 ```
 
-Immediately, we can see that these factors share some common features, such as the `CTSW` gene. We can also see that the factors are associated with different omics layers. To identify the common features across factors, we can use the `run_factor_overlap` function. This function will identify the features that are shared across the specified factors. 
+To identify the common features across factors, we can use the `run_factor_overlap` function. This function will identify the features that are shared across the top factor features. 
 
-```{r,eval=FALSE}
-expom <- expom |> 
-  run_factor_overlap(stability_score = 0.25,
-                     robust_comparison = T,
-                     score_col = "stability_score",
-                     pval_thresh = 0.05,
-                     pval_col = "p.value",
-                     logfc_thresh = log2(1.1))
+```{r,warning=FALSE,message=F}
+# Determine which features drive multiple factors
+expom_1 <- expom_1 |> 
+  run_factor_overlap()
 ```
 
 
-```
-Found 817 common features across factors.
-```
-
-Let's visualize how these features overlap across factors. The `plot_factor_overlap` function is used to plot the overlap of features across factors. 
-
-```{r,warning=FALSE,message=FALSE,fig.height=6,fig.width=12,fig.align='center'}
-expom |> 
-  plot_factor_overlap()
-```
-
-Here we see that there are 817 features that are shared across the factors. However, only a subset, ~ 200 features, are differentially abundant.
+Here we see that there are 703  features that are shared across the factors. 
 
 # Exposure-Omics Association
 <hr>
 
 ## Exposure-Omics Association
 
-Now we have the option to correlate either the top factor features, differentially abundant features, or user specified omics features (by using a variable map, a data frame with two columns, `exp_name` for the name of the omics assay, and `feature` for the name of the molecular feature) with exposures. Here we will correlate the differentially abundant features with exposures. Setting `robust` to `TRUE` will use features with a stability score over `score_thresh`. We can also set thresholds for the differential expression log fold change and p-value to filter the results. The `correlation_cutoff` is used to set the minimum correlation score, while the `pval_cutoff` is used to set the maximum p-value for the association. 
+Now we have the option to correlate either the top factor features, differentially abundant features, or user specified omics features (by using a variable map, a data frame with two columns, `exp_name` for the name of the omics assay, and `variable` for the name of the molecular feature) with exposures.
+
+Here we will correlate features driving multiple latent factors with exposures. To grab these features we will grab them from the metadata in our MultiAssayExperiment object. The `correlation_cutoff` is used to set the minimum correlation score, while the `pval_cutoff` is used to set the maximum p-value for the association. 
 
 
-```{r,eval=FALSE}
-# Correlate top differentially abundant features with exposures
-expom <- expom |> 
-  run_correlation(feature_type = "degs",
+```{r,warning=FALSE,message=F}
+# Grab top common factor features and ensure 
+# feature is renamed to variable for the variable_map
+top_factor_features <- expom_1 |> 
+  extract_results(result = "multiomics_integration") |> 
+  pluck("common_top_factor_features") |> 
+  dplyr::select(variable=feature,
+                      exp_name)
+
+# Correlate top factor features with exposures
+expom_1  <- expom_1 |> 
+  # Perform correlation analysis between factor features 
+  # and exposures
+  run_correlation(feature_type = "omics",
+                  variable_map = top_factor_features,
                   exposure_cols = exp_vars,
                   action = "add",
-                  correlation_cutoff = 0.01,
-                  deg_logfc_col = "logFC",
-                  deg_logfc_thresh = log2(1),
-                  pval_cutoff = 0.1,
-                  robust = T,
-                  score_col = "stability_score",
-                  score_thresh = 0.25)
+                  correlation_cutoff = 0.2,
+                  pval_cutoff = 0.05,
+                  cor_pval_column = "p.value") |> 
+  # Perform correlation analysis between factor features
+  run_correlation(feature_type = "omics",
+                  variable_map = top_factor_features,
+                  feature_cors = T,
+                  action = "add",
+                  correlation_cutoff = 0.2,
+                  pval_cutoff = 0.05,
+                  cor_pval_column = "p.value")
 ```
 
-```
-Performing correlation analysis on summarized experiment...
-Running Spearman correlation analysis...
-Correlation analysis completed.
-Processing experiment: Proteomics
-  - Processing batch 1 of 1 (48 features)...
-Performing correlation analysis on summarized experiment...
-Running Spearman correlation analysis...
-Correlation analysis completed.
-```
 
-We can plot the results of the exposure-omics association analysis using the `plot_bar_correlate_summary` function. Here we set the mode to `summary`, which will plot the number of associations per exposure and feature type. The `feature_type` argument is used to set the type of features to plot. Here we use `degs`, which are the differentially abundant features. The `exposure_cols` argument is used to set the columns to plot. 
+We can plot the results of the exposure-omics association analysis using the `plot_bar_correlate_summary` function. Here we set the mode to `summary`, which will plot the number of associations per exposure and feature type. The `feature_type` argument is used to set the type of features to plot. Here we use `omics`, which are the top factor features. 
 
 
-```{r,message=FALSE,warning=FALSE,fig.height=9,fig.width=12,fig.align='center'}
-expom |> 
-  plot_correlation_summary(mode = "summary")
+```{r,message=FALSE,warning=FALSE,fig.height=9,fig.width=13,fig.align='center'}
+expom_1  |> 
+  plot_correlation_summary(mode = "summary",
+                           feature_type = "omics")
 ```
 
-Here we note that transcriptomic features have a greater number of associations with exposures. Among exposures, we see that outdoor exposures have the greatest number of associations with features. It may also be useful to identify which exposures are correlated with similar molecular features. We can do this with the `plot_circos_exposure_shared_features` function. This function will plot a circos plot of the exposures and their shared features. The `geneset` argument is used to set the geneset to use for the analysis. Here we use the `degs` geneset, which plots the differentially abundant feature - exposure correlation information. The cutoff argument is used to set the minimum number of shared features to plot. Here we set the cutoff to 0, which means that all shared features will be plotted.
+Here we note that gene expression features have a greater number of associations with exposures. Among exposures, we see that aerosols have the greatest number of associations with features. Although this is probably due to there being more aerosol exposures than other exposure types.
+
+It may also be useful to identify which exposures are correlated with similar molecular features. We can do this with the `plot_circos_correlation` function. This function will plot a circos plot of the exposures and their shared features. The `feature_type` argument is used to set the correlation results to use for the analysis. Here we use the `omics` feature set, which plots the  feature - exposure correlation information. The cutoff argument is used to set the minimum number of shared features to plot. Here we set the `shared_cutoff` to 1, which means that only exposures that share at least one feature will be plotted.
 
 
-```{r,fig.width=10,fig.height=7,message=FALSE,warning=FALSE}
+```{r,fig.width=10,fig.height=9,message=FALSE,warning=FALSE}
 # Plot Shared Feature Correlations Between Exposures
-expom |> 
-  plot_circos_correlation(feature_type = "degs",
-                          shared_cutoff = 10,
-                          midpoint = 200)
+expom_1  |> 
+  plot_circos_correlation(feature_type = "omics",
+                          shared_cutoff = 1,
+                          midpoint = 3)
 ```
+
+Here we see that particulate matter exposures are correlated with many of the same features. However, we also see that maternal methyl paraben exposure (`hs_mepa_madj_Log2`) is correlated with many of the same features, suggesting that this exposure may have similar effects on the molecular features.
 
 ## Network Analysis
 
-The `run_create_network` function is used to create a network of exposures and omics features. The correlation results are used to create the network. The `feature_type` argument is used to set the type of features to use for the network. Here we use `degs`, which are the differentially abundant features. However we could choose anyo f the following:
+The `run_create_network` function is used to create a network of exposures and omics features. The correlation results are used to create the network. The `feature_type` argument is used to set the type of features to use for the network. Here we use `omics`, the top factor features we isolated. However we could choose any of the following:
 
 - `degs`: Differentially abundant features correlated with exposures.
 
@@ -906,154 +911,228 @@ The `run_create_network` function is used to create a network of exposures and o
 - `omics`: User specified omics features correlated with exposures.
 
 
-```{r,eval=F,fig.width=10,fig.height=7,message=FALSE,warning=FALSE}
-expom <- expom |> 
+```{r,fig.width=10,fig.height=7,message=FALSE,warning=FALSE}
+expom_1   <- expom_1 |> 
   run_create_network(
-    feature_type = "degs",
+    feature_type = "omics_feature_cor",
+    action = "add") |> 
+  run_create_network(
+    feature_type = "omics",
     action = "add")
 ```
 
-```
-Creating network from correlation results...
-Network added to metadata as: network_degs
-```
 
-To plot the network we can use the `plot_network` function. The `network` argument is used to set the type of network to plot. The `top_n_nodes` argument is used to set the number of nodes to plot. The `node_color_var` argument is used to set the variable to color the nodes by. The `label` argument is used to set whether or not to label the nodes. We can label the top n nodes, where the default is 5 nodes based on centrality. Addtionally, we can chose to label certain nodes using the `nodes_to_label` arguement. The `facet_var` argument is used to set the variable to facet the plot by. The `foreground` argument is used to set the color of the facets. We can also include the network statistics using the `include_stats` argument. 
+To plot the network we can use the `plot_network` function. The `network` argument is used to set the type of network to plot. The `top_n_nodes` argument is used to set the number of nodes to plot. The `node_color_var` argument is used to set the variable to color the nodes by. The `label` argument is used to set whether or not to label the nodes. We can label the top n nodes, where the default is 5 nodes based on centrality. Additionally, we can chose to label certain nodes using the `nodes_to_label` argument. The `facet_var` argument is used to set the variable to facet the plot by. The `foreground` argument is used to set the color of the facets. We can also include the network statistics using the `include_stats` argument. 
 
 
 ```{r,fig.width=10,fig.height=5,message=FALSE,warning=FALSE}
 
-expom |>
+expom_1    |>
     plot_network(
-        network = "degs",
-        top_n_nodes = 50,
+        network = "omics",
+        top_n_nodes = 100,
         include_stats = TRUE,
-        cor_thresh =0.090, 
+        cor_thresh =0.2, 
         node_color_var = "group",
         label = T,
         label_top_n = 5)
 
 ```
 
-```
-Extracting graph...
-Filtering nodes based on correlation threshold...
-Filtering top 50 nodes based on centrality...
-```
 
-Here we note that the network is highly connected, with chemical exposures and particulate matter exposures having the most connections to omics features. It should be noted these networks will look different based on the type of correlation analysis you perform:
+Here we note that the network is highly connected, with particulate matter and methyl paraben exposures having the most connections to omics features. To briefly explain the metrics mentioned:
 
-- `degs`: Correlation between differentially abundant features and exposures. Meaning that connections between exposures and between omics will be missing.
+- **Nodes**: Number of nodes included in the graph.
 
-- `factors`: Correlation between factors and exposures. Meaning that connections between factor features and between exposures will be missing.
+- **Edges**: Number of connections between nodes in the graph.
 
-- `omics`: Correlation between omics features and exposures. Where there will be connections between omics and features.
+- **Components**: Number of disconnected subgraphs.
+
+- **Diameter**: The longest shortest path between any two nodes.
+
+- **Mean Distance**: The average shortest path between any two nodes.
+
+- **Modularity**: A measure of the division in the graph, where higher modularity indicates that nodes within the same community are more densely connected compared to nodes in different communities.
+
 
 ## Exposure-Omics Impact Network Analysis
 
-When examining an outcome variable, the number of omics features associated with that variable have different coexpression relationships with each other. Features with high coexpression have higher degree and therefore may be more important in the network. The `run_exposure_impact` function is used to run an exposure-omics impact analysis. Here we calculate the degree of features associated with exposures. We can then see is a particular exposure associated with higher degree features. The `stability_threshold` argument is used to set the stability threshold for the features. Here we use a threshold 0.25, which means that only features with a stability score above 0.25 will be included in the analysis. 
+When we examine the relationships between exposures and omics features, we can see that some features are more central to the network than others. This is because some features are more highly correlated with exposures than others. The `run_exposure_impact` function is used to run an exposure-omics impact analysis. This function calculates centrality metrics for each exposure in the network. Centrality metrics are used to identify features that are more central to the network and may be more important in the context of the exposure-omics relationships. The centrality metrics included are:
 
-```{r,eval=FALSE,message=FALSE,warning=FALSE}
+- **Mean Betweenness Centrality**: Measures how often a node lies on the shortest path between other nodes where high values indicate potential intermediates.
+
+- **Mean Closeness Centrality**: Measures how close a node is to all others in the network where high values indicate faster access to all nodes.
+
+- **Mean Degree**: The average number of direct connections or edges a node has.
+
+- **Mean Eigenvector Centrality**: Measure how well-connected a node is and how well-connected its neighbors are, where high values suggest influence in a well-connected cluster.
+
+
+```{r,,message=FALSE,warning=FALSE}
 # Run exposure-omics impact analaysis
-expom <- expom |> 
-  run_exposure_impact(feature_type = "degs",
-                      stability_threshold = 0.25,
-                      robust = T)
+expom_1 <- expom_1 |> 
+  run_exposure_impact(feature_type = "omics")
 ```
 
 
-To plot the results of the exposure-omics impact analysis, we can use the `plot_exposure_impact` function. We set `feature_type` to `degs`, which means that we are plotting the degree of the differentially abundant features correlated with exposures. The `min_per_group` argument is used to set the minimum number of features per group to plot. This is useful for filtering out exposures that do not have enough associated features. The `ncol` argument is used to set the number of columns in the plot, while the `widths` argument is used to set the widths of the columns in the plot.
+To plot the results of the exposure-omics impact analysis, we can use the `plot_exposure_impact` function. We set `feature_type` to `omics`, which means that we are plotting the network metrics of the omics features correlated with exposures. The `min_per_group` argument is used to set the minimum number of features per group to plot. This is useful for filtering out exposures that do not have enough associated features. 
 
-```{r,fig.width=12,fig.height=4,message=FALSE,warning=FALSE,fig.align='center'}
+```{r,fig.width=6,fig.height=7,message=FALSE,warning=FALSE,fig.align='center'}
 # Plot exposure-omics impact results
-expom |> 
+expom_1 |> 
   plot_exposure_impact(
-    feature_type = "degs",
-    min_per_group = 10,
-    ncol = 2,
-    widths = c(3,1))
+    feature_type = "omics",
+    min_per_group = 10)
 ```
 
-Here we see that BPA (`hs_bpa_madj`) and methyl paraben (`hs_mepa_madj`) exposure, while not associated with as many differentially abundant features as Monoisobutyl phthalate (`hs_mibp_cadj`), the features that these exposures are associated with are have about the same degree, suggesting that they may still be an important exposure to consider in the context of asthma. Additionally, we note that more than half of the features associated with asthma are associated with the exposures we profiled, while the remaining are not associated with any exposures. This suggests that we may be missing exposures to profile or that these features are not environmentally responsive.
+Here we see that maternal triclosan (`hs_trcs_madj_Log2`) exposure is associated with omics features that are central to our network, despite not having the most number of features associated with it. This suggests that maternal triclosan exposure may have a significant impact on the omics features, even if it is not associated with as many features as some of the other exposures.
+
 
 # Enrichment Analysis
 <hr>
 
-The benefit of grouping our exposures into categories is that we can perform enrichment analysis on the associated features to determine how broad categories of exposures are associated with features. The `run_enrichment` function is used to perform enrichment analysis. Here we use the `deg_exp_cor` geneset to perform enrichment on differentially abundant features correlated with exposures. However, we could enrich the following gene sets:
+The benefit of grouping our exposures into categories is that we can perform enrichment analysis on the associated features to determine how broad categories of exposures are associated with features. The `run_enrichment` function is used to perform enrichment analysis. Here we could enrich the following feature types:
 
-- `deg`: Differentially abundant features.
+- `degs`: Differentially abundant features.
 
-- `deg_exp_cor`: Differentially abundant features correlated with exposures.
+- `degs_robust`: Robust differentially abundant features from the sensitivity analysis.
 
-- `factor_exp_cor`: Top factor features correlated with exposures.
+- `omics`: User chosen features.
 
-- `factor`: Top actor features.
+- `factor_features`: Multi-omics factor features either from `factor_type` = "common_top_factor_features" or "top_factor_features".
 
-```{r,eval=FALSE}
-# Perform Functional Enrichment Analysis
-expom <- expom |> 
+- `degs_cor`: Differentially abundant features correlated with a set of exposures.
+
+- `omics_cor`: User chosen features correlated with a set of exposures.
+
+- `factor_features_cor`:  Multi-omics factor features correlated with a set of exposures.
+
+Here we will run enrichment analysis on our chosen factor features correlated with exposures. We specify `feature_col` to represent the column in our feature metadata with IDs that can be mapped (i.e. gene names). We will be performing Gene ontology enrichment powered by the [`fenr` package](https://www.bioconductor.org/packages/release/bioc/html/fenr.html). You'll notice that we specify a `clustering_approach`. This will cluster our enrichment terms by the molecular feature overlap.
+
+```{r,warning=FALSE,message=F}
+# Run enrichment analysis on factor features correlated with exposures
+expom_1  <- expom_1  |> 
   run_enrichment(
-    geneset = "deg_exp_cor",
-    feature_col = "gene",
-    clustering_approach = "dynamic",
-    pval_threshold = 0.05,
-    pval_col = "p.value",
-    pvalueCutoff = 0.1,
-    pAdjustMethod = "none",
-    qvalueCutoff = 1,
-    logfc_threshold = log2(1),
-    action="add")
-```
+    feature_type = c("omics_cor"),
+    feature_col = "feature_clean",
 
-```
-Working on: Gene Expression
-Working on: Proteomics
-Determining Number of GO Term Clusters...
- ..cutHeight not given, setting it to 485  ===>  99% of the (truncated) height range in dendro.
- ..done.
-Optimal number of clusters for samples: 11
-```
+    db = c("GO"), 
+    species = "goa_human", 
+    fenr_col = "gene_symbol",
+    padj_method = "none",
+    pval_thresh = .1,
+    min_set = 1,
+    max_set = 800,
 
-
-## Plot Enrichment Results
-
-To visualize our enrichment results, we can use the `plot_dotplot_enrichment` function. The `geneset` argument is used to set the geneset to plot. The `top_n` argument is used to set the number of top enrichment terms to plot. The `n_per_group` argument is used to set the number of enrichment terms per group to plot. The `add_top_genes` argument is used to add the top genes associated with each enrichment term. The `top_n_genes` argument is used to set the number of top genes to plot.
-
-```{r,fig.width=14,fig.height=10}
-# Plot functional enrichment results
-expom |> 
-    plot_dotplot_enrichment(geneset = "deg_exp_cor",
-                            top_n = 5,
-                            n_per_group = 5,
-                            add_top_genes = TRUE,
-                            top_n_genes = 5)
-```
-
-You'll notice that enrichment terms are organized into groups by omic layer, the exposure category these features are associated with, and the Jaccard similarity of the GO term genesets. We then provide the top 5 groups of enrichment terms based on a prioritization score calculated by:
-
-$$ Prioritization\ Score = \frac{1}{N} * \sum_{i=1}^{N} -log_{10}(p_i) * n_{genes} $$
-
-Where:
-- $N$ is the number of enrichment terms in the group
-- $p_i$ is the p-value for the $i^{th}$ enrichment term in the group
-- $n_{genes}$ is the number of genes in the enrichment term
-
-So essentially, this is the mean of the negative Log~10~ of the p-value multiplied by the number of genes in the term. Here we see that that outdoor exposures and chemicals are broadly associated with all of the top enrichment term groups. 
-
-## Exposures Driving Enrichment
-
-We can also visualize the exposures driving the enrichment terms using the `plot_go_group_exposures` function. The `go_groups` argument is used to set the GO groups to plot. The `feature_col` argument is used to set the column containing the features to plot. We specify `feature_col` because the gene expression assay rownames were probe IDs and not gene names. This highlights the importance of specifying the correct feature column when plotting enrichment results. Here we will plot the exposures driving the enrichment terms for a specific GO group, "Group_1".
-
-
-```{r,warning=FALSE,message=FALSE,fig.height=6,fig.width=7,fig.align='center'}
-expom |> 
-  plot_go_group_exposures(
-    go_groups = c("Group_1"),
-    feature_col = "gene"
+    clustering_approach = "diana",
+    action = "add"
   )
 ```
 
-Here we note that similar exposures associated with both proteomics and gene expression features drive the enrichment terms in this group. 
+
+## Enrichment Visualizations
+
+To visualize our enrichment results we provide several options:
+
+- `dotplot`: A dot plot showing the top enriched terms. The size of the dots represents the number of features associated with the term, while the color represents the significance of the term.
+
+- `cnet`: A network plot showing the relationship between features and enriched terms.
+
+- `network`: A network plot showing the relationship between enriched terms.
+
+- `heatmap`: A heatmap showing the relationship between features and enriched terms.
+            
+- `summary`: A summary figure of the enrichment results.
+
+### Enrichment Summary
+
+To summarize the enrichment results, we can use the `plot_enrichment` function with the `plot_type` argument set to `summary`. This will plot a summary of the enrichment results, showing:
+
+- The number of exposure categories per enrichment term group.
+
+- The number of features driving the enrichment term group.
+
+- A p-value distribution of the enrichment term group.
+
+- The number of terms in the enrichment term group.
+
+- The total number of terms per experiment name.
+
+- The overlap in enrichment terms between experiments (i.e. between gene expression and methylation).
+
+```{r,warning=FALSE,message=FALSE, fig.width=13,fig.height=6}
+expom_1    |> 
+  plot_enrichment(
+    feature_type = "omics_cor",
+    plot_type = "summary"
+  )
+```
+
+Here we see that it is just the features associated with "polyatomic entity" exposures that seem to be enriched. Additionally, there appears to be no overlap in terms between methylation and gene expression results. 
+
+### DotPlot
+
+By setting the `plot_type` to `dotplot` we can create a dotplot to show which omics and which exposure categories are associated with which terms. By specifying the `top_n_genes` we can add the most frequent features in that particular enrichment term group.
+
+```{r,warning=FALSE,message=FALSE,fig.height=11,fig.width=11}
+expom_1    |> 
+  plot_enrichment(
+    feature_type = "omics_cor",
+    plot_type = "dotplot",
+    top_n = 15,
+    add_top_genes = T,
+    top_n_genes = 5
+  )
+```
+
+Here we see that group 3 is driven by features in both gene expression and methylation.
+
+### Term Network Plot
+
+We can set the `plot_type` to `network` to understand how our enrichment terms are individually connected. 
+
+```{r,warning=FALSE,message=FALSE,fig.width=6,fig.height=5}
+expom_1    |> 
+  plot_enrichment(
+    feature_type = "omics_cor",
+    plot_type = "network",
+    label_top_n = 2
+  )
+```
+
+At the individual term level we see that they differ by omic layer, with the gene expression driving terms related to protein binding and the methylation data driving terms related to lipid metabolism.
+
+### Heatmap
+
+Setting the `plot_type` to `heatmap` can help us understand which genes are driving the enrichment terms. We have the additional benefit of being able to color our tiles by the Log_2_Fold Change from our differential abundance testing. Here we will examine group 5, given it seems be driven by the most terms and multiple omics layers.
+
+```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=8}
+expom_1    |> 
+  plot_enrichment(
+    feature_type = "omics_cor",
+    go_groups = "Group_5",
+    plot_type = "heatmap",
+    heatmap_fill = T,
+    feature_col = "feature_clean"
+  )
+```
+
+Here we see that methylation features have the strongest fold change with respect to asthma status. Interestingly, we see that methylation of *CYP2E1*, an enzyme responsible for toxicant metabolism, is downregulated in asthma and correlated with with exposures in the `polyatomic entity` category containing chemicals like triclosan, BPA and several PFAS.
+
+### Cnet Plot
+
+Another way to visualize this information is with the cnet plot, where the enrichment terms are connected to the genes driving them.
+
+```{r,warning=FALSE,message=FALSE,fig.width=6,fig.height=6}
+expom_1    |> 
+  plot_enrichment(
+    feature_type = "omics_cor",
+    go_groups = "Group_5",
+    plot_type = "cnet",
+    feature_col = "feature_clean"
+  )
+```
+
 
 # Custom Analysis
 
@@ -1071,16 +1150,16 @@ Let's check out the `pivot_sample` function. This function pivots the sample dat
 
 ```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=6,fig.align='center'}
 # Pivot sample data to a tibble
-expom |> 
+expom_1  |> 
   pivot_sample() |> 
   head()
 ```
 We could use this functionality to count the number of asthmatics per sex:
 
 ```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=6,fig.align='center'}
-expom |> 
+expom_1  |> 
   pivot_sample() |> 
-  group_by(hs_asthma,e3_sex) |> 
+  group_by(hs_asthma,hs_smk_parents_None) |> 
   summarise(n = n()) 
 ```
 
@@ -1090,7 +1169,7 @@ The `pivot_feature` function pivots the feature meta data to a tibble with featu
 
 ```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=6,fig.align='center'}
 # Pivot feature data to a tibble
-expom |> 
+expom_1  |> 
   pivot_feature() |> 
   head()
 ```
@@ -1099,7 +1178,7 @@ We could use this functionality to count the number of features per omic layer, 
 
 ```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=6,fig.align='center'}
 # Count the number of features per omic layer
-expom |> 
+expom_1  |> 
     pivot_feature() |> 
     group_by(.exp_name) |> 
     summarise(n = n())
@@ -1108,25 +1187,27 @@ expom |>
 
 ## Pivot Experiment
 
+Now if we want to grab assay data from a particular experiment, we can do that with the `pivot_exp`. Let's try grabbing assay values for the `cg25330361` probe (methylation probe for CYP2E1) in the `Methylation` experiment:
+
 ```{r,warning=FALSE,message=FALSE,fig.height=3,fig.width=6,fig.align='center'}
 # Pivot experiment data to a tibble
-expom |> 
-  pivot_exp(omics_name = "Proteomics",
-            features = "TAF7") |> 
+expom_1  |> 
+  pivot_exp(omics_name = "Methylation",
+            features = "cg25330361") |> 
   head()
 ```
 
-We can use this functionality to create custom plots or analyses based on the exposure and feature data. For example, we can plot the abundance of TAF7 by asthma status:
+We can use this functionality to create custom plots or analyses based on the exposure and feature data. For example, we can plot the methylation levels of CYP2E1 by asthma status:
 
 ```{r,warning=FALSE,message=FALSE,fig.height=4,fig.width=4,fig.align='center'}
 # Plot the distribution of a specific feature across samples
-expom |> 
-  pivot_exp(omics_name = "Proteomics",
-            features = "TAF7") |> 
-  ggplot(aes(x = hs_asthma, 
-             y = log2(counts),
-             color = hs_asthma,
-             fill = hs_asthma)) +
+expom_1  |> 
+  pivot_exp(omics_name = "Methylation",
+            features = "cg25330361") |> 
+  ggplot(aes(x = as.character(hs_asthma), 
+             y = log2(counts+1),
+             color = as.character(hs_asthma),
+             fill = as.character(hs_asthma))) +
   geom_boxplot(alpha=0.5) +
   geom_jitter(alpha=0.1) +
   ggpubr::geom_pwc(
@@ -1134,27 +1215,44 @@ expom |>
   )+
   theme_minimal()+
   ggpubr::rotate_x_text(angle = 45)+
-  scale_color_tidy_exp()+
-  scale_fill_tidy_exp()+
+  ggsci::scale_color_cosmic()+
+  ggsci::scale_fill_cosmic()+
   labs(x = "",
        y = expression(Log[2]*"Abd."),
        fill = "Asthma Status",
        color = "Asthma Status")
 ```
 
-# Pipeline Overview
+# Pipeline Summary
 
 To summarize the steps we have taken in this analysis, we can use the `run_pipeline_summary` function. This function will provide a summary of the steps taken in the analysis. We can set `console_print` to `TRUE` to print the summary to the console. Setting `include_notes` to `TRUE` will include notes on the steps taken in the analysis.
 
 
 ```{r,fig.width=5,fig.height=15,message=FALSE,warning=FALSE}
 # Run the pipeline summary
-expom |> 
+expom_1  |> 
   run_pipeline_summary(
     console_print = T,
     include_notes = T)
 ```
 
+
+## Saving Results
+
+We can export the results in our MultiAssayExperiment to an excel spreadsheet using the `extract_results_excel` function. Here we add all of our results to the excel file, but we can choose certain results by changing the `result_types` argument.
+
+```{r,warning=FALSE,message=FALSE,eval=F}
+extract_results_excel(expom_1, 
+                      file = "./supplementary_results.xlsx",
+                      result_types = "all")
+```
+
+
+## Session Info
+
+```{r,warning=FALSE,message=F}
+sessionInfo()
+```
 
 ## References
 

@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,7 @@
 <p>You can install the development version of <code>tidyexposomics</code> from GitHub with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install directly through GitHub</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"BioNomad/tidyexposomics"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"BioNomad/tidyexposomics"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="command-structure">Command Structure<a class="anchor" aria-label="anchor" href="#command-structure"></a>
@@ -94,155 +94,262 @@
 <p>To make the package more user-friendly, we have named our functions to be more intuitive. For example, we use the following naming conventions:</p>
 <p align="center" width="100%">
 <img width="80%" src="articles/command_str.png"></p>
-<p>We provide functionality to either <code>add</code> results to the existing object storing the omics/exposure data or to return the direct results using the <code>get</code> option using the <code>action</code> argument. We suggest adding results, as we also include a <code><a href="reference/run_pipeline_summary.html">run_pipeline_summary()</a></code> function to generate a diagram of the workflow. This is useful for keeping track of the pipeline steps.</p>
+<p>We provide functionality to either <code>add</code> results to the existing object storing the omics/exposure data or to return the direct results using the <code>get</code> option using the <code>action</code> argument. We suggest adding results, as we also include a <code><a href="reference/run_pipeline_summary.html">run_pipeline_summary()</a></code> function to generate a diagram or print out of the workflow. This is useful for keeping track of the pipeline steps.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
 <p>The following code is a great way to get started with the package. It includes loading example data, performing basic quality control, running exposure-wide association studies (ExWAS), differential abundance analysis, correlating differentially expressed genes (DEGs) with exposures, and functional enrichment analysis.</p>
-<div class="callout">
-<h3>
-More to tidyexposomics!
+<div class="section level3">
+<h3 id="more-to-tidyexposomics">More to tidyexposomics!<a class="anchor" aria-label="anchor" href="#more-to-tidyexposomics"></a>
 </h3>
-<p>
-However, there is so much more to the <code>tidyexposomics</code> package! So check out the <a href="articles/tidyexposomics.html">Get Started</a> page for a more detailed walkthrough of the package’s functionality.
-</p>
+<p>However, there is so much more to the <code>tidyexposomics</code> package! So check out the <a href="articles/tidyexposomics.html">Get Started</a> page for a more detailed walkthrough of the package’s functionality.</p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="installation-1">Installation<a class="anchor" aria-label="anchor" href="#installation-1"></a>
+</h2>
+<p>You can install <code>tidyexposomics</code> using the following code:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install and Load Packages</span></span>
-<span><span class="co"># -------------------------</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"BioNomad/tidyexposomics"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/BioNomad/tidyexposomics" class="external-link">tidyexposomics</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="load-example-data">Load Example Data<a class="anchor" aria-label="anchor" href="#load-example-data"></a>
+</h2>
+<p>We provide example data based off the <a href="https://www.sciencedirect.com/science/article/pii/S016041202200349X?via%3Dihub" class="external-link">ISGlobal Exposome data challenge 2021</a>. Here, we will examine how exposures and omics features relate to asthma status.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">meta</span><span class="op">)</span>           <span class="co"># Exposure &amp; phenotype metadata</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">annotated_cb</span><span class="op">)</span>   <span class="co"># Ontology-annotated codebook</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">omics_list</span><span class="op">)</span>     <span class="co"># Omics data list</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fdata</span><span class="op">)</span>          <span class="co"># Omics row metadata</span></span>
 <span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"BioNomad/tidyexposomics"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tidyexposomics</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="co"># Load Example Data</span></span>
-<span></span>
-<span><span class="va">omics_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Gene Expression"</span> <span class="op">=</span> <span class="va">exp</span>,</span>
-<span>  <span class="st">"Metabolomics"</span> <span class="op">=</span> <span class="va">met</span>,</span>
-<span>  <span class="st">"Proteomics"</span> <span class="op">=</span> <span class="va">prot</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Gene Expression"</span> <span class="op">=</span> <span class="va">exp_fdata</span>,</span>
-<span>  <span class="st">"Metabolomics"</span> <span class="op">=</span> <span class="va">met_fdata</span>,</span>
-<span>  <span class="st">"Proteomics"</span> <span class="op">=</span> <span class="va">prot_fdata</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create MultiAssayExperiment container</span></span>
+<span><span class="co"># Create ExpOmicSet</span></span>
 <span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/create_expomicset.html">create_expomicset</a></span><span class="op">(</span></span>
-<span>  var_info <span class="op">=</span> <span class="va">des</span>,</span>
+<span>  codebook <span class="op">=</span> <span class="va">annotated_cb</span>,</span>
 <span>  exposure <span class="op">=</span> <span class="va">meta</span>,</span>
 <span>  omics <span class="op">=</span> <span class="va">omics_list</span>,</span>
 <span>  row_data <span class="op">=</span> <span class="va">fdata</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Identify exposure variables</span></span>
-<span><span class="va">exp_vars</span> <span class="op">&lt;-</span> <span class="va">des</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"exposure|chemical"</span>, <span class="va">category</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">variable</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># Grab exposure variables</span></span>
+<span><span class="va">exp_vars</span> <span class="op">&lt;-</span> <span class="va">annotated_cb</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">category</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"exposure to oxygen molecular entity"</span>,</span>
+<span>    <span class="st">"aerosol"</span>,</span>
+<span>    <span class="st">"environmental zone"</span>,</span>
+<span>    <span class="st">"main group molecular entity"</span>,</span>
+<span>    <span class="st">"transition element molecular entity"</span>,</span>
+<span>    <span class="st">"exposure to environmental process"</span>,</span>
+<span>    <span class="st">"polyatomic entity"</span> </span>
+<span>  <span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">variable</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="quality-control">Quality Control<a class="anchor" aria-label="anchor" href="#quality-control"></a>
+</h2>
+<p>We provide several quality control functions including those that handle filtering missing data, imputation, variable normality checks, and variable transformation.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Filter samples and exposures</span></span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span><span class="op">[</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">expom</span><span class="op">$</span><span class="va">hs_asthma</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span><span class="op">[</span>, <span class="va">expom</span><span class="op">$</span><span class="va">FAS_cat_None</span> <span class="op">==</span> <span class="st">"Low"</span><span class="op">]</span></span>
 <span></span>
-<span><span class="co"># Basic Quality Control</span></span>
-<span><span class="co"># ---------------------</span></span>
-<span></span>
+<span><span class="co"># Filter &amp; impute exposures</span></span>
 <span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/filter_missing.html">filter_missing</a></span><span class="op">(</span>na_thresh <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/run_impute_missing.html">run_impute_missing</a></span><span class="op">(</span></span>
-<span>    exposure_impute_method <span class="op">=</span> <span class="st">"median"</span>,</span>
-<span>    omics_impute_method <span class="op">=</span> <span class="st">"median"</span></span>
+<span>  <span class="fu"><a href="reference/filter_missing.html">filter_missing</a></span><span class="op">(</span>na_thresh <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/run_impute_missing.html">run_impute_missing</a></span><span class="op">(</span>exposure_impute_method <span class="op">=</span> <span class="st">"missforest"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Filter omics</span></span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/filter_omics.html">filter_omics</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">"variance"</span>,</span>
+<span>    assays <span class="op">=</span> <span class="st">"Methylation"</span>,</span>
+<span>    assay_name <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    min_var <span class="op">=</span> <span class="fl">0.05</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/filter_omics.html">filter_omics</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">"variance"</span>,</span>
+<span>    assays <span class="op">=</span> <span class="st">"Metabolomics"</span>,</span>
+<span>    assay_name <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    min_var <span class="op">=</span> <span class="fl">0.1</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/run_pca.html">run_pca</a></span><span class="op">(</span>action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/filter_sample_outliers.html">filter_sample_outliers</a></span><span class="op">(</span>outliers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"s411"</span>,<span class="st">"s378"</span>, <span class="st">"s588"</span>, <span class="st">"s764"</span>, <span class="st">"s857"</span>, <span class="st">"s918"</span>, <span class="st">"s936"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/run_normality_check.html">run_normality_check</a></span><span class="op">(</span>action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/transform_exposure.html">transform_exposure</a></span><span class="op">(</span>transform_method <span class="op">=</span> <span class="st">"boxcox_best"</span>, cols_of_interest <span class="op">=</span> <span class="va">exp_vars</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="reference/filter_omics.html">filter_omics</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">"expression"</span>,</span>
+<span>    assays <span class="op">=</span> <span class="st">"Gene Expression"</span>,</span>
+<span>    assay_name <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    min_value <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    min_prop <span class="op">=</span> <span class="fl">0.3</span></span>
+<span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Exposure-Wide Association (ExWAS)</span></span>
-<span></span>
-<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">associate_exposure_outcome</span><span class="op">(</span></span>
+<span><span class="co"># Check variable normality &amp; transform variables</span></span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="co"># Check variable normality</span></span>
+<span>  <span class="fu"><a href="reference/run_normality_check.html">run_normality_check</a></span><span class="op">(</span>action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  </span>
+<span>  <span class="co"># Transform variables </span></span>
+<span>  <span class="fu"><a href="reference/transform_exposure.html">transform_exposure</a></span><span class="op">(</span>transform_method <span class="op">=</span> <span class="st">"boxcox_best"</span>,</span>
+<span>                     exposure_cols <span class="op">=</span> <span class="va">exp_vars</span><span class="op">)</span> </span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="exwas">ExWAS<a class="anchor" aria-label="anchor" href="#exwas"></a>
+</h2>
+<p>We may associate our exposures with a health outcome, and in this case, we associate our exposures with asthma status and adjust our model for child age, biological sex, and cohort.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Perform ExWAS Analysis</span></span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/run_association.html">run_association</a></span><span class="op">(</span></span>
+<span>    source <span class="op">=</span> <span class="st">"exposures"</span>,</span>
 <span>    outcome <span class="op">=</span> <span class="st">"hs_asthma"</span>,</span>
-<span>    exposures <span class="op">=</span> <span class="va">exp_vars</span><span class="op">[</span><span class="op">!</span><span class="va">exp_vars</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hs_asthma"</span>, <span class="st">"hs_child_age"</span>, <span class="st">"e3_sex"</span><span class="op">)</span><span class="op">]</span>,</span>
-<span>    covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hs_child_age"</span>, <span class="st">"e3_sex"</span><span class="op">)</span>,</span>
-<span>    family <span class="op">=</span> <span class="st">"binomial"</span>,</span>
-<span>    action <span class="op">=</span> <span class="st">"add"</span></span>
-<span>  <span class="op">)</span></span>
+<span>    feature_set <span class="op">=</span> <span class="va">exp_vars</span>,</span>
+<span>    covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hs_child_age_None"</span>,</span>
+<span>                   <span class="st">"e3_sex_None"</span>,</span>
+<span>                   <span class="st">"h_cohort"</span><span class="op">)</span>,</span>
+<span>    action <span class="op">=</span> <span class="st">"add"</span>,</span>
+<span>    family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot significant associations</span></span>
-<span><span class="va">expom</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">plot_associate_exposure_outcome</span><span class="op">(</span></span>
-<span>    subtitle <span class="op">=</span> <span class="st">"Covariates: Age, Sex"</span>,</span>
-<span>    result <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>    filter_thresh <span class="op">=</span> <span class="fl">0.05</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="co"># Differential Abundance Analysis</span></span>
-<span><span class="co"># -------------------------------</span></span>
-<span></span>
-<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span></span>
+<span><span class="co"># Visualize associations</span></span>
+<span><span class="va">expom</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/plot_association.html">plot_association</a></span><span class="op">(</span></span>
+<span>    subtitle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Covariates:"</span>,</span>
+<span>                     <span class="st">"Age,"</span>,</span>
+<span>                     <span class="st">"Biological Sex, "</span>,</span>
+<span>                     <span class="st">"Cohort"</span><span class="op">)</span>,</span>
+<span>    source <span class="op">=</span> <span class="st">"exposures"</span>,</span>
+<span>    terms <span class="op">=</span> <span class="va">exp_vars</span>,</span>
+<span>    filter_thresh <span class="op">=</span> <span class="fl">0.15</span>,</span>
+<span>    filter_col <span class="op">=</span> <span class="st">"p.value"</span>,</span>
+<span>    r2_col <span class="op">=</span> <span class="st">"adj_r2"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/exwas_assoc.png"></p>
+</div>
+<div class="section level2">
+<h2 id="differential-abundance">Differential Abundance<a class="anchor" aria-label="anchor" href="#differential-abundance"></a>
+</h2>
+<p>Differentially abundant analysis is also supported in <code>tidyexposomics</code>. Here we use <code>limma_voom</code> to identify features associated with asthma status.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Run differential abundance analysis</span></span>
+<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/run_differential_abundance.html">run_differential_abundance</a></span><span class="op">(</span></span>
-<span>    formula <span class="op">=</span> <span class="op">~</span> <span class="va">hs_asthma</span> <span class="op">+</span> <span class="va">hs_child_age</span> <span class="op">+</span> <span class="va">e3_sex</span>,</span>
+<span>    formula <span class="op">=</span> <span class="op">~</span> <span class="va">hs_asthma</span> <span class="op">+</span> <span class="va">hs_child_age_None</span> <span class="op">+</span> <span class="va">e3_sex_None</span> <span class="op">+</span> <span class="va">h_cohort</span>,</span>
 <span>    method <span class="op">=</span> <span class="st">"limma_voom"</span>,</span>
-<span>    minimum_counts <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>    minimum_proportion <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>    scaling_method <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>    action <span class="op">=</span> <span class="st">"add"</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Plot results as volcano plot</span></span>
-<span><span class="va">expom</span> <span class="op">|&gt;</span></span>
+<span>    action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span></span>
+<span>    </span>
+<span><span class="co"># Plot Differential Abundance Results</span></span>
+<span><span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
 <span>    top_n_label <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>    feature_col <span class="op">=</span> <span class="st">"feature_clean"</span>,</span>
 <span>    logFC_thresh <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>    pval_thresh <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>    nrow <span class="op">=</span> <span class="fl">1</span></span>
-<span>  <span class="op">)</span></span>
+<span>    pval_col <span class="op">=</span> <span class="st">"P.Value"</span>,</span>
+<span>    logFC_col <span class="op">=</span> <span class="st">"logFC"</span>,</span>
+<span>    nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/volcano.png"></p>
+</div>
+<div class="section level2">
+<h2 id="multi-omics-integration">Multi-Omics Integration<a class="anchor" aria-label="anchor" href="#multi-omics-integration"></a>
+</h2>
+<p>If several omics are present, we provide functionality to perform multiomics integration. Here we use the <code>DIABLO</code> method and set the outcome variable of interest to asthma status.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Perform Multi-Omics Integration</span></span>
+<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/run_multiomics_integration.html">run_multiomics_integration</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"DIABLO"</span>,</span>
+<span>                             n_factors <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                             outcome <span class="op">=</span> <span class="st">"hs_asthma"</span>,</span>
+<span>                             action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span></span>
+<span>                             </span>
+<span><span class="co"># Identify factors that correlate with the outcome</span></span>
+<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/run_association.html">run_association</a></span><span class="op">(</span></span>
+<span>    source <span class="op">=</span> <span class="st">"factors"</span>,</span>
+<span>    outcome <span class="op">=</span> <span class="st">"hs_asthma"</span>,</span>
+<span>    feature_set <span class="op">=</span> <span class="va">exp_vars</span>,</span>
+<span>    covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>      <span class="st">"hs_child_age_None"</span>,</span>
+<span>      <span class="st">"e3_sex_None"</span>,</span>
+<span>      <span class="st">"h_cohort"</span><span class="op">)</span>,</span>
+<span>    action <span class="op">=</span> <span class="st">"add"</span>,</span>
+<span>    family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
+<span>    </span>
+<span><span class="co"># Extract top features that contribute to a factor</span></span>
+<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/extract_top_factor_features.html">extract_top_factor_features</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"percentile"</span>,</span>
+<span>                              pval_col <span class="op">=</span> <span class="st">"p_adjust"</span>,</span>
+<span>                              pval_thresh <span class="op">=</span> <span class="fl">0.05</span>, </span>
+<span>                              percentile <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>                              action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span> </span>
+<span>                              </span>
+<span><span class="co"># Determine which features drive multiple factors</span></span>
+<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/run_factor_overlap.html">run_factor_overlap</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="exposure-omics-association">Exposure-Omics Association<a class="anchor" aria-label="anchor" href="#exposure-omics-association"></a>
+</h2>
+<p>Now that we have our multiomics features associated with asthma status, we can correlate these with our exposures to identify how certain classes of exposures may be affecting asthma biology.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Grab top common factor features and ensure </span></span>
+<span><span class="co"># feature is renamed to variable for the variable_map</span></span>
+<span><span class="va">top_factor_features</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/extract_results.html">extract_results</a></span><span class="op">(</span>result <span class="op">=</span> <span class="st">"multiomics_integration"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html" class="external-link">pluck</a></span><span class="op">(</span><span class="st">"common_top_factor_features"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span>variable<span class="op">=</span><span class="va">feature</span>,</span>
+<span>                      <span class="va">exp_name</span><span class="op">)</span></span>
 <span></span>
-<span></span>
-<span><span class="co"># Correlate DEGs with Exposures</span></span>
-<span><span class="co"># -----------------------------</span></span>
-<span></span>
-<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">correlate_exposures_degs</span><span class="op">(</span></span>
-<span>    exposure_cols <span class="op">=</span> <span class="va">exp_vars</span>,</span>
-<span>    robust <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    score_thresh <span class="op">=</span> <span class="fl">0.25</span>,</span>
-<span>    deg_logfc_thresh <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
-<span>    deg_pval_thresh <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>    correlation_cutoff <span class="op">=</span> <span class="fl">0.01</span>,</span>
-<span>    pval_cutoff <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span>    action <span class="op">=</span> <span class="st">"add"</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="co"># Functional Enrichment Analysis</span></span>
-<span><span class="co"># ------------------------------</span></span>
-<span></span>
-<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span></span>
+<span><span class="co"># Correlate top factor features with exposures</span></span>
+<span><span class="va">expom_1</span>  <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="co"># Perform correlation analysis between factor features </span></span>
+<span>  <span class="co"># and exposures</span></span>
+<span>  <span class="fu"><a href="reference/run_correlation.html">run_correlation</a></span><span class="op">(</span>feature_type <span class="op">=</span> <span class="st">"omics"</span>,</span>
+<span>                  variable_map <span class="op">=</span> <span class="va">top_factor_features</span>,</span>
+<span>                  exposure_cols <span class="op">=</span> <span class="va">exp_vars</span>,</span>
+<span>                  action <span class="op">=</span> <span class="st">"add"</span>,</span>
+<span>                  correlation_cutoff <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>                  pval_cutoff <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>                  cor_pval_column <span class="op">=</span> <span class="st">"p.value"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="co"># Perform correlation analysis between factor features</span></span>
+<span>  <span class="fu"><a href="reference/run_correlation.html">run_correlation</a></span><span class="op">(</span>feature_type <span class="op">=</span> <span class="st">"omics"</span>,</span>
+<span>                  variable_map <span class="op">=</span> <span class="va">top_factor_features</span>,</span>
+<span>                  feature_cors <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>                  action <span class="op">=</span> <span class="st">"add"</span>,</span>
+<span>                  correlation_cutoff <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>                  pval_cutoff <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>                  cor_pval_column <span class="op">=</span> <span class="st">"p.value"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="enrichment-analysis">Enrichment Analysis<a class="anchor" aria-label="anchor" href="#enrichment-analysis"></a>
+</h2>
+<p>After identifying features associated with asthma and exposures, we can perform functional enrichment analysis to understand what biological processes are affected.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Run enrichment analysis on factor features correlated with exposures</span></span>
+<span><span class="va">expom_1</span>  <span class="op">&lt;-</span> <span class="va">expom_1</span>  <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/run_enrichment.html">run_enrichment</a></span><span class="op">(</span></span>
-<span>    geneset <span class="op">=</span> <span class="st">"deg_exp_cor"</span>,</span>
-<span>    feature_col <span class="op">=</span> <span class="st">"gene"</span>,</span>
-<span>    clustering_approach <span class="op">=</span> <span class="st">"dynamic"</span>,</span>
-<span>    pval_threshold <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>    pvalueCutoff <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span>    pAdjustMethod <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>    qvalueCutoff <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>    logfc_threshold <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
+<span>    feature_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"omics_cor"</span><span class="op">)</span>,</span>
+<span>    feature_col <span class="op">=</span> <span class="st">"feature_clean"</span>,</span>
+<span></span>
+<span>    db <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GO"</span><span class="op">)</span>, </span>
+<span>    species <span class="op">=</span> <span class="st">"goa_human"</span>, </span>
+<span>    fenr_col <span class="op">=</span> <span class="st">"gene_symbol"</span>,</span>
+<span>    padj_method <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>    pval_thresh <span class="op">=</span> <span class="fl">.1</span>,</span>
+<span>    min_set <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    max_set <span class="op">=</span> <span class="fl">800</span>,</span>
+<span></span>
+<span>    clustering_approach <span class="op">=</span> <span class="st">"diana"</span>,</span>
 <span>    action <span class="op">=</span> <span class="st">"add"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot enriched terms (dotplot)</span></span>
-<span><span class="va">expom</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/plot_dotplot_enrichment.html">plot_dotplot_enrichment</a></span><span class="op">(</span></span>
-<span>    geneset <span class="op">=</span> <span class="st">"deg_exp_cor"</span>,</span>
-<span>    top_n <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>    n_per_group <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>    add_top_genes <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    top_n_genes <span class="op">=</span> <span class="fl">5</span></span>
+<span><span class="co"># Plot enrichment term network plot</span></span>
+<span><span class="va">expom_1</span>    <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/plot_enrichment.html">plot_enrichment</a></span><span class="op">(</span></span>
+<span>    feature_type <span class="op">=</span> <span class="st">"omics_cor"</span>,</span>
+<span>    plot_type <span class="op">=</span> <span class="st">"network"</span>,</span>
+<span>    label_top_n <span class="op">=</span> <span class="fl">2</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
+<p><img src="articles/enr_network.png"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -256,7 +363,8 @@ However, there is so much more to the <code>tidyexposomics</code> package! So ch
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li>`use_mit_license()`, `use_gpl3_license()` or friends to pick a license</li>
+<li><a href="LICENSE.html">Full license</a></li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
 

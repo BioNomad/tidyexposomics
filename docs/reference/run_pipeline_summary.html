@@ -6,12 +6,14 @@
     }
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Summarize and Visualize Analysis Pipeline Steps — run_pipeline_summary"><meta name="description" content="This function prints and visualizes the analysis steps stored in the
-metadata of a MultiAssayExperiment object. The steps are optionally printed
-to the console as a numbered list and always rendered as a left-to-right Mermaid
-flowchart. The flowchart wraps to a new row after every 5 steps."><meta property="og:description" content="This function prints and visualizes the analysis steps stored in the
-metadata of a MultiAssayExperiment object. The steps are optionally printed
-to the console as a numbered list and always rendered as a left-to-right Mermaid
-flowchart. The flowchart wraps to a new row after every 5 steps."></head><body>
+metadata of a MultiAssayExperiment object. The steps are optionally
+printed to the console as a numbered list and can be rendered as a left-to-right
+Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+if requested."><meta property="og:description" content="This function prints and visualizes the analysis steps stored in the
+metadata of a MultiAssayExperiment object. The steps are optionally
+printed to the console as a numbered list and can be rendered as a left-to-right
+Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+if requested."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -19,7 +21,7 @@ flowchart. The flowchart wraps to a new row after every 5 steps."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,9 +59,10 @@ flowchart. The flowchart wraps to a new row after every 5 steps."></head><body>
 
     <div class="ref-description section level2">
     <p>This function prints and visualizes the analysis steps stored in the
-metadata of a <code>MultiAssayExperiment</code> object. The steps are optionally printed
-to the console as a numbered list and always rendered as a left-to-right Mermaid
-flowchart. The flowchart wraps to a new row after every 5 steps.</p>
+metadata of a <code>MultiAssayExperiment</code> object. The steps are optionally
+printed to the console as a numbered list and can be rendered as a left-to-right
+Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+if requested.</p>
     </div>
 
     <div class="section level2">
@@ -67,8 +70,9 @@ flowchart. The flowchart wraps to a new row after every 5 steps.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_pipeline_summary</span><span class="op">(</span></span>
 <span>  <span class="va">expomicset</span>,</span>
 <span>  show_index <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  console_print <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  include_notes <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  console_print <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  diagram_print <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  include_notes <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -77,27 +81,46 @@ flowchart. The flowchart wraps to a new row after every 5 steps.</p>
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object that contains a <code>"steps"</code>
-entry in its metadata.</p></dd>
+<dd><p>A <code>MultiAssayExperiment</code> object that contains a "summary"
+entry in its metadata, which includes a list named <code>steps</code>.</p></dd>
 
 
 <dt id="arg-show-index">show_index<a class="anchor" aria-label="anchor" href="#arg-show-index"></a></dt>
-<dd><p>Logical, default <code>TRUE</code>. Prefix steps with index.</p></dd>
+<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>, prefixes each step with its index.</p></dd>
 
 
 <dt id="arg-console-print">console_print<a class="anchor" aria-label="anchor" href="#arg-console-print"></a></dt>
-<dd><p>Logical, default <code>FALSE</code>. If <code>TRUE</code>, prints to console.</p></dd>
+<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>, prints the step list to the console.</p></dd>
+
+
+<dt id="arg-diagram-print">diagram_print<a class="anchor" aria-label="anchor" href="#arg-diagram-print"></a></dt>
+<dd><p>Logical, default <code>FALSE</code>. If <code>TRUE</code>, renders a Mermaid diagram of the steps.</p></dd>
 
 
 <dt id="arg-include-notes">include_notes<a class="anchor" aria-label="anchor" href="#arg-include-notes"></a></dt>
-<dd><p>Logical, default <code>FALSE</code>. If <code>TRUE</code>, appends notes from each step.</p></dd>
+<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>, appends any "notes" associated with each step to the label.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>No return value; called for side effects (console print + diagram).</p>
+    <p>No return value. This function is called for its side effects:
+console output and/or diagram rendering.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The Mermaid flowchart is rendered left-to-right and connects
+each step in sequence. Each node is labeled using the step name and, optionally,
+any attached notes.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="fu">run_pipeline_summary</span><span class="op">(</span><span class="va">expomicset</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

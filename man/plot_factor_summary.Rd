@@ -4,31 +4,48 @@
 \alias{plot_factor_summary}
 \title{Plot Summary of Factor Contributions from Multi-Omics Integration}
 \usage{
-plot_factor_summary(expomicset)
+plot_factor_summary(
+  expomicset,
+  low = "#006666",
+  mid = "white",
+  high = "#8E0152",
+  midpoint = 0.5
+)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing multi-omics integration results.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing integration results in
+\code{metadata(expomicset)$multiomics_integration$integration_results}.}
+
+\item{low}{Color for low values in the fill gradient. Default is \code{"#006666"}.}
+
+\item{mid}{Color for midpoint in the fill gradient. Default is \code{"white"}.}
+
+\item{high}{Color for high values in the fill gradient. Default is \code{"#8E0152"}.}
+
+\item{midpoint}{Midpoint value for the gradient color scale. Default is \code{0.5}.}
 }
 \value{
-A \code{ggplot} object displaying factor contributions for MOFA or a block weight heatmap for MCIA.
+A \code{ggplot} object showing factor contributions based on the integration method.
 }
 \description{
-Generates a summary plot of factor contributions from multi-omics integration results.
+Generates a summary plot of factor contributions from multi-omics integration results
+stored in a \code{MultiAssayExperiment} object.
 }
 \details{
-This function extracts integration results from \code{metadata(expomicset)$integration_results} and
-generates a summary plot of factor contributions. The visualization method depends on the
-integration approach used:
+This function visualizes factor contributions based on the integration method:
 \itemize{
-\item \strong{MOFA}: Uses \code{MOFA2::plot_variance_explained()} to display variance explained by factors.
-\item \strong{MCIA}: Uses \code{nipalsMCIA::block_weights_heatmap()} to show block loadings.
+\item \strong{MOFA}: Variance explained per factor and view.
+\item \strong{MCIA}: Block score weights per omic.
+\item \strong{DIABLO}: Mean absolute sample score per omic and factor (from block-specific variates).
+\item \strong{RGCCA}: Mean absolute sample score per omic and factor (from aligned block scores).
 }
 
-The function automatically selects the appropriate visualization based on the integration method.
+The color gradient can be customized using the \code{low}, \code{mid}, \code{high}, and \code{midpoint} parameters.
 }
 \examples{
 \dontrun{
 plot_factor_summary(expom)
+plot_factor_summary(expom, low = "blue", mid = "white", high = "red")
 }
 
 }

@@ -44,23 +44,30 @@ plot_sensitivity_summary <- function(
     stop(paste0("Invalid stability_metric: '", stability_metric, "'. Must be one of: ", paste(colnames(feature_stability), collapse = ", ")))
   }
 
+  # sensitivity_sum <- feature_stability |>
+  #   dplyr::group_by(exp_name) |>
+  #   dplyr::summarise(n=dplyr::n()) |>
+  #   dplyr::arrange(desc(n))
+
   sensitivity_sum <- feature_stability |>
     dplyr::group_by(exp_name) |>
-    dplyr::summarise(n=dplyr::n()) |>
-    dplyr::arrange(desc(n))
+    dplyr::summarise(
+      n_above = sum(.data[[stability_metric]] > stability_score_thresh, na.rm = TRUE),
+      total = dplyr::n()) |>
+    dplyr::arrange(desc(total))
 
   sensitivity_bar <- sensitivity_sum |>
     ggplot(aes(
-      x=n,
-      y=forcats::fct_reorder(exp_name, n),
+      x=n_above,
+      y=forcats::fct_reorder(exp_name, n_above),
       fill=exp_name
     ))+
     geom_bar(stat = "identity",alpha=0.7) +
     geom_segment(aes(
-      x = n,
-      xend = n,
-      y = as.numeric(forcats::fct_reorder(exp_name, n)) - 0.45,
-      yend = as.numeric(forcats::fct_reorder(exp_name, n)) + 0.45,
+      x = n_above,
+      xend = n_above,
+      y = as.numeric(forcats::fct_reorder(exp_name, n_above)) - 0.45,
+      yend = as.numeric(forcats::fct_reorder(exp_name, n_above)) + 0.45,
       color = exp_name,
     ), size = 1) +
     scale_fill_tidy_exp()+
@@ -78,10 +85,12 @@ plot_sensitivity_summary <- function(
   }
 
   sensitivity_ridgeplot <- feature_stability |>
-    dplyr::left_join(sensitivity_sum, by="exp_name") |>
+    dplyr::left_join(sensitivity_sum,
+                     by="exp_name") |>
+    mutate(exp_name=paste0(exp_name,": (",n_above,"/",total,")")) |>
     ggplot(aes(
       x = .data[[stability_metric]],
-      y = forcats::fct_reorder(exp_name,n),
+      y = forcats::fct_reorder(exp_name,n_above),
       fill = exp_name))+
     ggridges::geom_density_ridges()+
     scale_fill_tidy_exp()+
@@ -90,18 +99,19 @@ plot_sensitivity_summary <- function(
                linetype = "dashed",
                color = "grey55")+
     theme(plot.title = element_text(face = "bold.italic"),
-          legend.position = "none")+
+          legend.position = "none",
+          axis.text.y = element_text(size = 10,color = "black"))+
     labs(fill="Assay",
          x="Stability Score",
          y="",
          title = title)
 
-  sensitivity_sum <- feature_stability |>
-    dplyr::group_by(exp_name) |>
-    dplyr::summarise(
-      n_above = sum(.data[[stability_metric]] > stability_score_thresh, na.rm = TRUE),
-      total = dplyr::n()) |>
-    dplyr::arrange(desc(total))
+  # sensitivity_sum <- feature_stability |>
+  #   dplyr::group_by(exp_name) |>
+  #   dplyr::summarise(
+  #     n_above = sum(.data[[stability_metric]] > stability_score_thresh, na.rm = TRUE),
+  #     total = dplyr::n()) |>
+  #   dplyr::arrange(desc(total))
 
   message("Number of Features with ", stability_metric, " > ", stability_score_thresh, ":")
   for(i in 1:nrow(sensitivity_sum)){

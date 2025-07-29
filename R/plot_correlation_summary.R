@@ -16,7 +16,7 @@
 #' @export
 plot_correlation_summary <- function(
     expomicset,
-    feature_type = c("degs", "factors"),
+    feature_type = c("degs", "omics", "factors", "factor_features", "exposures","pcs"),
     mode = c("top_exposures", "top_features", "exposure_category", "assay", "summary"),
     top_n = 15
 ) {
@@ -57,7 +57,7 @@ plot_correlation_summary <- function(
   # # Merge with exposure metadata
   # cor_data <- cor_data |>
   #   dplyr::left_join(
-  #     MultiAssayExperiment::metadata(expomicset)$var_info,
+  #     MultiAssayExperiment::metadata(expomicset)$codebook,
   #     by = c("exposure"="variable")
   #   )
 
@@ -77,7 +77,7 @@ plot_correlation_summary <- function(
         y = forcats::fct_reorder(exposure, total),
         fill = exp_name)) +
       ggplot2::geom_bar(stat = "identity", alpha = 0.7) +
-      scale_fill_tidy_exp() +
+      scale_fill_tidy_exp(rev = T) +
       ggpubr::theme_pubr() +
       ggplot2::labs(
         title = "Top Exposures by Assay",
@@ -122,7 +122,11 @@ plot_correlation_summary <- function(
       scale_color_tidy_exp()+
       ggpubr::theme_pubr() +
       ggplot2::labs(title = "Exposure Associations by Category", x = "Count", y = "")+
-      theme(plot.title = element_text(face = "bold.italic"))
+      theme(plot.title = element_text(face = "bold.italic"))+
+      labs(
+        fill = "Category",
+        color = "Category"
+      )
   }
 
   plot_assays <- function() {
@@ -135,11 +139,15 @@ plot_correlation_summary <- function(
         yend = as.numeric(reorder(exp_name, n)) + 0.45,
         y = as.numeric(reorder(exp_name, n)) - 0.45,
         color = exp_name), size = 1) +
-      scale_fill_tidy_exp() +
-      scale_color_tidy_exp() +
+      scale_fill_tidy_exp(rev = T) +
+      scale_color_tidy_exp(rev = T) +
       ggpubr::theme_pubr() +
       ggplot2::labs(title = "Omics Associations by Assay", x = "Count", y = "")+
-      theme(plot.title = element_text(face = "bold.italic"))
+      theme(plot.title = element_text(face = "bold.italic"))+
+      labs(
+        fill = "Assay",
+        color = "Assay"
+      )
   }
 
   # Return appropriate plot
@@ -148,8 +156,23 @@ plot_correlation_summary <- function(
          top_features = plot_top_features(),
          exposure_category = plot_exposure_categories(),
          assay = plot_assays(),
+         # summary = {
+         #   (plot_top_features()+theme(legend.position = "none") / plot_exposure_categories()+ theme(legend.position = 'bottom',legend.direction="vertical") + patchwork::plot_layout(heights = c(3, 1))) |
+         #     (plot_top_exposures()+theme(legend.position = "none") / plot_assays()+ theme(legend.position = 'bottom',legend.direction="vertical") + patchwork::plot_layout(heights = c(3, 1)))
+         # },
          summary = {
-           (plot_top_features() / plot_exposure_categories() + patchwork::plot_layout(heights = c(3, 1))) |
-             (plot_top_exposures() / plot_assays() + patchwork::plot_layout(heights = c(3, 1)))
+           left <- (plot_top_features() +
+                      theme(legend.position = "none")) /
+             (plot_exposure_categories() +
+                theme(legend.position = 'bottom', legend.direction = "vertical")) +
+             patchwork::plot_layout(heights = c(3, 1))
+
+           right <- (plot_top_exposures() +
+                       theme(legend.position = "none")) /
+             (plot_assays() +
+                theme(legend.position = 'bottom', legend.direction = "vertical")) +
+             patchwork::plot_layout(heights = c(3, 1))
+
+           left | right
          })
 }

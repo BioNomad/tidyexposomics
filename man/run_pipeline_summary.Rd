@@ -7,26 +7,42 @@
 run_pipeline_summary(
   expomicset,
   show_index = TRUE,
-  console_print = FALSE,
-  include_notes = FALSE
+  console_print = TRUE,
+  diagram_print = FALSE,
+  include_notes = TRUE
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object that contains a \code{"steps"}
-entry in its metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object that contains a "summary"
+entry in its metadata, which includes a list named \code{steps}.}
 
-\item{show_index}{Logical, default \code{TRUE}. Prefix steps with index.}
+\item{show_index}{Logical, default \code{TRUE}. If \code{TRUE}, prefixes each step with its index.}
 
-\item{console_print}{Logical, default \code{FALSE}. If \code{TRUE}, prints to console.}
+\item{console_print}{Logical, default \code{TRUE}. If \code{TRUE}, prints the step list to the console.}
 
-\item{include_notes}{Logical, default \code{FALSE}. If \code{TRUE}, appends notes from each step.}
+\item{diagram_print}{Logical, default \code{FALSE}. If \code{TRUE}, renders a Mermaid diagram of the steps.}
+
+\item{include_notes}{Logical, default \code{TRUE}. If \code{TRUE}, appends any "notes" associated with each step to the label.}
 }
 \value{
-No return value; called for side effects (console print + diagram).
+No return value. This function is called for its side effects:
+console output and/or diagram rendering.
 }
 \description{
 This function prints and visualizes the analysis steps stored in the
-metadata of a \code{MultiAssayExperiment} object. The steps are optionally printed
-to the console as a numbered list and always rendered as a left-to-right Mermaid
-flowchart. The flowchart wraps to a new row after every 5 steps.
+metadata of a \code{MultiAssayExperiment} object. The steps are optionally
+printed to the console as a numbered list and can be rendered as a left-to-right
+Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+if requested.
+}
+\details{
+The Mermaid flowchart is rendered left-to-right and connects
+each step in sequence. Each node is labeled using the step name and, optionally,
+any attached notes.
+}
+\examples{
+\dontrun{
+run_pipeline_summary(expomicset)
+}
+
 }

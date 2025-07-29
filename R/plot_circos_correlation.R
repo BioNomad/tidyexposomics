@@ -9,14 +9,16 @@
 #' @param corr_threshold Minimum |correlation| (only for "exposures").
 #' @param shared_cutoff Minimum number of shared features (only for "degs" or "factors"). Default = 10.
 #' @param annotation_colors Optional named vector of colors for categories.
-#' @param low, mid, high Colors for edge color scale.
+#' @param low low value color for edges.
+#' @param mid middle value color for edges.
+#' @param high high value color for edges.
 #' @param midpoint Midpoint for edge color gradient. Defaults to 0 (for correlations) or mean shared features.
 #'
 #' @return A ggplot object (ggraph circular plot).
 #' @export
 plot_circos_correlation <- function(
     expomicset,
-    feature_type = c("exposures", "degs", "factors"),
+    feature_type = c("degs", "omics", "factors", "factor_features", "exposures","pcs"),
     exposure_cols = NULL,
     corr_threshold = NULL,
     shared_cutoff = 10,
@@ -39,11 +41,14 @@ plot_circos_correlation <- function(
 
     # Optional exposure filtering
     if (!is.null(exposure_cols)) {
-      correlation_df <- dplyr::filter(correlation_df, var1 %in% exposure_cols & var2 %in% exposure_cols)
+      correlation_df <- dplyr::filter(
+        correlation_df,
+        var1 %in% exposure_cols & var2 %in% exposure_cols)
     }
 
     if (!is.null(corr_threshold)) {
-      correlation_df <- dplyr::filter(correlation_df, abs(correlation) >= corr_threshold)
+      correlation_df <- dplyr::filter(
+        correlation_df, abs(correlation) >= corr_threshold)
     }
 
     correlation_df$edge_weight <- abs(correlation_df$correlation)
@@ -53,25 +58,49 @@ plot_circos_correlation <- function(
 
   } else {
     # degs or factors
-    tag <- if (feature_type == "degs") "omics_exposure_deg_correlation" else "omics_exposure_factor_correlation"
-    correlation_df <- MultiAssayExperiment::metadata(expomicset)$correlation[[feature_type]]
-    if (is.null(correlation_df)) stop(paste0("No correlation found for feature_type = '", feature_type, "'. Run `run_correlation(..., feature_type = '", feature_type, "')` first."))
+    tag <- if (feature_type == "degs"){
+      "omics_exposure_deg_correlation"
+      }else {
+        "omics_exposure_factor_correlation"
+      }
 
-    feature_list <- split(correlation_df, correlation_df$exposure) |>
+    correlation_df <- MultiAssayExperiment::metadata(expomicset)$correlation[[feature_type]]
+
+    if (is.null(correlation_df)){
+      stop(paste0(
+        "No correlation found for feature_type = '",
+        feature_type,
+        "'. Run `run_correlation(..., feature_type = '",
+        feature_type,
+        "')` first."))
+    }
+
+    feature_list <- split(
+      correlation_df,
+      correlation_df$exposure) |>
       purrr::map(~ unique(.x$feature))
 
     overlap_df <- .get_pairwise_overlaps(feature_list)
-    overlap_df <- dplyr::filter(overlap_df, num_shared > shared_cutoff)
-    correlation_df <- dplyr::rename(overlap_df, source = source, target = target, edge_weight = num_shared)
+    overlap_df <- overlap_df |>
+      dplyr::filter(num_shared > shared_cutoff)
+
+    correlation_df <- overlap_df |>
+      dplyr::rename(source = source,
+                    target = target,
+                    edge_weight = num_shared)
 
     edge_color_var <- correlation_df$edge_weight
     midpoint_val <- ifelse(is.null(midpoint), mean(correlation_df$edge_weight), midpoint)
   }
 
   # Get node metadata
-  var_info <- MultiAssayExperiment::metadata(expomicset)$var_info
+  codebook <- MultiAssayExperiment::metadata(expomicset)$codebook
   node_vars <- unique(c(correlation_df$source, correlation_df$target))
-  vertex_df <- dplyr::filter(var_info, variable %in% node_vars)
+  vertex_df <- dplyr::filter(codebook, variable %in% node_vars)
+
+  # Sort Correlation Df
+  correlation_df <- correlation_df |>
+    arrange(abs(edge_weight))
 
   # Ensure igraph object
   graph <- igraph::graph_from_data_frame(correlation_df, vertices = vertex_df, directed = FALSE)

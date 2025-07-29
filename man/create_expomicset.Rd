@@ -4,10 +4,10 @@
 \alias{create_expomicset}
 \title{Create an expomicset Object}
 \usage{
-create_expomicset(var_info, exposure, omics, row_data = NULL)
+create_expomicset(codebook, exposure, omics, row_data = NULL)
 }
 \arguments{
-\item{var_info}{A data frame containing variable information metadata.}
+\item{codebook}{A data frame containing variable information metadata.}
 
 \item{exposure}{A data frame containing exposure data, with rows as samples and columns as variables.}
 
@@ -30,7 +30,7 @@ with exposure data in \code{colData} and variable information stored in metadata
 \examples{
 \dontrun{
 expomicset <- create_expomicset(
-  var_info = des,
+  codebook = des,
   exposure = meta,
   omics = list(mRNA = mrna_mat, proteomics = proteomics_mat)
 )
