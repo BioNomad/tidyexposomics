@@ -1,70 +1,112 @@
 #' Plot Enrichment Results from ExpOmicSet
 #'
-#' Visualize enrichment results stored in a `MultiAssayExperiment` (ExpOmicSet) object.
-#' Supports dotplots, heatmaps, cnetplots, networks, and multi-panel summary plots.
+#' Visualize enrichment results stored in a `MultiAssayExperiment` object.
+#' Supports dotplots, heatmaps, cnetplots, networks,
+#' and multi-panel summary plots.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with enrichment results added via `run_enrichment()`.
-#' @param feature_type Character; one of `"degs"`, `"degs_robust"`, `"omics"`, `"factor_features"`,
-#'   `"degs_cor"`, `"omics_cor"`, or `"factor_features_cor"`. Defines which enrichment results to use.
-#' @param plot_type Type of plot to generate. One of `"dotplot"`, `"cnet"`, `"network"`, `"heatmap"`, or `"summary"`.
+#' @param expomicset A `MultiAssayExperiment` object with enrichment results
+#' added via `run_enrichment()`.
+#' @param feature_type Character; one of `"degs"`, `"degs_robust"`,
+#' `"omics"`, `"factor_features"`,
+#'   `"degs_cor"`, `"omics_cor"`, or `"factor_features_cor"`.
+#'   Defines which enrichment results to use.
+#' @param plot_type Type of plot to generate. One of `"dotplot"`,
+#'  `"cnet"`, `"network"`, `"heatmap"`, or `"summary"`.
 #'
-#' @param top_n Integer; number of top `go_group`s to include (used in `"dotplot"`). Default is `5`.
-#' @param n_per_group Integer; number of terms per group to plot (used in `"dotplot"`). Default is `5`.
-#' @param add_top_genes Logical; if `TRUE`, appends top shared genes to dotplot facets. Default is `TRUE`.
-#' @param top_n_genes Integer; number of top genes to show in each group (used in `"dotplot"`). Default is `5`.
+#' @param top_n Integer; number of top `go_group`s to include
+#' (used in `"dotplot"`). Default is `5`.
+#' @param n_per_group Integer; number of terms per group to plot
+#' (used in `"dotplot"`). Default is `5`.
+#' @param add_top_genes Logical; if `TRUE`, appends top shared genes to
+#'  dotplot facets. Default is `TRUE`.
+#' @param top_n_genes Integer; number of top genes to show in each group
+#' (used in `"dotplot"`). Default is `5`.
 #'
-#' @param heatmap_fill Logical; whether to fill tiles by logFC in the heatmap. Default is `TRUE`.
-#' @param logfc_thresh Numeric; log2 fold change threshold for filtering (heatmap only). Default is `log2(1)`.
-#' @param pval_col Column name of the p-value used for filtering in `"degs"` heatmap. Default is `"P.Value"`.
-#' @param pval_thresh Threshold for `pval_col` (heatmap only). Default is `0.05`.
-#' @param score_metric Column for stability score (used in `"degs_robust"` heatmap). Default is `"stability_score"`.
-#' @param score_thresh Numeric; threshold for `score_metric` (heatmap only). Default is `NULL`.
+#' @param heatmap_fill Logical; whether to fill tiles by logFC in the heatmap.
+#' Default is `TRUE`.
+#' @param logfc_thresh Numeric; log2 fold change threshold for filtering
+#' (heatmap only). Default is `log2(1)`.
+#' @param pval_col Column name of the p-value used for filtering in `"degs"`
+#'  heatmap. Default is `"P.Value"`.
+#' @param pval_thresh Threshold for `pval_col` (heatmap only).
+#' Default is `0.05`.
+#' @param score_metric Column for stability score
+#' (used in `"degs_robust"` heatmap). Default is `"stability_score"`.
+#' @param score_thresh Numeric; threshold for `score_metric`
+#' (heatmap only). Default is `NULL`.
 #'
-#' @param overlap_thresh Numeric; Jaccard threshold for edges in the network plot. Default is `0.2`.
+#' @param overlap_thresh Numeric; Jaccard threshold for edges in
+#' the network plot. Default is `0.2`.
 #' @param node_radius Numeric; node size in network plot. Default is `0.2`.
-#' @param pie_colors Optional named vector of colors for pie charts (network and cnet).
-#' @param label_top_n Integer; number of top nodes to label in network. Default is `NULL`.
+#' @param pie_colors Optional named vector of colors for pie charts
+#'  (network and cnet).
+#' @param label_top_n Integer; number of top nodes to label in network.
+#'  Default is `NULL`.
 #' @param label_colour Color of node labels in network. Default is `"black"`.
-#' @param net_facet_by Column used to facet the network plot (e.g., `"category"`). Default is `NULL`.
+#' @param net_facet_by Column used to facet the network plot
+#' (e.g., `"category"`). Default is `NULL`.
 #'
-#' @param max_terms Integer; max number of terms to include in the cnet plot. Default is `30`.
+#' @param max_terms Integer; max number of terms to include in the cnet plot.
+#'  Default is `30`.
 #' @param node_size Numeric; base node size for cnet plot. Default is `1`.
-#' @param term_node_correction Scaling factor for term nodes in cnet plot. Default is `0.2`.
-#' @param gene_node_correction Scaling factor for gene nodes in cnet plot. Default is `3`.
+#' @param term_node_correction Scaling factor for term nodes in cnet plot.
+#' Default is `0.2`.
+#' @param gene_node_correction Scaling factor for gene nodes in cnet plot.
+#' Default is `3`.
 #'
-#' @param go_groups Optional character vector of GO group names to subset enrichment results (all plots).
-#' @param layout_algo Graph layout algorithm to use in `"network"` and `"cnet"` plots. Default is `"fr"`.
-#' @param edge_alpha Transparency of network/cnet plot edges. Default is `0.3`.
-#' @param label_size Font size for labels in network and cnet plots. Default is `3`.
-#' @param feature_col Column name used to join gene-level metadata. Default is `"feature"`.
-#' @param logfc_col Column name used for log2 fold change values. Default is `"logFC"`.
+#' @param go_groups Optional character vector of GO group names to subset
+#' enrichment results (all plots).
+#' @param layout_algo Graph layout algorithm to use in `"network"` and `"cnet"`
+#'  plots. Default is `"fr"`.
+#' @param edge_alpha Transparency of network/cnet plot edges.
+#'  Default is `0.3`.
+#' @param label_size Font size for labels in network and cnet plots.
+#'  Default is `3`.
+#' @param feature_col Column name used to join gene-level metadata.
+#' Default is `"feature"`.
+#' @param logfc_col Column name used for log2 fold change values.
+#' Default is `"logFC"`.
 #'
-#' @return A `ggplot` or `patchwork` object corresponding to the requested plot type.
+#' @return A `ggplot` or `patchwork` object corresponding to the
+#' requested plot type.
 #'
 #' @details
-#' This function visualizes results from `run_enrichment()` using one of several plot types:
+#' This function visualizes results from `run_enrichment()`
+#'  using one of several plot types:
 #' \itemize{
-#'   \item `"dotplot"`: Enrichment terms grouped by GO group, colored by significance.
-#'   \item `"heatmap"`: Term–gene matrix with optional logFC fill and shared gene highlighting.
-#'   \item `"network"`: Graph of term overlap based on shared genes, faceted by metadata if desired.
-#'   \item `"cnet"`: Gene–term bipartite graph with gene logFC values and term pie slices.
-#'   \item `"summary"`: Multi-panel figure with GO group ridgeplots, gene counts, and Venn diagram.
+#'   \item `"dotplot"`: Enrichment terms grouped by GO group, colored by
+#'   significance.
+#'   \item `"heatmap"`: Term–gene matrix with optional logFC fill and
+#'   shared gene highlighting.
+#'   \item `"network"`: Graph of term overlap based on shared genes,
+#'   faceted by metadata if desired.
+#'   \item `"cnet"`: Gene–term bipartite graph with gene logFC values
+#'   and term pie slices.
+#'   \item `"summary"`: Multi-panel figure with GO group ridgeplots,
+#'   gene counts, and Venn diagram.
 #' }
 #'
 #' @examples
 #' \dontrun{
 #' # Dotplot of top GO groups
-#' plot_enrichment(expomicset, feature_type = "degs", plot_type = "dotplot")
+#' plot_enrichment(expomicset, feature_type = "degs",
+#'  plot_type = "dotplot")
 #'
 #' # Heatmap for selected groups
-#' plot_enrichment(expomicset, feature_type = "degs_robust", plot_type = "heatmap",
-#'                 go_groups = c("Group_1", "Group_2"))
+#' plot_enrichment(expomicset,
+#' feature_type = "degs_robust",
+#'  plot_type = "heatmap",
+#'  go_groups = c("Group_1", "Group_2"))
 #'
 #' # Gene-term cnetplot
-#' plot_enrichment(expomicset, feature_type = "degs", plot_type = "cnet")
+#' plot_enrichment(expomicset,
+#' feature_type = "degs",
+#'  plot_type = "cnet")
 #'
 #' # Summary multi-panel
-#' plot_enrichment(expomicset, feature_type = "degs", plot_type = "summary")
+#' plot_enrichment(expomicset,
+#' feature_type = "degs",
+#' plot_type = "summary")
 #' }
 #'
 #' @export
@@ -213,7 +255,9 @@ plot_enrichment <- function(
 #' @title Internal: Dotplot of Enrichment Terms by GO Group
 #'
 #' @description
-#' Generates a dotplot of enriched terms colored by -log10(p) and sized by the number of genes, optionally grouped by `go_group` and annotated with top genes.
+#' Generates a dotplot of enriched terms colored by -log10(p) and
+#' sized by the number of genes, optionally grouped by `go_group` and
+#'  annotated with top genes.
 #'
 #' @param enr_res A data frame of enrichment results.
 #' @param top_n Number of top GO groups to plot based on a scoring heuristic.
@@ -224,6 +268,15 @@ plot_enrichment <- function(
 #'
 #' @return A `ggplot` dotplot object.
 #'
+#' @importFrom ggplot2 ggplot aes geom_point labs scale_color_gradient
+#' facet_grid theme element_text
+#' @importFrom dplyr filter group_by mutate reframe arrange slice_head
+#' ungroup inner_join pull
+#' @importFrom tibble rownames_to_column
+#' @importFrom purrr map
+#' @importFrom forcats fct_reorder
+#' @importFrom ggpubr theme_pubr rotate_x_text
+#'
 #' @keywords internal
 .plot_dotplot_enrichment <- function(
     enr_res,
@@ -233,7 +286,7 @@ plot_enrichment <- function(
     top_n_genes,
     go_groups
 ){
-  require(ggplot2)
+  #require(ggplot2)
 
   if(!is.null(go_groups)){
     enr_res <- enr_res |>
@@ -263,12 +316,15 @@ plot_enrichment <- function(
                  names() |>
                  (\(genes) {
                    # Split into groups of 5 and add line breaks
-                   gene_chunks <- split(genes,
-                                        ceiling(seq_along(genes) / 5))
-                   paste(sapply(gene_chunks,
-                                function(chunk) paste(
-                                  chunk, collapse = ", ")),
-                         collapse = "\n")
+                   gene_chunks <- split(genes, ceiling(seq_along(genes) / 5))
+                   paste(
+                     vapply(
+                       gene_chunks,
+                       function(chunk) paste(chunk, collapse = ", "),
+                       FUN.VALUE = character(1)
+                     ),
+                     collapse = "\n"
+                   )
                  })()
     ) |>
     as.data.frame() |>
@@ -276,6 +332,32 @@ plot_enrichment <- function(
     as.data.frame() |>
     setNames("gene_col") |>
     tibble::rownames_to_column("go_group")
+
+  # go_group_genes_df <- enr_res |>
+  #   (\(df) split(df, df$go_group))() |>
+  #   purrr::map(~ .x |>
+  #                dplyr::pull(ids) |>
+  #                (\(x) strsplit(x, ","))() |>
+  #                unlist() |>
+  #                table() |>
+  #                sort() |>
+  #                tail(n = top_n_genes) |>
+  #                names() |>
+  #                (\(genes) {
+  #                  # Split into groups of 5 and add line breaks
+  #                  gene_chunks <- split(genes,
+  #                                       ceiling(seq_along(genes) / 5))
+  #                  paste(sapply(gene_chunks,
+  #                               function(chunk) paste(
+  #                                 chunk, collapse = ", ")),
+  #                        collapse = "\n")
+  #                })()
+  #   ) |>
+  #   as.data.frame() |>
+  #   t() |>
+  #   as.data.frame() |>
+  #   setNames("gene_col") |>
+  #   tibble::rownames_to_column("go_group")
 
   if(add_top_genes){
     enr_res <- enr_res |>
@@ -364,7 +446,8 @@ plot_enrichment <- function(
 #' @title Internal: Heatmap of Enrichment Term × Gene LogFC Matrix
 #'
 #' @description
-#' Generates a tile-based heatmap of enrichment terms by associated genes, optionally colored by log2 fold change.
+#' Generates a tile-based heatmap of enrichment terms by associated genes,
+#'  optionally colored by log2 fold change.
 #'
 #' @param enr_res Enrichment results with exploded gene-term relationships.
 #' @param expomicset The original `MultiAssayExperiment` object.
@@ -380,6 +463,13 @@ plot_enrichment <- function(
 #' @param pval_thresh Significance threshold.
 #'
 #' @return A `ggplot` heatmap object.
+#'
+#' @importFrom ggplot2 ggplot aes theme_bw facet_grid theme
+#' element_text labs geom_tile scale_fill_gradient2
+#' @importFrom dplyr filter distinct count mutate left_join inner_join select
+#' @importFrom purrr pluck
+#' @importFrom tidyr separate_rows
+#' @importFrom forcats fct_reorder fct_reorder2
 #'
 #' @keywords internal
 .plot_heatmap_enrichment <- function(
@@ -570,7 +660,8 @@ plot_enrichment <- function(
 #' @title Internal: Network Plot of Enrichment Term Overlaps
 #'
 #' @description
-#' Builds a graph from overlapping genes between terms and renders a circular or force-directed layout colored by experiment.
+#' Builds a graph from overlapping genes between terms and renders a
+#'  circular or force-directed layout colored by experiment.
 #'
 #' @param enr_res Enrichment results.
 #' @param feature_type Type of feature used.
@@ -587,6 +678,21 @@ plot_enrichment <- function(
 #'
 #' @return A `ggraph` object.
 #'
+#' @importFrom igraph graph_from_data_frame cluster_louvain
+#' @importFrom tidygraph as_tbl_graph activate centrality_degree
+#' @importFrom ggraph create_layout ggraph geom_edge_link scale_edge_width
+#' geom_node_arc_bar
+#' @importFrom ggplot2 facet_wrap theme element_text labs scale_fill_manual
+#'  theme_void
+#' @importFrom ggrepel geom_label_repel
+#' @importFrom dplyr filter mutate select distinct group_by ungroup
+#' left_join top_n pull
+#' @importFrom purrr map
+#' @importFrom tidyr separate_rows
+#' @importFrom stringr str_trim
+#' @importFrom tibble as_tibble
+#' @importFrom RColorBrewer brewer.pal
+#'
 #' @keywords internal
 .plot_network_enrichment <- function(
     enr_res = enr_res,
@@ -602,9 +708,9 @@ plot_enrichment <- function(
     label_colour = label_colour,
     net_facet_by = net_facet_by
 ) {
-  require(igraph)
-  require(tidygraph)
-  require(ggraph)
+  #require(igraph)
+  #require(tidygraph)
+  #require(ggraph)
 
   # Get enrichment table
   enr <- enr_res
@@ -676,14 +782,18 @@ plot_enrichment <- function(
 
   # Stop if join failed
   if (!"exp_name" %in% names(arc_data)) {
-    stop("Join failed: 'exp_name' not found in arc_data. Check that term_name is consistent.")
+    stop("Join failed: 'exp_name' not found in arc_data.
+         Check that term_name is consistent.")
   }
 
   # Default pie colors
   if (is.null(pie_colors)) {
     omics_types <- unique(arc_data$exp_name)
     n_colors <- max(3, length(omics_types))
-    pie_colors <- setNames(RColorBrewer::brewer.pal(n = n_colors, "Set2")[seq_along(omics_types)], omics_types)
+    pie_colors <- setNames(
+      RColorBrewer::brewer.pal(
+        n = n_colors,
+        "Set2")[seq_along(omics_types)], omics_types)
   }
 
   # Final plot
@@ -719,7 +829,8 @@ plot_enrichment <- function(
       dplyr::left_join(category_map, by = c("name" = "term_name"))
 
     if (!net_facet_by %in% names(layout)) {
-      stop(glue::glue("Could not join `net_facet_by = '{net_facet_by}'` column."))
+      stop(glue::glue(
+        "Could not join `net_facet_by = '{net_facet_by}'` column."))
     }
 
     p <- p +
@@ -775,7 +886,8 @@ plot_enrichment <- function(
 #' @title Internal: Gene–Term Network (Cnetplot)
 #'
 #' @description
-#' Builds a bipartite graph between genes and enriched terms, with logFC values for genes and pie slices for multi-omic terms.
+#' Builds a bipartite graph between genes and enriched terms,
+#' with logFC values for genes and pie slices for multi-omic terms.
 #'
 #' @param enr_res Enrichment results.
 #' @param expomicset A `MultiAssayExperiment` object.
@@ -793,6 +905,18 @@ plot_enrichment <- function(
 #'
 #' @return A `ggraph` plot object.
 #'
+#' @importFrom ggraph ggraph create_layout geom_edge_link
+#' geom_node_arc_bar geom_node_point geom_node_label
+#' @importFrom igraph graph_from_data_frame
+#' @importFrom tidygraph as_tbl_graph
+#' @importFrom ggplot2 scale_color_gradient2 theme_void labs element_text
+#' @importFrom dplyr filter mutate select distinct left_join
+#' count slice_head pull bind_rows group_by ungroup add_count if_else
+#' @importFrom tidyr separate_rows
+#' @importFrom tibble as_tibble
+#' @importFrom purrr pluck
+#' @importFrom ggnewscale new_scale_color
+#'
 #' @keywords internal
 .plot_cnet_enrichment <- function(
     enr_res,
@@ -809,10 +933,10 @@ plot_enrichment <- function(
     feature_col = "feature_clean",
     logfc_col = "logFC"
 ) {
-  require(ggraph)
-  require(igraph)
-  require(tidygraph)
-  require(ggnewscale)
+  #require(ggraph)
+  #require(igraph)
+  #require(tidygraph)
+  #require(ggnewscale)
 
   # Explode to gene–term–exp rows
   long_enr <- enr_res |>
@@ -1000,17 +1124,30 @@ plot_enrichment <- function(
 #' @title Internal: Multi-panel Summary of Enrichment Results
 #'
 #' @description
-#' Assembles barplots, ridgeplots, and a Venn diagram to summarize enrichment results across GO groups and experiments.
+#' Assembles barplots, ridgeplots, and a Venn diagram to summarize enrichment
+#' results across GO groups and experiments.
 #'
 #' @param enr_res Enrichment result data frame.
 #'
 #' @return A `patchwork` object combining multiple ggplots.
 #'
+#' @importFrom ggplot2 ggplot aes geom_col coord_flip labs theme_minimal
+#' theme element_blank element_text element_line element_rect
+#' element_text scale_y_continuous scale_fill_gradient
+#'  scale_size_continuous scale_fill_manual
+#' @importFrom dplyr mutate distinct count filter left_join
+#' arrange pull select group_by ungroup
+#' @importFrom tidyr separate_rows
+#' @importFrom patchwork plot_layout plot_annotation
+#' @importFrom purrr map
+#' @importFrom ggridges geom_density_ridges theme_ridges
+#' @importFrom ggvenn ggvenn
+#'
 #' @keywords internal
 .plot_summary_enrichment <- function(
     enr_res
 ) {
-  require(ggplot2)
+  #require(ggplot2)
 
   # Clean up enr_res so that go_groups have no underscore
   enr_res <- enr_res |>
@@ -1049,7 +1186,7 @@ plot_enrichment <- function(
       theme_minimal() +
       theme(legend.position = "none")
   }
-  # --- Ridgeplot + barplot of exp_name + dotplot of gene count + barplot of category count
+  # --- Combination Plot ----
   if ("go_group" %in% colnames(enr_res)) {
 
     # Count how many terms per group

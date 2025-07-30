@@ -1,43 +1,78 @@
 #' Plot Missing Data Across Exposure and Omic Layers
 #'
-#' Visualizes missing data patterns in a `MultiAssayExperiment` object using summary bar plots or feature-level lollipop plots.
+#' Visualizes missing data patterns in a `MultiAssayExperiment` object using
+#' summary bar plots or feature-level lollipop plots.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure and omics assays. Missing data is inferred directly from the assays.
-#' @param threshold Numeric. The percentage threshold (0–100) above which features are counted as missing in the summary plot. Default is `5`.
-#' @param plot_type Character. Type of plot to generate. Either `"summary"` for a bar plot showing number of features above the missing threshold, or `"lollipop"` for a per-feature lollipop plot with layer annotations. Default is `"summary"`.
-#' @param layers Optional character vector. If specified, filters the plot to include only selected layers (e.g., `"Exposure"`, `"Transcriptome"`).
+#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' and omics assays. Missing data is inferred directly from the assays.
+#' @param threshold Numeric. The percentage threshold (0–100) above which
+#' features are counted as missing in the summary plot. Default is `5`.
+#' @param plot_type Character. Type of plot to generate. Either `"summary"`
+#' for a bar plot showing number of features above the missing threshold,
+#'  or `"lollipop"` for a per-feature lollipop plot with layer annotations.
+#'   Default is `"summary"`.
+#' @param layers Optional character vector. If specified, filters the plot
+#' to include only selected layers (e.g., `"Exposure"`, `"Transcriptome"`).
 #'
 #' @details
-#' The function calculates missing data per feature (or variable) across all assays (including exposure variables) and generates:
+#' The function calculates missing data per feature (or variable) across all
+#'  assays (including exposure variables) and generates:
 #'
-#' - **Summary plot (`plot_type = "summary`)**: A bar plot showing the number of variables in each assay exceeding the specified missingness threshold.
-#' - **Lollipop plot (`plot_type = "lollipop`)**: A feature-level plot where each feature's percent missingness is shown, along with a color-coded tile on the side indicating its layer of origin.
+#' - **Summary plot (`plot_type = "summary`)**: A bar plot showing the number
+#' of variables in each assay exceeding the specified missingness threshold.
+#' - **Lollipop plot (`plot_type = "lollipop`)**: A feature-level plot where
+#' each feature's percent missingness is shown, along with a color-coded tile
+#' on the side indicating its layer of origin.
 #'
-#' The tile colors in the lollipop plot match the experiment colors used in other visualizations (e.g., via `scale_color_tidy_exp()`).
+#' The tile colors in the lollipop plot match the experiment colors used in
+#' other visualizations (e.g., via `scale_color_tidy_exp()`).
 #'
-#' @return A `ggplot` or `patchwork` object depending on the selected `plot_type`.
+#' @return A `ggplot` or `patchwork` object depending on the selected
+#' `plot_type`.
 #'
 #' @import ggplot2
 #'
 #' @examples
-#' \dontrun{
+#'
+#' #' # Create example data
+#' mae <- make_example_data(
+#'   n_samples = 20,
+#'   return_mae = TRUE
+#' )
+#'
+#' # Introduce some missingness
+#' MultiAssayExperiment::colData(mae)$exposure_pm25[sample(1:20, 5)] <- NA
+#'
 #' # Summary bar plot of missing data
-#' plot_missing(expom, threshold = 10, plot_type = "summary")
+#' summary_p <- plot_missing(
+#'   mae,
+#'   threshold = 10,
+#'   plot_type = "summary")
 #'
 #' # Lollipop plot for all features with any missingness
-#' plot_missing(expom, plot_type = "lollipop")
+#' lollipop_p <- plot_missing(
+#'   mae,
+#'   plot_type = "lollipop")
 #'
-#' # Lollipop plot only for exposure and proteomics layers
-#' plot_missing(expom, plot_type = "lollipop", layers = c("Exposure", "Proteomics"))
-#' }
+#' @importFrom ggplot2 ggplot aes geom_bar geom_segment geom_point geom_tile
+#'   labs theme_bw theme element_text theme_void
+#' @importFrom MultiAssayExperiment colData experiments
+#' @importFrom SummarizedExperiment assay
+#' @importFrom dplyr bind_rows filter group_by reframe mutate arrange
+#'   reframe select ungroup
+#' @importFrom purrr map
+#' @importFrom naniar miss_var_summary
+#' @importFrom forcats fct_reorder
+#' @importFrom patchwork plot_layout
+#' @importFrom ggpubr theme_pubr
 #'
 #' @export
 plot_missing <- function(expomicset,
                          threshold=5,
                          plot_type=c("summary","lollipop"),
                          layers=NULL){
-  require(ggplot2)
-  require(patchwork)
+  # require(ggplot2)
+  # require(patchwork)
 
   plot_type <- match.arg(plot_type)
   # grab exposure data
@@ -45,7 +80,8 @@ plot_missing <- function(expomicset,
     as.data.frame()
 
   # grab omics assay data
-  omics <- lapply(names(MultiAssayExperiment::experiments(expomicset)),function(exp_name){
+  omics <- lapply(names(MultiAssayExperiment::experiments(expomicset)),
+                  function(exp_name){
     exp <- expomicset[[exp_name]]
     assay <- SummarizedExperiment::assay(exp) |>
       t() |>

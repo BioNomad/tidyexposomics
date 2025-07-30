@@ -2,7 +2,7 @@ test_that("run_exposure_impact computes exposure-level centrality scores", {
   library(MultiAssayExperiment)
 
   # Create dummy expomicset
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

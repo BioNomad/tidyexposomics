@@ -1,6 +1,6 @@
 test_that("run_association works with exposures as source and guassian", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 30)
+  dummy <- make_example_data(n_samples = 30)
 
   mae <- create_expomicset(
     codebook = dummy$codebook,
@@ -38,7 +38,7 @@ test_that("run_association works with exposures as source and guassian", {
 
 test_that("run_association works with exposures as source and binomial", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 30)
+  dummy <- make_example_data(n_samples = 30)
 
   mae <- create_expomicset(
     codebook = dummy$codebook,

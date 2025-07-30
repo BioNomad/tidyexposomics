@@ -2,7 +2,7 @@ test_that("transform_exposure applies boxcox_best correctly", {
   skip_if_not_installed("MASS")
 
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -45,7 +45,7 @@ test_that("transform_exposure applies boxcox_best correctly", {
 
 test_that("transform_exposure applies log2 transformation", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

@@ -1,44 +1,90 @@
 #' Plot Network Graph of Features or Exposures
 #'
-#' Visualizes network structures created by `run_create_network()` from the metadata of a `MultiAssayExperiment` object.
-#' Nodes can represent features (e.g., genes or factors) or exposures, and edges represent correlations or shared connections.
+#' Visualizes network structures created by `run_create_network()` from
+#' the metadata of a `MultiAssayExperiment` object.
+#' Nodes can represent features (e.g., genes or factors) or exposures,
+#' and edges represent correlations or shared connections.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing network results in metadata.
-#' @param network Character string specifying the network type. One of `"degs"`, `"omics"`, `"factors"`,
-#'   `"factor_features"`, `"exposures"`, `"degs_feature_cor"`, `"omics_feature_cor"`, `"factor_features_feature_cor"`.
-#' @param include_stats Logical; if `TRUE`, include edge weights and node centrality metrics in the plot aesthetics. Default is `TRUE`.
-#' @param nodes_to_include Optional character vector of node names to include (subset of `name`).
-#' @param centrality_thresh Optional numeric threshold to filter nodes by centrality degree.
-#' @param top_n_nodes Optional integer to keep only the top N nodes by centrality.
-#' @param cor_thresh Optional numeric threshold to filter edges by minimum absolute correlation.
-#' @param label Logical; whether to label nodes. If `TRUE`, top nodes will be labeled.
-#' @param label_top_n Integer; number of top-centrality nodes to label if `label = TRUE`. Default is `5`.
+#' @param expomicset A `MultiAssayExperiment` object containing network results
+#' in metadata.
+#' @param network Character string specifying the network type.
+#' One of `"degs"`, `"omics"`, `"factors"`,
+#'   `"factor_features"`, `"exposures"`, `"degs_feature_cor"`,
+#'   `"omics_feature_cor"`, `"factor_features_feature_cor"`.
+#' @param include_stats Logical; if `TRUE`, include edge weights and
+#' node centrality metrics in the plot aesthetics. Default is `TRUE`.
+#' @param nodes_to_include Optional character vector of node names to
+#' include (subset of `name`).
+#' @param centrality_thresh Optional numeric threshold to filter nodes
+#' by centrality degree.
+#' @param top_n_nodes Optional integer to keep only the top N nodes by
+#' centrality.
+#' @param cor_thresh Optional numeric threshold to filter edges by
+#' minimum absolute correlation.
+#' @param label Logical; whether to label nodes.
+#' If `TRUE`, top nodes will be labeled.
+#' @param label_top_n Integer; number of top-centrality nodes to
+#' label if `label = TRUE`. Default is `5`.
 #' @param nodes_to_label Optional character vector of specific nodes to label.
-#' @param facet_var Optional node metadata column to facet the network layout by.
-#' @param foreground Color for node outlines and edge borders. Default is `"steelblue"`.
+#' @param facet_var Optional node metadata column to facet the
+#' network layout by.
+#' @param foreground Color for node outlines and edge borders.
+#' Default is `"steelblue"`.
 #' @param fg_text_colour Color of node label text. Default is `"grey25"`.
 #' @param node_colors Optional named vector of colors for node groups.
 #' @param node_color_var Optional node attribute used for node color mapping.
 #' @param alpha Alpha transparency for nodes and edges. Default is `0.5`.
-#' @param size_lab Legend title for node size (typically centrality). Default is `"Centrality"`.
+#' @param size_lab Legend title for node size (typically centrality).
+#'  Default is `"Centrality"`.
 #' @param color_lab Legend title for node color group. Default is `"Group"`.
 #'
 #' @return A `ggraph` plot object.
 #'
 #' @details
-#' This function retrieves the stored graph object and optionally filters or labels nodes based on:
-#' centrality, correlation, user input, or group-specific attributes. It supports layout faceting,
+#' This function retrieves the stored graph object and optionally filters or
+#'  labels nodes based on:
+#' centrality, correlation, user input, or group-specific attributes.
+#'  It supports layout faceting,
 #' custom color mappings, and highlights highly central nodes.
 #'
 #' Large graphs (> 500 nodes) will prompt the user before plotting.
 #'
 #' @examples
-#' \dontrun{
-#' plot_network(expomicset, network = "degs", label = TRUE)
-#' plot_network(expomicset, network = "exposures", cor_thresh = 0.4)
-#' plot_network(expomicset, network = "omics", top_n_nodes = 50, node_color_var = "exp_name")
-#' }
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
 #'
+#' # perform correlation analyses
+#' # correlate with exposures
+#' mae <- mae |>
+#'   run_correlation(
+#'   feature_type = "omics",
+#'   variable_map = mae |>
+#'     pivot_feature() |>
+#'     dplyr::select(
+#'       variable=.feature,
+#'       exp_name=.exp_name),
+#'   exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+#'   )
+#'
+#' # create the networks
+#' mae   <- mae |>
+#'   run_create_network(
+#'    feature_type = "omics",
+#'    action = "add")
+#'
+#' # plot the network
+#' network_p <- mae |>
+#'   plot_network(
+#'     network = "omics"
+#'   )
+#'
+#' @importFrom MultiAssayExperiment metadata
+#' @importFrom tidygraph as_tbl_graph activate filter mutate centrality_degree
+#'   arrange slice_head select as_tibble
+#' @importFrom igraph gorder
 #' @export
 plot_network <- function(expomicset,
                          network = c("degs",
@@ -66,8 +112,8 @@ plot_network <- function(expomicset,
                          size_lab = "Centrality",
                          color_lab = "Group") {
 
-  require(ggraph)
-  require(tidygraph)
+  # require(ggraph)
+  # require(tidygraph)
 
   network <- match.arg(network)
 
@@ -75,7 +121,9 @@ plot_network <- function(expomicset,
   net_obj <- MultiAssayExperiment::metadata(expomicset)$network[[net_key]]
 
   if (is.null(net_obj)) {
-    stop("No network found for `feature_type = '", network, "'. Please run `run_create_network()` first.")
+    stop("No network found for `feature_type = '",
+         network,
+         "'. Please run `run_create_network()` first.")
   }
 
   message("Extracting graph.")
@@ -105,7 +153,8 @@ plot_network <- function(expomicset,
   }
 
   if (!is.null(nodes_to_label) && isTRUE(label)) {
-    g <- g |> activate(nodes) |> mutate(label = ifelse(name %in% nodes_to_label, name, NA))
+    g <- g |> activate(nodes) |>
+      mutate(label = ifelse(name %in% nodes_to_label, name, NA))
   } else if (isTRUE(label)) {
     g <- g |> activate(nodes) |>
       mutate(centrality = centrality_degree()) |>
@@ -129,7 +178,8 @@ plot_network <- function(expomicset,
 
   # Warn if plotting very large networks
   if (igraph::gorder(g) > 500) {
-    user_input <- readline("The network has more than 500 nodes. Plot anyway? (y/n): ")
+    user_input <- readline("The network has more than 500 nodes.
+                           Plot anyway? (y/n): ")
     if (tolower(user_input) != "y") stop("Exiting.")
   }
 

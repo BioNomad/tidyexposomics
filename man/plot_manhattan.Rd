@@ -23,33 +23,41 @@ plot_manhattan(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object that has already been processed by \code{associate_all_outcome()}.}
+\item{expomicset}{A \code{MultiAssayExperiment} object that has
+already been processed by \code{associate_all_outcome()}.}
 
 \item{pval_thresh}{Numeric threshold for significance (default = 0.05).}
 
 \item{alpha}{Transparency applied to facet strip colors (default = 0.5).}
 
-\item{min_per_cat}{Minimum number of features per category to be shown (default = 1).}
+\item{min_per_cat}{Minimum number of features per category to be shown
+(default = 1).}
 
-\item{vars_to_label}{Optional character vector of variable names to label explicitly.}
+\item{vars_to_label}{Optional character vector of variable names to label
+explicitly.}
 
 \item{sig_color}{Color used for significant points (default = \code{"magenta2"}).}
 
-\item{non_sig_cols}{Character vector of alternating colors for non-significant points (default = \code{c("grey25", "grey75")}).}
+\item{non_sig_cols}{Character vector of alternating colors for
+non-significant points (default = \code{c("grey25", "grey75")}).}
 
-\item{pval_thresh_line_col}{Color of the horizontal significance threshold line (default = \code{"grey25"}).}
+\item{pval_thresh_line_col}{Color of the horizontal significance
+threshold line (default = \code{"grey25"}).}
 
-\item{panel_sizes}{Numeric vector passed to \code{ggh4x::force_panelsizes()} to control panel widths (default = \code{c(1,1,1,1,1)}).}
+\item{panel_sizes}{Numeric vector passed to \code{ggh4x::force_panelsizes()}
+to control panel widths (default = \code{c(1,1,1,1,1)}).}
 
 \item{linetype}{Line type for the horizontal threshold (default = \code{"dashed"}).}
 
-\item{facet_cols}{Optional vector of colors to use for facet strip backgrounds; if \code{NULL}, uses \code{ggsci::pal_npg()}.}
+\item{facet_cols}{Optional vector of colors to use for
+facet strip backgrounds; if \code{NULL}, uses \code{ggsci::pal_npg()}.}
 
 \item{label_size}{Numeric size of the feature label text (default = 3.5).}
 
 \item{facet_angle}{Angle (in degrees) for strip text rotation (default = 90).}
 
-\item{facet_text_face}{Font face for facet strip labels (default = \code{"bold.italic"}).}
+\item{facet_text_face}{Font face for facet strip labels
+(default = \code{"bold.italic"}).}
 }
 \value{
 A \code{ggplot} object showing the Manhattan-style faceted plot.
@@ -57,8 +65,8 @@ A \code{ggplot} object showing the Manhattan-style faceted plot.
 \description{
 This function generates a multi-faceted Manhattan plot from the results of
 \code{associate_all_outcome()}, visualizing the significance of associations
-across omics features, grouped by category. Significant features can be highlighted
-and labeled, and strip backgrounds can be colored per facet.
+across omics features, grouped by category. Significant features can be
+highlighted and labeled, and strip backgrounds can be colored per facet.
 }
 \details{
 \itemize{
@@ -66,11 +74,30 @@ and labeled, and strip backgrounds can be colored per facet.
 \item Facets represent omics categories, and points represent features.
 \item Points below the significance threshold are colored using \code{non_sig_cols},
 while significant ones are colored with \code{sig_color} and optionally labeled.
-\item Uses \code{ggrepel} to avoid overlapping labels and \code{ggh4x} for enhanced faceting.
+\item Uses \code{ggrepel} to avoid overlapping labels and \code{ggh4x} for
+enhanced faceting.
 }
 }
 \examples{
-# Plot a Manhattan summary from ExWAS results
-# plot_manhattan(mae, pval_thresh = 0.01)
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# run association tests
+mae <- mae |>
+  run_association(
+  source = "omics",
+  top_n = 20,
+  feature_set = c("exposure_pm25","exposure_no2"),
+  outcome = "smoker",
+  covariates = c("age"),
+  family = "binomial"
+  )
+
+# create the manhattan plot
+manhattan_p <- mae |>
+  plot_manhattan()
 
 }

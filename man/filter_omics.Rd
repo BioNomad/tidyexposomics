@@ -20,34 +20,40 @@ filter_omics(
 
 \item{method}{Filtering method: either \code{"variance"} or \code{"expression"}.}
 
-\item{assays}{Character vector of assay names to filter. If \code{NULL}, all assays are filtered.}
+\item{assays}{Character vector of assay names to filter.
+If \code{NULL}, all assays are filtered.}
 
-\item{assay_name}{Name or index of the assay within each \code{SummarizedExperiment} to use.}
+\item{assay_name}{Name or index of the assay within each
+\code{SummarizedExperiment} to use.}
 
 \item{min_var}{Minimum variance threshold (used if \code{method = "variance"}).}
 
 \item{min_value}{Minimum expression value (used if \code{method = "expression"}).}
 
-\item{min_prop}{Minimum proportion of samples exceeding \code{min_value} (used if \code{method = "expression"}).}
+\item{min_prop}{Minimum proportion of samples exceeding \code{min_value}
+(used if \code{method = "expression"}).}
 
 \item{verbose}{Whether to print messages for each assay being filtered.}
 }
 \value{
-A filtered \code{MultiAssayExperiment} object with updated assays and step record.
+A filtered \code{MultiAssayExperiment} object with
+updated assays and step record.
 }
 \description{
-This function applies variance- or expression-based filtering across one or more
-assays within a \code{MultiAssayExperiment} object. It is useful for removing
-low-quality or uninformative features before downstream analysis.
+This function applies variance- or expression-based filtering
+across one or more assays within a \code{MultiAssayExperiment} object.
+It is useful for removing low-quality or uninformative features
+before downstream analysis.
 }
 \examples{
-\dontrun{
-filtered_expom <- filter_omics(
+# Filter the proteomics assay by variance
+filtered_mae <-  filter_omics(
+  expomicset = make_example_data(return_mae=TRUE),
   method = c("variance"),
-  assays = "Metabolomics",
+  assays = "proteomics",
   assay_name = 1,
   min_var = 0.01,
   verbose = TRUE)
-}
+
 
 }

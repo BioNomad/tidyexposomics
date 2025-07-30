@@ -9,6 +9,9 @@ load_example_data(dest_dir = tempdir())
 \arguments{
 \item{dest_dir}{Destination directory to store temporary data files.}
 }
+\value{
+Invisibly returns \code{TRUE} after the example data is loaded into the global environment.
+}
 \description{
 Downloads and loads \code{omics_list}, \code{annotated_cb}, \code{fdata}, and \code{meta} into the global environment.
 }

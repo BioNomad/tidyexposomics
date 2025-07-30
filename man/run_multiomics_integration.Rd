@@ -16,53 +16,60 @@ run_multiomics_integration(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object with at least two assays.}
 
-\item{method}{Character. Integration method to use. Options are \code{"MOFA"}, \code{"MCIA"},
-\code{"RGCCA"}, or \code{"DIABLO"}.}
+\item{method}{Character. Integration method to use. Options are
+\code{"MOFA"}, \code{"MCIA"}, \code{"RGCCA"}, or \code{"DIABLO"}.}
 
-\item{n_factors}{Integer. Number of latent factors/components to compute. Default is 10.}
+\item{n_factors}{Integer. Number of latent factors/components to compute.
+Default is 10.}
 
-\item{scale}{Logical. Whether to scale each assay before integration. Default is \code{TRUE}.}
+\item{scale}{Logical. Whether to scale each assay before integration.
+Default is \code{TRUE}.}
 
-\item{outcome}{Character. Required if \code{method = "DIABLO"}. Name of outcome variable in \code{colData} used for supervised integration.}
+\item{outcome}{Character. Required if \code{method = "DIABLO"}.
+Name of outcome variable in \code{colData} used for supervised integration.}
 
-\item{action}{Character. Whether to \code{"add"} results to the metadata or \code{"get"} them as a list. Default is \code{"add"}.}
+\item{action}{Character. Whether to \code{"add"} results to the metadata or
+\code{"get"} them as a list. Default is \code{"add"}.}
 }
 \value{
-If \code{action = "add"}, returns a \code{MultiAssayExperiment} with integration results
-stored in \code{metadata(expomicset)$multiomics_integration$integration_results}. If \code{action = "get"}, returns a list with integration \code{method} and \code{result}.
+If \code{action = "add"}, returns a \code{MultiAssayExperiment} with
+integration results
+stored in \code{metadata(expomicset)$multiomics_integration$integration_results}.
+If \code{action = "get"}, returns a list with integration \code{method} and \code{result}.
 }
 \description{
-Performs multi-omics integration using one of several available methods: MOFA, MCIA,
-RGCCA, or DIABLO. This function takes a \code{MultiAssayExperiment} object with two or more
-assays and computes shared latent factors across omics layers.
+Performs multi-omics integration using one of several available methods:
+MOFA, MCIA, RGCCA, or DIABLO. This function takes a \code{MultiAssayExperiment}
+object with two or more assays and computes shared latent factors
+across omics layers.
 }
 \details{
 \itemize{
-\item \code{"MOFA"} runs Multi-Omics Factor Analysis using the \code{MOFA2} package and returns a trained model.
+\item \code{"MOFA"} runs Multi-Omics Factor Analysis using the \code{MOFA2} package and
+returns a trained model.
 \item \code{"MCIA"} runs multi-co-inertia analysis using the \code{nipalsMCIA} package.
-\item \code{"RGCCA"} runs Regularized Generalized Canonical Correlation Analysis using the \code{RGCCA} package.
-\item \code{"DIABLO"} performs supervised integration using the \code{mixOmics} package and a specified outcome.
+\item \code{"RGCCA"} runs Regularized Generalized Canonical Correlation Analysis
+using the \code{RGCCA} package.
+\item \code{"DIABLO"} performs supervised integration using the \code{mixOmics} package
+and a specified outcome.
 }
 }
 \examples{
-\dontrun{
-expomicset <- run_multiomics_integration(
-  expomicset,
-  method = "MOFA",
-  n_factors = 5,
-  scale = TRUE
-)
+# create example data
+mae <- make_example_data(
+   n_samples = 20,
+   return_mae=TRUE
+  )
 
-expomicset <- run_multiomics_integration(
-  expomicset,
-  method = "DIABLO",
-  n_factors = 3,
-  outcome = "asthma_status"
-)
-}
+# perform multiomics integration
+mae <- run_multiomics_integration(
+      mae,
+      method = "MCIA",
+      n_factors = 3)
 
 }
 \seealso{
-\code{\link{plot_factor_scores}}, \code{\link{plot_top_factor_features}},
+\code{\link{plot_factor_scores}},
+\code{\link{plot_top_factor_features}},
 \code{\link{run_factor_overlap}}, \code{\link{run_enrichment}}
 }

@@ -1,6 +1,6 @@
 test_that("run_differential_abundance returns expected results and updates metadata", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
 
   mae <- create_expomicset(
     codebook = dummy$codebook,

@@ -7,17 +7,23 @@
 run_summarize_exposures(expomicset, exposure_cols = NULL, action = "add")
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data in the sample metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+data in the sample metadata.}
 
-\item{exposure_cols}{A character vector of exposure variable names to summarize. If \code{NULL}, all numeric exposure variables are included.}
+\item{exposure_cols}{A character vector of exposure variable names
+to summarize. If \code{NULL}, all numeric exposure variables are included.}
 
-\item{action}{A string specifying the action to take. Use \code{"add"} to attach the summary table to \code{metadata(expomicset)} or \code{"get"} to return the summary table directly. Default is \code{"add"}.}
+\item{action}{A string specifying the action to take. Use \code{"add"}
+to attach the summary table to \code{metadata(expomicset)} or \code{"get"}
+to return the summary table directly. Default is \code{"add"}.}
 }
 \value{
-A modified \code{MultiAssayExperiment} object (if \code{action = "add"}), or a data frame of summary statistics (if \code{action = "get"}).
+A modified \code{MultiAssayExperiment} object (if \code{action = "add"}),
+or a data frame of summary statistics (if \code{action = "get"}).
 }
 \description{
-Computes summary statistics for numeric exposure variables and optionally stores the results in the \code{MultiAssayExperiment} metadata.
+Computes summary statistics for numeric exposure variables and
+optionally stores the results in the \code{MultiAssayExperiment} metadata.
 }
 \details{
 This function:
@@ -35,16 +41,22 @@ This function:
 \item Variance, standard deviation
 \item Coefficient of variation (\code{sd / mean})
 }
-\item Merges the result with variable metadata stored in \code{metadata(expomicset)$codebook}.
+\item Merges the result with variable metadata stored in
+\code{metadata(expomicset)$codebook}.
 }
 }
 \examples{
-\dontrun{
-# Add summaries to metadata
-expom <- run_summarize_exposures(expom)
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
 
-# Retrieve just the summary table
-summary_df <- run_summarize_exposures(expom, action = "get")
-}
+# Summarize exposure data
+exp_sum <- mae |>
+  run_summarize_exposures(
+    exposure_cols = c("age","bmi","exposure_pm25"),
+    action = "get"
+  )
 
 }

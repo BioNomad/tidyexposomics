@@ -13,13 +13,16 @@ run_exposure_impact(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with correlation and network metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with correlation
+and network metadata.}
 
 \item{feature_type}{One of \code{"degs"}, \code{"omics"}, or \code{"factor_features"}.}
 
-\item{pval_col}{Column in differential abundance results to filter DEGs. Default = \code{"adj.P.Val"}.}
+\item{pval_col}{Column in differential abundance results to filter DEGs.
+Default = \code{"adj.P.Val"}.}
 
-\item{pval_thresh}{DEG p-value threshold. Ignored unless \code{feature_type == "degs"}.}
+\item{pval_thresh}{DEG p-value threshold. Ignored unless
+\code{feature_type == "degs"}.}
 
 \item{action}{Either \code{"add"} (store in metadata) or \code{"get"} (return list).}
 }
@@ -27,5 +30,50 @@ run_exposure_impact(
 Either an updated MultiAssayExperiment (if action = "add") or a list.
 }
 \description{
-Generalized centrality-based exposure impact analysis using DEG, omics, or factor features.
+Generalized centrality-based exposure impact analysis using DEG, omics,
+or factor features.
+}
+\examples{
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# perform correlation analyses
+# correlate with exposures
+mae <- mae |>
+  run_correlation(
+  feature_type = "omics",
+  variable_map = mae |>
+    pivot_feature() |>
+    dplyr::select(variable=.feature,
+    exp_name=.exp_name),
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  ) |>
+  run_correlation(
+  feature_type = "omics",
+  variable_map = mae |>
+    pivot_feature() |>
+    dplyr::select(variable=.feature,
+    exp_name=.exp_name),
+  feature_cors = TRUE,
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  )
+
+# create the networks
+mae   <- mae |>
+run_create_network(
+  feature_type = "omics_feature_cor",
+  action = "add") |>
+  run_create_network(
+   feature_type = "omics",
+   action = "add")
+
+# perform impact analysis
+mae <- mae |>
+  run_exposure_impact(
+    feature_type = "omics"
+  )
+
 }

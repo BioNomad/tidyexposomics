@@ -1,6 +1,6 @@
 test_that("extract_results correctly retrieves results from metadata", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 5)
+  dummy <- make_example_data(n_samples = 5)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -33,7 +33,7 @@ test_that("extract_results correctly retrieves results from metadata", {
 
 
 test_that("extract_results returns NULL for missing metadata entry", {
-  dummy <- make_dummy_data(n_samples = 5)
+  dummy <- make_example_data(n_samples = 5)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

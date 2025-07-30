@@ -9,26 +9,36 @@ pivot_sample(x, ...)
 \arguments{
 \item{x}{A \code{MultiAssayExperiment} or \code{SummarizedExperiment} object.}
 
-\item{...}{Additional arguments passed to \code{tidybulk::pivot_sample()} for \code{SummarizedExperiment} objects.}
+\item{...}{Additional arguments passed to \code{tidybulk::pivot_sample()} for
+\code{SummarizedExperiment} objects.}
 }
 \value{
 A tibble containing sample metadata with an added \code{.sample} column.
 }
 \description{
-Extracts and formats sample-level metadata (\code{colData}) from a \code{MultiAssayExperiment}
-or \code{SummarizedExperiment} object.
+Extracts and formats sample-level metadata (\code{colData}) from a
+\code{MultiAssayExperiment} or \code{SummarizedExperiment} object.
 }
 \details{
 This function:
 \itemize{
-\item Extracts \strong{sample metadata} from \code{MultiAssayExperiment} using \code{colData()}, converting it to a tibble.
-\item Calls \code{tidybulk::pivot_sample()} when applied to a \code{SummarizedExperiment} object.
-\item \strong{Error Handling}: Returns an error if \code{x} is not a \code{MultiAssayExperiment} or \code{SummarizedExperiment}.
+\item Extracts \strong{sample metadata} from \code{MultiAssayExperiment} using \code{colData()},
+converting it to a tibble.
+\item Calls \code{tidybulk::pivot_sample()} when applied to a
+\code{SummarizedExperiment} object.
+\item \strong{Error Handling}: Returns an error if \code{x} is not a
+\code{MultiAssayExperiment} or \code{SummarizedExperiment}.
 }
 }
 \examples{
-\dontrun{
-sample_data <- pivot_sample(expom)
-}
+
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+sample_data <- mae |>
+  pivot_sample()
 
 }

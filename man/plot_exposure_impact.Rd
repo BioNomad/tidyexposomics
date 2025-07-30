@@ -18,44 +18,99 @@ plot_exposure_impact(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with results from \code{run_exposure_impact()}.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with results
+from \code{run_exposure_impact()}.}
 
-\item{feature_type}{Character string specifying the feature type. One of \code{"degs"}, \code{"omics"}, or \code{"factors"}.}
+\item{feature_type}{Character string specifying the feature type.
+One of \code{"degs"}, \code{"omics"}, or \code{"factors"}.}
 
-\item{min_per_group}{Minimum number of features per exposure for inclusion (not currently used). Default is \code{5}.}
+\item{min_per_group}{Minimum number of features per exposure for
+inclusion (not currently used). Default is \code{5}.}
 
 \item{facet_cols}{Optional named vector of colors for exposure categories.}
 
 \item{bar_cols}{Optional vector of colors for bar plots (if enabled).}
 
-\item{alpha}{Transparency level for category strips (if enabled). Default is \code{0.3}.}
+\item{alpha}{Transparency level for category strips (if enabled).
+Default is \code{0.3}.}
 
-\item{ncol, nrow}{Layout for optional patchwork combination (currently unused). Default: \code{ncol = 2}, \code{nrow = 1}.}
+\item{ncol, nrow}{Layout for optional patchwork combination
+(currently unused). Default: \code{ncol = 2}, \code{nrow = 1}.}
 
-\item{heights, }{widths Relative heights and widths for combined plots (currently unused). Defaults: \code{c(1,1)}, \code{c(2,1)}.}
+\item{heights, }{widths Relative heights and widths for combined plots
+(currently unused). Defaults: \code{c(1,1)}, \code{c(2,1)}.}
 }
 \value{
-A \code{ggplot}/\code{patchwork} object showing a heatmap of scaled network centrality scores per exposure, annotated by category.
+A \code{ggplot}/\code{patchwork} object showing a heatmap of
+scaled network centrality scores per exposure, annotated by category.
 }
 \description{
-Visualizes the impact of exposures on network centrality measures of associated features
-(e.g., genes or latent factors) as a heatmap. Each exposure is scored by four centrality metrics,
+Visualizes the impact of exposures on network centrality measures of
+associated features (e.g., genes or latent factors) as a heatmap.
+Each exposure is scored by four centrality metrics,
 scaled within metric, and grouped by exposure category.
 }
 \details{
-This function uses the output of \code{run_exposure_impact()} to calculate and visualize the mean centrality
-values for each exposure across its associated features. The following network centrality metrics are shown:
+This function uses the output of \code{run_exposure_impact()} to
+calculate and visualize the mean centrality
+values for each exposure across its associated features.
+The following network centrality metrics are shown:
 \itemize{
 \item Degree centrality
 \item Eigenvector centrality
 \item Closeness centrality
 \item Betweenness centrality
 }
-All values are scaled within metric across exposures. A side bar indicates the category of each exposure.
+All values are scaled within metric across exposures.
+A side bar indicates the category of each exposure.
 }
 \examples{
-\dontrun{
-plot_exposure_impact(expomicset, feature_type = "degs")
-}
+
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# perform correlation analyses
+# correlate with exposures
+mae <- mae |>
+  run_correlation(
+  feature_type = "omics",
+  variable_map = mae |>
+    pivot_feature() |>
+    dplyr::select(variable=.feature,
+    exp_name=.exp_name),
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  ) |>
+  run_correlation(
+  feature_type = "omics",
+  variable_map = mae |>
+    pivot_feature() |>
+    dplyr::select(variable=.feature,
+    exp_name=.exp_name),
+  feature_cors = TRUE,
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  )
+
+# create the networks
+mae   <- mae |>
+run_create_network(
+  feature_type = "omics_feature_cor",
+  action = "add") |>
+  run_create_network(
+   feature_type = "omics",
+   action = "add")
+
+# perform impact analysis
+mae <- mae |>
+  run_exposure_impact(
+    feature_type = "omics"
+  )
+
+# create the exposure impact plot
+exposure_impact_p <- mae |>
+  plot_exposure_impact(
+    feature_type = "omics")
 
 }

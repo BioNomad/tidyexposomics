@@ -24,17 +24,24 @@ plot_exposures(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data.}
 
-\item{exposure_cat}{A character string or vector specifying exposure category names (from \code{codebook$category}) to include. Use \code{"all"} to include all exposures.}
+\item{exposure_cat}{A character string or vector specifying exposure
+category names (from \code{codebook$category}) to include.
+Use \code{"all"} to include all exposures.}
 
-\item{exposure_cols}{Optional character vector specifying exact exposure variables to plot.}
+\item{exposure_cols}{Optional character vector specifying exact
+exposure variables to plot.}
 
-\item{group_by}{A string specifying the column in \code{colData(expomicset)} used to fill the plot (e.g., \code{"sex"}). Defaults to \code{NULL}, in which case exposures are colored by \code{category}.}
+\item{group_by}{A string specifying the column in \code{colData(expomicset)}
+used to fill the plot (e.g., \code{"sex"}). Defaults to \code{NULL}, in which case
+exposures are colored by \code{category}.}
 
 \item{plot_type}{Type of plot: \code{"boxplot"} (default) or \code{"ridge"}.}
 
-\item{alpha}{Transparency level for background facet color strips. Default is \code{0.5}.}
+\item{alpha}{Transparency level for background facet color strips.
+Default is \code{0.5}.}
 
-\item{panel_sizes}{A numeric vector passed to \code{ggh4x::force_panelsizes()} for controlling facet widths or heights.}
+\item{panel_sizes}{A numeric vector passed to \code{ggh4x::force_panelsizes()}
+for controlling facet widths or heights.}
 
 \item{title}{Plot title. Default is \code{"Exposure Levels by Category"}.}
 
@@ -42,34 +49,48 @@ plot_exposures(
 
 \item{ylab}{Y-axis label. Default is an empty string.}
 
-\item{facet_cols}{Optional vector of colors to use as background for facet categories. If \code{NULL}, a default palette is used.}
+\item{facet_cols}{Optional vector of colors to use as background for
+facet categories. If \code{NULL}, a default palette is used.}
 
-\item{group_cols}{Optional named vector of colors for \code{group_by} levels. If \code{NULL}, a default palette is used.}
+\item{group_cols}{Optional named vector of colors for \code{group_by} levels.
+If \code{NULL}, a default palette is used.}
 
-\item{fill_lab}{Legend title for the fill aesthetic (e.g., \code{"Sex"} or \code{"Exposure Group"}). Default is \code{""}.}
+\item{fill_lab}{Legend title for the fill aesthetic
+(e.g., \code{"Sex"} or \code{"Exposure Group"}). Default is \code{""}.}
 }
 \value{
-A \code{ggplot2} object showing exposure distributions, optionally grouped.
+A \code{ggplot2} object showing exposure distributions,
+optionally grouped.
 }
 \description{
-Visualizes exposure variable distributions using \strong{boxplots} or \strong{ridge plots},
-optionally grouped by a variable such as sex, smoking status, or exposure category.
+Visualizes exposure variable distributions using \strong{boxplots}
+or \strong{ridge plots}.
 }
 \details{
 This function:
 \itemize{
 \item Filters exposure data based on category or selected columns.
 \item Merges variable metadata from \code{metadata(expomicset)$codebook}.
-\item Supports either \strong{boxplot} (vertical distributions per variable) or \strong{ridgeplot} (horizontal density plots per variable).
-\item If \code{group_by} is specified, that variable defines the plot fill color; otherwise, the fill is based on exposure \code{category}.
-\item Facets by \code{category} using \code{ggh4x::facet_grid2()} with color-coded strip backgrounds.
+\item Supports either \strong{boxplot} (vertical distributions per variable)
+or \strong{ridgeplot} (horizontal density plots per variable).
+\item If \code{group_by} is specified, that variable defines the plot fill color;
+otherwise, the fill is based on exposure \code{category}.
+\item Facets by \code{category} using \code{ggh4x::facet_grid2()}
+with color-coded strip backgrounds.
 }
 }
 \examples{
-\dontrun{
-plot_exposures(expomicset, exposure_cat = "Air Pollution")
-plot_exposures(expomicset, group_by = "sex", plot_type = "ridge")
-plot_exposures(expomicset, exposure_cols = c("hs_no2", "hs_pm25"), group_by = "smoking_status")
-}
+
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# plot exposure data
+exposure_plot <- mae |>
+  plot_exposures(
+    exposure_cols = c("exposure_pm25","exposure_no2")
+  )
 
 }

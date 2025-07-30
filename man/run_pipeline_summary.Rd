@@ -13,16 +13,21 @@ run_pipeline_summary(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object that contains a "summary"
+\item{expomicset}{A \code{MultiAssayExperiment} object that contains a
+"summary"
 entry in its metadata, which includes a list named \code{steps}.}
 
-\item{show_index}{Logical, default \code{TRUE}. If \code{TRUE}, prefixes each step with its index.}
+\item{show_index}{Logical, default \code{TRUE}. If \code{TRUE},
+prefixes each step with its index.}
 
-\item{console_print}{Logical, default \code{TRUE}. If \code{TRUE}, prints the step list to the console.}
+\item{console_print}{Logical, default \code{TRUE}. If \code{TRUE},
+prints the step list to the console.}
 
-\item{diagram_print}{Logical, default \code{FALSE}. If \code{TRUE}, renders a Mermaid diagram of the steps.}
+\item{diagram_print}{Logical, default \code{FALSE}. If \code{TRUE},
+renders a Mermaid diagram of the steps.}
 
-\item{include_notes}{Logical, default \code{TRUE}. If \code{TRUE}, appends any "notes" associated with each step to the label.}
+\item{include_notes}{Logical, default \code{TRUE}. If \code{TRUE},
+appends any "notes" associated with each step to the label.}
 }
 \value{
 No return value. This function is called for its side effects:
@@ -31,18 +36,30 @@ console output and/or diagram rendering.
 \description{
 This function prints and visualizes the analysis steps stored in the
 metadata of a \code{MultiAssayExperiment} object. The steps are optionally
-printed to the console as a numbered list and can be rendered as a left-to-right
-Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+printed to the console as a numbered list and can be rendered as a
+left-to-right Mermaid flowchart.
+The flowchart connects steps with arrows and includes step notes
 if requested.
 }
 \details{
 The Mermaid flowchart is rendered left-to-right and connects
-each step in sequence. Each node is labeled using the step name and, optionally,
+each step in sequence. Each node is labeled using the step name and,
+optionally,
 any attached notes.
 }
 \examples{
-\dontrun{
-run_pipeline_summary(expomicset)
-}
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
+
+# Test for normality
+mae <- mae |>
+  run_normality_check() |>
+  transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
+
+# Run the pipeline summary
+run_pipeline_summary(mae)
 
 }

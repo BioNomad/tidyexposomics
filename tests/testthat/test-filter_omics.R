@@ -1,6 +1,6 @@
 test_that("filter_omics removes low-quality features using variance method", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -35,7 +35,7 @@ test_that("filter_omics removes low-quality features using variance method", {
 
 test_that("filter_omics removes low-expressed features using expression method", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

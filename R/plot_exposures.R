@@ -1,38 +1,69 @@
 #' Plot Exposure Distributions by Category or Group
 #'
-#' Visualizes exposure variable distributions using **boxplots** or **ridge plots**,
-#' optionally grouped by a variable such as sex, smoking status, or exposure category.
+#' Visualizes exposure variable distributions using **boxplots**
+#' or **ridge plots**.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing exposure data.
-#' @param exposure_cat A character string or vector specifying exposure category names (from `codebook$category`) to include. Use `"all"` to include all exposures.
-#' @param exposure_cols Optional character vector specifying exact exposure variables to plot.
-#' @param group_by A string specifying the column in `colData(expomicset)` used to fill the plot (e.g., `"sex"`). Defaults to `NULL`, in which case exposures are colored by `category`.
+#' @param exposure_cat A character string or vector specifying exposure
+#' category names (from `codebook$category`) to include.
+#'  Use `"all"` to include all exposures.
+#' @param exposure_cols Optional character vector specifying exact
+#' exposure variables to plot.
+#' @param group_by A string specifying the column in `colData(expomicset)`
+#' used to fill the plot (e.g., `"sex"`). Defaults to `NULL`, in which case
+#' exposures are colored by `category`.
 #' @param plot_type Type of plot: `"boxplot"` (default) or `"ridge"`.
-#' @param alpha Transparency level for background facet color strips. Default is `0.5`.
-#' @param panel_sizes A numeric vector passed to `ggh4x::force_panelsizes()` for controlling facet widths or heights.
+#' @param alpha Transparency level for background facet color strips.
+#' Default is `0.5`.
+#' @param panel_sizes A numeric vector passed to `ggh4x::force_panelsizes()`
+#' for controlling facet widths or heights.
 #' @param title Plot title. Default is `"Exposure Levels by Category"`.
 #' @param xlab X-axis label. Default is an empty string.
 #' @param ylab Y-axis label. Default is an empty string.
-#' @param facet_cols Optional vector of colors to use as background for facet categories. If `NULL`, a default palette is used.
-#' @param group_cols Optional named vector of colors for `group_by` levels. If `NULL`, a default palette is used.
-#' @param fill_lab Legend title for the fill aesthetic (e.g., `"Sex"` or `"Exposure Group"`). Default is `""`.
+#' @param facet_cols Optional vector of colors to use as background for
+#'  facet categories. If `NULL`, a default palette is used.
+#' @param group_cols Optional named vector of colors for `group_by` levels.
+#' If `NULL`, a default palette is used.
+#' @param fill_lab Legend title for the fill aesthetic
+#' (e.g., `"Sex"` or `"Exposure Group"`). Default is `""`.
 #'
 #' @details
 #' This function:
 #' - Filters exposure data based on category or selected columns.
 #' - Merges variable metadata from `metadata(expomicset)$codebook`.
-#' - Supports either **boxplot** (vertical distributions per variable) or **ridgeplot** (horizontal density plots per variable).
-#' - If `group_by` is specified, that variable defines the plot fill color; otherwise, the fill is based on exposure `category`.
-#' - Facets by `category` using `ggh4x::facet_grid2()` with color-coded strip backgrounds.
+#' - Supports either **boxplot** (vertical distributions per variable)
+#' or **ridgeplot** (horizontal density plots per variable).
+#' - If `group_by` is specified, that variable defines the plot fill color;
+#' otherwise, the fill is based on exposure `category`.
+#' - Facets by `category` using `ggh4x::facet_grid2()`
+#' with color-coded strip backgrounds.
 #'
-#' @return A `ggplot2` object showing exposure distributions, optionally grouped.
+#' @return A `ggplot2` object showing exposure distributions,
+#' optionally grouped.
 #'
 #' @examples
-#' \dontrun{
-#' plot_exposures(expomicset, exposure_cat = "Air Pollution")
-#' plot_exposures(expomicset, group_by = "sex", plot_type = "ridge")
-#' plot_exposures(expomicset, exposure_cols = c("hs_no2", "hs_pm25"), group_by = "smoking_status")
-#' }
+#'
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # plot exposure data
+#' exposure_plot <- mae |>
+#'   plot_exposures(
+#'     exposure_cols = c("exposure_pm25","exposure_no2")
+#'   )
+#'
+#' @importFrom ggplot2 ggplot aes geom_boxplot geom_jitter
+#' geom_tile scale_color_manual scale_fill_manual scale_y_log10
+#' scale_x_log10 labs theme_minimal theme element_text guides guide_legend
+#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr filter select pull inner_join all_of where distinct mutate
+#' @importFrom purrr pluck
+#' @importFrom ggh4x facet_grid2 strip_themed elem_list_rect force_panelsizes
+#' @importFrom ggridges geom_density_ridges
+#' @importFrom ggpubr theme_pubclean
 #'
 #' @export
 plot_exposures <- function(
@@ -51,7 +82,7 @@ plot_exposures <- function(
     box_width = 0.1,
     fill_lab = ""
 ){
-  require(ggplot2)
+  # require(ggplot2)
 
   # Extract exposure data
   exposure_data <- expomicset |>
@@ -101,7 +132,10 @@ plot_exposures <- function(
   if(!is.null(facet_cols)){
     facet_cols <- facet_cols
   } else{
-    facet_cols <- tidy_exp_pal[1:length(unique(sample_metadata$category))]
+    # facet_cols <- tidy_exp_pal[1:length(unique(sample_metadata$category))]
+    facet_cols <- tidy_exp_pal[
+      seq_len(length(unique(sample_metadata$category)))
+    ]
   }
 
   if(!is.null(group_by)){
@@ -113,7 +147,10 @@ plot_exposures <- function(
   if(!is.null(group_cols)){
     group_cols <- group_cols
   } else{
-    group_cols <- tidy_exp_pal[1:length(unique(sample_metadata[[group_var]]))]
+    # group_cols <- tidy_exp_pal[1:length(unique(sample_metadata[[group_var]]))]
+    group_cols <- tidy_exp_pal[
+      seq_len(length(unique(sample_metadata[[group_var]])))
+    ]
   }
 
   if( plot_type == "boxplot"){

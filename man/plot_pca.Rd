@@ -15,13 +15,16 @@ plot_pca(
 \item{expomicset}{A \code{MultiAssayExperiment} object containing PCA results
 in \code{metadata(expomicset)$pca}.}
 
-\item{feature_col}{A character string specifying the color for the feature scree plot.
+\item{feature_col}{A character string specifying the color for the
+feature scree plot.
 Default is \code{"#00a9b2"}.}
 
-\item{sample_col}{A character string specifying the color for the sample scree plot.
+\item{sample_col}{A character string specifying the color for the
+sample scree plot.
 Default is \code{"#8a4f77"}.}
 
-\item{sample_outlier_col}{A character string specifying the color for sample outlier labels.
+\item{sample_outlier_col}{A character string specifying the color
+for sample outlier labels.
 Default is \code{"firebrick"}.}
 }
 \value{
@@ -35,7 +38,8 @@ including scatter plots and scree plots.
 This function creates four PCA visualizations:
 \itemize{
 \item \strong{Feature Space PCA Plot}: Colored by category (e.g., omics, exposure).
-\item \strong{Feature Scree Plot}: Displays the variance explained by each principal component.
+\item \strong{Feature Scree Plot}: Displays the variance explained by each
+principal component.
 \item \strong{Sample Space PCA Plot}: Highlights outlier samples.
 \item \strong{Sample Scree Plot}: Displays variance explained in the sample PCA.
 }
@@ -43,8 +47,18 @@ This function creates four PCA visualizations:
 Outliers are labeled based on \code{metadata(expomicset)$pca$outliers}.
 }
 \examples{
-\dontrun{
-plot_pca(expom)
-}
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# run pca
+mae <- mae |>
+  run_pca()
+
+# create the pca plot
+pca_p <- mae |>
+  plot_pca()
 
 }

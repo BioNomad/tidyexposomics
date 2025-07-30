@@ -3,31 +3,43 @@
 #' Runs PCA on the feature and sample spaces of a `MultiAssayExperiment` object,
 #' identifying outliers based on Mahalanobis distance.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics and exposure data.
-#' @param log_trans_exp A boolean value specifying whether to log2 transform the exposure data
-#' @param log_trans_omics a boolean value specifying whether to log2 transform the omics data
-#' @param action A character string specifying whether to store (`"add"`) or return (`"get"`) the results. Default is `"add"`.
+#' @param expomicset A `MultiAssayExperiment` object containing omics
+#' and exposure data.
+#' @param log_trans_exp A boolean value specifying whether to log2
+#' transform the exposure data
+#' @param log_trans_omics a boolean value specifying whether to log2
+#' transform the omics data
+#' @param action A character string specifying whether to store
+#' (`"add"`) or return (`"get"`) the results. Default is `"add"`.
 #'
 #' @details
 #' This function:
 #' - Identifies **common samples** across all assays and exposure data.
 #' - Performs **PCA on features** (transformed and standardized).
-#' - Performs **PCA on samples** and computes Mahalanobis distance to detect outliers.
+#' - Performs **PCA on samples** and computes Mahalanobis distance to
+#' detect outliers.
 #' - **Output Handling**:
-#'   - `"add"`: Stores results in `metadata(expomicset)$pca` and updates `colData` with PCs.
+#'   - `"add"`: Stores results in `metadata(expomicset)$pca` and
+#'   updates `colData` with PCs.
 #'   - `"get"`: Returns a list containing the PCA results.
 #'
-#' @return A `MultiAssayExperiment` object with PCA results added to metadata (if `action = "add"`) or a list with:
+#' @return A `MultiAssayExperiment` object with PCA results added to
+#' metadata (if `action = "add"`) or a list with:
 #' \item{pca_df}{A tibble of the transformed input data.}
 #' \item{pca_feature}{A `prcomp` object containing PCA results for features.}
 #' \item{pca_sample}{A `prcomp` object containing PCA results for samples.}
 #' \item{outliers}{A character vector of detected sample outliers.}
 #'
 #' @examples
-#' \dontrun{
-#' expom <- run_pca(expomicset = expom, action = "add")
-#' pca_results <- run_pca(expomicset = expom, action = "get")
-#' }
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # run pca
+#' mae <- mae |>
+#'   run_pca()
 #'
 #' @export
 run_pca <- function(
@@ -41,7 +53,9 @@ run_pca <- function(
 
   common_samples <- rownames(MultiAssayExperiment::colData(expomicset))
   for (omics_name in names(MultiAssayExperiment::experiments(expomicset))) {
-    common_samples <- intersect(common_samples, colnames(MultiAssayExperiment::experiments(expomicset)[[omics_name]]))
+    common_samples <- intersect(common_samples,
+                                colnames(MultiAssayExperiment::experiments(
+                                  expomicset)[[omics_name]]))
   }
 
   if (length(common_samples) == 0) {
@@ -51,7 +65,8 @@ run_pca <- function(
   # Subset colData to common samples
   message("Subsetting exposure data.")
 
-  exposure_data <- MultiAssayExperiment::colData(expomicset)[common_samples, ] |>
+  exposure_data <- MultiAssayExperiment::colData(
+    expomicset)[common_samples, ] |>
     as.data.frame() |>
     dplyr::select(where(is.numeric)) |>
     t() |>
@@ -60,7 +75,8 @@ run_pca <- function(
 
   if(log_trans_exp){
     exposure_data <- exposure_data |>
-      dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
+      dplyr::mutate(
+        dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
   }
 
   # Subset omics data to common samples
@@ -70,7 +86,8 @@ run_pca <- function(
     names(MultiAssayExperiment::experiments(expomicset)),
     function(omics_name) {
       SummarizedExperiment::assays(
-        MultiAssayExperiment::experiments(expomicset)[[omics_name]])[[1]][, common_samples, drop = FALSE] |>
+        MultiAssayExperiment::experiments(expomicset)[[omics_name]])[[1]][
+          , common_samples, drop = FALSE] |>
         as.data.frame() |>
         transform(category = omics_name)
     }) |>
@@ -78,7 +95,8 @@ run_pca <- function(
 
   if(log_trans_omics){
     omics_data <- omics_data |>
-      dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
+      dplyr::mutate(
+        dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
   }
 
   # Combine datasets
@@ -90,7 +108,6 @@ run_pca <- function(
   feature_data <- dat |>
     dplyr::select(-c(category, id)) |>
     dplyr::select(where(\(x) var(x, na.rm = TRUE) > 0))
-    #dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
 
   # PCA analysis: feature space
   message("Performing PCA on Feature Space.")
@@ -107,7 +124,6 @@ run_pca <- function(
   sample_vars <- apply(sample_data, 2, \(x) var(x, na.rm = TRUE))
   sample_data <- sample_data |>
     dplyr::select(names(sample_vars[sample_vars > 0]))
-    #dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ log2(.+abs(min(.))+1)))
 
   pca_sample <- prcomp(sample_data, center = TRUE, scale. = TRUE)
 
@@ -127,20 +143,20 @@ run_pca <- function(
 
   # Print outlier sample names
   if (length(outliers) > 0) {
-    print(paste("Outliers detected:",
+    message(paste("Outliers detected:",
                 paste(rownames(pca_sample$x)[outliers],
                       collapse = ", ")))
   } else {
-    print("No outliers detected.")
+    message("No outliers detected.")
   }
 
   # add in PCs for samples to the colData
   col_data <- MultiAssayExperiment::colData(expomicset) |>
     as.data.frame() |>
-    (\(df){df$id_to_map=rownames(df);df})() |>
+    (\(df){df$id_to_map <- rownames(df);df})() |>
     dplyr::left_join(pca_sample$x |>
                 as.data.frame() |>
-                (\(df){df$id_to_map=rownames(df);df})(),
+                (\(df){df$id_to_map <- rownames(df);df})(),
               by="id_to_map") |>
     tibble::column_to_rownames("id_to_map")
 

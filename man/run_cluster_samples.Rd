@@ -15,19 +15,28 @@ run_cluster_samples(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics and exposure data.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing omics
+and exposure data.}
 
-\item{exposure_cols}{A character vector of column names in \code{colData(expomicset)} to use for clustering.}
+\item{exposure_cols}{A character vector of column names in
+\code{colData(expomicset)} to use for clustering.}
 
-\item{dist_method}{A character string specifying the distance metric (\code{"euclidean"}, \code{"gower"}, etc.). If \code{NULL}, it is automatically determined.}
+\item{dist_method}{A character string specifying the distance metric
+(\code{"euclidean"}, \code{"gower"}, etc.). If \code{NULL}, it is automatically determined.}
 
-\item{user_k}{An integer specifying the number of clusters. If \code{NULL}, an optimal \code{k} is determined.}
+\item{user_k}{An integer specifying the number of clusters.
+If \code{NULL}, an optimal \code{k} is determined.}
 
-\item{cluster_method}{A character string specifying the hierarchical clustering method. Default is \code{"ward.D"}.}
+\item{cluster_method}{A character string specifying the hierarchical
+clustering method. Default is \code{"ward.D"}.}
 
-\item{clustering_approach}{A character string specifying the method for determining \code{k} (\code{"diana"}, \code{"gap"}, \code{"elbow"}, \code{"dynamic"}, or \code{"density"}). Default is \code{"diana"}.}
+\item{clustering_approach}{A character string specifying the method
+for determining \code{k} (\code{"diana"}, \code{"gap"}, \code{"elbow"}, \code{"dynamic"},
+or \code{"density"}). Default is \code{"diana"}.}
 
-\item{action}{A character string specifying \code{"add"} (store results in metadata) or \code{"get"} (return clustering results). Default is \code{"add"}.}
+\item{action}{A character string specifying \code{"add"}
+(store results in metadata) or \code{"get"} (return clustering results).
+Default is \code{"add"}.}
 }
 \value{
 If \code{action="add"}, returns the updated \code{expomicset}.
@@ -37,27 +46,36 @@ If \code{action="get"}, returns a list with:
 \item{heatmap}{A \code{ComplexHeatmap} object visualizing sample clustering.}
 }
 \description{
-Performs hierarchical clustering of samples using exposure data from \code{colData(expomicset)}.
+Performs hierarchical clustering of samples using exposure data from
+\code{colData(expomicset)}.
 }
 \details{
 This function:
 \itemize{
 \item Extracts \strong{numeric exposure data} from \code{colData(expomicset)}.
-\item Computes a \strong{distance matrix} (\code{"gower"} for mixed data, \code{"euclidean"} for numeric).
-\item Determines the \strong{optimal number of clusters (\code{k})} using the specified method.
-\item Performs \strong{hierarchical clustering} (\code{hclust}) and assigns samples to clusters.
+\item Computes a \strong{distance matrix} (\code{"gower"} for mixed data,
+\code{"euclidean"} for numeric).
+\item Determines the \strong{optimal number of clusters (\code{k})} using the
+specified method.
+\item Performs \strong{hierarchical clustering} (\code{hclust}) and assigns
+samples to clusters.
 \item Generates a \strong{heatmap} of scaled exposure values.
-\item Stores results in \code{metadata(expomicset)$sample_clustering} when \code{action="add"}.
+\item Stores results in \code{metadata(expomicset)$sample_clustering}
+when \code{action="add"}.
 }
 }
 \examples{
-\dontrun{
-expom <- run_cluster_samples(
-  expomicset = expom,
-  exposure_cols = c("PM2.5", "NO2"),
-  dist_method = "gower",
-  clustering_approach = "gap"
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# determine sample clusters
+mae <- run_cluster_samples(
+  expomicset = mae,
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi"),
+  clustering_approach = "diana"
 )
-}
 
 }

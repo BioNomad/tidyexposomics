@@ -1,10 +1,12 @@
 #' Assess Normality of Exposure Variables
 #'
-#' Performs Shapiro-Wilk tests to check the normality of numeric exposure variables in `colData`
-#' of a `MultiAssayExperiment` object.
+#' Performs Shapiro-Wilk tests to check the normality of numeric exposure
+#' variables in `colData` of a `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure data in `colData`.
-#' @param action A character string specifying whether to store (`"add"`) or return (`"get"`) the results. Default is `"add"`.
+#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' data in `colData`.
+#' @param action A character string specifying whether to store (`"add"`)
+#' or return (`"get"`) the results. Default is `"add"`.
 #'
 #' @details
 #' This function:
@@ -16,20 +18,37 @@
 #'   - `"add"`: Stores results in `metadata(expomicset)$normality`.
 #'   - `"get"`: Returns a list containing the normality test results and plot.
 #'
-#' @return A `MultiAssayExperiment` object with normality results added to metadata (if `action = "add"`) or a list with:
-#' \item{norm_df}{A data frame of Shapiro-Wilk test results for each exposure variable.}
-#' \item{norm_plot}{A ggplot object showing the distribution of normal and non-normal exposures.}
+#' @return A `MultiAssayExperiment` object with normality results added to
+#' metadata (if `action = "add"`) or a list with:
+#' \item{norm_df}{A data frame of Shapiro-Wilk test results for each
+#' exposure variable.}
+#' \item{norm_plot}{A ggplot object showing the distribution of normal
+#'  and non-normal exposures.}
 #'
 #' @examples
-#' \dontrun{
-#' expom <- run_normality_check(expomicset = expom, action = "add")
-#' norm_results <- run_normality_check(expomicset = expom, action = "get")
-#' }
+#' # Create example data
+#' mae <- make_example_data(
+#'   n_samples = 20,
+#'   return_mae = TRUE
+#' )
 #'
+#' # Test for normality
+#' mae <- mae |>
+#'   run_normality_check() |>
+#'   transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
+#'
+#' @importFrom MultiAssayExperiment colData metadata
+#' @importFrom dplyr select_if mutate summarise case_when
+#' @importFrom broom tidy
+#' @importFrom tibble rownames_to_column
+#' @importFrom ggplot2 ggplot aes geom_bar geom_segment labs
+#' @importFrom stats shapiro.test
+#' @importFrom ggpubr theme_pubr
+#' @importFrom ggsci scale_fill_lancet scale_color_lancet
 #' @export
 run_normality_check <- function(expomicset,
                             action="add") {
-  require(ggplot2)
+  # require(ggplot2)
 
   message("Checking Normality Using Shapiro-Wilk Test")
 
@@ -40,7 +59,7 @@ run_normality_check <- function(expomicset,
     dplyr::select_if(function(x) !all(x == x[1]))
 
   if (ncol(exposure_data) == 0) {
-    stop("No numeric or non-constant exposure variables found for normality testing.")
+    stop("No numeric or non-constant exposure variables found.")
   }
 
   # Perform Shapiro-Wilk test for normality
@@ -107,10 +126,12 @@ run_normality_check <- function(expomicset,
 
   if(action=="add"){
     # Add normality results to expomicset metadata
-    MultiAssayExperiment::metadata(expomicset)$quality_control$normality <- list(
+    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata$quality_control$normality <- list(
       norm_df = norm_df,
       norm_summary = norm_summary
     )
+    MultiAssayExperiment::metadata(expomicset)<- all_metadata
 
     # Add step record
     step_record <- list(
@@ -121,9 +142,13 @@ run_normality_check <- function(expomicset,
           alpha = 0.05
         ),
         notes = paste0(
-          "Assessed normality of ", nrow(norm_df), " numeric exposure variables. ",
-          sum(norm_df$p.value > 0.05), " were normally distributed (p > 0.05), ",
-          sum(norm_df$p.value <= 0.05), " were not."
+          "Assessed normality of ",
+          nrow(norm_df),
+          " numeric exposure variables. ",
+          sum(norm_df$p.value > 0.05),
+          " were normally distributed (p > 0.05), ",
+          sum(norm_df$p.value <= 0.05),
+          " were not."
         )
       )
     )
@@ -138,6 +163,6 @@ run_normality_check <- function(expomicset,
     # Return normality results
     return(list(norm_df = norm_df, norm_plot = norm_plot))
   } else {
-    stop("Invalid action. Use 'add' to add results to expomicset or 'get' to return results.")
+    stop("Use 'add' to add results to expomicset or 'get' to return results.")
   }
 }

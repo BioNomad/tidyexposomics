@@ -2,7 +2,7 @@ test_that("run_sensitivity_analysis returns results with action = 'get'", {
   skip_if_not_installed("limma")
 
   # create dummy data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

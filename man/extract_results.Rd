@@ -13,21 +13,31 @@ extract_results(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object.}
 
-\item{result}{A character string indicating which result to extract from metadata. Must be one of:
+\item{result}{A character string indicating which result to
+extract from metadata. Must be one of:
 \code{"codebook"}, \code{"quality_control"}, \code{"correlation"}, \code{"association"},
-\code{"differential_analysis"}, \code{"multiomics_integration"}, \code{"network"}, or \code{"enrichment"}.}
+\code{"differential_analysis"}, \code{"multiomics_integration"}, \code{"network"},
+or \code{"enrichment"}.}
 }
 \value{
-The corresponding result object stored in \code{metadata(expomicset)}, or \code{NULL} if not present.
+The corresponding result object stored in \code{metadata(expomicset)},
+or \code{NULL} if not present.
 }
 \description{
-Retrieves a specific analysis result (e.g., quality control, correlation, association, etc.)
+Retrieves a specific analysis result
 from the metadata slot of a \code{MultiAssayExperiment} object.
 }
 \examples{
-\dontrun{
-extract_results(expomicset, result = "association")
-extract_results(expomicset, result = "multiomics_integration")
-}
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# extract results
+res <- extract_results(
+    expomicset=mae,
+    result="codebook"
+)
 
 }

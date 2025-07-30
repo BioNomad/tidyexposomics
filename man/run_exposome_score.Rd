@@ -13,43 +13,57 @@ run_exposome_score(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data in its \code{colData}.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+data in its \code{colData}.}
 
-\item{score_type}{Character. The method used to compute the score. Options are:
+\item{score_type}{Character. The method used to compute the score.
+Options are:
 \code{"mean"}, \code{"sum"}, \code{"median"}, \code{"pca"}, \code{"irt"}, \code{"quantile"}, \code{"var"}.}
 
-\item{exposure_cols}{Optional character vector. Specific exposure column names to include. If \code{NULL}, all numeric columns are used.}
+\item{exposure_cols}{Optional character vector. Specific exposure
+column names to include. If \code{NULL}, all numeric columns are used.}
 
-\item{scale}{Logical. Whether to scale the exposures before computing the score. Default is \code{TRUE}.}
+\item{scale}{Logical. Whether to scale the exposures before computing
+the score. Default is \code{TRUE}.}
 
-\item{score_column_name}{Optional name for the resulting score column. If \code{NULL}, an automatic name is used (e.g., \code{"exposome_score_pca"}).}
+\item{score_column_name}{Optional name for the resulting score column.
+If \code{NULL}, an automatic name is used (e.g., \code{"exposome_score_pca"}).}
 }
 \value{
-A \code{MultiAssayExperiment} object with the exposome score added to \code{colData()}.
+A \code{MultiAssayExperiment} object with the exposome score added
+to \code{colData()}.
 }
 \description{
-Calculates a summary exposome score per sample using one of several methods including
-mean, sum, median, PCA (first principal component), IRT (Item Response Theory), quantile
-binning, or row-wise variance. The resulting score is added to the \code{colData} of the
+Calculates a summary exposome score per sample using one of several methods
+including mean, sum, median, PCA (first principal component),
+IRT (Item Response Theory), quantile binning, or row-wise variance.
+The resulting score is added to the \code{colData} of the
 \code{MultiAssayExperiment} object.
 }
 \details{
 \itemize{
 \item \code{"pca"} uses the first principal component from \code{prcomp()}.
-\item \code{"irt"} uses the \code{mirt} package to fit a graded response model to discretized exposures.
-\item \code{"quantile"} assigns decile bins (1–10) to each variable and sums them row-wise.
+\item \code{"irt"} uses the \code{mirt} package to fit a graded response model to
+discretized exposures.
+\item \code{"quantile"} assigns decile bins (1–10) to each variable and sums
+them row-wise.
 \item \code{"var"} computes the row-wise variance across exposures.
 }
 }
 \examples{
-\dontrun{
-expomicset <- run_exposome_score(
-  expomicset,
+# create the example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# create the air pollution score
+mae <- run_exposome_score(
+  mae,
   score_type = "pca",
-  exposure_cols = c("pm25", "no2", "o3"),
+  exposure_cols = c("exposure_pm25","exposure_no2"),
   scale = TRUE,
   score_column_name = "air_pollution_score"
 )
-}
 
 }

@@ -7,35 +7,52 @@
 filter_missing(expomicset, na_thresh = 20, na_plot_thresh = 5)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure and omics data.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing
+exposure and omics data.}
 
-\item{na_thresh}{A numeric value specifying the percentage of missing data allowed before a variable or feature is removed. Default is \code{20}.}
+\item{na_thresh}{A numeric value specifying the percentage of
+missing data allowed before a variable or feature is removed. Default is \code{20}.}
 
-\item{na_plot_thresh}{A numeric value specifying the minimum missing percentage for inclusion in QC plots. Default is \code{5}.}
+\item{na_plot_thresh}{A numeric value specifying the
+minimum missing percentage for inclusion in QC plots. Default is \code{5}.}
 }
 \value{
-A \code{MultiAssayExperiment} object with filtered exposure variables and omics features.
-QC results, including missingness summaries and plots, are stored in \code{metadata(expomicset)$na_qc}.
+A \code{MultiAssayExperiment} object with filtered exposure
+variables and omics features.
+QC results, including missingness summaries and plots,
+are stored in \code{metadata(expomicset)$na_qc}.
 }
 \description{
-Removes exposure variables and omics features with missing values above a specified threshold.
+Removes exposure variables and omics features with
+missing values above a specified threshold.
 Generates missing data summaries and quality control (QC) plots.
 }
 \details{
-The function assesses missingness in both \code{colData(expomicset)} (exposure data) and \code{experiments(expomicset)} (omics data).
+The function assesses missingness in both \code{colData(expomicset)}
+(exposure data) and \code{experiments(expomicset)} (omics data).
 \itemize{
 \item Exposure variables with more than \code{na_thresh}\% missing values are removed.
-\item Omics features (rows in assay matrices) exceeding \code{na_thresh}\% missing values are filtered.
-\item Missingness summaries and QC plots are generated using \code{naniar::gg_miss_var()} and stored in metadata.
+\item Omics features (rows in assay matrices) exceeding \code{na_thresh}\%
+missing values are filtered.
+\item Missingness summaries and QC plots are generated using
+\code{naniar::gg_miss_var()} and stored in metadata.
 }
 }
 \examples{
-\dontrun{
-filtered_expom <- filter_missing(
-  expomicset = expom,
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
+
+# Introduce some missingness
+MultiAssayExperiment::colData(mae)$exposure_pm25[sample(1:20, 5)] <- NA
+
+# Filter features and exposures with high missingness
+mae_filtered <- filter_missing(
+  expomicset = mae,
   na_thresh = 20,
   na_plot_thresh = 5
 )
-}
 
 }

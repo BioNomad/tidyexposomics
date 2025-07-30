@@ -1,45 +1,52 @@
 #' Run Multi-Omics Integration
 #'
-#' Performs multi-omics integration using one of several available methods: MOFA, MCIA,
-#' RGCCA, or DIABLO. This function takes a `MultiAssayExperiment` object with two or more
-#' assays and computes shared latent factors across omics layers.
+#' Performs multi-omics integration using one of several available methods:
+#'  MOFA, MCIA, RGCCA, or DIABLO. This function takes a `MultiAssayExperiment`
+#'  object with two or more assays and computes shared latent factors
+#'  across omics layers.
 #'
 #' @param expomicset A `MultiAssayExperiment` object with at least two assays.
-#' @param method Character. Integration method to use. Options are `"MOFA"`, `"MCIA"`,
-#'   `"RGCCA"`, or `"DIABLO"`.
-#' @param n_factors Integer. Number of latent factors/components to compute. Default is 10.
-#' @param scale Logical. Whether to scale each assay before integration. Default is `TRUE`.
-#' @param outcome Character. Required if `method = "DIABLO"`. Name of outcome variable in `colData` used for supervised integration.
-#' @param action Character. Whether to `"add"` results to the metadata or `"get"` them as a list. Default is `"add"`.
+#' @param method Character. Integration method to use. Options are
+#' `"MOFA"`, `"MCIA"`, `"RGCCA"`, or `"DIABLO"`.
+#' @param n_factors Integer. Number of latent factors/components to compute.
+#' Default is 10.
+#' @param scale Logical. Whether to scale each assay before integration.
+#'  Default is `TRUE`.
+#' @param outcome Character. Required if `method = "DIABLO"`.
+#' Name of outcome variable in `colData` used for supervised integration.
+#' @param action Character. Whether to `"add"` results to the metadata or
+#' `"get"` them as a list. Default is `"add"`.
 #'
-#' @return If `action = "add"`, returns a `MultiAssayExperiment` with integration results
-#' stored in `metadata(expomicset)$multiomics_integration$integration_results`. If `action = "get"`, returns a list with integration `method` and `result`.
+#' @return If `action = "add"`, returns a `MultiAssayExperiment` with
+#'  integration results
+#' stored in `metadata(expomicset)$multiomics_integration$integration_results`.
+#'  If `action = "get"`, returns a list with integration `method` and `result`.
 #'
 #' @details
-#' - `"MOFA"` runs Multi-Omics Factor Analysis using the `MOFA2` package and returns a trained model.
+#' - `"MOFA"` runs Multi-Omics Factor Analysis using the `MOFA2` package and
+#' returns a trained model.
 #' - `"MCIA"` runs multi-co-inertia analysis using the `nipalsMCIA` package.
-#' - `"RGCCA"` runs Regularized Generalized Canonical Correlation Analysis using the `RGCCA` package.
-#' - `"DIABLO"` performs supervised integration using the `mixOmics` package and a specified outcome.
+#' - `"RGCCA"` runs Regularized Generalized Canonical Correlation Analysis
+#'  using the `RGCCA` package.
+#' - `"DIABLO"` performs supervised integration using the `mixOmics` package
+#' and a specified outcome.
 #'
-#' @seealso \code{\link{plot_factor_scores}}, \code{\link{plot_top_factor_features}},
+#' @seealso \code{\link{plot_factor_scores}},
+#' \code{\link{plot_top_factor_features}},
 #'   \code{\link{run_factor_overlap}}, \code{\link{run_enrichment}}
 #'
 #' @examples
-#' \dontrun{
-#' expomicset <- run_multiomics_integration(
-#'   expomicset,
-#'   method = "MOFA",
-#'   n_factors = 5,
-#'   scale = TRUE
-#' )
+#' # create example data
+#' mae <- make_example_data(
+#'    n_samples = 20,
+#'    return_mae=TRUE
+#'   )
 #'
-#' expomicset <- run_multiomics_integration(
-#'   expomicset,
-#'   method = "DIABLO",
-#'   n_factors = 3,
-#'   outcome = "asthma_status"
-#' )
-#' }
+#' # perform multiomics integration
+#' mae <- run_multiomics_integration(
+#'       mae,
+#'       method = "MCIA",
+#'       n_factors = 3)
 #'
 #' @export
 run_multiomics_integration <- function(expomicset,
@@ -50,7 +57,7 @@ run_multiomics_integration <- function(expomicset,
                                    action="add") {
 
   if(length(MultiAssayExperiment::experiments(expomicset)) < 2){
-    stop("Multi-Omics Integration requires at least two assays in the MultiAssayExperiment object.")
+    stop("Multi-Omics Integration requires at least two assays.")
   }
 
   if(scale){
@@ -85,7 +92,7 @@ run_multiomics_integration <- function(expomicset,
       training_options = train_opts
     )
 
-    outfile = file.path(tempdir(), "mofa_model.hdf5")
+    outfile <-  file.path(tempdir(), "mofa_model.hdf5")
     mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
 
     # Load trained MOFA model
@@ -175,10 +182,12 @@ run_multiomics_integration <- function(expomicset,
 
   if(action=="add"){
     # Store results in MultiAssayExperiment metadata
-    MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results <- list(
+    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata$multiomics_integration$integration_results <- list(
       method = method,
       result = result
     )
+    MultiAssayExperiment::metadata(expomicset) <- all_metadata
 
     # Add analysis step record
     step_record <- list(

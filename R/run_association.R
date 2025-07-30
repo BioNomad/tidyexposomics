@@ -1,33 +1,55 @@
 #' Run Association Analysis
 #'
-#' Perform GLM-based association testing between a specified outcome and features from exposures, omics,
-#' latent factors, or GO PCs. Automatically adjusts for covariates and supports both Gaussian and binomial models.
+#' Perform GLM-based association testing between a specified outcome and
+#' features from exposures, omics,
+#' latent factors, or GO PCs. Automatically adjusts for covariates and
+#' supports both Gaussian and binomial models.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing data and metadata.
+#' @param expomicset A `MultiAssayExperiment` object containing data
+#' and metadata.
 #' @param outcome The outcome variable name (must be in `colData`).
-#' @param source Source of features to test. One of `"omics"`, `"exposures"`, `"factors"`, `"go_pcs"`.
+#' @param source Source of features to test. One of `"omics"`,
+#' `"exposures"`, `"factors"`, `"go_pcs"`.
 #' @param covariates Optional vector of covariate names to include in the model.
 #' @param feature_set Optional character vector of exposure or GO terms to test.
-#' @param top_n Optional integer: if using omics source, select top `n` most variable features.
+#' @param top_n Optional integer: if using omics source, select top `n`
+#'  most variable features.
 #' @param family GLM family; `"gaussian"` or `"binomial"`.
 #' @param correction_method Method for p-value adjustment (default: `"fdr"`).
-#' @param action If `"add"` (default), saves results to metadata; else returns results as list.
+#' @param action If `"add"` (default), saves results to metadata;
+#' else returns results as list.
 #' @param min_genes Minimum number of genes required to compute GO PCs.
-#' @param feature_col If using GO PCs, the column in `rowData` for matching gene symbols or IDs.
-#' @param mirna_assays Optional character vector of assays to exclude when extracting GO terms.
-#' @param print Optional variable name to print results for (useful for debugging).
+#' @param feature_col If using GO PCs, the column in `rowData`
+#' for matching gene symbols or IDs.
+#' @param mirna_assays Optional character vector of assays to exclude
+#' when extracting GO terms.
 #'
-#' @return If `action = "add"`, returns updated `MultiAssayExperiment`. Otherwise, returns a list of:
+#' @return If `action = "add"`, returns updated `MultiAssayExperiment`.
+#'  Otherwise, returns a list of:
 #' - `results_df`: tidy summary of associations
 #' - `covariates`: the covariates used
 #' - `model_data`: model matrix used in the GLMs
 #'
-#' @export
 #'
 #' @examples
-#' \dontrun{
-#' run_association(expomicset, outcome = "BMI", source = "exposures", covariates = c("age", "sex"))
-#' }
+#'
+#' #' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # run association tests
+#' mae <- mae |>
+#'   run_association(
+#'   source = "exposures",
+#'   feature_set = c("exposure_pm25","exposure_no2"),
+#'   outcome = "smoker",
+#'   covariates = c("age"),
+#'   family = "binomial"
+#'   )
+#'
+#' @export
 run_association <- function(
     expomicset,
     outcome,
@@ -40,19 +62,15 @@ run_association <- function(
     action = "add",
     min_genes = 10,
     feature_col = NULL,
-    mirna_assays = NULL,
-    print = NULL
+    mirna_assays = NULL
 ) {
   # Validate inputs
   source <- match.arg(source)
 
-  # grab coldata
+  # grab coldata and scale if numeric
   data <- expomicset |>
     MultiAssayExperiment::colData() |>
-    as.data.frame()
-
-  # scale numeric columns
-  data <- data |>
+    as.data.frame() |>
     dplyr::mutate_if(is.numeric, ~ as.numeric(scale(.)))
 
   # switch based on input
@@ -108,7 +126,9 @@ run_association <- function(
     }
     for (cov in covariates) {
       if (length(unique(model_data[[cov]])) <= 1) {
-        stop(paste("Covariate", cov, "must have more than one unique value."))
+        # stop(paste("Covariate", cov, "must have more than one unique value."))
+        stop(sprintf("Covariate %s must have more than one unique value.", cov))
+
       }
     }
   }
@@ -120,7 +140,9 @@ run_association <- function(
   results <- purrr::map_dfr(feature_cols, function(fcol) {
     fmla <- as.formula(
       paste(outcome, "~", fcol,
-            if (!is.null(covariates)) paste("+", paste(covariates, collapse = "+")) else "")
+            if (!is.null(covariates)) {
+              paste("+", paste(covariates, collapse = "+"))
+              }else {""})
     )
 
     model <- tryCatch(
@@ -137,122 +159,44 @@ run_association <- function(
       dplyr::filter(term == fcol)
 
     if (nrow(model_filtered) == 0) {
-      message(paste("Skipping", fcol, "- term not found in model (possibly dropped)"))
+      message(sprintf(
+        "Skipping %s - term not found in model (possibly dropped)",
+        fcol))
       return(NULL)
     }
+
 
     if(source %in% c("exposures", "factors")){
 
     }
     # Compute R^2
-    if (family == "gaussian") {
-      r2 <- summary(model)$r.squared
-      adj_r2 <- summary(model)$adj.r.squared
-
-      # Compute R-squared and adjusted R-squared
-      n <- nrow(model_data)
-      p <- length(coef(model))  # includes intercept
-      r2 <- 1 - model$deviance / model$null.deviance
-      adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
-
-    } else if (family == "binomial") {
-      # Compute R-squared and adjusted R-squared
-      n <- nrow(model_data)
-      p <- length(coef(model))  # includes intercept
-
-      r2 <- 1 - model$deviance / model$null.deviance
-      adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
-
-    }
-
-    model_filtered$r2 <- r2
-    model_filtered$adj_r2 <- adj_r2
-    model_filtered
-  })
-
-
-  # adjust p-values
-  results <- results |>
+    model_filtered$r2 <- .calc_r2(model,model_data)$r2
+    model_filtered$adj_r2 <- .calc_r2(model,model_data)$adj_r2
+    return(model_filtered)
+  }) |>
     dplyr::mutate(
       p_adjust = p.adjust(
         p.value,
         method = correction_method)) |>
     dplyr::mutate(outcome = outcome)
 
-  if(source %in% c("omics", "factors")){
-    # Grab experiment names
-    exp_names <- names(MultiAssayExperiment::experiments(expomicset)) |>
-      (\(chr) gsub(" ", "_", chr))()
-
-    matched <- data.frame(exp_name=exp_names,
-                          exp_name_clean=names(MultiAssayExperiment::experiments(expomicset)))
-
-    results <- results |>
-      dplyr::mutate(
-        exp_name = stringr::str_extract(term, paste0("^(", paste(exp_names, collapse = "|"), ")")),
-        term = dplyr::case_when(
-          grepl(paste(exp_names, collapse = "|"), term) ~
-            gsub(paste0("(", paste0(exp_names, "_", collapse = "|"), ")"), "", term),
-          .default = term
-        )
-      ) |>
-      inner_join(matched,
-                 by=c("exp_name"="exp_name")) |>
-      dplyr::select(-exp_name) |>
-      dplyr::rename(category=exp_name_clean)
-
-    if (source == "factors"){
-      if (MultiAssayExperiment::metadata(expomicset) |>
-          purrr::pluck("multiomics_integration",
-                       "integration_results",
-                       "method") %in% c("DIABLO","RGCCA")){
-        results <- results |>
-          dplyr::mutate(term=paste(category,term,sep=" "))
-      }
-    }
-  }
-
-  if (source == "exposures"){
-    results <- results |>
-      dplyr::left_join(
-        expomicset |>
-          MultiAssayExperiment::metadata() |>
-          purrr::pluck("codebook") ,
-        by=c("term"="variable")
-      )
-  }
-
-  if (source == "omics"){
-
-    feature_df <- lapply(
-      names(
-        MultiAssayExperiment::experiments(expom_1)),
-      function(name){
-        SummarizedExperiment::rowData(
-          MultiAssayExperiment::experiments(expom_1)[[name]]) |>
-          as.data.frame() |>
-          tibble::rownames_to_column(".feature") |>
-          mutate(exp_name=name)}) |>
-      bind_rows()
-
-    results <- results |>
-      dplyr::mutate(
-        category = gsub("_", " ", category)
-      ) |>
-      left_join(
-        feature_df,
-        by = c("term" = ".feature",
-               "category" = "exp_name")
-      )
-  }
+  # Annotate the results based on the source
+  results <- .annotate_results_by_source(
+    results = results,
+    source = source,
+    expomicset = expomicset)
 
   if (
     (paste0("assoc_", source) %in%
      names(MultiAssayExperiment::metadata(expomicset)$association)) &&
-    identical(covariates,MultiAssayExperiment::metadata(expomicset)$association[[paste0("assoc_", source)]]$covariates )){
+    identical(
+      covariates,
+      MultiAssayExperiment::metadata(expomicset)$association[[
+        paste0("assoc_", source)]]$covariates )){
     if(any(results$term %in%
-           MultiAssayExperiment::metadata(expomicset)$association[[paste0("assoc_", source)]]$results_df$term)){
-      stop("Association results for this feature already exist in the metadata.")
+           MultiAssayExperiment::metadata(expomicset)$association[[
+             paste0("assoc_", source)]]$results_df$term)){
+      stop("Association results for this feature already exists.")
     } else{
       results <- expomicset |>
         MultiAssayExperiment::metadata() |>
@@ -261,11 +205,6 @@ run_association <- function(
         purrr::pluck("results_df") |>
         bind_rows(results)
     }
-  }
-
-  if (!is.null(print)) {
-    print(results |>
-            dplyr::select(term, p.value))
   }
 
   # add results to metadata
@@ -292,7 +231,8 @@ run_association <- function(
           feature_col = feature_col,
           mirna_assays = mirna_assays
         ),
-        notes = paste0("Performed association analysis using source: ", source)
+        notes = paste0("Performed association analysis using source: ",
+                       source)
       )
     )
 
@@ -312,9 +252,11 @@ run_association <- function(
   }
 }
 
+# --- Extract Omics Features Function ----------
 #' Extract Omics Features
 #'
-#' Helper for extracting and optionally selecting top omics features from a MultiAssayExperiment
+#' Helper for extracting and optionally selecting top omics features from a
+#'  MultiAssayExperiment
 #' for modeling.
 #'
 #' @keywords internal
@@ -349,7 +291,7 @@ run_association <- function(
   purrr::reduce(dfs, dplyr::full_join, by = "id")
 }
 
-
+# --- Extract Exposures Function ----------
 #' Extract Exposure Features
 #'
 #' Subset exposure features (from colData) for modeling.
@@ -361,9 +303,11 @@ run_association <- function(
   tibble::rownames_to_column(df, "id")
 }
 
+# --- Extract Latent Factors Function -------------
 #' Extract Latent Factors
 #'
-#' Retrieve latent factors (MOFA, MCIA, MCCA, DIABLO, or RGCCA) for modeling from metadata.
+#' Retrieve latent factors (MOFA, MCIA, MCCA, DIABLO, or RGCCA) for
+#' modeling from metadata.
 #'
 #' @keywords internal
 #' @noRd
@@ -385,13 +329,15 @@ run_association <- function(
         purrr::map(~ .x |>
                      as.data.frame() |>
                      tibble::rownames_to_column("sample") |>
-                     tidyr::pivot_longer(-sample, names_to = "factor", values_to = "weight")) |>
+                     tidyr::pivot_longer(-sample,
+                                         names_to = "factor",
+                                         values_to = "weight")) |>
         dplyr::bind_rows(.id = "exp_name") |>
         dplyr::group_by(factor, sample) |>
         dplyr::reframe(weight = mean(weight), .groups = "drop") |>
         tidyr::pivot_wider(names_from = "factor", values_from = "weight") |>
         tibble::column_to_rownames("sample") |>
-        (\(df) {colnames(df) = gsub(" ","_",colnames(df));df})()
+        (\(df) {colnames(df) <-  gsub(" ","_",colnames(df));df})()
     },
 
     "DIABLO" = {
@@ -405,7 +351,7 @@ run_association <- function(
         }) |>
         tibble::rownames_to_column("id") |>
         tibble::column_to_rownames("id") |>
-        (\(df) {colnames(df) = gsub(" ","_",colnames(df));df})()
+        (\(df) {colnames(df) <-  gsub(" ","_",colnames(df));df})()
     },
 
     "RGCCA" = {
@@ -417,7 +363,7 @@ run_association <- function(
       }) |>
         tibble::rownames_to_column("id") |>
         tibble::column_to_rownames("id") |>
-        (\(df) {colnames(df) = gsub(" ","_",colnames(df));df})()
+        (\(df) {colnames(df) <-  gsub(" ","_",colnames(df));df})()
     },
 
     stop("Unsupported integration method.")
@@ -428,10 +374,11 @@ run_association <- function(
 }
 
 
-
+# --- Extract GO Principal Components Function -------
 #' Extract GO Principal Components
 #'
-#' For each GO group in the enrichment results, compute the first PC of the associated genes.
+#' For each GO group in the enrichment results, compute
+#' the first PC of the associated genes.
 #'
 #' @keywords internal
 #' @noRd
@@ -501,3 +448,158 @@ run_association <- function(
 
   return(pc_dfs)
 }
+
+# --- R2 Function ---------
+#' Calculate R-squared and adjusted R-squared from a GLM
+#'
+#' This internal helper function computes the R-squared and adjusted R-squared
+#' values from a fitted generalized linear model (GLM) object.
+#'
+#' @param model A fitted \code{glm} object.
+#' @param n Optional integer. Number of observations used to fit the model.
+#'   If \code{NULL}, it is inferred from \code{model$model}.
+#'
+#' @return A list with two elements:
+#'   - \code{r2}: R-squared
+#'   - \code{adj_r2}: Adjusted R-squared
+#'
+#' @details
+#' The adjusted R-squared is calculated as:
+#' \deqn{1 - \frac{(n - 1)}{(n - p)}(1 - R^2)}
+#' where \code{n} is the number of observations and \code{p} is
+#' the number of parameters (including the intercept).
+#'
+#' @keywords internal
+#' @noRd
+.calc_r2 <- function(model,
+                     model_data){
+  # Compute R-squared and adjusted R-squared
+  n <- nrow(model_data)
+  # includes intercept
+  p <- length(coef(model))
+
+  # calculate the r2 and adj r2
+  r2 <- 1 - model$deviance / model$null.deviance
+  adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
+
+  return(list(
+    r2=r2,
+    adj_r2=adj_r2
+  ))
+}
+
+# --- Annotate the Model Results By Model Source ---------
+#' Annotate association results based on feature source
+#'
+#' This internal helper function adds metadata annotations to the association
+#' results table based on the data source (`omics`, `factors`, or `exposures`).
+#'
+#' For `omics` and `factors`, it:
+#' - Extracts experiment names from the `MultiAssayExperiment` and parses them
+#'   from the `term` column.
+#' - Adds a `category` column representing the experiment name.
+#' - For `factors` from DIABLO or RGCCA integration, prefixes the factor names
+#'   with the experiment category.
+#'
+#' For `exposures`, it:
+#' - Joins the `codebook` from the `MultiAssayExperiment` metadata to add
+#'   variable annotations.
+#'
+#' For `omics`, it also:
+#' - Joins feature-level metadata from `rowData` across all assays.
+#'
+#' @param results A data frame of association results, with at least a
+#'   `term` column.
+#' @param source Character string: the feature source (`"omics"`, `"factors"`,
+#'   or `"exposures"`).
+#' @param expomicset A `MultiAssayExperiment` containing experiments, metadata,
+#'   and codebook information.
+#'
+#' @return A data frame of association results with additional metadata columns
+#'   (e.g., `category`, joined feature metadata).
+#'
+#' @keywords internal
+#' @noRd
+#'
+#' @importFrom dplyr mutate case_when select rename inner_join left_join
+#' bind_rows
+#' @importFrom stringr str_extract
+#' @importFrom purrr pluck
+#' @importFrom tibble rownames_to_column
+#' @importFrom MultiAssayExperiment experiments metadata
+#' @importFrom SummarizedExperiment rowData
+.annotate_results_by_source <- function(
+    results,
+    source,
+    expomicset) {
+  if (source %in% c("omics", "factors")) {
+    exp_names <- names(MultiAssayExperiment::experiments(expomicset)) |>
+      (\(chr) gsub(" ", "_", chr))()
+
+    matched <- data.frame(
+      exp_name = exp_names,
+      exp_name_clean = names(MultiAssayExperiment::experiments(expomicset))
+    )
+
+    results <- results |>
+      dplyr::mutate(
+        exp_name = stringr::str_extract(
+          term, paste0("^(", paste(exp_names, collapse = "|"), ")")),
+        term = dplyr::case_when(
+          grepl(paste(exp_names, collapse = "|"), term) ~
+            gsub(paste0(
+              "(", paste0(exp_names, "_", collapse = "|"), ")"), "", term),
+          .default = term
+        )
+      ) |>
+      dplyr::inner_join(matched, by = "exp_name") |>
+      dplyr::select(-exp_name) |>
+      dplyr::rename(category = exp_name_clean)
+
+    if (source == "factors") {
+      method <- MultiAssayExperiment::metadata(expomicset) |>
+        purrr::pluck("multiomics_integration",
+                     "integration_results",
+                     "method")
+
+      if (method %in% c("DIABLO", "RGCCA")) {
+        results <- dplyr::mutate(
+          results,
+          term = paste(category, term, sep = " "))
+      }
+    }
+  }
+
+  if (source == "exposures") {
+    results <- results |>
+      dplyr::left_join(
+        MultiAssayExperiment::metadata(expomicset)$codebook,
+        by = c("term" = "variable")
+      )
+  }
+
+  if (source == "omics") {
+    feature_df <- lapply(
+      names(MultiAssayExperiment::experiments(expomicset)),
+      function(name) {
+        SummarizedExperiment::rowData(
+          MultiAssayExperiment::experiments(expomicset)[[name]]
+        ) |>
+          as.data.frame() |>
+          tibble::rownames_to_column(".feature") |>
+          dplyr::mutate(exp_name = name)
+      }
+    ) |>
+      dplyr::bind_rows()
+
+    results <- results |>
+      dplyr::mutate(category = gsub("_", " ", category)) |>
+      dplyr::left_join(
+        feature_df,
+        by = c("term" = ".feature", "category" = "exp_name")
+      )
+  }
+
+  return(results)
+}
+

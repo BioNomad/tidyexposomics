@@ -1,6 +1,6 @@
 test_that("run_create_network builds igraph object from omics_feature_cor", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 30)
+  dummy <- make_example_data(n_samples = 30)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -44,7 +44,7 @@ test_that("run_create_network builds igraph object from omics_feature_cor", {
 })
 
 test_that("run_create_network returns igraph object when action = 'get'", {
-  dummy <- make_dummy_data(n_samples = 30)
+  dummy <- make_example_data(n_samples = 30)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

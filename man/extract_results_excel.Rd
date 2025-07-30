@@ -5,7 +5,7 @@
 \title{Export tidyexposomics Results to Excel}
 \usage{
 extract_results_excel(
-  expom,
+  expomicset,
   file = "tidyexposomics_results.xlsx",
   result_types = c("correlation", "association", "differential_analysis",
     "multiomics_integration", "network", "enrichment", "exposure_summary", "pipeline"),
@@ -13,16 +13,20 @@ extract_results_excel(
 )
 }
 \arguments{
-\item{expom}{A \code{MultiAssayExperiment} object with results stored in \verb{@metadata}, typically created by the \code{tidyexposomics} pipeline.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with results stored
+in \verb{@metadata}, typically created by the \code{tidyexposomics} pipeline.}
 
-\item{file}{Character. Path to the output Excel file (e.g., \code{"tidyexposomics_results.xlsx"}).}
+\item{file}{Character. Path to the output Excel file.}
 
-\item{result_types}{Character vector specifying which result categories to export. Options include:
+\item{result_types}{Character vector specifying which result categories
+to export. Options include:
 \itemize{
-\item \code{"correlation"}: Correlation results (e.g., exposure–PC, exposure–feature).
-\item \code{"association"}: Association results (e.g., ExWAS, omics–outcome models).
-\item \code{"differential_analysis"}: Differential abundance results, including sensitivity analysis if available.
-\item \code{"multiomics_integration"}: Common top features contributing to latent factors from multi-omics integration.
+\item \code{"correlation"}: Correlation results.
+\item \code{"association"}: Association results.
+\item \code{"differential_analysis"}: Differential abundance results,
+including sensitivity analysis if available.
+\item \code{"multiomics_integration"}: Common top features contributing to
+latent factors from multi-omics integration.
 \item \code{"network"}: Exposure impact metrics from network analyses.
 \item \code{"enrichment"}: Enrichment results by omic and exposure category.
 \item \code{"exposure_summary"}: Summary statistics for exposure variables.
@@ -31,18 +35,39 @@ extract_results_excel(
 
 Use \code{"all"} to export all of the above categories.}
 
-\item{include_empty_tabs}{Logical. If \code{TRUE}, adds placeholder sheets for any missing result types. Default is \code{FALSE}.}
+\item{include_empty_tabs}{Logical. If \code{TRUE}, adds placeholder sheets for
+any missing result types. Default is \code{FALSE}.}
 }
 \value{
-An Excel file is written to the specified path. A message is printed with the file location.
+An Excel file is written to the specified path.
+A message is printed with the file location.
 }
 \description{
-Exports selected results stored in a \code{MultiAssayExperiment} object created by the \code{tidyexposomics} pipeline to an Excel workbook. Users can select which result types to include, and optionally add placeholder sheets for missing data.
+Exports selected results stored in a \code{MultiAssayExperiment} object created
+by the \code{tidyexposomics} pipeline to an Excel workbook.
+Users can select which result types to include,
+and optionally add placeholder sheets for missing data.
 }
 \examples{
-\dontrun{
-extract_results_excel(expom_1, file = "tidy_results.xlsx", result_types = "all")
-extract_results_excel(expom_1, file = "enrichment_only.xlsx", result_types = "enrichment")
-}
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
+
+# perform differential abundance analysis
+mae <- run_differential_abundance(
+  expomicset = mae,
+  formula = ~ smoker + sex,
+  abundance_col = "counts",
+  method = "limma_voom",
+  action = "add"
+)
+
+# extract the differential abundance results
+extract_results_excel(
+  expomicset = mae,
+  result_types = "differential_analysis",
+  file = "supplemental_results.xlsx")
 
 }

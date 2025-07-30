@@ -15,23 +15,31 @@ plot_top_factor_features(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing integration results in the \code{metadata} slot (must include \code{integration_results}).}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing
+integration results in the \code{metadata} slot (must include \code{integration_results}).}
 
-\item{factors}{Character vector of factors to include (e.g., "Factor1", "Factor2"). If \code{NULL}, all factors are plotted.}
+\item{factors}{Character vector of factors to include
+(e.g., "Factor1", "Factor2"). If \code{NULL}, all factors are plotted.}
 
-\item{top_n}{Integer specifying the number of top features to show per factor. Default is \code{5}.}
+\item{top_n}{Integer specifying the number of top features to show
+per factor. Default is \code{5}.}
 
-\item{facet_cols}{Optional color palette for facet strip backgrounds (one per \code{exp_name}), used to distinguish factors.}
+\item{facet_cols}{Optional color palette for facet strip backgrounds
+(one per \code{exp_name}), used to distinguish factors.}
 
-\item{exp_name_cols}{Optional color palette for experiment labels in the plot (\code{exp_name}), passed to \code{scale_color_manual()}.}
+\item{exp_name_cols}{Optional color palette for experiment labels
+in the plot (\code{exp_name}), passed to \code{scale_color_manual()}.}
 
-\item{alpha}{Numeric value between 0 and 1 controlling the transparency of facet strip background fill. Default is \code{0.5}.}
+\item{alpha}{Numeric value between 0 and 1 controlling the
+transparency of facet strip background fill. Default is \code{0.5}.}
 }
 \value{
-A \code{ggplot2} object with one facet per factor, showing the top features and their loadings by experiment.
+A \code{ggplot2} object with one facet per factor, showing the
+top features and their loadings by experiment.
 }
 \description{
-Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).
+Visualizes the top loading features for each factor from multi-omics
+integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).
 }
 \details{
 This function supports the following integration methods:
@@ -49,5 +57,23 @@ For each factor, it:
 \item Facets each factor with a customizable strip background.
 }
 
-If palettes are not provided, defaults are chosen using \code{ggpubr::get_palette()}.
+If palettes are not provided, defaults are chosen using
+\code{ggpubr::get_palette()}.
+}
+\examples{
+# create example data
+mae <- make_example_data(
+   n_samples = 20,
+   return_mae=TRUE
+  )
+
+mae <- run_multiomics_integration(
+      mae,
+      method = "MCIA",
+      n_factors = 3)
+
+
+top_feature_p <- mae |>
+  plot_top_factor_features()
+
 }

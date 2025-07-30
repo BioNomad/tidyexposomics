@@ -9,31 +9,42 @@ create_expomicset(codebook, exposure, omics, row_data = NULL)
 \arguments{
 \item{codebook}{A data frame containing variable information metadata.}
 
-\item{exposure}{A data frame containing exposure data, with rows as samples and columns as variables.}
+\item{exposure}{A data frame containing exposure data,
+with rows as samples and columns as variables.}
 
-\item{omics}{A list of matrices or a single matrix representing omics data. Each matrix should have samples as columns and features as rows.}
+\item{omics}{A list of matrices or a single matrix representing omics data.
+Each matrix should have samples as columns and features as rows.}
 
-\item{row_data}{An optional list of \code{DataFrame} objects providing feature metadata for each omics dataset. If \code{NULL}, row metadata is generated automatically. Default is \code{NULL}.}
+\item{row_data}{An optional list of \code{DataFrame} objects providing
+feature metadata for each omics dataset. If \code{NULL},
+row metadata is generated automatically. Default is \code{NULL}.}
 }
 \value{
-A \code{MultiAssayExperiment} object containing the formatted exposure and omics datasets.
+A \code{MultiAssayExperiment} object containing the formatted exposure
+and omics datasets.
 }
 \description{
 Constructs a \code{MultiAssayExperiment} object from exposure data and omics datasets,
 ensuring proper formatting and alignment of samples and features.
 }
 \details{
-The function validates inputs, converts \code{omics} into a list if necessary, ensures all datasets are matrices with column names,
-and creates \code{SummarizedExperiment} objects for each omics dataset. It then constructs a \code{MultiAssayExperiment} object
+The function validates inputs, converts \code{omics} into a list if necessary,
+ensures all datasets are matrices with column names,
+and creates \code{SummarizedExperiment} objects for each omics dataset.
+It then constructs a \code{MultiAssayExperiment} object
 with exposure data in \code{colData} and variable information stored in metadata.
 }
 \examples{
-\dontrun{
-expomicset <- create_expomicset(
-  codebook = des,
-  exposure = meta,
-  omics = list(mRNA = mrna_mat, proteomics = proteomics_mat)
+
+# make the example data
+tmp <- make_example_data(n_samples = 10)
+
+# create the MultiAssayExperiment Object
+mae <- create_expomicset(
+  codebook = tmp$codebook,
+  exposure = tmp$exposure,
+  omics = tmp$omics,
+ row_data = tmp$row_data
 )
-}
 
 }

@@ -1,7 +1,7 @@
 test_that("run_exposome_score computes scores with all supported methods", {
   skip_if_not_installed("matrixStats")
 
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -33,7 +33,7 @@ test_that("run_exposome_score computes scores with all supported methods", {
 })
 
 test_that("run_exposome_score computes score for user-defined columns", {
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -61,7 +61,7 @@ test_that("run_exposome_score computes score for user-defined columns", {
 test_that("run_exposome_score with IRT works if mirt is available", {
   skip_if_not_installed("mirt")
 
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -86,7 +86,7 @@ test_that("run_exposome_score with IRT works if mirt is available", {
 })
 
 test_that("run_exposome_score throws error for invalid method", {
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

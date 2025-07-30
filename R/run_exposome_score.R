@@ -1,35 +1,49 @@
 #' Compute Composite Exposome Scores
 #'
-#' Calculates a summary exposome score per sample using one of several methods including
-#' mean, sum, median, PCA (first principal component), IRT (Item Response Theory), quantile
-#' binning, or row-wise variance. The resulting score is added to the `colData` of the
+#' Calculates a summary exposome score per sample using one of several methods
+#' including mean, sum, median, PCA (first principal component),
+#' IRT (Item Response Theory), quantile binning, or row-wise variance.
+#' The resulting score is added to the `colData` of the
 #' `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure data in its `colData`.
-#' @param score_type Character. The method used to compute the score. Options are:
+#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' data in its `colData`.
+#' @param score_type Character. The method used to compute the score.
+#' Options are:
 #'   `"mean"`, `"sum"`, `"median"`, `"pca"`, `"irt"`, `"quantile"`, `"var"`.
-#' @param exposure_cols Optional character vector. Specific exposure column names to include. If `NULL`, all numeric columns are used.
-#' @param scale Logical. Whether to scale the exposures before computing the score. Default is `TRUE`.
-#' @param score_column_name Optional name for the resulting score column. If `NULL`, an automatic name is used (e.g., `"exposome_score_pca"`).
+#' @param exposure_cols Optional character vector. Specific exposure
+#'  column names to include. If `NULL`, all numeric columns are used.
+#' @param scale Logical. Whether to scale the exposures before computing
+#' the score. Default is `TRUE`.
+#' @param score_column_name Optional name for the resulting score column.
+#' If `NULL`, an automatic name is used (e.g., `"exposome_score_pca"`).
 #'
-#' @return A `MultiAssayExperiment` object with the exposome score added to `colData()`.
+#' @return A `MultiAssayExperiment` object with the exposome score added
+#'  to `colData()`.
 #'
 #' @details
 #' - `"pca"` uses the first principal component from `prcomp()`.
-#' - `"irt"` uses the `mirt` package to fit a graded response model to discretized exposures.
-#' - `"quantile"` assigns decile bins (1–10) to each variable and sums them row-wise.
+#' - `"irt"` uses the `mirt` package to fit a graded response model to
+#' discretized exposures.
+#' - `"quantile"` assigns decile bins (1–10) to each variable and sums
+#' them row-wise.
 #' - `"var"` computes the row-wise variance across exposures.
 #'
 #' @examples
-#' \dontrun{
-#' expomicset <- run_exposome_score(
-#'   expomicset,
+#' # create the example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # create the air pollution score
+#' mae <- run_exposome_score(
+#'   mae,
 #'   score_type = "pca",
-#'   exposure_cols = c("pm25", "no2", "o3"),
+#'   exposure_cols = c("exposure_pm25","exposure_no2"),
 #'   scale = TRUE,
 #'   score_column_name = "air_pollution_score"
 #' )
-#' }
 #'
 #' @export
 run_exposome_score <- function(
@@ -68,7 +82,8 @@ run_exposome_score <- function(
     message("Calculating mean exposure scores...")
 
     scores <- data |>
-      dplyr::mutate(exposome_score_mean = rowMeans(dplyr::across(dplyr::everything()), na.rm = TRUE)) |>
+      dplyr::mutate(exposome_score_mean = rowMeans(
+        dplyr::across(dplyr::everything()), na.rm = TRUE)) |>
       dplyr::select(exposome_score_mean)
 
   } else if (score_type == "sum"){
@@ -76,7 +91,8 @@ run_exposome_score <- function(
     message("Calculating sum exposure scores...")
 
     scores <- data |>
-      dplyr::mutate(exposome_score_sum = rowSums(dplyr::across(dplyr::everything()), na.rm = TRUE)) |>
+      dplyr::mutate(exposome_score_sum = rowSums(
+        dplyr::across(dplyr::everything()), na.rm = TRUE)) |>
       dplyr::select(exposome_score_sum)
 
   } else if(score_type == "median"){
@@ -107,7 +123,7 @@ run_exposome_score <- function(
       stop("Package 'mirt' is required for IRT scoring but is not installed.")
     }
 
-    exposures_ordinal <- apply(data, 2, function(x) dplyr::ntile(x, 10))  # discretize
+    exposures_ordinal <- apply(data, 2, function(x) dplyr::ntile(x, 10))
     model <- mirt::mirt(exposures_ordinal, 1, itemtype = "graded")
     scores <- mirt::fscores(model, full.scores.SE = FALSE)
     scores <- scores |>
@@ -144,7 +160,8 @@ run_exposome_score <- function(
       dplyr::select(exposome_score_var)
 
     } else {
-    stop("Invalid score_type. Choose either 'sum', mean', 'median', 'pca', 'irt', or 'quantile'.")
+    stop("Invalid score_type.
+         Choose either 'sum', mean', 'median', 'pca', 'irt', or 'quantile'.")
   }
 
   if(!is.null(score_column_name)) {
@@ -163,7 +180,8 @@ run_exposome_score <- function(
     tibble::column_to_rownames("id")
 
   # Update the colData of the MultiAssayExperiment object
-  MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(updated_col_data)
+  MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(
+    updated_col_data)
 
   # Add summary step record
   # Create step content
@@ -175,11 +193,15 @@ run_exposome_score <- function(
       exposure_cols = exposure_cols,
       score_column_name = score_column_name
     ),
-    notes = paste0("Exposome score computed using method: '", score_type, "'")
+    notes = paste0("Exposome score computed using method: '",
+                   score_type,
+                   "'")
   )
 
   # Assign dynamic name to the step
-  step_record <- setNames(list(step_content), paste0("run_exposome_score_", score_column_name))
+  step_record <- setNames(list(step_content),
+                          paste0("run_exposome_score_",
+                                 score_column_name))
 
   MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
     MultiAssayExperiment::metadata(expomicset)$summary$steps,

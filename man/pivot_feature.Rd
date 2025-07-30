@@ -10,24 +10,34 @@ pivot_feature(expomicset)
 \item{expomicset}{A \code{MultiAssayExperiment} object.}
 }
 \value{
-A tibble with feature metadata from all assays, with an added \code{.exp_name} column.
+A tibble with feature metadata from all assays,
+with an added \code{.exp_name} column.
 }
 \description{
-Extracts feature-level metadata across all assays in a \code{MultiAssayExperiment}
-and returns a combined tibble.
+Extracts feature-level metadata across all assays in a
+\code{MultiAssayExperiment} and returns a combined tibble.
 }
 \details{
 This function:
 \itemize{
 \item Iterates over all assays in the \code{MultiAssayExperiment}.
-\item Updates each assay’s sample metadata (\code{colData}) using \code{.update_assay_colData()}.
+\item Updates each assay’s sample metadata (\code{colData}) using
+\code{.update_assay_colData()}.
 \item Extracts feature-level metadata using \code{tidybulk::pivot_transcript()}.
-\item Combines results across assays into a single tibble, adding a \code{.exp_name} column.
+\item Combines results across assays into a single tibble,
+adding a \code{.exp_name} column.
 }
 }
 \examples{
-\dontrun{
-feature_data <- pivot_feature(expom)
-}
+
+#' # create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# pivot experiment
+feature_data <- mae |>
+  pivot_feature()
 
 }

@@ -7,18 +7,23 @@
 run_normality_check(expomicset, action = "add")
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data in \code{colData}.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+data in \code{colData}.}
 
-\item{action}{A character string specifying whether to store (\code{"add"}) or return (\code{"get"}) the results. Default is \code{"add"}.}
+\item{action}{A character string specifying whether to store (\code{"add"})
+or return (\code{"get"}) the results. Default is \code{"add"}.}
 }
 \value{
-A \code{MultiAssayExperiment} object with normality results added to metadata (if \code{action = "add"}) or a list with:
-\item{norm_df}{A data frame of Shapiro-Wilk test results for each exposure variable.}
-\item{norm_plot}{A ggplot object showing the distribution of normal and non-normal exposures.}
+A \code{MultiAssayExperiment} object with normality results added to
+metadata (if \code{action = "add"}) or a list with:
+\item{norm_df}{A data frame of Shapiro-Wilk test results for each
+exposure variable.}
+\item{norm_plot}{A ggplot object showing the distribution of normal
+and non-normal exposures.}
 }
 \description{
-Performs Shapiro-Wilk tests to check the normality of numeric exposure variables in \code{colData}
-of a \code{MultiAssayExperiment} object.
+Performs Shapiro-Wilk tests to check the normality of numeric exposure
+variables in \code{colData} of a \code{MultiAssayExperiment} object.
 }
 \details{
 This function:
@@ -35,9 +40,15 @@ This function:
 }
 }
 \examples{
-\dontrun{
-expom <- run_normality_check(expomicset = expom, action = "add")
-norm_results <- run_normality_check(expomicset = expom, action = "get")
-}
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
+
+# Test for normality
+mae <- mae |>
+  run_normality_check() |>
+  transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
 
 }

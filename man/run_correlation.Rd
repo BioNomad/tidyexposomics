@@ -29,19 +29,24 @@ run_correlation(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} object.}
 
-\item{feature_type}{Type of features to correlate. One of \code{"degs"}, \code{"omics"}, \code{"factors"}, \code{"factor_features"}, \code{"exposures"}, or \code{"pcs"}.}
+\item{feature_type}{Type of features to correlate. One of \code{"degs"},
+\code{"omics"}, \code{"factors"}, \code{"factor_features"}, \code{"exposures"}, or \code{"pcs"}.}
 
-\item{exposure_cols}{Optional vector of exposure column names (from \code{colData}) to use.}
+\item{exposure_cols}{Optional vector of exposure column names
+(from \code{colData}) to use.}
 
-\item{variable_map}{Optional mapping of features to include by assay for \code{omics} mode.}
+\item{variable_map}{Optional mapping of features to include by assay
+for \code{omics} mode.}
 
 \item{n_pcs}{Number of PCs to use when \code{feature_type = "pcs"}.}
 
-\item{feature_cors}{Logical; if \code{TRUE}, compute correlations between features rather than with exposures.}
+\item{feature_cors}{Logical; if \code{TRUE}, compute correlations between
+features rather than with exposures.}
 
 \item{robust}{Logical; restrict DEGs to those passing sensitivity threshold.}
 
-\item{score_col}{Column name in sensitivity analysis with feature stability score.}
+\item{score_col}{Column name in sensitivity analysis with feature
+stability score.}
 
 \item{score_thresh}{Threshold for filtering robust features.}
 
@@ -49,7 +54,8 @@ run_correlation(
 
 \item{correlation_cutoff}{Minimum absolute correlation to retain.}
 
-\item{cor_pval_column}{Column in output to filter by p-value (default: \code{"p.value"}).}
+\item{cor_pval_column}{Column in output to filter by p-value
+(default: \code{"p.value"}).}
 
 \item{pval_cutoff}{Maximum p-value or FDR threshold to retain a correlation.}
 
@@ -63,20 +69,33 @@ run_correlation(
 
 \item{batch_size}{Number of features to process per batch (default: 1500).}
 
-\item{action}{Whether to \code{"add"} results to metadata or \code{"get"} as a data frame.}
+\item{action}{Whether to \code{"add"} results to metadata or \code{"get"}
+as a data frame.}
 }
 \value{
-If \code{action = "add"}, returns updated \code{MultiAssayExperiment} with results added to metadata.
+If \code{action = "add"}, returns updated \code{MultiAssayExperiment}
+with results added to metadata.
 If \code{action = "get"}, returns a tidy \code{data.frame} of correlations.
 }
 \description{
-Computes correlations between exposures and feature types including DEGs, omics, latent factors,
-top factor features, or principal components (PCs). Optionally computes feature–feature correlations
+Computes correlations between exposures and feature types including DEGs,
+omics, latent factors,
+top factor features, or principal components (PCs). Optionally computes
+feature–feature correlations
 to support network analysis.
 }
 \examples{
-\dontrun{
-run_correlation(expomicset, feature_type = "omics", correlation_method = "spearman")
-run_correlation(expomicset, feature_type = "degs", feature_cors = TRUE)
-}
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# run correlation analysis
+mae <- mae |>
+  run_correlation(
+  feature_type = "exposures",
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  )
+
 }

@@ -6,43 +6,79 @@
 #'
 #' @param expomicset A `MultiAssayExperiment` containing the assays to analyze.
 #' @param base_formula The base model formula used for differential analysis.
-#' @param abundance_col Character. Name of the column in the assays representing abundance. Default is `"counts"`.
-#' @param methods Character vector of differential expression methods. Options include `"limma_voom"`, `"DESeq2"`, and `"edgeR_quasi_likelihood"`.
-#' @param scaling_methods Character vector of normalization methods to try. Options include `"none"`, `"TMM"`, and `"quantile"`.
+#' @param abundance_col Character. Name of the column in the assays representing
+#'  abundance. Default is `"counts"`.
+#' @param methods Character vector of differential expression methods.
+#' Options include `"limma_voom"`, `"DESeq2"`, and `"edgeR_quasi_likelihood"`.
+#' @param scaling_methods Character vector of normalization methods to try.
+#'  Options include `"none"`, `"TMM"`, and `"quantile"`.
 #' @param contrasts Optional list of contrasts to apply for differential testing.
-#' @param covariates_to_remove Optional character vector of covariates to remove from the base formula to generate model variants.
-#' @param pval_col Name of the column containing p-values or adjusted p-values used to define significance.
+#' @param covariates_to_remove Optional character vector of covariates
+#' to remove from the base formula to generate model variants.
+#' @param pval_col Name of the column containing p-values or adjusted
+#' p-values used to define significance.
 #' @param logfc_col Name of the column containing log fold changes.
 #' @param pval_threshold Numeric threshold for significance. Default is 0.05.
-#' @param logFC_threshold Numeric threshold for absolute log fold change. Default is `log2(1)` (i.e., 0).
-#' @param score_thresh Optional threshold for the selected stability metric. If not provided, calculated using `score_quantile`.
-#' @param score_quantile Quantile used to define the threshold if `score_thresh` is not provided. Default is 0.9.
-#' @param stability_metric Character. Name of the column in `feature_stability` to use as the scoring metric. Default is `"stability_score"`.
-#' @param action Whether to `"add"` results to `metadata()` or `"get"` them as a list. Default is `"add"`.
-#' @param bootstrap_n Integer. Number of bootstrap iterations. If 0, no resampling is performed. Default is 1.
+#' @param logFC_threshold Numeric threshold for absolute log fold change.
+#' Default is `log2(1)` (i.e., 0).
+#' @param score_thresh Optional threshold for the selected stability metric.
+#' If not provided, calculated using `score_quantile`.
+#' @param score_quantile Quantile used to define the threshold
+#'  if `score_thresh` is not provided. Default is 0.9.
+#' @param stability_metric Character. Name of the column in
+#' `feature_stability` to use as the scoring metric. Default is `"stability_score"`.
+#' @param action Whether to `"add"` results to `metadata()` or
+#' `"get"` them as a list. Default is `"add"`.
+#' @param bootstrap_n Integer. Number of bootstrap iterations.
+#' If 0, no resampling is performed. Default is 1.
 #'
-#' @return If `action = "add"`, returns a `MultiAssayExperiment` with results stored in
-#'   `metadata(expomicset)$differential_analysis$sensitivity_analysis`. If `action = "get"`,
+#' @return If `action = "add"`, returns a `MultiAssayExperiment`
+#' with results stored in
+#'   `metadata(expomicset)$differential_analysis$sensitivity_analysis`.
+#'   If `action = "get"`,
 #'   returns a list with three elements:
 #'   \describe{
-#'     \item{\code{sensitivity_df}}{Data frame of all differential results across model/method combinations.}
-#'     \item{\code{feature_stability}}{Data frame summarizing feature stability scores.}
+#'     \item{\code{sensitivity_df}}{Data frame of all differential results
+#'     across model/method combinations.}
+#'     \item{\code{feature_stability}}{Data frame summarizing feature
+#'     stability scores.}
 #'     \item{\code{score_thresh}}{The threshold used to define stable features.}
 #'   }
 #'
-#' @seealso \code{\link{run_differential_abundance}}, \code{\link{.run_se_differential_abundance}}
+#' @seealso \code{\link{run_differential_abundance}},
+#'  \code{\link{.run_se_differential_abundance}}
 #'
 #' @examples
-#' \dontrun{
-#' expomicset <- run_sensitivity_analysis(
-#'   expomicset,
-#'   base_formula = ~ sex + age + asthma,
-#'   methods = c("limma_voom"),
-#'   scaling_methods = c("TMM", "none"),
-#'   covariates_to_remove = c("age", "sex"),
-#'   bootstrap_n = 10
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 20,
+#'   return_mae=TRUE
 #' )
-#' }
+#'
+#'
+#' # Run differential abundance
+#' mae <- run_differential_abundance(
+#'   expomicset = mae,
+#'   formula = ~ smoker + sex,
+#'   abundance_col = "counts",
+#'   method = "limma_voom",
+#'   action = "add"
+#' )
+#'
+#' # Run the sensitivity analysis
+#' mae <- run_sensitivity_analysis(
+#'   expomicset = mae,
+#'   base_formula = ~ smoker + sex,
+#'   methods = c("limma_voom"),
+#'   scaling_methods = c("none"),
+#'   covariates_to_remove = "sex",
+#'   pval_col = "P.Value",
+#'   logfc_col = "logFC",
+#'   pval_threshold = 0.05,
+#'   logFC_threshold = 0,
+#'   bootstrap_n = 3,
+#'   action = "add"
+#' )
 #'
 #' @export
 run_sensitivity_analysis <- function(
@@ -67,8 +103,10 @@ run_sensitivity_analysis <- function(
 
   if(bootstrap_n > 0) {
     # Combine all raw differential results from bootstrap runs
-    sensitivity_df <- purrr::map_dfr(1:bootstrap_n, function(b) {
-      message(paste("Running bootstrap iteration", b, "of", bootstrap_n))
+    sensitivity_df <- purrr::map_dfr(seq_len(bootstrap_n), function(b) {
+      # message(paste("Running bootstrap iteration", b, "of", bootstrap_n))
+      message(sprintf("Running bootstrap iteration %d of %d", b, bootstrap_n))
+
       mae_b <- .resample_MAE(expomicset)
 
       sensitivity_df <- .run_sensitivity_grid(
@@ -103,14 +141,19 @@ run_sensitivity_analysis <- function(
   )
 
   # Check if stability_metric is valid
+  # if (!stability_metric %in% colnames(feature_stability_df)) {
+  #   stop(paste0("Invalid stability_metric: '", stability_metric, "'."))
+  # }
   if (!stability_metric %in% colnames(feature_stability_df)) {
-    stop(paste0("Invalid stability_metric: '", stability_metric, "'."))
+    stop(sprintf("Invalid stability_metric: '%s'.", stability_metric))
   }
+
 
   # Determine score threshold if not provided
   if (is.null(score_thresh)) {
+    stability_metric_col <- feature_stability_df[[stability_metric]]
     score_thresh <- quantile(
-      feature_stability_df[[stability_metric]][feature_stability_df[[stability_metric]] > 0],
+      stability_metric_col[feature_stability_df[[stability_metric]] > 0],
       score_quantile, na.rm = TRUE
     )
   }
@@ -123,11 +166,13 @@ run_sensitivity_analysis <- function(
 
   # Add results to MultiAssayExperiment metadata or return as list
   if (action == "add") {
-    MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis <- list(
+    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata$differential_analysis$sensitivity_analysis <- list(
       sensitivity_df = sensitivity_df,
       feature_stability = feature_stability_df,
       score_thresh = score_thresh
     )
+    MultiAssayExperiment::metadata(expomicset) <- all_metadata
 
     step_record <- list(
       run_sensitivity_analysis = list(
@@ -151,7 +196,8 @@ run_sensitivity_analysis <- function(
           length(methods), "methods and",
           length(scaling_methods), "scaling strategies.",
           if (!is.null(covariates_to_remove)) {
-            paste("Covariates removed in model variations:", paste(covariates_to_remove, collapse = ", "))
+            paste("Covariates removed in model variations:",
+                  paste(covariates_to_remove, collapse = ", "))
           } else {
             "No covariates were removed from the base model."
           }
@@ -202,7 +248,8 @@ run_sensitivity_analysis <- function(
     exp <- .update_assay_colData(expomicset, exp_name)
 
     if (method == "DESeq2") {
-      SummarizedExperiment::assay(exp, abundance_col) <- round(SummarizedExperiment::assay(exp, abundance_col), 0)
+      SummarizedExperiment::assay(exp, abundance_col) <- round(
+        SummarizedExperiment::assay(exp, abundance_col), 0)
     }
 
     # # Use the quiet run function to suppress messages and warnings
@@ -215,9 +262,7 @@ run_sensitivity_analysis <- function(
     #       contrasts
     #     )
 
-    res <- suppressMessages(suppressWarnings(
-
-      .run_da_pipeline(
+    res <- .run_da_pipeline(
       exp,
       formula,
       method,
@@ -225,8 +270,6 @@ run_sensitivity_analysis <- function(
       abundance_col,
       contrasts
     )
-
-    ))
 
     if (is.null(res)) return(NULL)
     res$model <- model_name
@@ -270,7 +313,8 @@ run_sensitivity_analysis <- function(
       n = dplyr::n()
     )
 
-  message("Number Of Features Above Threshold Of ", round(score_thresh, 2), ":")
+  message("Number Of Features Above Threshold Of ",
+          round(score_thresh, 2), ":")
   message("----------------------------------------")
   for (cur_exp_name in unique(feature_stability_df$exp_name)) {
     n_above <- sum |>
@@ -301,7 +345,8 @@ run_sensitivity_analysis <- function(
     for (covar in covariates_to_remove) {
       reduced_terms <- setdiff(base_terms, covar)
       if (length(reduced_terms) > 1) {
-        reduced_formula <- as.formula(paste("~", paste(reduced_terms, collapse = " + ")))
+        reduced_formula <- as.formula(
+          paste("~", paste(reduced_terms, collapse = " + ")))
         model_list[[paste("without", covar)]] <- reduced_formula
       }
     }
@@ -309,36 +354,3 @@ run_sensitivity_analysis <- function(
   return(model_list)
 }
 
-# --- Testing Quiet DA Pipeline ---
-
-# .quiet_run_da_pipeline <- function(se, formula, method, scaling, abundance_col, contrasts) {
-#   tmp_file <- tempfile()
-#   con <- file(tmp_file, open = "wt")  # open write connection
-#
-#   tryCatch({
-#     sink(con)                       # redirect stdout
-#     sink(con, type = "message")    # redirect messages
-#
-#     result <- .run_da_pipeline(
-#       se = se,
-#       formula = formula,
-#       method = method,
-#       scaling = scaling,
-#       abundance_col = abundance_col,
-#       contrasts = contrasts
-#     )
-#
-#     sink(NULL)
-#     sink(NULL, type = "message")
-#     close(con)
-#
-#     return(result)
-#   }, error = function(e) {
-#     sink(NULL, split = FALSE)
-#     sink(NULL, type = "message")
-#     if (isOpen(con)) close(con)
-#     warning(sprintf("Error in quiet_run_da_pipeline: %s", conditionMessage(e)))
-#     return(NULL)
-#   })
-# }
-#

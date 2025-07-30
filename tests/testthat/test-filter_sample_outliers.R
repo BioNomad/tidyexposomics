@@ -1,6 +1,6 @@
 test_that("filter_sample_outliers removes PCA-identified outliers", {
   # make the example data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
 
   # artificially make a sample an outlier
   dummy$omics$mRNA[1:3, 1] <- c(1e5, -1e5, 1e5)

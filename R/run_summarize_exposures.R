@@ -1,10 +1,15 @@
 #' Summarize Exposure Variables
 #'
-#' Computes summary statistics for numeric exposure variables and optionally stores the results in the `MultiAssayExperiment` metadata.
+#' Computes summary statistics for numeric exposure variables and
+#' optionally stores the results in the `MultiAssayExperiment` metadata.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure data in the sample metadata.
-#' @param exposure_cols A character vector of exposure variable names to summarize. If `NULL`, all numeric exposure variables are included.
-#' @param action A string specifying the action to take. Use `"add"` to attach the summary table to `metadata(expomicset)` or `"get"` to return the summary table directly. Default is `"add"`.
+#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' data in the sample metadata.
+#' @param exposure_cols A character vector of exposure variable names
+#' to summarize. If `NULL`, all numeric exposure variables are included.
+#' @param action A string specifying the action to take. Use `"add"`
+#' to attach the summary table to `metadata(expomicset)` or `"get"`
+#' to return the summary table directly. Default is `"add"`.
 #'
 #' @details
 #' This function:
@@ -19,28 +24,40 @@
 #'   - 95% confidence interval of the mean
 #'   - Variance, standard deviation
 #'   - Coefficient of variation (`sd / mean`)
-#' - Merges the result with variable metadata stored in `metadata(expomicset)$codebook`.
+#' - Merges the result with variable metadata stored in
+#' `metadata(expomicset)$codebook`.
 #'
 #' @return
-#' A modified `MultiAssayExperiment` object (if `action = "add"`), or a data frame of summary statistics (if `action = "get"`).
+#' A modified `MultiAssayExperiment` object (if `action = "add"`),
+#' or a data frame of summary statistics (if `action = "get"`).
 #'
 #' @examples
-#' \dontrun{
-#' # Add summaries to metadata
-#' expom <- run_summarize_exposures(expom)
+#' # Create example data
+#' mae <- make_example_data(
+#'   n_samples = 20,
+#'   return_mae = TRUE
+#' )
 #'
-#' # Retrieve just the summary table
-#' summary_df <- run_summarize_exposures(expom, action = "get")
-#' }
+#' # Summarize exposure data
+#' exp_sum <- mae |>
+#'   run_summarize_exposures(
+#'     exposure_cols = c("age","bmi","exposure_pm25"),
+#'     action = "get"
+#'   )
 #'
+#' @importFrom MultiAssayExperiment metadata
+#' @importFrom dplyr select all_of where group_by summarise ungroup
+#' inner_join mutate_if everything
+#' @importFrom tidyr pivot_longer
+#' @importFrom purrr pluck
 #' @export
 run_summarize_exposures <- function(
     expomicset,
     exposure_cols = NULL,
     action = "add"
 ){
-  library(dplyr)
-  library(tidyr)
+  # library(dplyr)
+  # library(tidyr)
 
   # Extract exposure data
   exposure_df <- expomicset |>
@@ -94,7 +111,9 @@ run_summarize_exposures <- function(
 
   if(action=="add"){
     # Store results
-    MultiAssayExperiment::metadata(expomicset)$quality_control$exposure_summary_df <- exposure_summary_df
+    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata$quality_control$exposure_summary_df <- exposure_summary_df
+    MultiAssayExperiment::metadata(expomicset) <- all_metadata
 
     # Add step record
     step_record <- list(
@@ -110,7 +129,10 @@ run_summarize_exposures <- function(
           if (is.null(exposure_cols)) {
             "Included all numeric exposures from colData."
           } else {
-            paste0("Subset to user-specified exposure columns (n = ", length(exposure_cols), ").")
+            paste0(
+              "Subset to user-specified exposure columns (n = ",
+              length(exposure_cols),
+              ").")
           }
         )
       )

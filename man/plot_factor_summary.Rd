@@ -13,39 +13,57 @@ plot_factor_summary(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing integration results in
+\item{expomicset}{A \code{MultiAssayExperiment} object containing integration
+results in
 \code{metadata(expomicset)$multiomics_integration$integration_results}.}
 
-\item{low}{Color for low values in the fill gradient. Default is \code{"#006666"}.}
+\item{low}{Color for low values in the fill gradient.
+Default is \code{"#006666"}.}
 
-\item{mid}{Color for midpoint in the fill gradient. Default is \code{"white"}.}
+\item{mid}{Color for midpoint in the fill gradient.
+Default is \code{"white"}.}
 
-\item{high}{Color for high values in the fill gradient. Default is \code{"#8E0152"}.}
+\item{high}{Color for high values in the fill gradient.
+Default is \code{"#8E0152"}.}
 
-\item{midpoint}{Midpoint value for the gradient color scale. Default is \code{0.5}.}
+\item{midpoint}{Midpoint value for the gradient color scale.
+Default is \code{0.5}.}
 }
 \value{
-A \code{ggplot} object showing factor contributions based on the integration method.
+A \code{ggplot} object showing factor contributions based on
+the integration method.
 }
 \description{
-Generates a summary plot of factor contributions from multi-omics integration results
-stored in a \code{MultiAssayExperiment} object.
+Generates a summary plot of factor contributions from multi-omics
+integration results stored in a \code{MultiAssayExperiment} object.
 }
 \details{
 This function visualizes factor contributions based on the integration method:
 \itemize{
 \item \strong{MOFA}: Variance explained per factor and view.
 \item \strong{MCIA}: Block score weights per omic.
-\item \strong{DIABLO}: Mean absolute sample score per omic and factor (from block-specific variates).
-\item \strong{RGCCA}: Mean absolute sample score per omic and factor (from aligned block scores).
+\item \strong{DIABLO}: Mean absolute sample score per omic and factor
+(from block-specific variates).
+\item \strong{RGCCA}: Mean absolute sample score per omic and factor
+(from aligned block scores).
 }
 
-The color gradient can be customized using the \code{low}, \code{mid}, \code{high}, and \code{midpoint} parameters.
+The color gradient can be customized using the \code{low}, \code{mid}, \code{high},
+and \code{midpoint} parameters.
 }
 \examples{
-\dontrun{
-plot_factor_summary(expom)
-plot_factor_summary(expom, low = "blue", mid = "white", high = "red")
-}
+# create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae=TRUE
+  )
+
+mae <- run_multiomics_integration(
+      mae,
+      method = "MCIA",
+      n_factors = 3)
+
+factor_sum_plot <- mae |>
+  plot_factor_summary()
 
 }

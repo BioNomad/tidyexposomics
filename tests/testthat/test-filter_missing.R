@@ -2,7 +2,7 @@ test_that("filter_missing removes features and generates QC plots", {
   skip_if_not_installed("naniar")
 
   # Create dummy data with injected missingness
-  dummy <- make_dummy_data(n_samples = 10)
+  dummy <- make_example_data(n_samples = 10)
   dummy$exposure$age[1:3] <- NA
   dummy$omics$mRNA[1:2, 1:5] <- NA
   dummy$omics$proteomics[1:4, 1:3] <- NA

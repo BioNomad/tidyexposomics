@@ -1,13 +1,20 @@
 #' Plot Top Features by Factor from Integration Results
 #'
-#' Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).
+#' Visualizes the top loading features for each factor from multi-omics
+#' integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing integration results in the `metadata` slot (must include `integration_results`).
-#' @param factors Character vector of factors to include (e.g., "Factor1", "Factor2"). If `NULL`, all factors are plotted.
-#' @param top_n Integer specifying the number of top features to show per factor. Default is `5`.
-#' @param facet_cols Optional color palette for facet strip backgrounds (one per `exp_name`), used to distinguish factors.
-#' @param exp_name_cols Optional color palette for experiment labels in the plot (`exp_name`), passed to `scale_color_manual()`.
-#' @param alpha Numeric value between 0 and 1 controlling the transparency of facet strip background fill. Default is `0.5`.
+#' @param expomicset A `MultiAssayExperiment` object containing
+#' integration results in the `metadata` slot (must include `integration_results`).
+#' @param factors Character vector of factors to include
+#' (e.g., "Factor1", "Factor2"). If `NULL`, all factors are plotted.
+#' @param top_n Integer specifying the number of top features to show
+#'  per factor. Default is `5`.
+#' @param facet_cols Optional color palette for facet strip backgrounds
+#' (one per `exp_name`), used to distinguish factors.
+#' @param exp_name_cols Optional color palette for experiment labels
+#' in the plot (`exp_name`), passed to `scale_color_manual()`.
+#' @param alpha Numeric value between 0 and 1 controlling the
+#' transparency of facet strip background fill. Default is `0.5`.
 #'
 #' @details
 #' This function supports the following integration methods:
@@ -21,10 +28,39 @@
 #' - Creates a point-range plot showing the loading magnitude.
 #' - Facets each factor with a customizable strip background.
 #'
-#' If palettes are not provided, defaults are chosen using `ggpubr::get_palette()`.
+#' If palettes are not provided, defaults are chosen using
+#' `ggpubr::get_palette()`.
 #'
-#' @return A `ggplot2` object with one facet per factor, showing the top features and their loadings by experiment.
+#' @return A `ggplot2` object with one facet per factor, showing the
+#' top features and their loadings by experiment.
 #'
+#' @examples
+#' # create example data
+#' mae <- make_example_data(
+#'    n_samples = 20,
+#'    return_mae=TRUE
+#'   )
+#'
+#' mae <- run_multiomics_integration(
+#'       mae,
+#'       method = "MCIA",
+#'       n_factors = 3)
+#'
+#'
+#' top_feature_p <- mae |>
+#'   plot_top_factor_features()
+#'
+#' @importFrom MultiAssayExperiment metadata
+#' @importFrom MOFA2 get_weights
+#' @importFrom purrr map2
+#' @importFrom tibble rownames_to_column
+#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr mutate filter group_by arrange desc slice_head
+#' bind_rows inner_join sym
+#' @importFrom ggplot2 ggplot aes geom_point geom_segment theme_bw
+#' theme labs scale_color_manual element_text
+#' @importFrom ggh4x facet_grid2 strip_themed elem_list_rect
+#' @importFrom scales alpha
 #' @export
 plot_top_factor_features <- function(
     expomicset,
@@ -35,7 +71,7 @@ plot_top_factor_features <- function(
     exp_name_cols=NULL,
     alpha=0.5){
 
-  require(ggplot2)
+  # require(ggplot2)
 
   method <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method
   result <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result
@@ -49,8 +85,11 @@ plot_top_factor_features <- function(
           names(MOFA2::get_weights(result)),
           ~as.data.frame(.x) |>
             tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature, names_to="factor", values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading), exp_name = .y)
+            tidyr::pivot_longer(-feature,
+                                names_to="factor",
+                                values_to="loading") |>
+            dplyr::mutate(abs_loading = abs(loading),
+                          exp_name = .y)
         ) |>
         dplyr::bind_rows()
     },
@@ -61,8 +100,11 @@ plot_top_factor_features <- function(
           names(result@block_loadings),
           ~as.data.frame(.x) |>
             tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature, names_to="factor", values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading), exp_name = .y)
+            tidyr::pivot_longer(-feature,
+                                names_to="factor",
+                                values_to="loading") |>
+            dplyr::mutate(abs_loading = abs(loading),
+                          exp_name = .y)
         ) |>
         dplyr::bind_rows()
     },
@@ -73,8 +115,11 @@ plot_top_factor_features <- function(
           names(result$loadings),
           ~as.data.frame(.x) |>
             tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature, names_to="factor", values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading), exp_name = .y)
+            tidyr::pivot_longer(-feature,
+                                names_to="factor",
+                                values_to="loading") |>
+            dplyr::mutate(abs_loading = abs(loading),
+                          exp_name = .y)
         ) |>
         dplyr::bind_rows() |>
         dplyr::mutate(factor = paste(exp_name,factor,sep = " "))
@@ -86,8 +131,11 @@ plot_top_factor_features <- function(
           names(result$a),
           ~as.data.frame(.x) |>
             tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature, names_to="factor", values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading), exp_name = .y)
+            tidyr::pivot_longer(-feature,
+                                names_to="factor",
+                                values_to="loading") |>
+            dplyr::mutate(abs_loading = abs(loading),
+                          exp_name = .y)
         ) |>
         dplyr::bind_rows() |>
         dplyr::mutate(factor = paste(exp_name,factor,sep = " "))
@@ -115,10 +163,15 @@ plot_top_factor_features <- function(
                     "exp_name"=".exp_name"))
 
   # If no facet_cols provided, use default
-  facet_cols <- facet_cols %||% tidy_exp_pal[1:length(unique(df$factor))]
+  facet_cols <- facet_cols %||% tidy_exp_pal[
+    seq_len(length(unique(df$factor)))
+  ]
 
   # If no exp_name_cols provided, use default
-  exp_name_cols <- exp_name_cols %||% rev(tidy_exp_pal)[1:length(unique(df$exp_name))]
+  exp_name_cols <- exp_name_cols %||% rev(tidy_exp_pal)[
+    seq_len(length(unique(df$exp_name)))
+  ]
+
 
   # Create a plot of top features per factor
   features_per_factor_plot <- df |>

@@ -2,7 +2,7 @@ test_that("run_factor_overlap() returns expected object and annotations", {
   skip_if_not_installed("MultiAssayExperiment")
 
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

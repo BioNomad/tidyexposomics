@@ -1,9 +1,40 @@
-make_dummy_data <- function(
+#' Generate Example Data for Testing
+#'
+#' This helper function generates a reproducible dummy dataset
+#' containing exposures, mRNA data, and proteomics data. It can
+#' optionally return the data as a \code{MultiAssayExperiment} using
+#' \code{\link{create_expomicset}}.
+#'
+#' @param n_samples Integer. Number of samples to simulate (default: 12).
+#' @param n_proteins Integer. Number of proteins to simulate (default: 80).
+#' @param use_batch Logical. If \code{TRUE},
+#' include a "batch" variable in the exposure data (default: FALSE).
+#' @param return_mae Logical. If \code{TRUE},
+#' return a \code{MultiAssayExperiment} created using
+#' \code{create_expomicset()} (default: FALSE).
+#'
+#' @return Either:
+#' \itemize{
+#'   \item A named list containing \code{codebook},
+#'    \code{exposure}, \code{omics}, and \code{row_data},
+#'    if \code{return_mae = FALSE}.
+#'   \item A \code{MultiAssayExperiment}, if \code{return_mae = TRUE}.
+#' }
+#'
+#' @examples
+#' # Return as a list
+#' dummy <- make_example_data()
+#'
+#' # Return as a MultiAssayExperiment
+#' mae <- make_example_data(return_mae = TRUE)
+#'
+#' @export
+make_example_data <- function(
     n_samples = 12,
     n_proteins = 80,
-    use_batch = FALSE
+    use_batch = FALSE,
+    return_mae = FALSE
 ) {
-  set.seed(42)
   sample_ids <- paste0("S", seq_len(n_samples))
 
   # Gene sets with some known function
@@ -47,7 +78,9 @@ make_dummy_data <- function(
     sex = sample(c("M", "F"), n_samples, replace = TRUE),
     bmi = round(rnorm(n_samples, 25, 3), 1),
     smoker = sample(c("yes", "no"), n_samples, replace = TRUE),
-    alcohol = sample(c("none", "low", "moderate", "high"), n_samples, replace = TRUE),
+    alcohol = sample(c("none", "low", "moderate", "high"),
+                     n_samples,
+                     replace = TRUE),
     exposure_pm25 = runif(n_samples, 5, 30),
     exposure_no2 = runif(n_samples, 10, 60),
     row.names = sample_ids
@@ -80,8 +113,12 @@ make_dummy_data <- function(
   lv2 <- scale(rnorm(n_samples))  # xeno signal
 
   # Simulate mRNA matrix - continuous, positive values
-  mrna_mat <- matrix(rlnorm(n_genes * n_samples, meanlog = 7.5, sdlog = 1),
-                     nrow = n_genes, dimnames = list(mrna_ids, sample_ids))
+  mrna_mat <- matrix(rlnorm(n_genes * n_samples,
+                            meanlog = 7.5,
+                            sdlog = 1),
+                     nrow = n_genes,
+                     dimnames = list(mrna_ids,
+                                     sample_ids))
 
   # Add latent structure and exposure signal
   mrna_mat[mrna_ids[gene_symbols %in% antigen_genes], ] <- mrna_mat[
@@ -138,10 +175,28 @@ make_dummy_data <- function(
     proteomics = prot_mat
   )
 
-  list(
-    codebook = codebook,
-    exposure = exposure,
-    omics = omics,
-    row_data = row_data
-  )
+  if(return_mae){
+    res_list <- list(
+      codebook = codebook,
+      exposure = exposure,
+      omics = omics,
+      row_data = row_data
+    )
+    res <- create_expomicset(
+      codebook = res_list$codebook,
+      exposure = res_list$exposure,
+      omics = res_list$omics,
+      row_data = res_list$row_data
+    )
+  } else{
+    res <- list(
+      codebook = codebook,
+      exposure = exposure,
+      omics = omics,
+      row_data = row_data
+    )
+  }
+
+  return(res)
+
 }

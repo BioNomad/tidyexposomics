@@ -2,7 +2,7 @@ test_that("run_multiomics_integration works with MOFA", {
   skip_if_not_installed("MOFA2")
 
   # make the example data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -50,7 +50,7 @@ test_that("run_multiomics_integration works with MCIA", {
   skip_if_not_installed("nipalsMCIA")
 
   # make the example data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -98,7 +98,7 @@ test_that("run_multiomics_integration works with RGCCA", {
   skip_if_not_installed("RGCCA")
 
   # make the example data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -150,7 +150,7 @@ test_that("run_multiomics_integration works with DIABLO", {
   skip_if_not_installed("mixOmics")
 
   # make the example data
-  dummy <- make_dummy_data(n_samples = 20)
+  dummy <- make_example_data(n_samples = 20)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

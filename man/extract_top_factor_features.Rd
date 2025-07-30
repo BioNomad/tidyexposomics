@@ -16,20 +16,27 @@ extract_top_factor_features(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing integration results.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing
+integration results.}
 
 \item{factors}{A character vector specifying the factors of interest.}
 
-\item{method}{A character string specifying the feature selection method (\code{"percentile"} or \code{"threshold"}). Default is \code{"percentile"}.}
+\item{method}{A character string specifying the feature selection method
+(\code{"percentile"} or \code{"threshold"}). Default is \code{"percentile"}.}
 
-\item{percentile}{A numeric value between 0 and 1 indicating the percentile threshold for feature selection when \code{method = "percentile"}. Default is \code{0.9}.}
+\item{percentile}{A numeric value between 0 and 1 indicating the
+percentile threshold for feature selection when \code{method = "percentile"}.
+Default is \code{0.9}.}
 
-\item{threshold}{A numeric value specifying the absolute loading cutoff for feature selection when \code{method = "threshold"}. Default is \code{0.3}.}
+\item{threshold}{A numeric value specifying the absolute loading cutoff
+for feature selection when \code{method = "threshold"}. Default is \code{0.3}.}
 
-\item{action}{A character string indicating whether to return results (\code{"get"}) or add them to metadata (\code{"add"}). Default is \code{"add"}.}
+\item{action}{A character string indicating whether to return results
+(\code{"get"}) or add them to metadata (\code{"add"}). Default is \code{"add"}.}
 }
 \value{
-If \code{action = "add"}, returns the modified \code{expomicset} with selected features stored in metadata.
+If \code{action = "add"}, returns the modified \code{expomicset} with
+selected features stored in metadata.
 If \code{action = "get"}, returns a data frame containing:
 \item{feature}{The selected feature contributing to the factor.}
 \item{factor}{The factor to which the feature contributes.}
@@ -37,28 +44,43 @@ If \code{action = "get"}, returns a data frame containing:
 \item{exp_name}{The experiment from which the feature originated.}
 }
 \description{
-Identifies the most influential features for specified factors using MOFA+ or MCIA
-integration results. Features are selected based on either a percentile cutoff
+Identifies the most influential features for specified factors
+using multiomics integration integration results.
+Features are selected based on either a percentile cutoff
 or an absolute loading threshold.
 }
 \details{
-The function extracts factor loadings from \code{metadata(expomicset)}, applies filtering based on
-the selected method, and identifies top contributing features for each specified factor.
+The function extracts factor loadings from \code{metadata(expomicset)},
+applies filtering based on
+the selected method, and identifies top contributing features for
+each specified factor.
 Features can be selected using:
 \itemize{
-\item \strong{Percentile-based filtering} (\code{method = "percentile"}): Selects features with absolute loadings above a specified percentile.
-\item \strong{Threshold-based filtering} (\code{method = "threshold"}): Selects features with absolute loadings exceeding a fixed value.
+\item \strong{Percentile-based filtering} (\code{method = "percentile"}): Selects
+features with absolute loadings above a specified percentile.
+\item \strong{Threshold-based filtering} (\code{method = "threshold"}): Selects
+features with absolute loadings exceeding a fixed value.
 }
 }
 \examples{
-\dontrun{
-results <- extract_top_factor_features(
-  expomicset = expom,
-  factors = c("Factor1", "Factor2"),
+# create example data
+mae <- make_example_data(
+   n_samples = 20,
+   return_mae=TRUE
+  )
+
+# perform multiomics integration
+mae <- run_multiomics_integration(
+      mae,
+      method = "MCIA",
+      n_factors = 3)
+
+top_feats <- extract_top_factor_features(
+  mae,
+  factors = c("V1","V2","V3"),
   method = "percentile",
   percentile = 0.9,
   action = "get"
 )
-}
 
 }

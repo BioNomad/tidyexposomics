@@ -12,9 +12,11 @@ download_dataset(
 }
 \arguments{
 \item{name}{The name of the dataset (without .zip or .RData extension).
-Valid options include: "omics_list", "fdata", "meta", "annotated_cb", "chebi", "ecto", "hpo".}
+Valid options include: "omics_list", "fdata", "meta", "annotated_cb",
+"chebi", "ecto", "hpo".}
 
-\item{dest_dir}{Destination directory to save and extract the file (default: tempdir()).}
+\item{dest_dir}{Destination directory to save
+and extract the file (default: tempdir()).}
 
 \item{verbose}{Print messages? (default: TRUE)}
 }

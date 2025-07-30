@@ -2,28 +2,45 @@
 #'
 #' This function prints and visualizes the analysis steps stored in the
 #' metadata of a \code{MultiAssayExperiment} object. The steps are optionally
-#' printed to the console as a numbered list and can be rendered as a left-to-right
-#' Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+#' printed to the console as a numbered list and can be rendered as a
+#' left-to-right Mermaid flowchart.
+#' The flowchart connects steps with arrows and includes step notes
 #' if requested.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} object that contains a "summary"
+#' @param expomicset A \code{MultiAssayExperiment} object that contains a
+#' "summary"
 #' entry in its metadata, which includes a list named \code{steps}.
-#' @param show_index Logical, default \code{TRUE}. If \code{TRUE}, prefixes each step with its index.
-#' @param console_print Logical, default \code{TRUE}. If \code{TRUE}, prints the step list to the console.
-#' @param diagram_print Logical, default \code{FALSE}. If \code{TRUE}, renders a Mermaid diagram of the steps.
-#' @param include_notes Logical, default \code{TRUE}. If \code{TRUE}, appends any "notes" associated with each step to the label.
+#' @param show_index Logical, default \code{TRUE}. If \code{TRUE},
+#' prefixes each step with its index.
+#' @param console_print Logical, default \code{TRUE}. If \code{TRUE},
+#' prints the step list to the console.
+#' @param diagram_print Logical, default \code{FALSE}. If \code{TRUE},
+#'  renders a Mermaid diagram of the steps.
+#' @param include_notes Logical, default \code{TRUE}. If \code{TRUE},
+#' appends any "notes" associated with each step to the label.
 #'
 #' @return No return value. This function is called for its side effects:
 #' console output and/or diagram rendering.
 #'
 #' @details The Mermaid flowchart is rendered left-to-right and connects
-#' each step in sequence. Each node is labeled using the step name and, optionally,
+#' each step in sequence. Each node is labeled using the step name and,
+#'  optionally,
 #' any attached notes.
 #'
 #' @examples
-#' \dontrun{
-#' run_pipeline_summary(expomicset)
-#' }
+#' # Create example data
+#' mae <- make_example_data(
+#'   n_samples = 20,
+#'   return_mae = TRUE
+#' )
+#'
+#' # Test for normality
+#' mae <- mae |>
+#'   run_normality_check() |>
+#'   transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
+#'
+#' # Run the pipeline summary
+#' run_pipeline_summary(mae)
 #'
 #' @export
 run_pipeline_summary <- function(expomicset,
@@ -57,7 +74,7 @@ run_pipeline_summary <- function(expomicset,
 
   # Optional console output
   if (console_print) {
-    cat(labeled_steps, sep = "\n")
+    message(labeled_steps, sep = "\n")
   }
 
   if (diagram_print) {

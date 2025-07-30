@@ -17,28 +17,76 @@ run_factor_overlap(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} with integration results and top factor features.}
+\item{expomicset}{A \code{MultiAssayExperiment} with integration results
+and top factor features.}
 
-\item{robust}{Logical; if \code{TRUE}, uses sensitivity score. Otherwise, uses DEG thresholds.}
+\item{robust}{Logical; if \code{TRUE}, uses sensitivity score. Otherwise,
+uses DEG thresholds.}
 
-\item{stability_score}{Optional numeric threshold (overrides default from metadata).}
+\item{stability_score}{Optional numeric threshold
+(overrides default from metadata).}
 
-\item{score_col}{Column name for sensitivity score. Default is \code{"stability_score"}.}
+\item{score_col}{Column name for sensitivity score.
+Default is \code{"stability_score"}.}
 
-\item{pval_thresh}{DEG p-value threshold (if \code{robust = FALSE}). Default is \code{0.05}.}
+\item{pval_thresh}{DEG p-value threshold (if \code{robust = FALSE}).
+Default is \code{0.05}.}
 
-\item{logfc_thresh}{DEG logFC threshold (if \code{robust = FALSE}). Default is \code{log2(1.5)}.}
+\item{logfc_thresh}{DEG logFC threshold (if \code{robust = FALSE}).
+Default is \code{log2(1.5)}.}
 
 \item{pval_col}{Column name for p-value. Default is \code{"padj"}.}
 
 \item{logfc_col}{Column name for logFC. Default is \code{"logFC"}.}
 
-\item{action}{\code{"add"} to return modified object, \code{"get"} to return data.frame.}
+\item{action}{\code{"add"} to return modified object, \code{"get"} to
+return data.frame.}
 }
 \value{
-Modified \code{MultiAssayExperiment} or \code{data.frame} of shared top features.
+Modified \code{MultiAssayExperiment} or \code{data.frame} of
+shared top features.
 }
 \description{
 Identifies top features shared across factors based on integration method.
-For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA, takes features recurring in ≥2 block-specific components.
+For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA,
+takes features recurring in ≥2 block-specific components.
+}
+\examples{
+# create example data
+mae <- make_example_data(
+   n_samples = 20,
+   return_mae=TRUE
+  )
+
+# perform multiomics integration
+mae <- run_multiomics_integration(
+      mae,
+      method = "MCIA",
+      n_factors = 3)
+
+
+# identify the features that contribute most to the factors
+mae <- extract_top_factor_features(
+  mae,
+  factors = c("V1","V2","V3"),
+  method = "percentile",
+  percentile = 0.5,
+  action = "add"
+)
+
+# perform differential abundance analysis
+mae <- run_differential_abundance(
+  expomicset = mae,
+  formula = ~ smoker + sex,
+  abundance_col = "counts",
+  method = "limma_voom",
+  action = "add"
+)
+
+# determine the overlap in features
+mae <- mae |>
+  run_factor_overlap(
+  robust = FALSE,
+  pval_col = "adj.P.Val")
+
 }

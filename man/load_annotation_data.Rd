@@ -9,6 +9,9 @@ load_annotation_data(dest_dir = tempdir())
 \arguments{
 \item{dest_dir}{Destination directory to store temporary data files.}
 }
+\value{
+Invisibly returns \code{TRUE} after the ontology data is loaded into the global environment.
+}
 \description{
 Downloads and loads \code{chebi}, \code{ecto}, and \code{hpo} into the global environment.
 }

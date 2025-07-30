@@ -4,7 +4,7 @@ library(MultiAssayExperiment)
 library(S4Vectors)
 
 test_that("create_expomicset returns a valid MultiAssayExperiment", {
-  dummy <- make_dummy_data(n_samples = 10, n_proteins = 50)
+  dummy <- make_example_data(n_samples = 10, n_proteins = 50)
 
   mae <- create_expomicset(
     codebook = dummy$codebook,
@@ -42,7 +42,7 @@ test_that("create_expomicset returns a valid MultiAssayExperiment", {
 })
 
 test_that("create_expomicset works with single omics input", {
-  dummy <- make_dummy_data(n_samples = 8)
+  dummy <- make_example_data(n_samples = 8)
   single_matrix <- dummy$omics$mRNA
   single_row_data <- dummy$row_data$mRNA
 
@@ -61,7 +61,7 @@ test_that("create_expomicset works with single omics input", {
 })
 
 test_that("create_expomicset generates row_data if not provided", {
-  dummy <- make_dummy_data(n_samples = 6)
+  dummy <- make_example_data(n_samples = 6)
 
   mae <- create_expomicset(
     codebook = dummy$codebook,
@@ -77,7 +77,7 @@ test_that("create_expomicset generates row_data if not provided", {
 })
 
 test_that("create_expomicset throws error on invalid input types", {
-  dummy <- make_dummy_data()
+  dummy <- make_example_data()
 
   # error out if exposure is not a df
   expect_error(

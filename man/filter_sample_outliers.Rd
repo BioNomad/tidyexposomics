@@ -7,27 +7,42 @@
 filter_sample_outliers(expomicset, outliers = NULL)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics and exposure data.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing
+omics and exposure data.}
 
-\item{outliers}{An optional character vector specifying sample names to be removed.
-If \code{NULL}, the function uses outliers identified in \code{metadata(expomicset)$pca$outliers}. Default is \code{NULL}.}
+\item{outliers}{An optional character vector specifying
+sample names to be removed.
+If \code{NULL}, the function uses outliers identified in
+\code{metadata(expomicset)$pca$outliers}. Default is \code{NULL}.}
 }
 \value{
 A \code{MultiAssayExperiment} object with the specified outliers removed.
 }
 \description{
-Removes sample outliers from a \code{MultiAssayExperiment} object based on PCA analysis.
+Removes sample outliers from a \code{MultiAssayExperiment} object
+based on PCA analysis.
 }
 \details{
-The function checks for the presence of PCA results in \code{metadata(expomicset)}. If \code{outliers} is not provided,
-it retrieves precomputed outliers from \code{metadata(expomicset)$pca$outliers}. The identified samples are removed
+The function checks for the presence of PCA results in
+\code{metadata(expomicset)}. If \code{outliers} is not provided,
+it retrieves precomputed outliers from \code{metadata(expomicset)$pca$outliers}.
+The identified samples are removed
 from the dataset.
 }
 \examples{
-\dontrun{
-filtered_expomicset <- filter_sample_outliers(
-  expomicset = my_expomicset
-)
-}
+
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# run PCA
+mae <- mae |>
+  run_pca()
+
+# filter outliers if present
+mae <- mae |>
+  filter_sample_outliers()
 
 }

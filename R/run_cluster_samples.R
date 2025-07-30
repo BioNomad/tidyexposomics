@@ -1,23 +1,37 @@
 #' Cluster Samples Based on Exposure Data
 #'
-#' Performs hierarchical clustering of samples using exposure data from `colData(expomicset)`.
+#' Performs hierarchical clustering of samples using exposure data from
+#' `colData(expomicset)`.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics and exposure data.
-#' @param exposure_cols A character vector of column names in `colData(expomicset)` to use for clustering.
-#' @param dist_method A character string specifying the distance metric (`"euclidean"`, `"gower"`, etc.). If `NULL`, it is automatically determined.
-#' @param user_k An integer specifying the number of clusters. If `NULL`, an optimal `k` is determined.
-#' @param cluster_method A character string specifying the hierarchical clustering method. Default is `"ward.D"`.
-#' @param clustering_approach A character string specifying the method for determining `k` (`"diana"`, `"gap"`, `"elbow"`, `"dynamic"`, or `"density"`). Default is `"diana"`.
-#' @param action A character string specifying `"add"` (store results in metadata) or `"get"` (return clustering results). Default is `"add"`.
+#' @param expomicset A `MultiAssayExperiment` object containing omics
+#' and exposure data.
+#' @param exposure_cols A character vector of column names in
+#' `colData(expomicset)` to use for clustering.
+#' @param dist_method A character string specifying the distance metric
+#' (`"euclidean"`, `"gower"`, etc.). If `NULL`, it is automatically determined.
+#' @param user_k An integer specifying the number of clusters.
+#' If `NULL`, an optimal `k` is determined.
+#' @param cluster_method A character string specifying the hierarchical
+#' clustering method. Default is `"ward.D"`.
+#' @param clustering_approach A character string specifying the method
+#'  for determining `k` (`"diana"`, `"gap"`, `"elbow"`, `"dynamic"`,
+#'  or `"density"`). Default is `"diana"`.
+#' @param action A character string specifying `"add"`
+#' (store results in metadata) or `"get"` (return clustering results).
+#'  Default is `"add"`.
 #'
 #' @details
 #' This function:
 #' - Extracts **numeric exposure data** from `colData(expomicset)`.
-#' - Computes a **distance matrix** (`"gower"` for mixed data, `"euclidean"` for numeric).
-#' - Determines the **optimal number of clusters (`k`)** using the specified method.
-#' - Performs **hierarchical clustering** (`hclust`) and assigns samples to clusters.
+#' - Computes a **distance matrix** (`"gower"` for mixed data,
+#' `"euclidean"` for numeric).
+#' - Determines the **optimal number of clusters (`k`)** using the
+#' specified method.
+#' - Performs **hierarchical clustering** (`hclust`) and assigns
+#' samples to clusters.
 #' - Generates a **heatmap** of scaled exposure values.
-#' - Stores results in `metadata(expomicset)$sample_clustering` when `action="add"`.
+#' - Stores results in `metadata(expomicset)$sample_clustering`
+#' when `action="add"`.
 #'
 #' @return If `action="add"`, returns the updated `expomicset`.
 #' If `action="get"`, returns a list with:
@@ -26,14 +40,18 @@
 #' \item{heatmap}{A `ComplexHeatmap` object visualizing sample clustering.}
 #'
 #' @examples
-#' \dontrun{
-#' expom <- run_cluster_samples(
-#'   expomicset = expom,
-#'   exposure_cols = c("PM2.5", "NO2"),
-#'   dist_method = "gower",
-#'   clustering_approach = "gap"
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # determine sample clusters
+#' mae <- run_cluster_samples(
+#'   expomicset = mae,
+#'   exposure_cols = c("exposure_pm25","exposure_no2","age","bmi"),
+#'   clustering_approach = "diana"
 #' )
-#' }
 #'
 #' @export
 run_cluster_samples <- function(expomicset,
@@ -48,7 +66,8 @@ run_cluster_samples <- function(expomicset,
 
   # Validate exposure_cols input
   if (is.null(exposure_cols) || length(exposure_cols) == 0) {
-    stop("Please specify `exposure_cols` as a character vector of `colData` column names.")
+    stop("Please specify `exposure_cols` as a character vector
+         that is a a column name in `colData`.")
   }
 
   # Ensure selected exposure columns exist in colData
@@ -57,7 +76,8 @@ run_cluster_samples <- function(expomicset,
     colnames(MultiAssayExperiment::colData(expomicset)))
 
   if (length(available_variables) == 0) {
-    stop("None of the specified `exposure_cols` are available in `colData`. Clustering cannot proceed.")
+    stop("None of the specified `exposure_cols` are available in `colData`.
+         Clustering cannot proceed.")
   }
 
   # Extract numeric exposure data for clustering
@@ -81,12 +101,21 @@ run_cluster_samples <- function(expomicset,
 
   # Determine appropriate distance metric
   if (is.null(dist_method)) {
-    if (all(sapply(exposure_data, is.numeric))) {
+    if (all(vapply(exposure_data, is.numeric, FUN.VALUE = logical(1)))) {
       dist_method <- "euclidean"  # Continuous data
     } else {
       dist_method <- "gower"  # Mixed data types
     }
   }
+
+  # # Determine appropriate distance metric
+  # if (is.null(dist_method)) {
+  #   if (all(sapply(exposure_data, is.numeric))) {
+  #     dist_method <- "euclidean"  # Continuous data
+  #   } else {
+  #     dist_method <- "gower"  # Mixed data types
+  #   }
+  # }
 
   # Compute distance matrix
   sample_dist <- if (dist_method == "gower") {
@@ -108,13 +137,19 @@ run_cluster_samples <- function(expomicset,
     } else if (clustering_approach == "gap") {
 
       # Determine optimal k using the gap statistic
-      gap_stat <- cluster::clusGap(as.matrix(dist_matrix), FUN = factoextra::hcut, K.max = 20, B = 50)
-      return(cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"]))
+      gap_stat <- cluster::clusGap(as.matrix(dist_matrix),
+                                   FUN = factoextra::hcut,
+                                   K.max = 20,
+                                   B = 50)
+      return(cluster::maxSE(gap_stat$Tab[, "gap"],
+                            gap_stat$Tab[, "SE.sim"]))
 
     } else if (clustering_approach == "elbow") {
 
       # Determine optimal k using the elbow method
-      wss_plot <- factoextra::fviz_nbclust(as.matrix(dist_matrix), FUN = factoextra::hcut, method = "wss")
+      wss_plot <- factoextra::fviz_nbclust(as.matrix(dist_matrix),
+                                           FUN = factoextra::hcut,
+                                           method = "wss")
 
       # Identify the first significant drop and ensure it's a number we can use
       k_optimal <- which.min(diff(diff(wss_plot$data$y))) + 1
@@ -133,8 +168,11 @@ run_cluster_samples <- function(expomicset,
 
     } else if (clustering_approach == "density") {
       # Determine optimal k using density-based clustering
-      dclust <- densityClust::densityClust(as.dist(dist_matrix), gaussian = TRUE)
-      dclust <- densityClust::findClusters(dclust, rho = quantile(dclust$rho, 0.90), delta = quantile(dclust$delta, 0.90))
+      dclust <- densityClust::densityClust(as.dist(dist_matrix),
+                                           gaussian = TRUE)
+      dclust <- densityClust::findClusters(dclust,
+                                           rho = quantile(dclust$rho, 0.90),
+                                           delta = quantile(dclust$delta, 0.90))
       return(length(unique(dclust$clusters)))
 
     } else {
@@ -150,7 +188,8 @@ run_cluster_samples <- function(expomicset,
   }
 
   # Perform hierarchical clustering
-  sample_cluster <- hclust(as.dist(sample_dist), method = cluster_method)
+  sample_cluster <- hclust(as.dist(sample_dist),
+                           method = cluster_method)
 
   # Cut dendrogram using optimal k
   sample_groups <- cutree(sample_cluster, k = k_samples)
@@ -160,7 +199,7 @@ run_cluster_samples <- function(expomicset,
   # add in sample groups for samples to the colData
   col_data <- MultiAssayExperiment::colData(expomicset) |>
     as.data.frame() |>
-    (\(df){df$id_to_map=rownames(df);df})() |>
+    (\(df){df$id_to_map <- rownames(df);df})() |>
     dplyr::left_join(data.frame(
       id_to_map = names(sample_groups),
       sample_group = paste0("Group_",as.character(sample_groups))
@@ -190,10 +229,13 @@ run_cluster_samples <- function(expomicset,
 
   if (action == "add") {
     # Save clustering results in metadata
-    MultiAssayExperiment::metadata(expomicset)$quality_control$sample_clustering <- list(
+    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata$quality_control$sample_clustering <- list(
       sample_cluster = sample_cluster,
       sample_groups = sample_groups
     )
+
+    MultiAssayExperiment::metadata(expomicset) <- all_metadata
 
     # Add analysis steps taken to metadata
     step_record <- list(

@@ -16,39 +16,43 @@ run_association(
   action = "add",
   min_genes = 10,
   feature_col = NULL,
-  mirna_assays = NULL,
-  print = NULL
+  mirna_assays = NULL
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing data and metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing data
+and metadata.}
 
 \item{outcome}{The outcome variable name (must be in \code{colData}).}
 
-\item{source}{Source of features to test. One of \code{"omics"}, \code{"exposures"}, \code{"factors"}, \code{"go_pcs"}.}
+\item{source}{Source of features to test. One of \code{"omics"},
+\code{"exposures"}, \code{"factors"}, \code{"go_pcs"}.}
 
 \item{covariates}{Optional vector of covariate names to include in the model.}
 
 \item{feature_set}{Optional character vector of exposure or GO terms to test.}
 
-\item{top_n}{Optional integer: if using omics source, select top \code{n} most variable features.}
+\item{top_n}{Optional integer: if using omics source, select top \code{n}
+most variable features.}
 
 \item{family}{GLM family; \code{"gaussian"} or \code{"binomial"}.}
 
 \item{correction_method}{Method for p-value adjustment (default: \code{"fdr"}).}
 
-\item{action}{If \code{"add"} (default), saves results to metadata; else returns results as list.}
+\item{action}{If \code{"add"} (default), saves results to metadata;
+else returns results as list.}
 
 \item{min_genes}{Minimum number of genes required to compute GO PCs.}
 
-\item{feature_col}{If using GO PCs, the column in \code{rowData} for matching gene symbols or IDs.}
+\item{feature_col}{If using GO PCs, the column in \code{rowData}
+for matching gene symbols or IDs.}
 
-\item{mirna_assays}{Optional character vector of assays to exclude when extracting GO terms.}
-
-\item{print}{Optional variable name to print results for (useful for debugging).}
+\item{mirna_assays}{Optional character vector of assays to exclude
+when extracting GO terms.}
 }
 \value{
-If \code{action = "add"}, returns updated \code{MultiAssayExperiment}. Otherwise, returns a list of:
+If \code{action = "add"}, returns updated \code{MultiAssayExperiment}.
+Otherwise, returns a list of:
 \itemize{
 \item \code{results_df}: tidy summary of associations
 \item \code{covariates}: the covariates used
@@ -56,11 +60,27 @@ If \code{action = "add"}, returns updated \code{MultiAssayExperiment}. Otherwise
 }
 }
 \description{
-Perform GLM-based association testing between a specified outcome and features from exposures, omics,
-latent factors, or GO PCs. Automatically adjusts for covariates and supports both Gaussian and binomial models.
+Perform GLM-based association testing between a specified outcome and
+features from exposures, omics,
+latent factors, or GO PCs. Automatically adjusts for covariates and
+supports both Gaussian and binomial models.
 }
 \examples{
-\dontrun{
-run_association(expomicset, outcome = "BMI", source = "exposures", covariates = c("age", "sex"))
-}
+
+#' # create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# run association tests
+mae <- mae |>
+  run_association(
+  source = "exposures",
+  feature_set = c("exposure_pm25","exposure_no2"),
+  outcome = "smoker",
+  covariates = c("age"),
+  family = "binomial"
+  )
+
 }

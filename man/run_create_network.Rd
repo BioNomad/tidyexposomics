@@ -12,33 +12,74 @@ run_create_network(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing correlation results in metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing correlation
+results in metadata.}
 
-\item{feature_type}{Type of correlation result to convert to a network. One of:
+\item{feature_type}{Type of correlation result to convert to a network.
+One of:
 \code{"degs"}, \code{"omics"}, \code{"factors"}, \code{"factor_features"}, \code{"exposures"},
-\code{"degs_feature_cor"}, \code{"omics_feature_cor"}, or \code{"factor_features_feature_cor"}.}
+\code{"degs_feature_cor"}, \code{"omics_feature_cor"},
+or \code{"factor_features_feature_cor"}.}
 
-\item{action}{Whether to \code{"add"} the network to the object or \code{"get"} it as a list.}
+\item{action}{Whether to \code{"add"} the network to the object or
+\code{"get"} it as a list.}
 }
 \value{
-If \code{action = "add"}, returns the updated \code{MultiAssayExperiment} with a new \code{network} entry in metadata.
-If \code{action = "get"}, returns a list with \code{graph} (an \code{igraph} object) and \code{summary} (a tibble).
+If \code{action = "add"}, returns the updated \code{MultiAssayExperiment}
+with a new \code{network} entry in metadata.
+If \code{action = "get"}, returns a list with \code{graph}
+(an \code{igraph} object) and \code{summary} (a tibble).
 }
 \description{
-Constructs an undirected feature–feature or feature–exposure correlation network
-from correlation results stored in a \code{MultiAssayExperiment} object. The function
-supports multiple correlation formats depending on \code{feature_type}, and stores or returns
-an \code{igraph} object with associated node and edge metadata.
+Constructs an undirected feature–feature or feature–exposure
+correlation network from correlation results stored in a
+\code{MultiAssayExperiment} object. The function
+supports multiple correlation formats depending on \code{feature_type},
+and stores or returns an \code{igraph} object with associated node
+and edge metadata.
 }
 \details{
-The function detects the appropriate edge and node structure based on column names
-in the correlation results. Edge weights are based on correlation coefficients and include FDR values.
+The function detects the appropriate edge and node structure
+based on column names in the correlation results.
+Edge weights are based on correlation coefficients and include FDR values.
 }
 \examples{
-\dontrun{
-expomicset <- run_correlation(expomicset, feature_type = "omics", feature_cors = TRUE)
-expomicset <- run_create_network(expomicset, feature_type = "omics_feature_cor")
-net <- run_create_network(expomicset, feature_type = "omics_feature_cor", action = "get")
-plot(net$graph)
-}
+
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# perform correlation analyses
+# correlate with exposures
+mae <- mae |>
+  run_correlation(
+  feature_type = "omics",
+  variable_map = mae |>
+    pivot_feature() |>
+    dplyr::select(variable=.feature,
+    exp_name=.exp_name),
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  ) |>
+  # correlate omics features with themselves
+  run_correlation(
+  feature_type = "omics",
+  variable_map = mae |>
+    pivot_feature() |>
+    dplyr::select(variable=.feature,
+    exp_name=.exp_name),
+  feature_cors = TRUE,
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  )
+
+# create the networks
+mae   <- mae |>
+run_create_network(
+  feature_type = "omics_feature_cor",
+  action = "add") |>
+  run_create_network(
+   feature_type = "omics",
+   action = "add")
+
 }

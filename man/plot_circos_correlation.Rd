@@ -22,11 +22,13 @@ plot_circos_correlation(
 
 \item{feature_type}{One of "exposures", "degs", or "factors".}
 
-\item{exposure_cols}{Character vector of exposures to include (only for "exposures").}
+\item{exposure_cols}{Character vector of exposures to include
+(only for "exposures").}
 
 \item{corr_threshold}{Minimum |correlation| (only for "exposures").}
 
-\item{shared_cutoff}{Minimum number of shared features (only for "degs" or "factors"). Default = 10.}
+\item{shared_cutoff}{Minimum number of shared features
+(only for "degs" or "factors"). Default = 10.}
 
 \item{annotation_colors}{Optional named vector of colors for categories.}
 
@@ -36,12 +38,36 @@ plot_circos_correlation(
 
 \item{high}{high value color for edges.}
 
-\item{midpoint}{Midpoint for edge color gradient. Defaults to 0 (for correlations) or mean shared features.}
+\item{midpoint}{Midpoint for edge color gradient. Defaults to 0
+(for correlations) or mean shared features.}
 }
 \value{
 A ggplot object (ggraph circular plot).
 }
 \description{
-Generates a circular network plot to visualize relationships between exposures,
-either based on correlation ("exposures") or shared features ("degs", "factors").
+Generates a circular network plot to visualize relationships between
+exposures, either based on correlation ("exposures") or
+shared features ("degs", "factors").
+}
+\examples{
+
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# run correlation analysis
+mae <- mae |>
+  run_correlation(
+  feature_type = "exposures",
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  )
+
+# create the circos plot
+circos_plot <- mae |>
+  plot_circos_correlation(
+    feature_type = "exposures"
+  )
+
 }

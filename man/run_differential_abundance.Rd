@@ -17,35 +17,49 @@ run_differential_abundance(
 \arguments{
 \item{expomicset}{A \code{MultiAssayExperiment} containing assays to test.}
 
-\item{formula}{A model formula for the differential analysis (e.g., ~ group + batch).}
+\item{formula}{A model formula for the differential analysis
+(e.g., ~ group + batch).}
 
-\item{abundance_col}{Character. The name of the assay matrix to use for abundance values. Default is \code{"counts"}.}
+\item{abundance_col}{Character. The name of the assay matrix to use
+for abundance values. Default is \code{"counts"}.}
 
-\item{method}{Character. Differential analysis method to use. Currently supports \code{"limma_voom"} (default).}
+\item{method}{Character. Differential analysis method to use.
+Currently supports \code{"limma_voom"} (default).}
 
-\item{contrasts}{A named list of contrasts for pairwise comparisons. Default is \code{NULL} (uses default group comparisons).}
+\item{contrasts}{A named list of contrasts for pairwise comparisons.
+Default is \code{NULL} (uses default group comparisons).}
 
-\item{scaling_method}{Character. Scaling method to apply before modeling. Options include \code{"none"} (default), \code{"zscore"}, etc.}
+\item{scaling_method}{Character. Scaling method to apply before modeling.
+Options include \code{"none"} (default), \code{"zscore"}, etc.}
 
-\item{action}{Character. Whether to \code{"add"} results to \code{expomicset} metadata or \code{"get"} the results as a data frame. Default is \code{"add"}.}
+\item{action}{Character. Whether to \code{"add"} results to \code{expomicset}
+metadata or \code{"get"} the results as a data frame. Default is \code{"add"}.}
 }
 \value{
-Either the updated \code{MultiAssayExperiment} (if \code{action = "add"}) or a tibble with differential abundance results (if \code{action = "get"}).
+Either the updated \code{MultiAssayExperiment} (if \code{action = "add"})
+or a tibble with differential abundance results (if \code{action = "get"}).
 }
 \description{
-Performs differential abundance testing across all assays in a \code{MultiAssayExperiment}
-object using a specified statistical method such as \code{limma_voom}. The function updates
-each assay with its corresponding \code{colData}, fits the model using the provided formula,
+Performs differential abundance testing across all assays in a
+\code{MultiAssayExperiment} object using a specified statistical method
+such as \code{limma_voom}. The function updates each assay with its
+corresponding \code{colData}, fits the model using the provided formula,
 and combines the results into a unified table.
 }
 \examples{
-\dontrun{
-expom <- run_differential_abundance(
-  expomicset = expom,
-  formula = ~ exposure_group,
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# perform differential abundance analysis
+mae <- run_differential_abundance(
+  expomicset = mae,
+  formula = ~ smoker + sex,
   abundance_col = "counts",
-  method = "limma_voom"
+  method = "limma_voom",
+  action = "add"
 )
-}
 
 }

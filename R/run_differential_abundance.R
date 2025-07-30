@@ -1,29 +1,43 @@
 #' Run Differential Abundance Analysis
 #'
-#' Performs differential abundance testing across all assays in a `MultiAssayExperiment`
-#' object using a specified statistical method such as `limma_voom`. The function updates
-#' each assay with its corresponding `colData`, fits the model using the provided formula,
+#' Performs differential abundance testing across all assays in a
+#' `MultiAssayExperiment` object using a specified statistical method
+#' such as `limma_voom`. The function updates each assay with its
+#' corresponding `colData`, fits the model using the provided formula,
 #' and combines the results into a unified table.
 #'
 #' @param expomicset A `MultiAssayExperiment` containing assays to test.
-#' @param formula A model formula for the differential analysis (e.g., ~ group + batch).
-#' @param abundance_col Character. The name of the assay matrix to use for abundance values. Default is `"counts"`.
-#' @param method Character. Differential analysis method to use. Currently supports `"limma_voom"` (default).
-#' @param contrasts A named list of contrasts for pairwise comparisons. Default is `NULL` (uses default group comparisons).
-#' @param scaling_method Character. Scaling method to apply before modeling. Options include `"none"` (default), `"zscore"`, etc.
-#' @param action Character. Whether to `"add"` results to `expomicset` metadata or `"get"` the results as a data frame. Default is `"add"`.
+#' @param formula A model formula for the differential analysis
+#' (e.g., ~ group + batch).
+#' @param abundance_col Character. The name of the assay matrix to use
+#' for abundance values. Default is `"counts"`.
+#' @param method Character. Differential analysis method to use.
+#' Currently supports `"limma_voom"` (default).
+#' @param contrasts A named list of contrasts for pairwise comparisons.
+#'  Default is `NULL` (uses default group comparisons).
+#' @param scaling_method Character. Scaling method to apply before modeling.
+#' Options include `"none"` (default), `"zscore"`, etc.
+#' @param action Character. Whether to `"add"` results to `expomicset`
+#'  metadata or `"get"` the results as a data frame. Default is `"add"`.
 #'
-#' @return Either the updated `MultiAssayExperiment` (if `action = "add"`) or a tibble with differential abundance results (if `action = "get"`).
+#' @return Either the updated `MultiAssayExperiment` (if `action = "add"`)
+#'  or a tibble with differential abundance results (if `action = "get"`).
 #'
 #' @examples
-#' \dontrun{
-#' expom <- run_differential_abundance(
-#'   expomicset = expom,
-#'   formula = ~ exposure_group,
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # perform differential abundance analysis
+#' mae <- run_differential_abundance(
+#'   expomicset = mae,
+#'   formula = ~ smoker + sex,
 #'   abundance_col = "counts",
-#'   method = "limma_voom"
+#'   method = "limma_voom",
+#'   action = "add"
 #' )
-#' }
 #'
 #' @export
 run_differential_abundance <- function(
@@ -76,7 +90,9 @@ run_differential_abundance <- function(
   message("Differential abundance testing completed.")
 
   if(action == "add") {
-    MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance <- final_results
+    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata$differential_analysis$differential_abundance <- final_results
+    MultiAssayExperiment::metadata(expomicset) <- all_metadata
 
     # Add step record to metadata
     step_record <- list(

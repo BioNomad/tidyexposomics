@@ -1,23 +1,37 @@
 #' Extract Merged Omics and Exposure Data Frame
 #'
-#' This function extracts and merges exposure variables from `colData` with selected features from omics datasets
-#' in a `MultiAssayExperiment` object. Optionally applies log2 transformation to omics data and restricts features based on a variable map.
+#' This function extracts and merges exposure variables from `colData`
+#'  with selected features from omics datasets
+#' in a `MultiAssayExperiment` object. Optionally applies log2 transformation
+#' to omics data and restricts features based on a variable map.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics and exposure data.
-#' @param variable_map A data frame with columns `"variable"` and `"exp_name"`, indicating which variables belong to each omics or exposure domain.
-#' @param log2_trans Logical; whether to log2-transform omics data. Default is `TRUE`.
+#' @param expomicset A `MultiAssayExperiment` object containing
+#' omics and exposure data.
+#' @param variable_map A data frame with columns `"variable"` and `"exp_name"`,
+#'  indicating which variables belong to each omics or exposure domain.
+#' @param log2_trans Logical; whether to log2-transform omics data.
+#' Default is `TRUE`.
 #'
-#' @return A data frame where rows correspond to samples, and columns contain exposure variables and log2-transformed omics features.
-#'         Columns from different omics types are disambiguated using prefixes.
+#' @return A data frame where rows correspond to samples,
+#' and columns contain exposure variables and log2-transformed omics features.
+#' Columns from different omics types are disambiguated using prefixes.
 #'
 #' @details
-#' If `variable_map` is provided, it is used to select variables from both exposures and omics. If not provided, all numeric `colData` variables
-#' are used as exposures (excluding variables matching `^PC`), and all omics features are included.
+#' If `variable_map` is provided, it is used to select variables from
+#' both exposures and omics. If not provided, all numeric `colData` variables
+#' are used as exposures (excluding variables matching `^PC`),
+#' and all omics features are included.
 #'
 #' @examples
-#' \dontrun{
-#' merged_df <- extract_omics_exposure_df(expomicset, variable_map = my_map)
-#' }
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#' # export the omics exposure df
+#' merged_df <- extract_omics_exposure_df(
+#'   mae,
+#'   log2_trans=TRUE)
 #'
 #' @export
 extract_omics_exposure_df <- function(
@@ -111,7 +125,8 @@ extract_omics_exposure_df <- function(
 
   # Check if any omics were retained
   if (length(omics_list) == 0) {
-    stop("No omics features matched the variable_map. Please check your feature names.")
+    stop("No omics features matched the variable_map.
+         Please check your feature names.")
   }
 
   omics_df <- purrr::reduce(omics_list, dplyr::full_join, by = "id")

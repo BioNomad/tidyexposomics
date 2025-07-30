@@ -5,17 +5,21 @@
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing PCA results
 #' in `metadata(expomicset)$pca`.
-#' @param feature_col A character string specifying the color for the feature scree plot.
+#' @param feature_col A character string specifying the color for the
+#'  feature scree plot.
 #' Default is `"#00a9b2"`.
-#' @param sample_col A character string specifying the color for the sample scree plot.
+#' @param sample_col A character string specifying the color for the
+#'  sample scree plot.
 #' Default is `"#8a4f77"`.
-#' @param sample_outlier_col A character string specifying the color for sample outlier labels.
+#' @param sample_outlier_col A character string specifying the color
+#' for sample outlier labels.
 #' Default is `"firebrick"`.
 #'
 #' @details
 #' This function creates four PCA visualizations:
 #' - **Feature Space PCA Plot**: Colored by category (e.g., omics, exposure).
-#' - **Feature Scree Plot**: Displays the variance explained by each principal component.
+#' - **Feature Scree Plot**: Displays the variance explained by each
+#' principal component.
 #' - **Sample Space PCA Plot**: Highlights outlier samples.
 #' - **Sample Scree Plot**: Displays variance explained in the sample PCA.
 #'
@@ -24,9 +28,28 @@
 #' @return A combined `ggplot` object containing the four PCA plots.
 #'
 #' @examples
-#' \dontrun{
-#' plot_pca(expom)
-#' }
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # run pca
+#' mae <- mae |>
+#'   run_pca()
+#'
+#' # create the pca plot
+#' pca_p <- mae |>
+#'   plot_pca()
+#'
+#' @importFrom MultiAssayExperiment metadata
+#' @importFrom dplyr mutate case_when
+#' @importFrom ggplot2 autoplot
+#' @importFrom ggpubr theme_pubr
+#' @importFrom ggsci scale_color_aaas
+#' @importFrom factoextra fviz_eig
+#' @importFrom ggrepel geom_text_repel
+#' @importFrom patchwork wrap_plots
 #'
 #' @export
 plot_pca <- function(
@@ -36,8 +59,8 @@ plot_pca <- function(
     sample_outlier_col = "firebrick"
 
 ){
-  require(ggplot2)
-  require(ggfortify)
+  # require(ggplot2)
+  # require(ggfortify)
 
   # Check if the required metadata is present
   if (is.null(MultiAssayExperiment::metadata(expomicset)$quality_control$pca)) {
@@ -47,8 +70,14 @@ plot_pca <- function(
   # grab data
   dat <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$pca_df |>
     as.data.frame()
-  pca_feature <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$pca_feature
-  pca_sample <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$pca_sample
+  pca_feature <- MultiAssayExperiment::metadata(expomicset) |>
+    purrr::pluck("quality_control",
+                 "pca",
+                 "pca_feature")
+  pca_sample <- MultiAssayExperiment::metadata(expomicset)|>
+    purrr::pluck("quality_control",
+                 "pca",
+                 "pca_sample")
 
   # capitalize exposure for plot
   dat <- dat |>
@@ -79,7 +108,10 @@ plot_pca <- function(
           plot.subtitle = element_text(face = "italic"))
 
   # Define outliers
-  outlier_samples <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$outliers
+  outlier_samples <- MultiAssayExperiment::metadata(expomicset) |>
+    purrr::pluck("quality_control",
+                 "pca",
+                 "outliers")
 
   # PCA sample scatter plot
   pca_plot_sample <- autoplot(pca_sample, colour = sample_col) +

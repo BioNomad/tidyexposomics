@@ -1,36 +1,99 @@
 #' Plot Exposure Impact on Network Centrality Metrics
 #'
-#' Visualizes the impact of exposures on network centrality measures of associated features
-#' (e.g., genes or latent factors) as a heatmap. Each exposure is scored by four centrality metrics,
+#' Visualizes the impact of exposures on network centrality measures of
+#' associated features (e.g., genes or latent factors) as a heatmap.
+#'  Each exposure is scored by four centrality metrics,
 #' scaled within metric, and grouped by exposure category.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with results from `run_exposure_impact()`.
-#' @param feature_type Character string specifying the feature type. One of `"degs"`, `"omics"`, or `"factors"`.
-#' @param min_per_group Minimum number of features per exposure for inclusion (not currently used). Default is `5`.
+#' @param expomicset A `MultiAssayExperiment` object with results
+#' from `run_exposure_impact()`.
+#' @param feature_type Character string specifying the feature type.
+#'  One of `"degs"`, `"omics"`, or `"factors"`.
+#' @param min_per_group Minimum number of features per exposure for
+#' inclusion (not currently used). Default is `5`.
 #' @param facet_cols Optional named vector of colors for exposure categories.
 #' @param bar_cols Optional vector of colors for bar plots (if enabled).
-#' @param alpha Transparency level for category strips (if enabled). Default is `0.3`.
-#' @param ncol,nrow Layout for optional patchwork combination (currently unused). Default: `ncol = 2`, `nrow = 1`.
-#' @param heights, widths Relative heights and widths for combined plots (currently unused). Defaults: `c(1,1)`, `c(2,1)`.
+#' @param alpha Transparency level for category strips (if enabled).
+#' Default is `0.3`.
+#' @param ncol,nrow Layout for optional patchwork combination
+#' (currently unused). Default: `ncol = 2`, `nrow = 1`.
+#' @param heights, widths Relative heights and widths for combined plots
+#' (currently unused). Defaults: `c(1,1)`, `c(2,1)`.
 #'
-#' @return A `ggplot`/`patchwork` object showing a heatmap of scaled network centrality scores per exposure, annotated by category.
+#' @return A `ggplot`/`patchwork` object showing a heatmap of
+#' scaled network centrality scores per exposure, annotated by category.
 #'
 #' @details
-#' This function uses the output of `run_exposure_impact()` to calculate and visualize the mean centrality
-#' values for each exposure across its associated features. The following network centrality metrics are shown:
+#' This function uses the output of `run_exposure_impact()` to
+#' calculate and visualize the mean centrality
+#' values for each exposure across its associated features.
+#' The following network centrality metrics are shown:
 #' \itemize{
 #'   \item Degree centrality
 #'   \item Eigenvector centrality
 #'   \item Closeness centrality
 #'   \item Betweenness centrality
 #' }
-#' All values are scaled within metric across exposures. A side bar indicates the category of each exposure.
+#' All values are scaled within metric across exposures.
+#' A side bar indicates the category of each exposure.
 #'
 #' @examples
-#' \dontrun{
-#' plot_exposure_impact(expomicset, feature_type = "degs")
-#' }
 #'
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
+#'
+#' # perform correlation analyses
+#' # correlate with exposures
+#' mae <- mae |>
+#'   run_correlation(
+#'   feature_type = "omics",
+#'   variable_map = mae |>
+#'     pivot_feature() |>
+#'     dplyr::select(variable=.feature,
+#'     exp_name=.exp_name),
+#'   exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+#'   ) |>
+#'   run_correlation(
+#'   feature_type = "omics",
+#'   variable_map = mae |>
+#'     pivot_feature() |>
+#'     dplyr::select(variable=.feature,
+#'     exp_name=.exp_name),
+#'   feature_cors = TRUE,
+#'   exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+#'   )
+#'
+#' # create the networks
+#' mae   <- mae |>
+#' run_create_network(
+#'   feature_type = "omics_feature_cor",
+#'   action = "add") |>
+#'   run_create_network(
+#'    feature_type = "omics",
+#'    action = "add")
+#'
+#' # perform impact analysis
+#' mae <- mae |>
+#'   run_exposure_impact(
+#'     feature_type = "omics"
+#'   )
+#'
+#' # create the exposure impact plot
+#' exposure_impact_p <- mae |>
+#'   plot_exposure_impact(
+#'     feature_type = "omics")
+#'
+#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_manual
+#' scale_fill_gradient2 labs theme_minimal theme element_text
+#' element_blank margin
+#' @importFrom dplyr select distinct pull group_by summarise mutate
+#' arrange ungroup case_when
+#' @importFrom tidyr pivot_longer
+#' @importFrom purrr pluck
+#' @importFrom patchwork plot_layout
 #' @export
 plot_exposure_impact <- function(
     expomicset,
@@ -44,11 +107,12 @@ plot_exposure_impact <- function(
     heights = c(1,1),
     widths = c(2,1)){
 
-  require(ggplot2)
-  require(patchwork)
+  # require(ggplot2)
+  # require(patchwork)
 
   # Check that exposure impact analysis has been run
-  if(!("exposure_impact" %in% names(MultiAssayExperiment::metadata(expomicset)$network))){
+  if(!("exposure_impact" %in% names(
+    MultiAssayExperiment::metadata(expomicset)$network))){
     stop("Please run `run_exposure_impact()` first.")
   }
 
@@ -60,24 +124,18 @@ plot_exposure_impact <- function(
     purrr::pluck(feature_type) |>
     purrr::pluck("exposure_impact")
 
-  # exposure_impact_deg_n <-
-  #   expomicset |>
-  #   MultiAssayExperiment::metadata() |>
-  #   purrr::pluck("network") |>
-  #   purrr::pluck("exposure_impact") |>
-  #   purrr::pluck(feature_type) |>
-  #   purrr::pluck("deg_association_summary")
-
-  # set facet colors
-  if(!is.null(facet_cols)){
+  if (!is.null(facet_cols)) {
     facet_cols <- facet_cols
-  } else{
-    facet_cols <- tidy_exp_pal[1:length(
-      unique(
-        exposure_impact_degree |>
-          dplyr::pull(category)
-      ))]
+  } else {
+    facet_cols <- tidy_exp_pal[
+      seq_len(
+        length(
+          unique(
+            exposure_impact_degree |>
+              dplyr::pull(category)
+          )) )]
   }
+
 
   # set bar colors
   if(!is.null(bar_cols)){
@@ -89,70 +147,6 @@ plot_exposure_impact <- function(
           dplyr::pull(exp_name)
       )))
   }
-
-  # Create a boxplot of the degree centrality of genes that are associated
-  # with a particular exposure
-  # boxplot <- exposure_impact_degree |>
-  #   dplyr::filter(n_features >min_per_group) |>
-  #   ggplot(aes(
-  #     x=reorder(exposure,-mean_degree),
-  #     y=centrality_degree,
-  #     fill=category,
-  #     color=category
-  #   ))+
-  #   geom_boxplot(alpha=0.7) +
-  #   geom_jitter(alpha=0.1)+
-  #   ggpubr::rotate_x_text(angle=45)+
-  #   theme_minimal()+
-  #   #ggpubr::theme_pubclean()+
-  #   scale_fill_manual(values = facet_cols) +
-  #   ggpubr::rotate_x_text(angle=45)+
-  #   ggh4x::facet_grid2(
-  #     ~category,
-  #     scales = "free_x",
-  #     space = "free_x",
-  #     strip = ggh4x::strip_themed(
-  #       background_x = ggh4x::elem_list_rect(
-  #         fill = scales::alpha(
-  #           facet_cols,
-  #           alpha
-  #         )
-  #       )
-  #     )
-  #   ) +
-  #   scale_color_manual(values=facet_cols)+
-  #   theme(strip.text.x = element_text(face = "bold.italic"),
-  #         legend.position = "none")+
-  #   labs(
-  #     x="",
-  #     y="Degree",
-  #   )
-
-  # barplot <- exposure_impact_deg_n |>
-  #   dplyr::select(-percent_assoc_exp) |>
-  #   dplyr::mutate(left_over= total_deg-n_assoc_exp) |>
-  #   dplyr::select(-total_deg) |>
-  #   tidyr::pivot_longer(-exp_name,
-  #                       names_to = "group",
-  #                       values_to = "value") |>
-  #   dplyr::mutate(group=dplyr::case_when(
-  #     group == "n_assoc_exp" ~ "Associated with Exposures",
-  #     group == "left_over" ~ "Not Associated with Exposures"
-  #   )) |>
-  #   ggplot(aes(
-  #     x=value,
-  #     y=reorder(exp_name,value),
-  #     fill=group
-  #   ))+
-  #   geom_bar(stat="identity")+
-  #   ggpubr::rotate_x_text(angle=45)+
-  #   ggpubr::theme_pubr(legend="right")+
-  #   scale_fill_manual(values = bar_cols)+
-  #   labs(
-  #     x="Number of Features",
-  #     y="",
-  #     fill=""
-  #   )
 
   centrality_heatmap_df <- exposure_impact_degree |>
     dplyr::select(exposure,
@@ -168,17 +162,17 @@ plot_exposure_impact <- function(
       values_to = "value"
     ) |>
     dplyr::group_by(metric) |>
-    dplyr::mutate(scaled_value = scale(value)[, 1]) |>  # scale() returns matrix
+    dplyr::mutate(scaled_value = scale(value)[, 1]) |>
     dplyr::ungroup()
 
-  # Step 1: create exposure order based on centrality_heatmap_df
+  # create exposure order based on centrality_heatmap_df
   exposure_order <- centrality_heatmap_df |>
     dplyr::group_by(exposure) |>
     dplyr::summarise(avg = mean(scaled_value, na.rm = TRUE)) |>
     dplyr::arrange(avg) |>
     dplyr::pull(exposure)
 
-  # Step 2: apply this order in both plots
+  # apply this order in both plots
   centrality_heatmap_df <- centrality_heatmap_df |>
     dplyr::mutate(exposure = factor(exposure, levels = exposure_order))
 

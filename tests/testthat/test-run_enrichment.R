@@ -1,6 +1,6 @@
 test_that("run_enrichment identifies GO terms for DEGs and updates metadata", {
   # Create dummy data
-  dummy <- make_dummy_data(n_samples = 30)
+  dummy <- make_example_data(n_samples = 30)
 
   mae <- create_expomicset(
     codebook = dummy$codebook,

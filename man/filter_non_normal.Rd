@@ -7,29 +7,46 @@
 filter_non_normal(expomicset, p_thresh = 0.05)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure and omics data.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing
+exposure and omics data.}
 
-\item{p_thresh}{A numeric value specifying the p-value threshold for normality. Variables with \code{p.value < p_thresh} are removed. Default is \code{0.05}.}
+\item{p_thresh}{A numeric value specifying the p-value
+threshold for normality. Variables with \code{p.value < p_thresh} are removed.
+Default is \code{0.05}.}
 }
 \value{
-A \code{MultiAssayExperiment} object with non-normal exposure variables removed.
+A \code{MultiAssayExperiment} object with non-normal
+exposure variables removed.
 }
 \description{
-Removes exposure variables that deviate significantly from a normal distribution based on
+Removes exposure variables that deviate significantly from a
+normal distribution based on
 normality test results stored in metadata.
 }
 \details{
-The function identifies exposure variables that fail a normality test using \code{metadata(expomicset)$transformation$norm_df}.
+The function identifies exposure variables that fail a normality test
+using \code{metadata(expomicset)$transformation$norm_df}.
 \itemize{
-\item Exposure variables with \code{p.value < p_thresh} are removed from \code{colData(expomicset)}.
-\item The same filtering is applied to \code{colData} in each experiment within \code{experiments(expomicset)}.
+\item Exposure variables with \code{p.value < p_thresh} are removed from
+\code{colData(expomicset)}.
+\item The same filtering is applied to \code{colData} in each experiment
+within \code{experiments(expomicset)}.
 }
 }
 \examples{
-\dontrun{
-filtered_expom <- filter_non_normal(
-  expomicset = expom,
-  p_thresh = 0.05)
-}
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
+
+# Test for normality
+mae <- mae |>
+  run_normality_check() |>
+  transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
+
+# Remove non-normal variables
+mae_filtered <- mae |>
+  filter_non_normal()
 
 }

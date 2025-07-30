@@ -1,5 +1,5 @@
 test_that("extract_omics_exposure_df works with and without variable_map", {
-  dummy <- make_dummy_data(n_samples = 10)
+  dummy <- make_example_data(n_samples = 10)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,
@@ -47,7 +47,7 @@ test_that("extract_omics_exposure_df works with and without variable_map", {
 })
 
 test_that("extract_omics_exposure_df handles log2 transformation correctly", {
-  dummy <- make_dummy_data(n_samples = 10)
+  dummy <- make_example_data(n_samples = 10)
   mae <- create_expomicset(
     codebook = dummy$codebook,
     exposure = dummy$exposure,

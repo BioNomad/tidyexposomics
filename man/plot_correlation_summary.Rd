@@ -12,24 +12,55 @@ plot_correlation_summary(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with correlation results in metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with
+correlation results in metadata.}
 
-\item{feature_type}{One of \code{"degs"}, \code{"factors"}, \code{"omics"}, or \code{"exposures"}.}
+\item{feature_type}{One of \code{"degs"}, \code{"factors"},
+\code{"omics"}, or \code{"exposures"}.}
 
 \item{mode}{One of:
 \itemize{
-\item \code{"top_exposures"}: Top exposures by assay (like \code{plot_bar_correlate_exposure_fill})
-\item \code{"top_features"}: Top features by exposure category (like \code{plot_bar_correlate_feature_fill})
+\item \code{"top_exposures"}: Top exposures by assay
+\item \code{"top_features"}: Top features by exposure category
 \item \code{"exposure_category"}: Total associations by exposure category
 \item \code{"assay"}: Total associations by omics assay
 \item \code{"summary"}: Patchwork layout combining all
 }}
 
-\item{top_n}{Number of top exposures or features to display (for top modes). Default is \code{15}.}
+\item{top_n}{Number of top exposures or features to display
+(for top modes). Default is \code{15}.}
 }
 \value{
 A \code{ggplot2} object or a \code{patchwork} object (if \code{mode = "summary"}).
 }
 \description{
-Generates a bar plot summary of exposure-feature correlations using customizable modes.
+Generates a bar plot summary of exposure-feature correlations
+using customizable modes.
+}
+\examples{
+
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# correlate with exposures
+mae <- mae |>
+  run_correlation(
+  feature_type = "omics",
+  variable_map = mae |>
+    pivot_feature() |>
+    dplyr::select(variable=.feature,
+    exp_name=.exp_name),
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  )
+
+# create the correlation summary plot
+cor_summary_plot <- mae |>
+  plot_correlation_summary(
+    feature_type = "omics",
+    mode = "summary"
+  )
+
 }

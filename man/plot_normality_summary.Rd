@@ -7,33 +7,48 @@
 plot_normality_summary(expomicset, transformed = FALSE)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with quality control metadata.}
+\item{expomicset}{A \code{MultiAssayExperiment} object with quality control
+metadata.}
 
-\item{transformed}{Logical; if \code{TRUE}, use results after transformation. Default is \code{FALSE}.}
+\item{transformed}{Logical; if \code{TRUE}, use results after transformation.
+Default is \code{FALSE}.}
 }
 \value{
-A \code{ggplot} object summarizing the number of exposures classified as normal or not normal.
+A \code{ggplot} object summarizing the number of exposures
+classified as normal or not normal.
 }
 \description{
-Generates a bar plot summarizing the number of exposure variables that pass or fail normality
+Generates a bar plot summarizing the number of exposure variables that
+pass or fail normality
 tests (e.g., Shapiro-Wilk) before or after transformation.
 }
 \details{
-This function assumes that \code{run_normality_check()} has been executed and that the results are
-stored in \code{metadata(expomicset)$quality_control$normality}. If \code{transformed = TRUE}, the function will
+This function assumes that \code{run_normality_check()} has been executed and
+that the results are
+stored in \code{metadata(expomicset)$quality_control$normality}.
+If \code{transformed = TRUE}, the function will
 instead plot the transformation summary stored in \code{metadata(expomicset)$quality_control$transformation$norm_summary},
 which is populated by \code{transform_exposure()}.
 
-The plot includes both bar heights and overlaid line segments to reinforce the counts.
-Colors are drawn from the Lancet or UChicago palettes via \code{ggsci} and \code{ggpubr}.
+The plot includes both bar heights and overlaid line segments to
+reinforce the counts.
+Colors are drawn from the Lancet or UChicago palettes via
+\code{ggsci} and \code{ggpubr}.
 }
 \examples{
-\dontrun{
-# Plot original exposure normality results
-plot_normality_summary(expomicset)
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
 
-# Plot post-transformation normality summary
-plot_normality_summary(expomicset, transformed = TRUE)
-}
+# Test for normality
+mae <- mae |>
+  run_normality_check() |>
+  transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
+
+# plot the normality summary
+norm_p <- mae |>
+  plot_normality_summary()
 
 }

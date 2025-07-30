@@ -1,25 +1,39 @@
 #' Volcano Plot of Differential Abundance
 #'
-#' Generates a **volcano plot** to visualize differential abundance results across one or more omics layers.
+#' Generates a **volcano plot** to visualize differential abundance results
+#' across one or more omics layers.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing differential abundance results in `metadata(expomicset)$differential_abundance`.
-#' @param pval_col A character string specifying the column containing p-values. Default is `"adj.P.Val"`.
-#' @param pval_thresh A numeric threshold for significance. Features with p-values below this are considered significant. Default is `0.05`.
-#' @param logFC_col A character string specifying the column for log fold changes. Default is `"logFC"`.
-#' @param logFC_thresh A numeric threshold for absolute log fold change significance. Default is `log2(1.5)`.
-#' @param plot_n_sig Logical; if `TRUE`, appends the number of significant features to facet titles. Default is `TRUE`.
-#' @param top_n_label Optional integer. If provided, the top `n` most significant features per assay will be labeled on the plot.
-#' @param features_to_label Optional character vector. Specific features to label regardless of significance.
-#' @param feature_col A character string naming the feature ID column to use for labeling. Default is `"feature"`.
+#' @param expomicset A `MultiAssayExperiment` object containing differential
+#' abundance results in `metadata(expomicset)$differential_abundance`.
+#' @param pval_col A character string specifying the column containing p-values.
+#'  Default is `"adj.P.Val"`.
+#' @param pval_thresh A numeric threshold for significance. Features with
+#'  p-values below this are considered significant. Default is `0.05`.
+#' @param logFC_col A character string specifying the column for
+#' log fold changes. Default is `"logFC"`.
+#' @param logFC_thresh A numeric threshold for absolute
+#' log fold change significance. Default is `log2(1.5)`.
+#' @param plot_n_sig Logical; if `TRUE`, appends the number of
+#'  significant features to facet titles. Default is `TRUE`.
+#' @param top_n_label Optional integer. If provided, the top `n`
+#' most significant features per assay will be labeled on the plot.
+#' @param features_to_label Optional character vector.
+#' Specific features to label regardless of significance.
+#' @param feature_col A character string naming the feature ID
+#' column to use for labeling. Default is `"feature"`.
 #' @param xlab Label for the x-axis. Default is `expression(Log[2]*"FC")`.
 #' @param ylab Label for the y-axis. Default is `expression(-Log[10]*"P")`.
-#' @param title Plot title. Default is `"Volcano Plot of Differential Abundance"`.
-#' @param nrow Number of rows in the `facet_wrap()` layout. Default is `2`.
+#' @param title Plot title. Default is
+#' `"Volcano Plot of Differential Abundance"`.
+#' @param nrow Number of rows in the `facet_wrap()` layout.
+#' Default is `2`.
 #'
 #' @details
 #' The function:
-#' - Extracts differential abundance results from `metadata(expomicset)$differential_abundance`.
-#' - Assigns each feature a direction of change: **Upregulated**, **Downregulated**, or **Not-Significant**.
+#' - Extracts differential abundance results from
+#' `metadata(expomicset)$differential_abundance`.
+#' - Assigns each feature a direction of change:
+#' **Upregulated**, **Downregulated**, or **Not-Significant**.
 #' - Uses `logFC_thresh` and `pval_thresh` to define thresholds.
 #' - Adds dashed lines to indicate cutoffs for fold change and significance.
 #' - Uses `facet_wrap()` to display each assay (`exp_name`) separately.
@@ -28,12 +42,33 @@
 #' @return A `ggplot2` object representing the volcano plot.
 #'
 #' @examples
-#' \dontrun{
-#' plot_volcano(expom, pval_thresh = 0.01, logFC_thresh = log2(2))
-#' plot_volcano(expom, features_to_label = c("TP53", "MYC"))
-#' plot_volcano(expom, top_n_label = 5)
-#' }
+#' # create example data
+#' mae <- make_example_data(
+#'   n_samples = 10,
+#'   return_mae=TRUE
+#'   )
 #'
+#' # perform differential abundance analysis
+#' mae <- run_differential_abundance(
+#'   expomicset = mae,
+#'   formula = ~ smoker + sex,
+#'   abundance_col = "counts",
+#'   method = "limma_voom",
+#'   action = "add"
+#' )
+#'
+#' # create the volcano plot
+#' volcano_p <- mae |>
+#'   plot_volcano()
+#'
+#'
+#' @importFrom MultiAssayExperiment metadata
+#' @importFrom dplyr group_by summarise mutate inner_join arrange
+#' desc case_when filter slice_head sym
+#' @importFrom ggplot2 ggplot aes geom_point geom_vline geom_hline
+#' facet_wrap labs theme element_text scale_color_manual
+#' @importFrom ggrepel geom_label_repel
+#' @importFrom ggpubr theme_pubr
 #' @export
 plot_volcano <- function(
     expomicset,
@@ -50,16 +85,19 @@ plot_volcano <- function(
     title = "Volcano Plot of Differential Abundance",
     nrow=2
 ){
-  require(ggplot2)
+  # require(ggplot2)
 
   # Check to see if Differential Abundance Results are available
-  if(!"differential_abundance" %in% names(MultiAssayExperiment::metadata(expomicset)$differential_analysis)){
+  if(!"differential_abundance" %in% names(
+    MultiAssayExperiment::metadata(expomicset)$differential_analysis)){
     stop("Please run `run_differential_abundance()` first.")
   }
 
   if(plot_n_sig){
     # Grab the significant features per experiment
-    exp_sum <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance |>
+    exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
+      purrr::pluck("differential_analysis",
+                   "differential_abundance")|>
       dplyr::group_by(exp_name) |>
       dplyr::summarise(total = dplyr::n(),
                 total_significant = sum(
@@ -75,7 +113,9 @@ plot_volcano <- function(
         ")",
         sep=""))
   } else {
-    exp_sum <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance |>
+    exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
+      purrr::pluck("differential_analysis",
+                   "differential_abundance") |>
       dplyr::group_by(exp_name) |>
       dplyr::summarise(total = dplyr::n(),
                 total_significant = sum(
@@ -85,7 +125,9 @@ plot_volcano <- function(
   }
 
 
-  plot_df <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance |>
+  plot_df <- MultiAssayExperiment::metadata(expomicset) |>
+    purrr::pluck("differential_analysis",
+                 "differential_abundance") |>
     dplyr::inner_join(exp_sum,
                       by = "exp_name") |>
     dplyr::arrange(dplyr::desc(total)) |>
@@ -144,16 +186,6 @@ plot_volcano <- function(
         max.overlaps = Inf,
         show.legend = FALSE
       )
-      # ggrepel::geom_label_repel(
-      #   data = plot_df |>
-      #     group_by(exp_name) |>
-      #     dplyr::arrange(!!sym(pval_col)) |>
-      #     dplyr::slice_head(n = top_n_label),
-      #   aes(label = !!sym(feature_col)),
-      #   size = 3,
-      #   max.overlaps = Inf,
-      #   show.legend = FALSE
-      # )
   }
 
   if(!is.null(features_to_label)) {
@@ -168,14 +200,6 @@ plot_volcano <- function(
         max.overlaps = Inf,
         show.legend = FALSE
       )
-      # ggrepel::geom_label_repel(
-      #   data = plot_df |>
-      #     dplyr::filter(!!sym(feature_col) %in% features_to_label),
-      #   aes(label = !!sym(feature_col)),
-      #   size = 3,
-      #   max.overlaps = Inf,
-      #   show.legend = FALSE
-      # )
   }
 
   volcano

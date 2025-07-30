@@ -7,29 +7,49 @@
 plot_sample_clusters(expomicset, exposure_cols = NULL)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing sample clustering results
+\item{expomicset}{A \code{MultiAssayExperiment} object containing sample
+clustering results
 in \code{metadata(expomicset)$sample_clustering}.}
 
-\item{exposure_cols}{A character vector specifying columns from \code{colData} to include
+\item{exposure_cols}{A character vector specifying columns from \code{colData}
+to include
 in the summary. Default is \code{NULL}, which includes all available columns.}
 }
 \value{
 A \code{ComplexHeatmap} plot displaying sample clustering results.
 }
 \description{
-Generates a heatmap of sample clustering results and summarizes sample group assignments.
+Generates a heatmap of sample clustering results and
+summarizes sample group assignments.
 }
 \details{
 This function:
 \itemize{
-\item Extracts sample cluster assignments from \code{metadata(expomicset)$sample_clustering}.
+\item Extracts sample cluster assignments from
+\code{metadata(expomicset)$sample_clustering}.
 \item Merges cluster labels with \code{colData(expomicset)}.
-\item Plots the heatmap stored in \code{metadata(expomicset)$sample_clustering$heatmap}.
+\item Plots the heatmap stored in
+\code{metadata(expomicset)$sample_clustering$heatmap}.
 }
 }
 \examples{
-\dontrun{
-plot_sample_clusters(expom)
-}
+# create example data
+mae <- make_example_data(
+  n_samples = 10,
+  return_mae=TRUE
+  )
+
+# determine sample clusters
+mae <- run_cluster_samples(
+  expomicset = mae,
+  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi"),
+  clustering_approach = "diana"
+)
+
+# plot sample clusters
+sample_cluster_p <- mae |>
+  plot_sample_clusters(
+    exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
+  )
 
 }

@@ -10,9 +10,10 @@ ont_annot_app()
 Launches a Shiny app in a new window; does not return a value.
 }
 \description{
-This function launches the Shiny application for annotating exposome variable names
-using ontology terms such as HPO, ENVO, and ChEBI. The app is bundled with the
-\code{tidyexposomics} package and allows interactive selection or search of ontology terms.
+This function launches the Shiny application for annotating exposome
+variable names using ontology terms such as HPO, ENVO, and ChEBI.
+The app is bundled with the \code{tidyexposomics} package and allows interactive
+selection or search of ontology terms.
 }
 \examples{
 \dontrun{

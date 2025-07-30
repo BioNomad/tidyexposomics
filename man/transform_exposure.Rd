@@ -11,9 +11,11 @@ transform_exposure(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure variables in \code{colData}.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+variables in \code{colData}.}
 
-\item{exposure_cols}{Optional character vector of exposure variable names to transform.
+\item{exposure_cols}{Optional character vector of exposure variable
+names to transform.
 If \code{NULL}, uses exposures found in \code{metadata(expomicset)$quality_control$normality$norm_df$exposure}.}
 
 \item{transform_method}{Character. Transformation method to apply. Options:
@@ -22,33 +24,48 @@ If \code{NULL}, uses exposures found in \code{metadata(expomicset)$quality_contr
 \item \code{"log2"}: log base 2 transformation
 \item \code{"x_1_3"}: cube-root transformation
 \item \code{"sqrt"}: square-root transformation
-\item \code{"boxcox_best"}: data-driven Box-Cox approximation with heuristic labeling
+\item \code{"boxcox_best"}: data-driven Box-Cox approximation with
+heuristic labeling
 }}
 }
 \value{
-A \code{MultiAssayExperiment} object with transformed exposures in \code{colData},
-and transformation details stored in:
+A \code{MultiAssayExperiment} object with transformed exposures
+in \code{colData}, and transformation details stored in:
 \itemize{
-\item \code{metadata(expomicset)$quality_control$transformation$norm_df}: Shapiro-Wilk test results
-\item \code{metadata(expomicset)$quality_control$transformation$norm_summary}: Summary of normality
-\item \code{metadata(expomicset)$codebook}: Updated with transformation info per variable
+\item \code{metadata(expomicset)$quality_control$transformation$norm_df}:
+Shapiro-Wilk test results
+\item \code{metadata(expomicset)$quality_control$transformation$norm_summary}:
+Summary of normality
+\item \code{metadata(expomicset)$codebook}: Updated with transformation info
+per variable
 \item \code{metadata(expomicset)$summary$steps}: Updated with step record
 }
 }
 \description{
-Applies a transformation to selected numeric exposure variables in the \code{colData} of a
-\code{MultiAssayExperiment} to improve their normality (e.g., log, Box-Cox, sqrt).
-Transformation results and normality statistics are stored in metadata for tracking.
+Applies a transformation to selected numeric exposure variables in the
+\code{colData} of a \code{MultiAssayExperiment} to improve their normality
+(e.g., log, Box-Cox, sqrt). Transformation results and normality
+statistics are stored in metadata for tracking.
 }
 \details{
-For \code{transform_method = "boxcox_best"}, the function automatically shifts values to be
-strictly positive and chooses from a discrete set of transformations (e.g., \code{1/x}, \code{log(x)}, \code{x^2})
-based on estimated Box-Cox lambda. Each variable may receive a different transformation.
+For \code{transform_method = "boxcox_best"}, the function automatically shifts
+values to be strictly positive and chooses from a discrete set of
+transformations (e.g., \code{1/x}, \code{log(x)}, \code{x^2})
+based on estimated Box-Cox lambda. Each variable may receive a
+different transformation.
 }
 \examples{
-\dontrun{
-expomicset <- transform_exposure(expomicset, transform_method = "boxcox_best")
-}
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
+
+# Test for normality
+mae <- mae |>
+  run_normality_check() |>
+  transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"),
+  transform_method = "boxcox_best")
 
 }
 \seealso{

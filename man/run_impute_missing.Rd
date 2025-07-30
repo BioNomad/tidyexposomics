@@ -13,44 +13,67 @@ run_impute_missing(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposures and omics data.}
+\item{expomicset}{A \code{MultiAssayExperiment} object containing
+exposures and omics data.}
 
-\item{exposure_impute_method}{Character. Imputation method to use for exposure variables. Defaults to \code{"median"}.}
+\item{exposure_impute_method}{Character. Imputation method to use for
+exposure variables. Defaults to \code{"median"}.}
 
-\item{exposure_cols}{Character vector. Names of columns in \code{colData} to impute. If \code{NULL}, all numeric columns are used.}
+\item{exposure_cols}{Character vector. Names of columns in
+\code{colData} to impute. If \code{NULL}, all numeric columns are used.}
 
-\item{omics_impute_method}{Character. Imputation method to use for omics data. Defaults to \code{"knn"}.}
+\item{omics_impute_method}{Character. Imputation method to use for
+omics data. Defaults to \code{"knn"}.}
 
-\item{omics_to_impute}{Character vector. Names of omics datasets to impute. If \code{NULL}, all omics datasets are included.}
+\item{omics_to_impute}{Character vector. Names of omics datasets to impute.
+If \code{NULL}, all omics datasets are included.}
 }
 \value{
-A \code{MultiAssayExperiment} object with imputed exposure and/or omics data.
+A \code{MultiAssayExperiment} object with imputed exposure
+and/or omics data.
 }
 \description{
-Performs missing data imputation on both exposure variables (from \code{colData}) and
-omics datasets (from \code{experiments}) within a \code{MultiAssayExperiment} object.
+Performs missing data imputation on both exposure variables
+(from \code{colData}) and omics datasets (from \code{experiments}) within
+a \code{MultiAssayExperiment} object.
 }
 \details{
-For exposures, numeric columns in \code{colData} are imputed using the selected method.
-For omics data, assays are selected and imputed individually.
+For exposures, numeric columns in \code{colData} are imputed using
+the selected method. For omics data, assays are selected and
+imputed individually.
 
 Supported imputation methods include:
 \itemize{
-\item \code{"median"}: Median imputation using \code{naniar::impute_median_all}
-\item \code{"mean"}: Mean imputation using \code{naniar::impute_mean_all}
-\item \code{"knn"}: k-nearest neighbor imputation using \code{impute::impute.knn}
-\item \code{"mice"}: Multiple imputation using chained equations (\code{mice::mice})
-\item \code{"dep"}: MinProb imputation for proteomics using \code{DEP::impute}
-\item \code{"missforest"}: Random forest-based imputation using \code{missForest::missForest}
-\item \code{"lod_sqrt2"}: Substitution of missing values with LOD/sqrt(2), where LOD is the smallest non-zero value per variable
+\item \code{"median"}: Median imputation using
+\code{naniar::impute_median_all}
+\item \code{"mean"}: Mean imputation using
+\code{naniar::impute_mean_all}
+\item \code{"knn"}: k-nearest neighbor imputation using
+\code{impute::impute.knn}
+\item \code{"mice"}: Multiple imputation using chained equations
+(\code{mice::mice})
+\item \code{"dep"}: MinProb imputation for proteomics using
+\code{DEP::impute}
+\item \code{"missforest"}: Random forest-based imputation using
+\code{missForest::missForest}
+\item \code{"lod_sqrt2"}: Substitution of missing values with
+LOD/sqrt(2), where LOD is the smallest non-zero value per variable
 }
 }
 \examples{
-\dontrun{
-imputed_mae <- run_impute_missing(my_mae,
-                                  exposure_impute_method = "lod_sqrt2",
-                                  exposure_cols = c("pm25", "no2"),
-                                  omics_impute_method = "missforest",
-                                  omics_to_impute = c("metabolomics", "proteomics"))
-}
+# Create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae = TRUE
+)
+
+# Introduce some missingness
+MultiAssayExperiment::colData(mae)$exposure_pm25[sample(1:20, 5)] <- NA
+
+# Filter features and exposures with high missingness
+mae <- run_impute_missing(
+  expomicset = mae,
+  exposure_impute_method = "median"
+)
+
 }

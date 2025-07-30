@@ -12,22 +12,29 @@ plot_sensitivity_summary(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing sensitivity analysis results
+\item{expomicset}{A \code{MultiAssayExperiment} object containing sensitivity
+analysis results
 in \code{metadata(expomicset)$sensitivity_analysis}.}
 
-\item{stability_score_thresh}{A numeric threshold for stability scores. Default is \code{NULL},
-which uses the threshold stored in \code{metadata(expomicset)$sensitivity_analysis$score_thresh}.}
+\item{stability_score_thresh}{A numeric threshold for stability scores.
+Default is \code{NULL},
+which uses the threshold stored in
+\code{metadata(expomicset)$sensitivity_analysis$score_thresh}.}
 
-\item{stability_metric}{A character string specifying which stability metric to plot (e.g., "stability_score", "logp_weighted_score"). Default is "stability_score".}
+\item{stability_metric}{A character string specifying which
+stability metric to plot (e.g., "stability_score",
+"logp_weighted_score"). Default is "stability_score".}
 
-\item{title}{A character string specifying the title of the ridge plot. Default is
+\item{title}{A character string specifying the title of the ridge plot.
+Default is
 "Distribution of Stability Scores".}
 }
 \value{
 A \code{patchwork} object combining a ridge plot and a bar chart.
 }
 \description{
-Generates a ridge plot and bar chart summarizing feature stability scores across assays.
+Generates a ridge plot and bar chart summarizing feature stability
+scores across assays.
 }
 \details{
 This function:
@@ -39,8 +46,40 @@ This function:
 }
 }
 \examples{
-\dontrun{
-plot_sensitivity_summary(expom, stability_metric = "logp_weighted_score")
-}
+# create example data
+mae <- make_example_data(
+  n_samples = 20,
+  return_mae=TRUE
+)
+
+
+# Run differential abundance
+mae <- run_differential_abundance(
+  expomicset = mae,
+  formula = ~ smoker + sex,
+  abundance_col = "counts",
+  method = "limma_voom",
+  action = "add"
+)
+
+# Run the sensitivity analysis
+mae <- run_sensitivity_analysis(
+  expomicset = mae,
+  base_formula = ~ smoker + sex,
+  methods = c("limma_voom"),
+  scaling_methods = c("none"),
+  covariates_to_remove = "sex",
+  pval_col = "P.Value",
+  logfc_col = "logFC",
+  pval_threshold = 0.05,
+  logFC_threshold = 0,
+  bootstrap_n = 3,
+  action = "add"
+)
+
+# create the sensitivity summary plot
+sens_sum_p <- mae |>
+  plot_sensitivity_summary()
+
 
 }
