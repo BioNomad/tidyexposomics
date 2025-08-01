@@ -26,3 +26,10 @@ Invisibly returns the loaded object.
 \description{
 Download and load a zipped .RData file from the tidyexposomics GitHub release
 }
+\examples{
+# load the example meta data
+download_dataset(
+    name = "meta"
+)
+
+}

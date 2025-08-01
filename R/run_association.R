@@ -35,19 +35,19 @@
 #'
 #' #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # run association tests
 #' mae <- mae |>
-#'   run_association(
-#'   source = "exposures",
-#'   feature_set = c("exposure_pm25","exposure_no2"),
-#'   outcome = "smoker",
-#'   covariates = c("age"),
-#'   family = "binomial"
-#'   )
+#'     run_association(
+#'         source = "exposures",
+#'         feature_set = c("exposure_pm25", "exposure_no2"),
+#'         outcome = "smoker",
+#'         covariates = c("age"),
+#'         family = "binomial"
+#'     )
 #'
 #' @export
 run_association <- function(
@@ -62,194 +62,207 @@ run_association <- function(
     action = "add",
     min_genes = 10,
     feature_col = NULL,
-    mirna_assays = NULL
-) {
-  # Validate inputs
-  source <- match.arg(source)
+    mirna_assays = NULL) {
+    # Validate inputs
+    source <- match.arg(source)
 
-  # grab coldata and scale if numeric
-  data <- expomicset |>
-    MultiAssayExperiment::colData() |>
-    as.data.frame() |>
-    dplyr::mutate_if(is.numeric, ~ as.numeric(scale(.)))
+    # grab coldata and scale if numeric
+    data <- expomicset |>
+        MultiAssayExperiment::colData() |>
+        as.data.frame() |>
+        dplyr::mutate_if(is.numeric, ~ as.numeric(scale(.)))
 
-  # switch based on input
-  features_df <- switch(
-    source,
-    omics = .extract_omics_features(expomicset,
-                                    top_n),
+    # switch based on input
+    features_df <- switch(source,
+        omics = .extract_omics_features(
+            expomicset,
+            top_n
+        ),
+        exposures = .extract_exposures(
+            data,
+            feature_set
+        ),
+        factors = .extract_latent_factors(expomicset),
+        go_pcs = .extract_go_pcs(expomicset,
+            geneset = feature_set,
+            covariates,
+            min_genes = min_genes,
+            feature_col = feature_col,
+            mirna_assays = mirna_assays
+        )
+    )
 
-    exposures = .extract_exposures(data,
-                                   feature_set),
+    # create the model data
+    if (source == "exposures") {
+        model_data <- data
+        feature_cols <- feature_set
+    } else {
+        model_data <- dplyr::left_join(
+            tibble::rownames_to_column(data, "id"),
+            features_df,
+            by = "id"
+        ) |>
+            tibble::column_to_rownames("id")
 
-    factors = .extract_latent_factors(expomicset),
+        feature_cols <- setdiff(colnames(features_df), "id")
+    }
 
-    go_pcs = .extract_go_pcs(expomicset,
-                             geneset = feature_set,
-                             covariates,
-                             min_genes = min_genes,
-                             feature_col = feature_col,
-                             mirna_assays = mirna_assays)
-  )
 
-  # create the model data
-  if (source == "exposures") {
-    model_data <- data
-    feature_cols <- feature_set
-  } else {
-    model_data <- dplyr::left_join(
-      tibble::rownames_to_column(data, "id"),
-      features_df,
-      by = "id"
-    ) |>
-      tibble::column_to_rownames("id")
+    # ensure outcome variable is factor if binomial
+    if (family == "binomial") {
+        model_data[[outcome]] <- as.factor(model_data[[outcome]])
+
+        if (length(unique(model_data[[outcome]])) != 2) {
+            stop("Binary outcome must have exactly 2 levels")
+        }
+    }
+
+    # ensure that covariates are have more than one value
+    if (!is.null(covariates)) {
+        covariates <- covariates[covariates %in% colnames(model_data)]
+        if (length(covariates) == 0) {
+            stop("No valid covariates provided.")
+        }
+        for (cov in covariates) {
+            if (length(unique(model_data[[cov]])) <= 1) {
+                # stop(paste("Covariate", cov, "must have more than one unique value."))
+                stop(sprintf("Covariate %s must have more than one unique value.", cov))
+            }
+        }
+    }
+
+    message("Running GLMs.")
 
     feature_cols <- setdiff(colnames(features_df), "id")
-  }
+
+    results <- purrr::map_dfr(feature_cols, function(fcol) {
+        fmla <- as.formula(
+            paste(
+                outcome, "~", fcol,
+                if (!is.null(covariates)) {
+                    paste("+", paste(covariates, collapse = "+"))
+                } else {
+                    ""
+                }
+            )
+        )
+
+        model <- tryCatch(
+            glm(fmla, data = model_data, family = family),
+            error = function(e) NULL
+        )
+
+        # Only continue if model is valid
+        if (is.null(model)) {
+            return(NULL)
+        }
+
+        # extract results
+        model_summary <- broom::tidy(model)
+        model_filtered <- model_summary |>
+            dplyr::filter(term == fcol)
+
+        if (nrow(model_filtered) == 0) {
+            message(sprintf(
+                "Skipping %s - term not found in model (possibly dropped)",
+                fcol
+            ))
+            return(NULL)
+        }
 
 
-  # ensure outcome variable is factor if binomial
-  if (family == "binomial") {
+        if (source %in% c("exposures", "factors")) {
 
-    model_data[[outcome]] <- as.factor(model_data[[outcome]])
+        }
+        # Compute R^2
+        model_filtered$r2 <- .calc_r2(model, model_data)$r2
+        model_filtered$adj_r2 <- .calc_r2(model, model_data)$adj_r2
+        return(model_filtered)
+    }) |>
+        dplyr::mutate(
+            p_adjust = p.adjust(
+                p.value,
+                method = correction_method
+            )
+        ) |>
+        dplyr::mutate(outcome = outcome)
 
-    if (length(unique(model_data[[outcome]])) != 2)
-
-      stop("Binary outcome must have exactly 2 levels")
-  }
-
-  # ensure that covariates are have more than one value
-  if (!is.null(covariates)) {
-    covariates <- covariates[covariates %in% colnames(model_data)]
-    if (length(covariates) == 0) {
-      stop("No valid covariates provided.")
-    }
-    for (cov in covariates) {
-      if (length(unique(model_data[[cov]])) <= 1) {
-        # stop(paste("Covariate", cov, "must have more than one unique value."))
-        stop(sprintf("Covariate %s must have more than one unique value.", cov))
-
-      }
-    }
-  }
-
-  message("Running GLMs.")
-
-  feature_cols <- setdiff(colnames(features_df), "id")
-
-  results <- purrr::map_dfr(feature_cols, function(fcol) {
-    fmla <- as.formula(
-      paste(outcome, "~", fcol,
-            if (!is.null(covariates)) {
-              paste("+", paste(covariates, collapse = "+"))
-              }else {""})
+    # Annotate the results based on the source
+    results <- .annotate_results_by_source(
+        results = results,
+        source = source,
+        expomicset = expomicset
     )
 
-    model <- tryCatch(
-      glm(fmla, data = model_data, family = family),
-      error = function(e) NULL
-    )
-
-    # Only continue if model is valid
-    if (is.null(model)) return(NULL)
-
-    # extract results
-    model_summary <- broom::tidy(model)
-    model_filtered <- model_summary |>
-      dplyr::filter(term == fcol)
-
-    if (nrow(model_filtered) == 0) {
-      message(sprintf(
-        "Skipping %s - term not found in model (possibly dropped)",
-        fcol))
-      return(NULL)
+    if (
+        (paste0("assoc_", source) %in%
+            names(MultiAssayExperiment::metadata(expomicset)$association)) &&
+            identical(
+                covariates,
+                MultiAssayExperiment::metadata(expomicset)$association[[
+                    paste0("assoc_", source)
+                ]]$covariates
+            )) {
+        if (any(results$term %in%
+            MultiAssayExperiment::metadata(expomicset)$association[[
+                paste0("assoc_", source)
+            ]]$results_df$term)) {
+            stop("Association results for this feature already exists.")
+        } else {
+            results <- expomicset |>
+                MultiAssayExperiment::metadata() |>
+                purrr::pluck("association") |>
+                purrr::pluck(paste0("assoc_", source)) |>
+                purrr::pluck("results_df") |>
+                bind_rows(results)
+        }
     }
 
+    # add results to metadata
+    if (action == "add") {
+        MultiAssayExperiment::metadata(expomicset)$association[[
+            paste0("assoc_", source)
+        ]] <- list(
+            results_df = results,
+            covariates = covariates
+        )
 
-    if(source %in% c("exposures", "factors")){
+        # Add in a step record
+        step_record <- list(
+            run_association = list(
+                timestamp = Sys.time(),
+                params = list(
+                    outcome = outcome,
+                    source = source,
+                    covariates = covariates,
+                    feature_set = feature_set,
+                    top_n = top_n,
+                    family = family,
+                    correction_method = correction_method,
+                    min_genes = min_genes,
+                    feature_col = feature_col,
+                    mirna_assays = mirna_assays
+                ),
+                notes = paste0(
+                    "Performed association analysis using source: ",
+                    source
+                )
+            )
+        )
 
+        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+            step_record
+        )
+
+        return(expomicset)
+    } else {
+        return(list(
+            results_df = results,
+            covariates = covariates,
+            model_data = model_data
+        ))
     }
-    # Compute R^2
-    model_filtered$r2 <- .calc_r2(model,model_data)$r2
-    model_filtered$adj_r2 <- .calc_r2(model,model_data)$adj_r2
-    return(model_filtered)
-  }) |>
-    dplyr::mutate(
-      p_adjust = p.adjust(
-        p.value,
-        method = correction_method)) |>
-    dplyr::mutate(outcome = outcome)
-
-  # Annotate the results based on the source
-  results <- .annotate_results_by_source(
-    results = results,
-    source = source,
-    expomicset = expomicset)
-
-  if (
-    (paste0("assoc_", source) %in%
-     names(MultiAssayExperiment::metadata(expomicset)$association)) &&
-    identical(
-      covariates,
-      MultiAssayExperiment::metadata(expomicset)$association[[
-        paste0("assoc_", source)]]$covariates )){
-    if(any(results$term %in%
-           MultiAssayExperiment::metadata(expomicset)$association[[
-             paste0("assoc_", source)]]$results_df$term)){
-      stop("Association results for this feature already exists.")
-    } else{
-      results <- expomicset |>
-        MultiAssayExperiment::metadata() |>
-        purrr::pluck("association") |>
-        purrr::pluck(paste0("assoc_", source)) |>
-        purrr::pluck("results_df") |>
-        bind_rows(results)
-    }
-  }
-
-  # add results to metadata
-  if (action == "add") {
-    MultiAssayExperiment::metadata(expomicset)$association[[
-      paste0("assoc_", source)]] <- list(
-        results_df = results,
-        covariates = covariates
-      )
-
-    # Add in a step record
-    step_record <- list(
-      run_association = list(
-        timestamp = Sys.time(),
-        params = list(
-          outcome = outcome,
-          source = source,
-          covariates = covariates,
-          feature_set = feature_set,
-          top_n = top_n,
-          family = family,
-          correction_method = correction_method,
-          min_genes = min_genes,
-          feature_col = feature_col,
-          mirna_assays = mirna_assays
-        ),
-        notes = paste0("Performed association analysis using source: ",
-                       source)
-      )
-    )
-
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$summary$steps,
-      step_record
-    )
-
-    return(expomicset)
-
-  } else {
-    return(list(
-      results_df = results,
-      covariates = covariates,
-      model_data = model_data
-    ))
-  }
 }
 
 # --- Extract Omics Features Function ----------
@@ -263,32 +276,35 @@ run_association <- function(
 #' @noRd
 .extract_omics_features <- function(expomicset,
                                     top_n = NULL) {
-  log2_assays <- .log2_multiassay(expomicset)
+    log2_assays <- .log2_multiassay(expomicset)
 
-  selected <- if (!is.null(top_n)) {
-    .top_var_multiassay(log2_assays, n = top_n)
-  }else {
-    lapply(MultiAssayExperiment::experiments(log2_assays), rownames)
-  }
+    selected <- if (!is.null(top_n)) {
+        .top_var_multiassay(log2_assays, n = top_n)
+    } else {
+        lapply(MultiAssayExperiment::experiments(log2_assays), rownames)
+    }
 
-  scaled <- .scale_multiassay(log2_assays,
-                              log2 = FALSE)
+    scaled <- .scale_multiassay(log2_assays,
+        log2 = FALSE
+    )
 
-  dfs <- purrr::imap(
-    MultiAssayExperiment::experiments(scaled),
-    function(se, name) {
-      df <- SummarizedExperiment::assay(
-        se[selected[[name]], , drop = FALSE]) |>
-        t() |>
-        as.data.frame()
+    dfs <- purrr::imap(
+        MultiAssayExperiment::experiments(scaled),
+        function(se, name) {
+            df <- SummarizedExperiment::assay(
+                se[selected[[name]], , drop = FALSE]
+            ) |>
+                t() |>
+                as.data.frame()
 
-      names(df) <- paste0(name, "_", names(df)) |>
-        (\(chr) gsub(" |-", "_", chr))()
+            names(df) <- paste0(name, "_", names(df)) |>
+                (\(chr) gsub(" |-", "_", chr))()
 
-      tibble::rownames_to_column(df, "id")
-    })
+            tibble::rownames_to_column(df, "id")
+        }
+    )
 
-  purrr::reduce(dfs, dplyr::full_join, by = "id")
+    purrr::reduce(dfs, dplyr::full_join, by = "id")
 }
 
 # --- Extract Exposures Function ----------
@@ -299,8 +315,8 @@ run_association <- function(
 #' @keywords internal
 #' @noRd
 .extract_exposures <- function(data, feature_set) {
-  df <- data[, feature_set, drop = FALSE] |> as.data.frame()
-  tibble::rownames_to_column(df, "id")
+    df <- data[, feature_set, drop = FALSE] |> as.data.frame()
+    tibble::rownames_to_column(df, "id")
 }
 
 # --- Extract Latent Factors Function -------------
@@ -312,65 +328,68 @@ run_association <- function(
 #' @keywords internal
 #' @noRd
 .extract_latent_factors <- function(expomicset) {
-  result <- expomicset |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("multiomics_integration") |>
-    purrr::pluck("integration_results")
+    result <- expomicset |>
+        MultiAssayExperiment::metadata() |>
+        purrr::pluck("multiomics_integration") |>
+        purrr::pluck("integration_results")
 
-  mat <- switch(
-    result$method,
+    mat <- switch(result$method,
+        "MOFA" = MOFA2::get_factors(result$result)[[1]],
+        "MCIA" = result$result@global_scores,
+        "MCCA" = {
+            result$result$sample_scores |>
+                purrr::map(~ .x |>
+                    as.data.frame() |>
+                    tibble::rownames_to_column("sample") |>
+                    tidyr::pivot_longer(-sample,
+                        names_to = "factor",
+                        values_to = "weight"
+                    )) |>
+                dplyr::bind_rows(.id = "exp_name") |>
+                dplyr::group_by(factor, sample) |>
+                dplyr::reframe(weight = mean(weight), .groups = "drop") |>
+                tidyr::pivot_wider(names_from = "factor", values_from = "weight") |>
+                tibble::column_to_rownames("sample") |>
+                (\(df) {
+                    colnames(df) <- gsub(" ", "_", colnames(df))
+                    df
+                })()
+        },
+        "DIABLO" = {
+            result$result$variates |>
+                (\(lst) lst[names(lst) != "Y"])() |>
+                purrr::imap_dfc(~ {
+                    comp_names <- paste(.y, colnames(.x), sep = " ")
+                    df <- as.data.frame(.x)
+                    colnames(df) <- comp_names
+                    df
+                }) |>
+                tibble::rownames_to_column("id") |>
+                tibble::column_to_rownames("id") |>
+                (\(df) {
+                    colnames(df) <- gsub(" ", "_", colnames(df))
+                    df
+                })()
+        },
+        "RGCCA" = {
+            purrr::imap_dfc(result$result$Y, ~ {
+                comp_names <- paste(.y, colnames(.x), sep = " ")
+                df <- as.data.frame(.x)
+                colnames(df) <- comp_names
+                df
+            }) |>
+                tibble::rownames_to_column("id") |>
+                tibble::column_to_rownames("id") |>
+                (\(df) {
+                    colnames(df) <- gsub(" ", "_", colnames(df))
+                    df
+                })()
+        },
+        stop("Unsupported integration method.")
+    )
 
-    "MOFA" = MOFA2::get_factors(result$result)[[1]],
-
-    "MCIA" = result$result@global_scores,
-
-    "MCCA" = {
-      result$result$sample_scores |>
-        purrr::map(~ .x |>
-                     as.data.frame() |>
-                     tibble::rownames_to_column("sample") |>
-                     tidyr::pivot_longer(-sample,
-                                         names_to = "factor",
-                                         values_to = "weight")) |>
-        dplyr::bind_rows(.id = "exp_name") |>
-        dplyr::group_by(factor, sample) |>
-        dplyr::reframe(weight = mean(weight), .groups = "drop") |>
-        tidyr::pivot_wider(names_from = "factor", values_from = "weight") |>
-        tibble::column_to_rownames("sample") |>
-        (\(df) {colnames(df) <-  gsub(" ","_",colnames(df));df})()
-    },
-
-    "DIABLO" = {
-      result$result$variates |>
-        (\(lst) lst[names(lst) != "Y"])() |>
-        purrr::imap_dfc( ~ {
-          comp_names <- paste(.y, colnames(.x), sep = " ")
-          df <- as.data.frame(.x)
-          colnames(df) <- comp_names
-          df
-        }) |>
-        tibble::rownames_to_column("id") |>
-        tibble::column_to_rownames("id") |>
-        (\(df) {colnames(df) <-  gsub(" ","_",colnames(df));df})()
-    },
-
-    "RGCCA" = {
-      purrr::imap_dfc(result$result$Y, ~ {
-        comp_names <- paste(.y, colnames(.x), sep = " ")
-        df <- as.data.frame(.x)
-        colnames(df) <- comp_names
-        df
-      }) |>
-        tibble::rownames_to_column("id") |>
-        tibble::column_to_rownames("id") |>
-        (\(df) {colnames(df) <-  gsub(" ","_",colnames(df));df})()
-    },
-
-    stop("Unsupported integration method.")
-  )
-
-  mat <- as.data.frame(mat)
-  tibble::rownames_to_column(mat, "id")
+    mat <- as.data.frame(mat)
+    tibble::rownames_to_column(mat, "id")
 }
 
 
@@ -388,65 +407,69 @@ run_association <- function(
     min_genes = 10,
     feature_col = NULL,
     mirna_assays = NULL) {
+    enrich_res <- expomicset |>
+        MultiAssayExperiment::metadata() |>
+        purrr::pluck("enrichment") |>
+        purrr::pluck(geneset)
 
-  enrich_res <- expomicset |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("enrichment") |>
-    purrr::pluck(geneset)
-
-  if (!is.null(mirna_assays)){
-    enrich_res <- enrich_res |>
-      dplyr::filter(!exp_name %in% mirna_assays)
-  }
-
-  pc_dfs <- purrr::pmap_dfr(
-
-    enrich_res |>
-      dplyr::distinct(
-        exp_name,
-        Cluster,
-        go_group),
-
-    function(exp_name,
-             Cluster,
-             go_group) {
-
-      df <- enrich_res |>
-        dplyr::filter(exp_name == !!exp_name,
-                      Cluster == !!Cluster,
-                      go_group == !!go_group)
-
-      genes <- unique(unlist(stringr::str_split(df$geneID, "/")))
-
-      if (length(genes) < min_genes) return(NULL)
-
-      exp <- .update_assay_colData(expomicset, exp_name)
-
-      if (!is.null(feature_col)) {
-        genes <- exp |>
-          tidybulk::pivot_transcript() |>
-          dplyr::filter(!!rlang::sym(feature_col) %in% genes) |>
-          dplyr::pull(.feature)
-
-      }
-
-      assay <- SummarizedExperiment::assay(exp)
-
-      assay <- assay[rownames(assay) %in% genes, , drop = FALSE]
-
-      if (nrow(assay) < 2 || all(apply(assay, 1, var) == 0)) return(NULL)
-
-      pc1 <- prcomp(t(log2(assay + 1)), scale. = TRUE)$x[, 1]
-
-      id <- rownames(pc1)
-
-      tibble::tibble(
-        id = id,
-        !!paste("PC", exp_name, Cluster, go_group, sep = "/") := pc1)
+    if (!is.null(mirna_assays)) {
+        enrich_res <- enrich_res |>
+            dplyr::filter(!exp_name %in% mirna_assays)
     }
-  )
 
-  return(pc_dfs)
+    pc_dfs <- purrr::pmap_dfr(
+        enrich_res |>
+            dplyr::distinct(
+                exp_name,
+                Cluster,
+                go_group
+            ),
+        function(
+            exp_name,
+            Cluster,
+            go_group) {
+            df <- enrich_res |>
+                dplyr::filter(
+                    exp_name == !!exp_name,
+                    Cluster == !!Cluster,
+                    go_group == !!go_group
+                )
+
+            genes <- unique(unlist(stringr::str_split(df$geneID, "/")))
+
+            if (length(genes) < min_genes) {
+                return(NULL)
+            }
+
+            exp <- .update_assay_colData(expomicset, exp_name)
+
+            if (!is.null(feature_col)) {
+                genes <- exp |>
+                    tidybulk::pivot_transcript() |>
+                    dplyr::filter(!!rlang::sym(feature_col) %in% genes) |>
+                    dplyr::pull(.feature)
+            }
+
+            assay <- SummarizedExperiment::assay(exp)
+
+            assay <- assay[rownames(assay) %in% genes, , drop = FALSE]
+
+            if (nrow(assay) < 2 || all(apply(assay, 1, var) == 0)) {
+                return(NULL)
+            }
+
+            pc1 <- prcomp(t(log2(assay + 1)), scale. = TRUE)$x[, 1]
+
+            id <- rownames(pc1)
+
+            tibble::tibble(
+                id = id,
+                !!paste("PC", exp_name, Cluster, go_group, sep = "/") := pc1
+            )
+        }
+    )
+
+    return(pc_dfs)
 }
 
 # --- R2 Function ---------
@@ -471,21 +494,22 @@ run_association <- function(
 #'
 #' @keywords internal
 #' @noRd
-.calc_r2 <- function(model,
-                     model_data){
-  # Compute R-squared and adjusted R-squared
-  n <- nrow(model_data)
-  # includes intercept
-  p <- length(coef(model))
+.calc_r2 <- function(
+    model,
+    model_data) {
+    # Compute R-squared and adjusted R-squared
+    n <- nrow(model_data)
+    # includes intercept
+    p <- length(coef(model))
 
-  # calculate the r2 and adj r2
-  r2 <- 1 - model$deviance / model$null.deviance
-  adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
+    # calculate the r2 and adj r2
+    r2 <- 1 - model$deviance / model$null.deviance
+    adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
 
-  return(list(
-    r2=r2,
-    adj_r2=adj_r2
-  ))
+    return(list(
+        r2 = r2,
+        adj_r2 = adj_r2
+    ))
 }
 
 # --- Annotate the Model Results By Model Source ---------
@@ -532,74 +556,78 @@ run_association <- function(
     results,
     source,
     expomicset) {
-  if (source %in% c("omics", "factors")) {
-    exp_names <- names(MultiAssayExperiment::experiments(expomicset)) |>
-      (\(chr) gsub(" ", "_", chr))()
+    if (source %in% c("omics", "factors")) {
+        exp_names <- names(MultiAssayExperiment::experiments(expomicset)) |>
+            (\(chr) gsub(" ", "_", chr))()
 
-    matched <- data.frame(
-      exp_name = exp_names,
-      exp_name_clean = names(MultiAssayExperiment::experiments(expomicset))
-    )
-
-    results <- results |>
-      dplyr::mutate(
-        exp_name = stringr::str_extract(
-          term, paste0("^(", paste(exp_names, collapse = "|"), ")")),
-        term = dplyr::case_when(
-          grepl(paste(exp_names, collapse = "|"), term) ~
-            gsub(paste0(
-              "(", paste0(exp_names, "_", collapse = "|"), ")"), "", term),
-          .default = term
+        matched <- data.frame(
+            exp_name = exp_names,
+            exp_name_clean = names(MultiAssayExperiment::experiments(expomicset))
         )
-      ) |>
-      dplyr::inner_join(matched, by = "exp_name") |>
-      dplyr::select(-exp_name) |>
-      dplyr::rename(category = exp_name_clean)
 
-    if (source == "factors") {
-      method <- MultiAssayExperiment::metadata(expomicset) |>
-        purrr::pluck("multiomics_integration",
-                     "integration_results",
-                     "method")
+        results <- results |>
+            dplyr::mutate(
+                exp_name = stringr::str_extract(
+                    term, paste0("^(", paste(exp_names, collapse = "|"), ")")
+                ),
+                term = dplyr::case_when(
+                    grepl(paste(exp_names, collapse = "|"), term) ~
+                        gsub(paste0(
+                            "(", paste0(exp_names, "_", collapse = "|"), ")"
+                        ), "", term),
+                    .default = term
+                )
+            ) |>
+            dplyr::inner_join(matched, by = "exp_name") |>
+            dplyr::select(-exp_name) |>
+            dplyr::rename(category = exp_name_clean)
 
-      if (method %in% c("DIABLO", "RGCCA")) {
-        results <- dplyr::mutate(
-          results,
-          term = paste(category, term, sep = " "))
-      }
+        if (source == "factors") {
+            method <- MultiAssayExperiment::metadata(expomicset) |>
+                purrr::pluck(
+                    "multiomics_integration",
+                    "integration_results",
+                    "method"
+                )
+
+            if (method %in% c("DIABLO", "RGCCA")) {
+                results <- dplyr::mutate(
+                    results,
+                    term = paste(category, term, sep = " ")
+                )
+            }
+        }
     }
-  }
 
-  if (source == "exposures") {
-    results <- results |>
-      dplyr::left_join(
-        MultiAssayExperiment::metadata(expomicset)$codebook,
-        by = c("term" = "variable")
-      )
-  }
+    if (source == "exposures") {
+        results <- results |>
+            dplyr::left_join(
+                MultiAssayExperiment::metadata(expomicset)$codebook,
+                by = c("term" = "variable")
+            )
+    }
 
-  if (source == "omics") {
-    feature_df <- lapply(
-      names(MultiAssayExperiment::experiments(expomicset)),
-      function(name) {
-        SummarizedExperiment::rowData(
-          MultiAssayExperiment::experiments(expomicset)[[name]]
+    if (source == "omics") {
+        feature_df <- lapply(
+            names(MultiAssayExperiment::experiments(expomicset)),
+            function(name) {
+                SummarizedExperiment::rowData(
+                    MultiAssayExperiment::experiments(expomicset)[[name]]
+                ) |>
+                    as.data.frame() |>
+                    tibble::rownames_to_column(".feature") |>
+                    dplyr::mutate(exp_name = name)
+            }
         ) |>
-          as.data.frame() |>
-          tibble::rownames_to_column(".feature") |>
-          dplyr::mutate(exp_name = name)
-      }
-    ) |>
-      dplyr::bind_rows()
+            dplyr::bind_rows()
 
-    results <- results |>
-      dplyr::mutate(category = gsub("_", " ", category)) |>
-      dplyr::left_join(
-        feature_df,
-        by = c("term" = ".feature", "category" = "exp_name")
-      )
-  }
+        results <- results |>
+            dplyr::mutate(category = gsub("_", " ", category)) |>
+            dplyr::left_join(
+                feature_df,
+                by = c("term" = ".feature", "category" = "exp_name")
+            )
+    }
 
-  return(results)
+    return(results)
 }
-

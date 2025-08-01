@@ -52,8 +52,8 @@ other visualizations (e.g., via \code{scale_color_tidy_exp()}).
 
 #' # Create example data
 mae <- make_example_data(
-  n_samples = 20,
-  return_mae = TRUE
+    n_samples = 20,
+    return_mae = TRUE
 )
 
 # Introduce some missingness
@@ -61,13 +61,15 @@ MultiAssayExperiment::colData(mae)$exposure_pm25[sample(1:20, 5)] <- NA
 
 # Summary bar plot of missing data
 summary_p <- plot_missing(
-  mae,
-  threshold = 10,
-  plot_type = "summary")
+    mae,
+    threshold = 10,
+    plot_type = "summary"
+)
 
 # Lollipop plot for all features with any missingness
 lollipop_p <- plot_missing(
-  mae,
-  plot_type = "lollipop")
+    mae,
+    plot_type = "lollipop"
+)
 
 }

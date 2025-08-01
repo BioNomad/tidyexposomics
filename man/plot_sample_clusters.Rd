@@ -35,21 +35,21 @@ This function:
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 30,
+    return_mae = TRUE
+)
 
 # determine sample clusters
 mae <- run_cluster_samples(
-  expomicset = mae,
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi"),
-  clustering_approach = "diana"
+    expomicset = mae,
+    exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi"),
+    clustering_approach = "diana"
 )
 
 # plot sample clusters
 sample_cluster_p <- mae |>
-  plot_sample_clusters(
-    exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  )
+    plot_sample_clusters(
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 }

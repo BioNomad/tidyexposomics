@@ -63,17 +63,18 @@ If palettes are not provided, defaults are chosen using
 \examples{
 # create example data
 mae <- make_example_data(
-   n_samples = 20,
-   return_mae=TRUE
-  )
+    n_samples = 20,
+    return_mae = TRUE
+)
 
 mae <- run_multiomics_integration(
-      mae,
-      method = "MCIA",
-      n_factors = 3)
+    mae,
+    method = "MCIA",
+    n_factors = 3
+)
 
 
 top_feature_p <- mae |>
-  plot_top_factor_features()
+    plot_top_factor_features()
 
 }

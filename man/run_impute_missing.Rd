@@ -63,8 +63,8 @@ LOD/sqrt(2), where LOD is the smallest non-zero value per variable
 \examples{
 # Create example data
 mae <- make_example_data(
-  n_samples = 20,
-  return_mae = TRUE
+    n_samples = 20,
+    return_mae = TRUE
 )
 
 # Introduce some missingness
@@ -72,8 +72,8 @@ MultiAssayExperiment::colData(mae)$exposure_pm25[sample(1:20, 5)] <- NA
 
 # Filter features and exposures with high missingness
 mae <- run_impute_missing(
-  expomicset = mae,
-  exposure_impute_method = "median"
+    expomicset = mae,
+    exposure_impute_method = "median"
 )
 
 }

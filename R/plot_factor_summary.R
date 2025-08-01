@@ -34,17 +34,18 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 20,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 20,
+#'     return_mae = TRUE
+#' )
 #'
 #' mae <- run_multiomics_integration(
-#'       mae,
-#'       method = "MCIA",
-#'       n_factors = 3)
+#'     mae,
+#'     method = "MCIA",
+#'     n_factors = 3
+#' )
 #'
 #' factor_sum_plot <- mae |>
-#'   plot_factor_summary()
+#'     plot_factor_summary()
 #'
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 labs
 #'  theme_minimal element_text
@@ -59,135 +60,149 @@ plot_factor_summary <- function(
     low = "#006666",
     mid = "white",
     high = "#8E0152",
-    midpoint = 0.5
-) {
-  # require("ggplot2")
-  # require("ggpubr")
+    midpoint = 0.5) {
+    # require("ggplot2")
+    # require("ggpubr")
 
-  integration <- MultiAssayExperiment::metadata(expomicset) |>
-    purrr::pluck("multiomics_integration",
-                 "integration_results")
+    integration <- MultiAssayExperiment::metadata(expomicset) |>
+        purrr::pluck(
+            "multiomics_integration",
+            "integration_results"
+        )
 
-  if (is.null(integration) || is.null(integration$result)) {
-    stop("Integration results not found.
-         Please run `run_multiomics_integration()` first.")
-  }
+    if (is.null(integration) || is.null(integration$result)) {
+        stop("Please run `run_multiomics_integration()` first.")
+    }
 
-  method <- integration$method
-  result <- integration$result
+    method <- integration$method
+    result <- integration$result
 
-  factor_contrib_plot <- switch(
-    method,
+    factor_contrib_plot <- switch(method,
+        "MOFA" = {
+            MOFA2::plot_variance_explained(
+                result,
+                x = "view",
+                y = "factor"
+            ) +
+                ggpubr::rotate_x_text(45) +
+                scale_fill_gradient2(
+                    low = low,
+                    mid = mid,
+                    high = high,
+                    midpoint = midpoint
+                )
+        },
+        "MCIA" = {
+            result@block_score_weights |>
+                as.data.frame() |>
+                tibble::rownames_to_column("omic") |>
+                tidyr::pivot_longer(!omic,
+                    names_to = "factor",
+                    values_to = "weight"
+                ) |>
+                dplyr::mutate(
+                    factor = gsub("V", "", factor),
+                    factor = factor(as.numeric(factor),
+                        levels = sort(unique(as.numeric(factor)))
+                    )
+                ) |>
+                ggplot(aes(
+                    x = factor,
+                    y = omic,
+                    fill = weight
+                )) +
+                geom_tile() +
+                ggpubr::theme_pubr(legend = "right") +
+                scale_fill_gradient2(
+                    low = low,
+                    mid = mid,
+                    high = high,
+                    midpoint = midpoint
+                ) +
+                labs(
+                    x = "Factor",
+                    y = NULL,
+                    fill = "Weight"
+                )
+        },
 
-    "MOFA" = {
-      MOFA2::plot_variance_explained(
-        result,
-        x = "view",
-        y = "factor"
-      ) +
-        ggpubr::rotate_x_text(45) +
-        scale_fill_gradient2(low = low,
-                             mid = mid,
-                             high = high,
-                             midpoint = midpoint)
-    },
+        # "MCCA" = {
+        #   result$sample_scores |>
+        #     purrr::map(~ apply(.x, 2, function(x) mean(abs(x))) |>
+        #                  as.data.frame() |>
+        #                  tibble::rownames_to_column("factor") |>
+        #                  setNames(c("factor", "weight"))) |>
+        #     dplyr::bind_rows(.id = "omic") |>
+        #     dplyr::mutate(
+        #       factor = factor(as.numeric(factor),
+        #                       levels = sort(unique(as.numeric(factor))))
+        #     ) |>
+        #     ggplot(aes(x = factor, y = omic, fill = weight)) +
+        #     geom_tile() +
+        #     ggpubr::theme_pubr(legend = "right") +
+        #     scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
+        #     labs(x = "Factor", y = "", fill = "Avg |Score|")
+        # },
+        "DIABLO" = {
+            result$variates |>
+                (\(lst) lst[names(lst) != "Y"])() |>
+                purrr::discard(~ is.null(.x) || is.character(.x) || is.factor(.x)) |>
+                purrr::imap(~ apply(.x, 2, function(x) mean(abs(x))) |>
+                    as.data.frame() |>
+                    tibble::rownames_to_column("factor") |>
+                    setNames(c("factor", "weight"))) |>
+                dplyr::bind_rows(.id = "omic") |>
+                dplyr::mutate(
+                    factor = gsub("comp", "", factor),
+                    factor = factor(as.numeric(factor),
+                        levels = sort(unique(as.numeric(factor)))
+                    )
+                ) |>
+                ggplot(aes(x = factor, y = omic, fill = weight)) +
+                geom_tile() +
+                ggpubr::theme_pubr(legend = "right") +
+                scale_fill_gradient2(
+                    low = low,
+                    mid = mid,
+                    high = high,
+                    midpoint = midpoint
+                ) +
+                labs(
+                    x = "Factor",
+                    y = "",
+                    fill = "Avg. |Score|"
+                )
+        },
+        "RGCCA" = {
+            result$Y |>
+                purrr::imap(~ apply(.x, 2, function(x) mean(abs(x))) |>
+                    as.data.frame() |>
+                    tibble::rownames_to_column("factor") |>
+                    setNames(c("factor", "weight"))) |>
+                dplyr::bind_rows(.id = "omic") |>
+                dplyr::mutate(
+                    factor = gsub("comp", "", factor),
+                    factor = factor(as.numeric(factor),
+                        levels = sort(unique(as.numeric(factor)))
+                    )
+                ) |>
+                ggplot(aes(x = factor, y = omic, fill = weight)) +
+                geom_tile() +
+                ggpubr::theme_pubr(legend = "right") +
+                scale_fill_gradient2(
+                    low = low,
+                    mid = mid,
+                    high = high,
+                    midpoint = midpoint
+                ) +
+                labs(
+                    x = "Factor",
+                    y = "",
+                    fill = "Avg. |Score|"
+                )
+        },
+        stop("Integration method not supported in plot_factor_summary().")
+    )
 
-    "MCIA" = {
-      result@block_score_weights |>
-        as.data.frame() |>
-        tibble::rownames_to_column("omic") |>
-        tidyr::pivot_longer(!omic,
-                            names_to = "factor",
-                            values_to = "weight") |>
-        dplyr::mutate(
-          factor = gsub("V", "", factor),
-          factor = factor(as.numeric(factor),
-                          levels = sort(unique(as.numeric(factor))))
-        ) |>
-        ggplot(aes(x = factor,
-                   y = omic,
-                   fill = weight)) +
-        geom_tile() +
-        ggpubr::theme_pubr(legend = "right") +
-        scale_fill_gradient2(low = low,
-                             mid = mid,
-                             high = high,
-                             midpoint = midpoint) +
-        labs(x = "Factor",
-             y = NULL,
-             fill = "Weight")
-    },
-
-    # "MCCA" = {
-    #   result$sample_scores |>
-    #     purrr::map(~ apply(.x, 2, function(x) mean(abs(x))) |>
-    #                  as.data.frame() |>
-    #                  tibble::rownames_to_column("factor") |>
-    #                  setNames(c("factor", "weight"))) |>
-    #     dplyr::bind_rows(.id = "omic") |>
-    #     dplyr::mutate(
-    #       factor = factor(as.numeric(factor),
-    #                       levels = sort(unique(as.numeric(factor))))
-    #     ) |>
-    #     ggplot(aes(x = factor, y = omic, fill = weight)) +
-    #     geom_tile() +
-    #     ggpubr::theme_pubr(legend = "right") +
-    #     scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
-    #     labs(x = "Factor", y = "", fill = "Avg |Score|")
-    # },
-
-    "DIABLO" = {
-      result$variates |>
-        (\(lst) lst[names(lst) != "Y"])() |>
-        purrr::discard(~ is.null(.x) || is.character(.x) || is.factor(.x)) |>
-        purrr::imap(~ apply(.x, 2, function(x) mean(abs(x))) |>
-                      as.data.frame() |>
-                      tibble::rownames_to_column("factor") |>
-                      setNames(c("factor", "weight"))) |>
-        dplyr::bind_rows(.id = "omic") |>
-        dplyr::mutate(
-          factor = gsub("comp", "", factor),
-          factor = factor(as.numeric(factor),
-                          levels = sort(unique(as.numeric(factor))))
-        ) |>
-        ggplot(aes(x = factor, y = omic, fill = weight)) +
-        geom_tile() +
-        ggpubr::theme_pubr(legend = "right") +
-        scale_fill_gradient2(low = low,
-                             mid = mid,
-                             high = high,
-                             midpoint = midpoint) +
-        labs(x = "Factor",
-             y = "",
-             fill = "Avg. |Score|")
-    },
-
-    "RGCCA" = {
-      result$Y |>
-        purrr::imap(~ apply(.x, 2, function(x) mean(abs(x))) |>
-                      as.data.frame() |>
-                      tibble::rownames_to_column("factor") |>
-                      setNames(c("factor", "weight"))) |>
-        dplyr::bind_rows(.id = "omic") |>
-        dplyr::mutate(
-          factor = gsub("comp", "", factor),
-          factor = factor(as.numeric(factor),
-                          levels = sort(unique(as.numeric(factor))))
-        ) |>
-        ggplot(aes(x = factor, y = omic, fill = weight)) +
-        geom_tile() +
-        ggpubr::theme_pubr(legend = "right") +
-        scale_fill_gradient2(low = low,
-                             mid = mid,
-                             high = high,
-                             midpoint = midpoint) +
-        labs(x = "Factor",
-             y = "",
-             fill = "Avg. |Score|")
-    },
-
-    stop("Integration method not supported in plot_factor_summary().")
-  )
-
-  return(factor_contrib_plot)
+    return(factor_contrib_plot)
 }

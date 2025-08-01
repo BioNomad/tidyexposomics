@@ -33,16 +33,16 @@ from the dataset.
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run PCA
 mae <- mae |>
-  run_pca()
+    run_pca()
 
 # filter outliers if present
 mae <- mae |>
-  filter_sample_outliers()
+    filter_sample_outliers()
 
 }

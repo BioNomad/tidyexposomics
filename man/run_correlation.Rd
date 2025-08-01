@@ -87,15 +87,15 @@ to support network analysis.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run correlation analysis
 mae <- mae |>
-  run_correlation(
-  feature_type = "exposures",
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  )
+    run_correlation(
+        feature_type = "exposures",
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 }

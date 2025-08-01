@@ -41,10 +41,10 @@ tmp <- make_example_data(n_samples = 10)
 
 # create the MultiAssayExperiment Object
 mae <- create_expomicset(
-  codebook = tmp$codebook,
-  exposure = tmp$exposure,
-  omics = tmp$omics,
- row_data = tmp$row_data
+    codebook = tmp$codebook,
+    exposure = tmp$exposure,
+    omics = tmp$omics,
+    row_data = tmp$row_data
 )
 
 }

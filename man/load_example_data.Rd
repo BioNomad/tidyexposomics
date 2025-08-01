@@ -4,14 +4,27 @@
 \alias{load_example_data}
 \title{Load example omics data for vignette/demo use}
 \usage{
-load_example_data(dest_dir = tempdir())
+load_example_data(
+  to_load = c("all", "omics_list", "annotated_cb", "fdata", "meta"),
+  dest_dir = tempdir()
+)
 }
 \arguments{
+\item{to_load}{Character vector indicating which data set to load.}
+
 \item{dest_dir}{Destination directory to store temporary data files.}
 }
 \value{
 Invisibly returns \code{TRUE} after the example data is loaded into the global environment.
 }
 \description{
-Downloads and loads \code{omics_list}, \code{annotated_cb}, \code{fdata}, and \code{meta} into the global environment.
+Downloads and loads \code{omics_list}, \code{annotated_cb}, \code{fdata}, and \code{meta}
+into the global environment.
+}
+\examples{
+# load example data
+load_example_data(
+    to_load = "annotated_cb"
+)
+
 }

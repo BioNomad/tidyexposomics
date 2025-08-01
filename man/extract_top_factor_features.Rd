@@ -65,22 +65,23 @@ features with absolute loadings exceeding a fixed value.
 \examples{
 # create example data
 mae <- make_example_data(
-   n_samples = 20,
-   return_mae=TRUE
-  )
+    n_samples = 20,
+    return_mae = TRUE
+)
 
 # perform multiomics integration
 mae <- run_multiomics_integration(
-      mae,
-      method = "MCIA",
-      n_factors = 3)
+    mae,
+    method = "MCIA",
+    n_factors = 3
+)
 
 top_feats <- extract_top_factor_features(
-  mae,
-  factors = c("V1","V2","V3"),
-  method = "percentile",
-  percentile = 0.9,
-  action = "get"
+    mae,
+    factors = c("V1", "V2", "V3"),
+    method = "percentile",
+    percentile = 0.9,
+    action = "get"
 )
 
 }

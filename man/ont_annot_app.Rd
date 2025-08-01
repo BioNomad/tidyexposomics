@@ -16,7 +16,8 @@ The app is bundled with the \code{tidyexposomics} package and allows interactive
 selection or search of ontology terms.
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+# Launch the ontology annotation app
 ont_annot_app()
-}
+\dontshow{\}) # examplesIf}
 }

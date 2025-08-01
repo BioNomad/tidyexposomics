@@ -1,4 +1,5 @@
 ^tidyexposomics\.Rproj$
+^.Rhistory$
 ^\.Rproj\.user$
 ^_pkgdown\.yml$
 ^docs$

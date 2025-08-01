@@ -25,32 +25,34 @@
 #'
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # pivot experiment
 #' exp_data <- mae |>
-#'   pivot_exp(
-#'     omics_name = "mRNA",
-#'     features = "feat_42")
+#'     pivot_exp(
+#'         omics_name = "mRNA",
+#'         features = "feat_42"
+#'     )
 #'
 #' @export
-pivot_exp <- function(expomicset,
-                      omics_name,
-                      features = NULL) {
-  # Extract the SummarizedExperiment
-  se <- .update_assay_colData(
+pivot_exp <- function(
     expomicset,
-    exp_name = omics_name
-  )
+    omics_name,
+    features = NULL) {
+    # Extract the SummarizedExperiment
+    se <- .update_assay_colData(
+        expomicset,
+        exp_name = omics_name
+    )
 
-  # Optionally subset features
-  if (!is.null(features)) {
-    se <- se[rownames(se) %in% features, ]
-  }
+    # Optionally subset features
+    if (!is.null(features)) {
+        se <- se[rownames(se) %in% features, ]
+    }
 
-  # Apply tidybulk (uses assay, colData, rowData internally)
-  tidybulk::tidybulk(se) |>
-    mutate(exp_name = omics_name,.before=.feature)
+    # Apply tidybulk (uses assay, colData, rowData internally)
+    tidybulk::tidybulk(se) |>
+        mutate(exp_name = omics_name, .before = .feature)
 }

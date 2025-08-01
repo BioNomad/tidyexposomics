@@ -53,21 +53,21 @@ shared features ("degs", "factors").
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run correlation analysis
 mae <- mae |>
-  run_correlation(
-  feature_type = "exposures",
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  )
+    run_correlation(
+        feature_type = "exposures",
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 # create the circos plot
 circos_plot <- mae |>
-  plot_circos_correlation(
-    feature_type = "exposures"
-  )
+    plot_circos_correlation(
+        feature_type = "exposures"
+    )
 
 }

@@ -41,24 +41,24 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # run association tests
 #' mae <- mae |>
-#'   run_association(
-#'   source = "omics",
-#'   top_n = 20,
-#'   feature_set = c("exposure_pm25","exposure_no2"),
-#'   outcome = "smoker",
-#'   covariates = c("age"),
-#'   family = "binomial"
-#'   )
+#'     run_association(
+#'         source = "omics",
+#'         top_n = 20,
+#'         feature_set = c("exposure_pm25", "exposure_no2"),
+#'         outcome = "smoker",
+#'         covariates = c("age"),
+#'         family = "binomial"
+#'     )
 #'
 #' # create the manhattan plot
 #' manhattan_p <- mae |>
-#'   plot_manhattan()
+#'     plot_manhattan()
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_vline
 #'   scale_color_identity labs theme element_text element_rect
@@ -73,171 +73,170 @@
 #' @export
 plot_manhattan <- function(
     expomicset,
-    pval_thresh=0.05,
+    pval_thresh = 0.05,
     feature_col = "term",
-    alpha=0.5,
-    min_per_cat=1,
-    vars_to_label=NULL,
-    sig_color="magenta2",
-    non_sig_cols=c("grey25", "grey75"),
-    pval_thresh_line_col="grey25",
-    panel_sizes=c(1,1,1,1,1),
+    alpha = 0.5,
+    min_per_cat = 1,
+    vars_to_label = NULL,
+    sig_color = "magenta2",
+    non_sig_cols = c("grey25", "grey75"),
+    pval_thresh_line_col = "grey25",
+    panel_sizes = c(1, 1, 1, 1, 1),
     linetype = "dashed",
     facet_cols = NULL,
     label_size = 3.5,
     facet_angle = 90,
-    facet_text_face = "bold.italic"
-){
-  # require(ggplot2)
+    facet_text_face = "bold.italic") {
+    # require(ggplot2)
 
-  # Check if "correlation" is a name in metadata
-  if(!("association" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
-    stop("Please run `run_association() first.`")
-  }
+    # Check if "correlation" is a name in metadata
+    if (!("association" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
+        stop("Please run `run_association() first.`")
+    }
 
-  # If exp_names in manhattan_data, replace with experiment names
-  exposure_res_df <- expomicset |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("association") |>
-    purrr::pluck("assoc_exposures") |>
-    purrr::pluck("results_df")
+    # If exp_names in manhattan_data, replace with experiment names
+    exposure_res_df <- expomicset |>
+        MultiAssayExperiment::metadata() |>
+        purrr::pluck("association") |>
+        purrr::pluck("assoc_exposures") |>
+        purrr::pluck("results_df")
 
-  exposure_res_df[[feature_col]] <- exposure_res_df$term
+    exposure_res_df[[feature_col]] <- exposure_res_df$term
 
-  manhattan_data <- expomicset |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck("association") |>
-    purrr::pluck("assoc_omics") |>
-    purrr::pluck("results_df") |>
-    bind_rows(
-      exposure_res_df
-    ) |>
-    dplyr::filter(!is.na(category)) |>
-    dplyr::mutate(category=gsub("_"," ",category)) |>
-    dplyr::mutate(
-      var = forcats::fct_reorder(as.character(term), category),
-      thresh_met = ifelse(p.value < pval_thresh, "yes", "no")
-    )
-
-  if(!is.null(vars_to_label)){
-    manhattan_data <- manhattan_data |>
-      dplyr::mutate(label = ifelse(
-        var %in% vars_to_label,
-        as.character(!!dplyr::sym(feature_col)), NA)) |>
-      dplyr::mutate(
-        label = dplyr::case_when(
-          !is.na(label) ~ paste0("italic(", label, ")"),
-          .default = NA_character_
-        ))
-
-  }else{
-    manhattan_data <- manhattan_data |>
-      dplyr::mutate(
-        label = ifelse(thresh_met == "yes",
-                       as.character(!!dplyr::sym(feature_col)),
-                       NA))
-
-  }
-
-  # Filter out categories with fewer than min_per_cat significant features
-  manhattan_data <- manhattan_data |>
-    dplyr::group_by(category) |>
-    dplyr::filter(dplyr::n() >= min_per_cat) |>
-    dplyr::ungroup()
-
-  # Get unique ordered categories
-  ordered_cats <- manhattan_data$category |>
-    unique() |>
-    sort()
-
-  # Alternating point colors for non-significant values
-  nonsig_greys <- rep(non_sig_cols, length.out = length(ordered_cats))
-  category_grey_map <- setNames(nonsig_greys, ordered_cats)
-
-  # Add color column to data
-  manhattan_data <- manhattan_data |>
-    dplyr::mutate(
-      cols = ifelse(
-        thresh_met == "yes",
-        sig_color,
-        category_grey_map[category]
-      )
-    )
-
-
-  # Facet colors
-  if(is.null(facet_cols)){
-    facet_cols <- tidy_exp_pal[
-      seq_len(length(unique(
-        manhattan_data |>
-          dplyr::filter(!is.na(category)) |>
-          dplyr::pull(category)
-      )))
-    ]
-
-  } else{
-    facet_cols
-  }
-
-  manhattan <- manhattan_data |>
-    ggplot(aes(
-      y = var,
-      x = -log10(p.value),
-      color = cols
-    )) +
-    geom_point() +
-    geom_vline(
-      xintercept = -log10(pval_thresh),
-      linetype = linetype,
-      color = pval_thresh_line_col
-    ) +
-    ggrepel::geom_label_repel(
-      data = manhattan_data,
-      aes(
-        label = label,
-        fontface = "bold",
-        fill = "white"
-      ),
-      parse = TRUE,
-      size = label_size,
-      fill = "white",
-      max.overlaps = 5,
-      min.segment.length = .5,
-      box.padding = 0.6,
-      point.padding = 0.2,
-      color = "black"
-    )+
-    ggh4x::facet_grid2(
-      category~.,
-      scales = "free_y",
-      space = "free_y",
-      strip = ggh4x::strip_themed(
-        background_y = ggh4x::elem_list_rect(
-          fill = scales::alpha(
-            facet_cols,
-            alpha
-          )
+    manhattan_data <- expomicset |>
+        MultiAssayExperiment::metadata() |>
+        purrr::pluck("association") |>
+        purrr::pluck("assoc_omics") |>
+        purrr::pluck("results_df") |>
+        bind_rows(
+            exposure_res_df
+        ) |>
+        dplyr::filter(!is.na(category)) |>
+        dplyr::mutate(category = gsub("_", " ", category)) |>
+        dplyr::mutate(
+            var = forcats::fct_reorder(as.character(term), category),
+            thresh_met = ifelse(p.value < pval_thresh, "yes", "no")
         )
-      )
-    ) +
-    ggh4x::force_panelsizes(rows = panel_sizes)+
-    scale_color_identity() +
-    ggpubr::theme_pubr(legend = "none") +
-    theme(
-      axis.ticks.y = element_blank(),
-      axis.text.y = element_blank(),
-      strip.placement = "outside",
-      strip.background = element_rect(linewidth = 0,colour = NA),
-      strip.text.y = element_text(
-        angle = facet_angle,
-        face = facet_text_face
-      ),
-      panel.spacing = unit(0, "lines")
-    ) +
-    labs(
-      y = "",
-      x = expression(-Log[10]*"P")
-    )
-  return(manhattan)
 
+    if (!is.null(vars_to_label)) {
+        manhattan_data <- manhattan_data |>
+            dplyr::mutate(label = ifelse(
+                var %in% vars_to_label,
+                as.character(!!dplyr::sym(feature_col)), NA
+            )) |>
+            dplyr::mutate(
+                label = dplyr::case_when(
+                    !is.na(label) ~ paste0("italic(", label, ")"),
+                    .default = NA_character_
+                )
+            )
+    } else {
+        manhattan_data <- manhattan_data |>
+            dplyr::mutate(
+                label = ifelse(thresh_met == "yes",
+                    as.character(!!dplyr::sym(feature_col)),
+                    NA
+                )
+            )
+    }
+
+    # Filter out categories with fewer than min_per_cat significant features
+    manhattan_data <- manhattan_data |>
+        dplyr::group_by(category) |>
+        dplyr::filter(dplyr::n() >= min_per_cat) |>
+        dplyr::ungroup()
+
+    # Get unique ordered categories
+    ordered_cats <- manhattan_data$category |>
+        unique() |>
+        sort()
+
+    # Alternating point colors for non-significant values
+    nonsig_greys <- rep(non_sig_cols, length.out = length(ordered_cats))
+    category_grey_map <- setNames(nonsig_greys, ordered_cats)
+
+    # Add color column to data
+    manhattan_data <- manhattan_data |>
+        dplyr::mutate(
+            cols = ifelse(
+                thresh_met == "yes",
+                sig_color,
+                category_grey_map[category]
+            )
+        )
+
+
+    # Facet colors
+    if (is.null(facet_cols)) {
+        facet_cols <- tidy_exp_pal[
+            seq_len(length(unique(
+                manhattan_data |>
+                    dplyr::filter(!is.na(category)) |>
+                    dplyr::pull(category)
+            )))
+        ]
+    } else {
+        facet_cols
+    }
+
+    manhattan <- manhattan_data |>
+        ggplot(aes(
+            y = var,
+            x = -log10(p.value),
+            color = cols
+        )) +
+        geom_point() +
+        geom_vline(
+            xintercept = -log10(pval_thresh),
+            linetype = linetype,
+            color = pval_thresh_line_col
+        ) +
+        ggrepel::geom_label_repel(
+            data = manhattan_data,
+            aes(
+                label = label,
+                fontface = "bold",
+                fill = "white"
+            ),
+            parse = TRUE,
+            size = label_size,
+            fill = "white",
+            max.overlaps = 5,
+            min.segment.length = .5,
+            box.padding = 0.6,
+            point.padding = 0.2,
+            color = "black"
+        ) +
+        ggh4x::facet_grid2(
+            category ~ .,
+            scales = "free_y",
+            space = "free_y",
+            strip = ggh4x::strip_themed(
+                background_y = ggh4x::elem_list_rect(
+                    fill = scales::alpha(
+                        facet_cols,
+                        alpha
+                    )
+                )
+            )
+        ) +
+        ggh4x::force_panelsizes(rows = panel_sizes) +
+        scale_color_identity() +
+        ggpubr::theme_pubr(legend = "none") +
+        theme(
+            axis.ticks.y = element_blank(),
+            axis.text.y = element_blank(),
+            strip.placement = "outside",
+            strip.background = element_rect(linewidth = 0, colour = NA),
+            strip.text.y = element_text(
+                angle = facet_angle,
+                face = facet_text_face
+            ),
+            panel.spacing = unit(0, "lines")
+        ) +
+        labs(
+            y = "",
+            x = expression(-Log[10] * "P")
+        )
+    return(manhattan)
 }

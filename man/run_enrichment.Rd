@@ -115,23 +115,31 @@ If \code{feature_type} includes correlation-based results
 exposure category separately.
 }
 \examples{
-\dontrun{
-expomicset <- run_enrichment(
-  expomicset,
-  feature_type = "degs",
-  db = "GO",
-  species = "goa_human",
-  action = "add"
+# create example data
+mae <- make_example_data(
+    n_samples = 30,
+    return_mae = TRUE
 )
 
-go_results <- run_enrichment(
-  expomicset,
-  feature_type = "factor_features_cor",
-  db = "GO",
-  species = "goa_human",
-  action = "get"
+# perform differential abundance analysis
+mae <- run_differential_abundance(
+    expomicset = mae,
+    formula = ~ smoker + sex,
+    abundance_col = "counts",
+    method = "limma_voom",
+    action = "add"
 )
-}
 
+# perform enrichment analysis
+mae <- run_enrichment(
+    expomicset = mae,
+    feature_type = "degs",
+    feature_col = "symbol",
+    species = "goa_human",
+    deg_logfc_threshold = log2(1),
+    deg_pval_col = "P.Value",
+    deg_pval_threshold = 0.2,
+    action = "add"
+)
 
 }

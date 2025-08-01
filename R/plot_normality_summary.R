@@ -28,107 +28,117 @@
 #' @examples
 #' # Create example data
 #' mae <- make_example_data(
-#'   n_samples = 20,
-#'   return_mae = TRUE
+#'     n_samples = 20,
+#'     return_mae = TRUE
 #' )
 #'
 #' # Test for normality
 #' mae <- mae |>
-#'   run_normality_check() |>
-#'   transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
+#'     run_normality_check() |>
+#'     transform_exposure(exposure_cols = c("age", "bmi", "exposure_pm25"))
 #'
 #' # plot the normality summary
 #' norm_p <- mae |>
-#'   plot_normality_summary()
+#'     plot_normality_summary()
 #'
 #' @export
 plot_normality_summary <- function(
     expomicset,
-    transformed=FALSE
-){
-  # require(ggplot2)
+    transformed = FALSE) {
+    # require(ggplot2)
 
-  # Check if "normality" is a name in metadata
-  if(!("normality" %in% names(
-    MultiAssayExperiment::metadata(expomicset)$quality_control))) {
-    stop("Please run `run_normality_check() first.`")
-  }
-
-  # Check if "transformation" is a name in metadata
-  if(transformed){
-    if(!("transformation" %in% names(
-      MultiAssayExperiment::metadata(expomicset)$quality_control))) {
-      stop("Please run `transform_exposure() first.`")
+    # Check if "normality" is a name in metadata
+    if (!("normality" %in% names(
+        MultiAssayExperiment::metadata(expomicset)$quality_control
+    ))) {
+        stop("Please run `run_normality_check() first.`")
     }
-  }
 
-  # Plot normality results
-  if(transformed){
-    norm_plot <- MultiAssayExperiment::metadata(expomicset)$quality_control$transformation$norm_summary |>
-      ggplot(aes(
-      x = var,
-      y = value,
-      fill = var
-    )) +
-      geom_bar(stat = "identity", alpha = 0.5) +
-      geom_segment(
-        aes(x = as.numeric(as.factor(var)) - 0.45,
-            xend = as.numeric(as.factor(var)) + 0.45,
-            y = value,
-            yend = value,
-            color = var),
-        size = 1
-      ) +
-      ggpubr::theme_pubr(legend = "right") +
-      scale_fill_manual(
-        values = ggpubr::get_palette("uchicago",k = 2)[c(2,1)])+
-      scale_color_manual(
-        values = ggpubr::get_palette("uchicago",k = 2)[c(2,1)])+
-      guides(color=FALSE)+
-      theme(plot.title = element_text(face = "bold.italic"),
-            plot.subtitle = element_text(face = "italic"))+
-      labs(
-        x = "",
-        y = "No. of Exposures",
-        fill = "",
-        title = "Normality of Exposure Variables",
-        subtitle = "Shapiro-Wilk Test"
-      )
-  }else{
-    norm_plot <- MultiAssayExperiment::metadata(expomicset) |>
-      purrr::pluck("quality_control",
-                   "normality",
-                   "norm_summary") |>
-      ggplot(aes(
-        x = var,
-        y = value,
-        fill = var
-      )) +
-      geom_bar(stat = "identity", alpha = 0.5) +
-      geom_segment(
-        aes(x = as.numeric(as.factor(var)) - 0.45,
-            xend = as.numeric(as.factor(var)) + 0.45,
-            y = value,
-            yend = value,
-            color = var),
-        size = 1
-      ) +
-      ggpubr::theme_pubr(legend = "right") +
-      ggsci::scale_fill_lancet() +
-      ggsci::scale_color_lancet(guide = FALSE) +
-      theme(plot.title = element_text(face = "bold.italic"),
-            plot.subtitle = element_text(face = "italic"))+
-      labs(
-        x = "",
-        y = "No. of Exposures",
-        fill = "",
-        title = "Normality of Exposure Variables",
-        subtitle = "Shapiro-Wilk Test"
-      )
-  }
+    # Check if "transformation" is a name in metadata
+    if (transformed) {
+        if (!("transformation" %in% names(
+            MultiAssayExperiment::metadata(expomicset)$quality_control
+        ))) {
+            stop("Please run `transform_exposure() first.`")
+        }
+    }
 
-  return(norm_plot)
+    # Plot normality results
+    if (transformed) {
+        norm_plot <- MultiAssayExperiment::metadata(expomicset)$quality_control$transformation$norm_summary |>
+            ggplot(aes(
+                x = var,
+                y = value,
+                fill = var
+            )) +
+            geom_bar(stat = "identity", alpha = 0.5) +
+            geom_segment(
+                aes(
+                    x = as.numeric(as.factor(var)) - 0.45,
+                    xend = as.numeric(as.factor(var)) + 0.45,
+                    y = value,
+                    yend = value,
+                    color = var
+                ),
+                size = 1
+            ) +
+            ggpubr::theme_pubr(legend = "right") +
+            scale_fill_manual(
+                values = ggpubr::get_palette("uchicago", k = 2)[c(2, 1)]
+            ) +
+            scale_color_manual(
+                values = ggpubr::get_palette("uchicago", k = 2)[c(2, 1)]
+            ) +
+            guides(color = FALSE) +
+            theme(
+                plot.title = element_text(face = "bold.italic"),
+                plot.subtitle = element_text(face = "italic")
+            ) +
+            labs(
+                x = "",
+                y = "No. of Exposures",
+                fill = "",
+                title = "Normality of Exposure Variables",
+                subtitle = "Shapiro-Wilk Test"
+            )
+    } else {
+        norm_plot <- MultiAssayExperiment::metadata(expomicset) |>
+            purrr::pluck(
+                "quality_control",
+                "normality",
+                "norm_summary"
+            ) |>
+            ggplot(aes(
+                x = var,
+                y = value,
+                fill = var
+            )) +
+            geom_bar(stat = "identity", alpha = 0.5) +
+            geom_segment(
+                aes(
+                    x = as.numeric(as.factor(var)) - 0.45,
+                    xend = as.numeric(as.factor(var)) + 0.45,
+                    y = value,
+                    yend = value,
+                    color = var
+                ),
+                size = 1
+            ) +
+            ggpubr::theme_pubr(legend = "right") +
+            ggsci::scale_fill_lancet() +
+            ggsci::scale_color_lancet(guide = FALSE) +
+            theme(
+                plot.title = element_text(face = "bold.italic"),
+                plot.subtitle = element_text(face = "italic")
+            ) +
+            labs(
+                x = "",
+                y = "No. of Exposures",
+                fill = "",
+                title = "Normality of Exposure Variables",
+                subtitle = "Shapiro-Wilk Test"
+            )
+    }
 
+    return(norm_plot)
 }
-
-

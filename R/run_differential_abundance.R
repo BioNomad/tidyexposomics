@@ -26,17 +26,17 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # perform differential abundance analysis
 #' mae <- run_differential_abundance(
-#'   expomicset = mae,
-#'   formula = ~ smoker + sex,
-#'   abundance_col = "counts",
-#'   method = "limma_voom",
-#'   action = "add"
+#'     expomicset = mae,
+#'     formula = ~ smoker + sex,
+#'     abundance_col = "counts",
+#'     method = "limma_voom",
+#'     action = "add"
 #' )
 #'
 #' @export
@@ -47,79 +47,75 @@ run_differential_abundance <- function(
     method = "limma_voom",
     contrasts = NULL,
     scaling_method = "none",
-    action="add"
-) {
+    action = "add") {
+    message("Running differential abundance testing.")
 
-  message("Running differential abundance testing.")
+    # Initialize a data frame to store results
+    da_results_df <- list()
 
-  # Initialize a data frame to store results
-  da_results_df <- list()
+    # Iterate through assays in expomicset
+    for (exp_name in names(MultiAssayExperiment::experiments(expomicset))) {
+        message("Processing assay: ", exp_name)
 
-  # Iterate through assays in expomicset
-  for (exp_name in names(MultiAssayExperiment::experiments(expomicset))) {
-    message("Processing assay: ", exp_name)
+        # Update assay with colData
+        exp <- .update_assay_colData(expomicset, exp_name)
 
-    # Update assay with colData
-    exp <- .update_assay_colData(expomicset, exp_name)
+        # Run differential analysis using `.run_se_differential_abundance`
+        res <- .run_se_differential_abundance(
+            se = exp,
+            formula = formula,
+            abundance_col = abundance_col,
+            method = method,
+            scaling_method = scaling_method,
+            contrasts = contrasts
+        )
 
-    # Run differential analysis using `.run_se_differential_abundance`
-    res <- .run_se_differential_abundance(
-      se = exp,
-      formula = formula,
-      abundance_col = abundance_col,
-      method = method,
-      scaling_method = scaling_method,
-      contrasts = contrasts
-    )
-
-    # If results exist, append assay name and store them
-    if (!is.null(res) && nrow(res) > 0) {
-      res <- res |>
-        dplyr::mutate(exp_name = exp_name)
-      da_results_df[[exp_name]] <- res
-    } else {
-      warning("No significant results found for assay: ", exp_name)
+        # If results exist, append assay name and store them
+        if (!is.null(res) && nrow(res) > 0) {
+            res <- res |>
+                dplyr::mutate(exp_name = exp_name)
+            da_results_df[[exp_name]] <- res
+        } else {
+            warning("No significant results found for assay: ", exp_name)
+        }
     }
-  }
 
-  # Combine results across assays
-  final_results <- da_results_df |>
-    dplyr::bind_rows() |>
-    as_tibble()
+    # Combine results across assays
+    final_results <- da_results_df |>
+        dplyr::bind_rows() |>
+        as_tibble()
 
-  message("Differential abundance testing completed.")
+    message("Differential abundance testing completed.")
 
-  if(action == "add") {
-    all_metadata <- MultiAssayExperiment::metadata(expomicset)
-    all_metadata$differential_analysis$differential_abundance <- final_results
-    MultiAssayExperiment::metadata(expomicset) <- all_metadata
+    if (action == "add") {
+        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata$differential_analysis$differential_abundance <- final_results
+        MultiAssayExperiment::metadata(expomicset) <- all_metadata
 
-    # Add step record to metadata
-    step_record <- list(
-      run_differential_abundance = list(
-        timestamp = Sys.time(),
-        params = list(
-          formula = format(formula),
-          method = method,
-          scaling_method = scaling_method,
-          abundance_col = abundance_col,
-          contrasts = contrasts
-        ),
-        notes = "Performed differential abundance analysis across all assays."
-      )
-    )
+        # Add step record to metadata
+        step_record <- list(
+            run_differential_abundance = list(
+                timestamp = Sys.time(),
+                params = list(
+                    formula = format(formula),
+                    method = method,
+                    scaling_method = scaling_method,
+                    abundance_col = abundance_col,
+                    contrasts = contrasts
+                ),
+                notes = "Performed differential abundance analysis across all assays."
+            )
+        )
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$summary$steps,
-      step_record
-    )
+        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+            step_record
+        )
+        return(expomicset)
+    } else if (action == "get") {
+        return(final_results)
+    } else {
+        stop("Invalid action specified. Use 'add' or 'get'.")
+    }
     return(expomicset)
-
-
-  } else if (action == "get") {
-    return(final_results)
-  } else {
-    stop("Invalid action specified. Use 'add' or 'get'.")
-  }
-  return(expomicset)
 }

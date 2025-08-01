@@ -44,23 +44,22 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # perform differential abundance analysis
 #' mae <- run_differential_abundance(
-#'   expomicset = mae,
-#'   formula = ~ smoker + sex,
-#'   abundance_col = "counts",
-#'   method = "limma_voom",
-#'   action = "add"
+#'     expomicset = mae,
+#'     formula = ~ smoker + sex,
+#'     abundance_col = "counts",
+#'     method = "limma_voom",
+#'     action = "add"
 #' )
 #'
 #' # create the volcano plot
 #' volcano_p <- mae |>
-#'   plot_volcano()
-#'
+#'     plot_volcano()
 #'
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom dplyr group_by summarise mutate inner_join arrange
@@ -80,128 +79,147 @@ plot_volcano <- function(
     top_n_label = NULL,
     features_to_label = NULL,
     feature_col = "feature",
-    xlab = expression(Log[2]*"FC"),
-    ylab = expression(-Log[10]*"P"),
+    xlab = expression(Log[2] * "FC"),
+    ylab = expression(-Log[10] * "P"),
     title = "Volcano Plot of Differential Abundance",
-    nrow=2
-){
-  # require(ggplot2)
+    nrow = 2) {
+    # require(ggplot2)
 
-  # Check to see if Differential Abundance Results are available
-  if(!"differential_abundance" %in% names(
-    MultiAssayExperiment::metadata(expomicset)$differential_analysis)){
-    stop("Please run `run_differential_abundance()` first.")
-  }
+    # Check to see if Differential Abundance Results are available
+    if (!"differential_abundance" %in% names(
+        MultiAssayExperiment::metadata(expomicset)$differential_analysis
+    )) {
+        stop("Please run `run_differential_abundance()` first.")
+    }
 
-  if(plot_n_sig){
-    # Grab the significant features per experiment
-    exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
-      purrr::pluck("differential_analysis",
-                   "differential_abundance")|>
-      dplyr::group_by(exp_name) |>
-      dplyr::summarise(total = dplyr::n(),
+    if (plot_n_sig) {
+        # Grab the significant features per experiment
+        exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
+            purrr::pluck(
+                "differential_analysis",
+                "differential_abundance"
+            ) |>
+            dplyr::group_by(exp_name) |>
+            dplyr::summarise(
+                total = dplyr::n(),
                 total_significant = sum(
-                  !!sym(pval_col) < pval_thresh &
-                    abs(!!sym(logFC_col)) > logFC_thresh)) |>
-      dplyr::mutate(exp_name_plot=paste(
-        exp_name,
-        "\n",
-        " (",
-        total_significant,
-        "/",
-        total,
-        ")",
-        sep=""))
-  } else {
-    exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
-      purrr::pluck("differential_analysis",
-                   "differential_abundance") |>
-      dplyr::group_by(exp_name) |>
-      dplyr::summarise(total = dplyr::n(),
+                    !!sym(pval_col) < pval_thresh &
+                        abs(!!sym(logFC_col)) > logFC_thresh
+                )
+            ) |>
+            dplyr::mutate(exp_name_plot = paste(
+                exp_name,
+                "\n",
+                " (",
+                total_significant,
+                "/",
+                total,
+                ")",
+                sep = ""
+            ))
+    } else {
+        exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
+            purrr::pluck(
+                "differential_analysis",
+                "differential_abundance"
+            ) |>
+            dplyr::group_by(exp_name) |>
+            dplyr::summarise(
+                total = dplyr::n(),
                 total_significant = sum(
-                  !!sym(pval_col) < pval_thresh &
-                    abs(!!sym(logFC_col)) > logFC_thresh)) |>
-      dplyr::mutate(exp_name_plot=exp_name)
-  }
+                    !!sym(pval_col) < pval_thresh &
+                        abs(!!sym(logFC_col)) > logFC_thresh
+                )
+            ) |>
+            dplyr::mutate(exp_name_plot = exp_name)
+    }
 
 
-  plot_df <- MultiAssayExperiment::metadata(expomicset) |>
-    purrr::pluck("differential_analysis",
-                 "differential_abundance") |>
-    dplyr::inner_join(exp_sum,
-                      by = "exp_name") |>
-    dplyr::arrange(dplyr::desc(total)) |>
-    dplyr::mutate(exp_name_plot=factor(
-      exp_name_plot,
-      levels=unique(exp_name_plot))) |>
-    dplyr::mutate(direction=dplyr::case_when(
-      !!sym(logFC_col) > logFC_thresh &
-        !!sym(pval_col) <  pval_thresh ~ "Upregulated",
+    plot_df <- MultiAssayExperiment::metadata(expomicset) |>
+        purrr::pluck(
+            "differential_analysis",
+            "differential_abundance"
+        ) |>
+        dplyr::inner_join(exp_sum,
+            by = "exp_name"
+        ) |>
+        dplyr::arrange(dplyr::desc(total)) |>
+        dplyr::mutate(exp_name_plot = factor(
+            exp_name_plot,
+            levels = unique(exp_name_plot)
+        )) |>
+        dplyr::mutate(direction = dplyr::case_when(
+            !!sym(logFC_col) > logFC_thresh &
+                !!sym(pval_col) < pval_thresh ~ "Upregulated",
+            !!sym(logFC_col) < -logFC_thresh &
+                !!sym(pval_col) < pval_thresh ~ "Downregulated",
+            .default = "Not-Significant"
+        ))
 
-      !!sym(logFC_col) < -logFC_thresh &
-        !!sym(pval_col) <  pval_thresh ~ "Downregulated",
+    volcano <- plot_df |>
+        ggplot(aes(
+            x = !!sym(logFC_col),
+            y = -log10(!!sym(pval_col)),
+            color = direction
+        )) +
+        geom_point(alpha = 0.5) +
+        geom_vline(
+            xintercept = c(-logFC_thresh, logFC_thresh),
+            linetype = "dashed",
+            color = "grey55"
+        ) +
+        geom_hline(
+            yintercept = -log10(pval_thresh),
+            linetype = "dashed",
+            color = "grey55"
+        ) +
+        ggpubr::theme_pubr(legend = "bottom") +
+        scale_color_manual(values = c(
+            "Upregulated" = "#8E0152",
+            "Downregulated" = "#006666",
+            "Not-Significant" = "grey55"
+        )) +
+        facet_wrap(. ~ exp_name_plot, nrow = nrow) +
+        theme(
+            strip.text = element_text(face = "bold.italic"),
+            plot.title = element_text(face = "bold.italic")
+        ) +
+        labs(
+            x = xlab,
+            y = ylab,
+            title = title,
+            color = "Direction"
+        )
 
-      .default = "Not-Significant"
-    ))
+    if (!is.null(top_n_label)) {
+        # Label the top n points
+        volcano <- volcano +
+            ggrepel::geom_label_repel(
+                data = plot_df |>
+                    group_by(exp_name) |>
+                    dplyr::arrange(!!sym(pval_col)) |>
+                    dplyr::slice_head(n = top_n_label),
+                aes(label = paste0("italic('", !!sym(feature_col), "')")),
+                parse = TRUE,
+                size = 3,
+                max.overlaps = Inf,
+                show.legend = FALSE
+            )
+    }
 
-  volcano <- plot_df |>
-    ggplot(aes(
-      x = !!sym(logFC_col),
-      y = -log10(!!sym(pval_col)),
-      color = direction)) +
-    geom_point(alpha=0.5)+
-    geom_vline(xintercept = c(-logFC_thresh, logFC_thresh),
-               linetype = "dashed",
-               color="grey55")+
-    geom_hline(yintercept = -log10(pval_thresh),
-               linetype = "dashed",
-               color="grey55")+
-    ggpubr::theme_pubr(legend = "bottom")+
-    scale_color_manual(values = c(
-      "Upregulated" = "#8E0152",
-      "Downregulated" = "#006666",
-      "Not-Significant" = "grey55"
-    ))+
-    facet_wrap(. ~ exp_name_plot,nrow=nrow)+
-    theme(strip.text = element_text(face = "bold.italic"),
-          plot.title = element_text(face = "bold.italic"))+
-    labs(
-      x = xlab,
-      y = ylab,
-      title = title,
-      color = "Direction"
-    )
+    if (!is.null(features_to_label)) {
+        # Label specific features
+        volcano <- volcano +
+            ggrepel::geom_label_repel(
+                data = plot_df |>
+                    dplyr::filter(!!sym(feature_col) %in% features_to_label),
+                aes(label = paste0("italic('", !!sym(feature_col), "')")),
+                parse = TRUE,
+                size = 3,
+                max.overlaps = Inf,
+                show.legend = FALSE
+            )
+    }
 
-  if(!is.null(top_n_label)){
-    # Label the top n points
-    volcano <- volcano +
-      ggrepel::geom_label_repel(
-        data = plot_df |>
-          group_by(exp_name) |>
-          dplyr::arrange(!!sym(pval_col)) |>
-          dplyr::slice_head(n = top_n_label),
-        aes(label = paste0("italic('", !!sym(feature_col), "')")),
-        parse = TRUE,
-        size = 3,
-        max.overlaps = Inf,
-        show.legend = FALSE
-      )
-  }
-
-  if(!is.null(features_to_label)) {
-    # Label specific features
-    volcano <- volcano +
-      ggrepel::geom_label_repel(
-        data = plot_df |>
-          dplyr::filter(!!sym(feature_col) %in% features_to_label),
-        aes(label = paste0("italic('", !!sym(feature_col), "')")),
-        parse = TRUE,
-        size = 3,
-        max.overlaps = Inf,
-        show.legend = FALSE
-      )
-  }
-
-  volcano
+    volcano
 }
-

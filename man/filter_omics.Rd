@@ -47,13 +47,13 @@ before downstream analysis.
 }
 \examples{
 # Filter the proteomics assay by variance
-filtered_mae <-  filter_omics(
-  expomicset = make_example_data(return_mae=TRUE),
-  method = c("variance"),
-  assays = "proteomics",
-  assay_name = 1,
-  min_var = 0.01,
-  verbose = TRUE)
-
+filtered_mae <- filter_omics(
+    expomicset = make_example_data(return_mae = TRUE),
+    method = c("variance"),
+    assays = "proteomics",
+    assay_name = 1,
+    min_var = 0.01,
+    verbose = TRUE
+)
 
 }

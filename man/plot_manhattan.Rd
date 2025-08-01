@@ -81,23 +81,23 @@ enhanced faceting.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run association tests
 mae <- mae |>
-  run_association(
-  source = "omics",
-  top_n = 20,
-  feature_set = c("exposure_pm25","exposure_no2"),
-  outcome = "smoker",
-  covariates = c("age"),
-  family = "binomial"
-  )
+    run_association(
+        source = "omics",
+        top_n = 20,
+        feature_set = c("exposure_pm25", "exposure_no2"),
+        outcome = "smoker",
+        covariates = c("age"),
+        family = "binomial"
+    )
 
 # create the manhattan plot
 manhattan_p <- mae |>
-  plot_manhattan()
+    plot_manhattan()
 
 }

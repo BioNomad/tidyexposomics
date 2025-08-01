@@ -150,26 +150,38 @@ gene counts, and Venn diagram.
 }
 }
 \examples{
-\dontrun{
-# Dotplot of top GO groups
-plot_enrichment(expomicset, feature_type = "degs",
- plot_type = "dotplot")
+# create example data
+mae <- make_example_data(
+    n_samples = 30,
+    return_mae = TRUE
+)
 
-# Heatmap for selected groups
-plot_enrichment(expomicset,
-feature_type = "degs_robust",
- plot_type = "heatmap",
- go_groups = c("Group_1", "Group_2"))
+# perform differential abundance analysis
+mae <- run_differential_abundance(
+    expomicset = mae,
+    formula = ~ smoker + sex,
+    abundance_col = "counts",
+    method = "limma_voom",
+    action = "add"
+)
 
-# Gene-term cnetplot
-plot_enrichment(expomicset,
-feature_type = "degs",
- plot_type = "cnet")
+# perform enrichment analysis
+mae <- run_enrichment(
+    expomicset = mae,
+    feature_type = "degs",
+    feature_col = "symbol",
+    species = "goa_human",
+    deg_logfc_threshold = log2(1),
+    deg_pval_col = "P.Value",
+    deg_pval_threshold = 0.2,
+    action = "add"
+)
 
-# Summary multi-panel
-plot_enrichment(expomicset,
-feature_type = "degs",
-plot_type = "summary")
-}
+# create an enrichment plot
+enr_plot <- plot_enrichment(
+    expomicset = mae,
+    feature_type = "degs",
+    plot_type = "network"
+)
 
 }

@@ -48,15 +48,15 @@ This function:
 \examples{
 # Create example data
 mae <- make_example_data(
-  n_samples = 20,
-  return_mae = TRUE
+    n_samples = 20,
+    return_mae = TRUE
 )
 
 # Summarize exposure data
 exp_sum <- mae |>
-  run_summarize_exposures(
-    exposure_cols = c("age","bmi","exposure_pm25"),
-    action = "get"
-  )
+    run_summarize_exposures(
+        exposure_cols = c("age", "bmi", "exposure_pm25"),
+        action = "get"
+    )
 
 }

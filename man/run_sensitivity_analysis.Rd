@@ -89,33 +89,33 @@ assess the stability of differentially abundant features.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 20,
-  return_mae=TRUE
+    n_samples = 20,
+    return_mae = TRUE
 )
 
 
 # Run differential abundance
 mae <- run_differential_abundance(
-  expomicset = mae,
-  formula = ~ smoker + sex,
-  abundance_col = "counts",
-  method = "limma_voom",
-  action = "add"
+    expomicset = mae,
+    formula = ~ smoker + sex,
+    abundance_col = "counts",
+    method = "limma_voom",
+    action = "add"
 )
 
 # Run the sensitivity analysis
 mae <- run_sensitivity_analysis(
-  expomicset = mae,
-  base_formula = ~ smoker + sex,
-  methods = c("limma_voom"),
-  scaling_methods = c("none"),
-  covariates_to_remove = "sex",
-  pval_col = "P.Value",
-  logfc_col = "logFC",
-  pval_threshold = 0.05,
-  logFC_threshold = 0,
-  bootstrap_n = 3,
-  action = "add"
+    expomicset = mae,
+    base_formula = ~ smoker + sex,
+    methods = c("limma_voom"),
+    scaling_methods = c("none"),
+    covariates_to_remove = "sex",
+    pval_col = "P.Value",
+    logfc_col = "logFC",
+    pval_threshold = 0.05,
+    logFC_threshold = 0,
+    bootstrap_n = 3,
+    action = "add"
 )
 
 }

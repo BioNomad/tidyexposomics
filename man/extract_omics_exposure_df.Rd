@@ -36,12 +36,13 @@ and all omics features are included.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 # export the omics exposure df
 merged_df <- extract_omics_exposure_df(
-  mae,
-  log2_trans=TRUE)
+    mae,
+    log2_trans = TRUE
+)
 
 }

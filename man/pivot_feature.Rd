@@ -32,12 +32,12 @@ adding a \code{.exp_name} column.
 
 #' # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # pivot experiment
 feature_data <- mae |>
-  pivot_feature()
+    pivot_feature()
 
 }

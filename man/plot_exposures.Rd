@@ -83,14 +83,14 @@ with color-coded strip backgrounds.
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # plot exposure data
 exposure_plot <- mae |>
-  plot_exposures(
-    exposure_cols = c("exposure_pm25","exposure_no2")
-  )
+    plot_exposures(
+        exposure_cols = c("exposure_pm25", "exposure_no2")
+    )
 
 }

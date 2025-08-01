@@ -51,23 +51,24 @@ and optionally add placeholder sheets for missing data.
 \examples{
 # Create example data
 mae <- make_example_data(
-  n_samples = 20,
-  return_mae = TRUE
+    n_samples = 20,
+    return_mae = TRUE
 )
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-  expomicset = mae,
-  formula = ~ smoker + sex,
-  abundance_col = "counts",
-  method = "limma_voom",
-  action = "add"
+    expomicset = mae,
+    formula = ~ smoker + sex,
+    abundance_col = "counts",
+    method = "limma_voom",
+    action = "add"
 )
 
 # extract the differential abundance results
 extract_results_excel(
-  expomicset = mae,
-  result_types = "differential_analysis",
-  file = "supplemental_results.xlsx")
+    expomicset = mae,
+    result_types = "differential_analysis",
+    file = "supplemental_results.xlsx"
+)
 
 }

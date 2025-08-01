@@ -67,15 +67,15 @@ when \code{action="add"}.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # determine sample clusters
 mae <- run_cluster_samples(
-  expomicset = mae,
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi"),
-  clustering_approach = "diana"
+    expomicset = mae,
+    exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi"),
+    clustering_approach = "diana"
 )
 
 }

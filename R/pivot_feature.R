@@ -21,25 +21,26 @@
 #'
 #' #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # pivot experiment
 #' feature_data <- mae |>
-#'   pivot_feature()
+#'     pivot_feature()
 #'
 #' @export
-pivot_feature <- function(expomicset){
-  res <- lapply(
-    names(MultiAssayExperiment::experiments(expomicset)),function(exp_name){
-      exp <- .update_assay_colData(expomicset,exp_name) |>
-        tidybulk::pivot_transcript()
-    })
+pivot_feature <- function(expomicset) {
+    res <- lapply(
+        names(MultiAssayExperiment::experiments(expomicset)), function(exp_name) {
+            exp <- .update_assay_colData(expomicset, exp_name) |>
+                tidybulk::pivot_transcript()
+        }
+    )
 
-  names(res) <- names(MultiAssayExperiment::experiments(expomicset))
+    names(res) <- names(MultiAssayExperiment::experiments(expomicset))
 
-  res <- res |>
-    dplyr::bind_rows(.id=".exp_name")
-  return(res)
+    res <- res |>
+        dplyr::bind_rows(.id = ".exp_name")
+    return(res)
 }

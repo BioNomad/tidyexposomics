@@ -73,23 +73,23 @@ each association. This can be useful for model diagnostics.
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run association tests
 mae <- mae |>
-  run_association(
-  source = "exposures",
-  feature_set = c("exposure_pm25","exposure_no2"),
-  outcome = "smoker",
-  covariates = c("age"),
-  family = "binomial"
-  )
+    run_association(
+        source = "exposures",
+        feature_set = c("exposure_pm25", "exposure_no2"),
+        outcome = "smoker",
+        covariates = c("age"),
+        family = "binomial"
+    )
 
 assoc_plot <- mae |>
-  plot_association(
-    source = "exposures"
-  )
+    plot_association(
+        source = "exposures"
+    )
 
 }

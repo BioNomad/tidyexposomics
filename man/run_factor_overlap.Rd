@@ -54,39 +54,41 @@ takes features recurring in ≥2 block-specific components.
 \examples{
 # create example data
 mae <- make_example_data(
-   n_samples = 20,
-   return_mae=TRUE
-  )
+    n_samples = 20,
+    return_mae = TRUE
+)
 
 # perform multiomics integration
 mae <- run_multiomics_integration(
-      mae,
-      method = "MCIA",
-      n_factors = 3)
+    mae,
+    method = "MCIA",
+    n_factors = 3
+)
 
 
 # identify the features that contribute most to the factors
 mae <- extract_top_factor_features(
-  mae,
-  factors = c("V1","V2","V3"),
-  method = "percentile",
-  percentile = 0.5,
-  action = "add"
+    mae,
+    factors = c("V1", "V2", "V3"),
+    method = "percentile",
+    percentile = 0.5,
+    action = "add"
 )
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-  expomicset = mae,
-  formula = ~ smoker + sex,
-  abundance_col = "counts",
-  method = "limma_voom",
-  action = "add"
+    expomicset = mae,
+    formula = ~ smoker + sex,
+    abundance_col = "counts",
+    method = "limma_voom",
+    action = "add"
 )
 
 # determine the overlap in features
 mae <- mae |>
-  run_factor_overlap(
-  robust = FALSE,
-  pval_col = "adj.P.Val")
+    run_factor_overlap(
+        robust = FALSE,
+        pval_col = "adj.P.Val"
+    )
 
 }

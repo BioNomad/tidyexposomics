@@ -30,14 +30,14 @@ from the metadata slot of a \code{MultiAssayExperiment} object.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # extract results
 res <- extract_results(
-    expomicset=mae,
-    result="codebook"
+    expomicset = mae,
+    result = "codebook"
 )
 
 }

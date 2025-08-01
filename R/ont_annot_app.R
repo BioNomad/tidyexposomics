@@ -8,12 +8,12 @@
 #' @return Launches a Shiny app in a new window; does not return a value.
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
+#' # Launch the ontology annotation app
 #' ont_annot_app()
-#' }
+#'
 #' @export
 ont_annot_app <- function() {
-  app_dir <- system.file("shiny/ont_annot", package = "tidyexposomics")
-  shiny::runApp(app_dir, display.mode = "normal")
+    app_dir <- system.file("shiny/ont_annot", package = "tidyexposomics")
+    shiny::runApp(app_dir, display.mode = "normal")
 }

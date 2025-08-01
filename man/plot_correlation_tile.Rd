@@ -54,25 +54,25 @@ based on a specified p-value threshold.
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run pca
 mae <- mae |>
-  run_pca()
+    run_pca()
 
 # correlate with exposures
 mae <- mae |>
-  run_correlation(
-  feature_type = "pcs",
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  )
+    run_correlation(
+        feature_type = "pcs",
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 # make the correlation tile plot
 cor_tile_p <- mae |>
-  plot_correlation_tile(
-  feature_type = "pcs"
-  )
+    plot_correlation_tile(
+        feature_type = "pcs"
+    )
 
 }

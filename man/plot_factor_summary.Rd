@@ -54,16 +54,17 @@ and \code{midpoint} parameters.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 20,
-  return_mae=TRUE
-  )
+    n_samples = 20,
+    return_mae = TRUE
+)
 
 mae <- run_multiomics_integration(
-      mae,
-      method = "MCIA",
-      n_factors = 3)
+    mae,
+    method = "MCIA",
+    n_factors = 3
+)
 
 factor_sum_plot <- mae |>
-  plot_factor_summary()
+    plot_factor_summary()
 
 }

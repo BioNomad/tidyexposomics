@@ -33,14 +33,15 @@ sample metadata
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # pivot experiment
 exp_data <- mae |>
-  pivot_exp(
-    omics_name = "mRNA",
-    features = "feat_42")
+    pivot_exp(
+        omics_name = "mRNA",
+        features = "feat_42"
+    )
 
 }

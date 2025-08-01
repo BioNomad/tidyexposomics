@@ -57,15 +57,16 @@ and a specified outcome.
 \examples{
 # create example data
 mae <- make_example_data(
-   n_samples = 20,
-   return_mae=TRUE
-  )
+    n_samples = 20,
+    return_mae = TRUE
+)
 
 # perform multiomics integration
 mae <- run_multiomics_integration(
-      mae,
-      method = "MCIA",
-      n_factors = 3)
+    mae,
+    method = "MCIA",
+    n_factors = 3
+)
 
 }
 \seealso{

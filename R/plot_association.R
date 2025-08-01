@@ -42,24 +42,24 @@
 #'
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # run association tests
 #' mae <- mae |>
-#'   run_association(
-#'   source = "exposures",
-#'   feature_set = c("exposure_pm25","exposure_no2"),
-#'   outcome = "smoker",
-#'   covariates = c("age"),
-#'   family = "binomial"
-#'   )
+#'     run_association(
+#'         source = "exposures",
+#'         feature_set = c("exposure_pm25", "exposure_no2"),
+#'         outcome = "smoker",
+#'         covariates = c("age"),
+#'         family = "binomial"
+#'     )
 #'
 #' assoc_plot <- mae |>
-#'   plot_association(
-#'     source = "exposures"
-#'   )
+#'     plot_association(
+#'         source = "exposures"
+#'     )
 #'
 #' @export
 plot_association <- function(
@@ -73,155 +73,158 @@ plot_association <- function(
     r2_col = "adj_r2",
     facet = FALSE,
     nrow = 1,
-    subtitle = NULL
-) {
-  requireNamespace("ggplot2")
-  requireNamespace("dplyr")
-  requireNamespace("tidyr")
+    subtitle = NULL) {
+    requireNamespace("ggplot2")
+    requireNamespace("dplyr")
+    requireNamespace("tidyr")
 
-  source <- match.arg(source)
-  assoc_key <- paste0("assoc_", source)
+    source <- match.arg(source)
+    assoc_key <- paste0("assoc_", source)
 
-  # Check metadata
-  assoc_metadata <- MultiAssayExperiment::metadata(expomicset)$association
-  if (is.null(assoc_metadata) || !assoc_key %in% names(assoc_metadata)) {
-    stop("Association results for source '",
-         source,
-         "' not found in metadata. Run `run_association()` first.")
-  }
-
-  assoc_result <- assoc_metadata[[assoc_key]]
-  results_df <- assoc_result$results_df
-  covariates <- assoc_result$covariates
-
-  if (!is.null(terms)) {
-    df <- dplyr::filter(results_df, term %in% terms)
-  } else {
-    df <- results_df
-  }
-
-  # Mark significance
-  df <- df |>
-    dplyr::mutate(
-      is_significant = !!rlang::sym(filter_col) < filter_thresh,
-      direction = dplyr::case_when(
-        (estimate > 0 & (is_significant == TRUE)) ~ "up",
-        (estimate < 0 & (is_significant == TRUE)) ~ "down",
-        .default = "ns"
-      )
-    )
-
-  # Apply direction filter
-  if (direction_filter == "up") {
-    df <- dplyr::filter(df, direction == "up")
-  } else if (direction_filter == "down") {
-    df <- dplyr::filter(df, direction == "down")
-  }
-
-  # Extract y-axis variable and handle GO PC formatting
-  if (source == "go_pcs") {
-    df <- tidyr::separate(
-      df,
-      col = "term",
-      into = c("PC", "exp_name", "Cluster", "go_group"),
-      sep = "/",
-      remove = FALSE
-    )
-    df$label <- df$go_group
-    facet_formula <- exp_name + Cluster ~ .
-  } else {
-    df$label <- df$term
-    facet_formula <- NULL
-  }
-
-  # Only proceed if add_r2_tile is TRUE and column exists
-  if (add_r2_tile && r2_col %in% names(df)) {
-
-    leg_label <- ifelse(r2_col == "r2",
-                        expression("R"^2),
-                        expression("Adj. R"^2))
-    tile_plot <- df |>
-      ggplot2::ggplot(ggplot2::aes(
-                        x = 1,
-                        y = reorder(label, estimate),
-                        fill = !!rlang::sym(r2_col))) +
-      ggplot2::geom_tile() +
-      scale_fill_gradient(
-        low = "#e8e1eb",
-        high = "#3f1b4f"
-      )+
-      ggplot2::labs(x = NULL, y = NULL, fill = r2_col) +
-      ggplot2::theme_minimal() +
-      ggplot2::theme(
-        axis.text.x = ggplot2::element_blank(),
-        axis.ticks.x = ggplot2::element_blank(),
-        axis.title.y = ggplot2::element_blank(),
-        panel.grid = ggplot2::element_blank(),
-        axis.text.y = element_blank()
-      )+
-      labs(fill=leg_label)
-  }
-
-
-  # Auto-subtitle
-  if (is.null(subtitle)) {
-    if (!is.null(covariates) && length(covariates) > 0) {
-      subtitle <- paste("Covariates:", paste(covariates, collapse = ", "))
+    # Check metadata
+    assoc_metadata <- MultiAssayExperiment::metadata(expomicset)$association
+    if (is.null(assoc_metadata) || !assoc_key %in% names(assoc_metadata)) {
+        stop(
+            "Association results for source '",
+            source,
+            "' not found in metadata. Run `run_association()` first."
+        )
     }
-  }
 
-  # Plot
-  p <- ggplot2::ggplot(df, ggplot2::aes(
-    x = estimate,
-    y = reorder(label, estimate),
-    color = direction
-  )) +
-    ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
-    ggplot2::geom_errorbarh(
-      ggplot2::aes(xmin = estimate - std.error, xmax = estimate + std.error),
-      color = "grey55", height = 0.2
-    ) +
-    ggplot2::geom_point(shape = 18, size = 5, alpha = 0.5) +
-    ggplot2::scale_color_manual(values = c(
-      up = "#8E0152",
-      down = "#006666",
-      ns = "grey55"
-    )) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      legend.position = "none",
-      plot.subtitle = ggplot2::element_text(face = "italic"),
-      plot.title = ggplot2::element_text(face = "bold.italic"),
-    ) +
-    ggplot2::labs(
-      x = "Effect size",
-      y = "",
-      title = paste0(tools::toTitleCase(source), "-Outcome Associations"),
-      subtitle = subtitle
-    )
+    assoc_result <- assoc_metadata[[assoc_key]]
+    results_df <- assoc_result$results_df
+    covariates <- assoc_result$covariates
 
-  if (facet && source == "go_pcs") {
-    if (!requireNamespace("ggh4x", quietly = TRUE)) {
-      warning("Faceting requires the `ggh4x` package.
-              Install it to enable nested facets.")
+    if (!is.null(terms)) {
+        df <- dplyr::filter(results_df, term %in% terms)
     } else {
-      p <- p +
-        ggh4x::facet_nested_wrap(
-          facet_formula,
-          nrow = nrow,
-          scales = "free_x") +
-        ggplot2::theme(strip.text = ggplot2::element_text(face = "bold.italic"))
+        df <- results_df
     }
-  }
 
-  if (add_r2_tile && exists("tile_plot")) {
-    return(patchwork::wrap_plots(
-      p + ggplot2::theme(axis.text.y = element_text()),
-      tile_plot,
-      widths = c(3, 0.5)))
-  } else {
+    # Mark significance
+    df <- df |>
+        dplyr::mutate(
+            is_significant = !!rlang::sym(filter_col) < filter_thresh,
+            direction = dplyr::case_when(
+                (estimate > 0 & (is_significant == TRUE)) ~ "up",
+                (estimate < 0 & (is_significant == TRUE)) ~ "down",
+                .default = "ns"
+            )
+        )
+
+    # Apply direction filter
+    if (direction_filter == "up") {
+        df <- dplyr::filter(df, direction == "up")
+    } else if (direction_filter == "down") {
+        df <- dplyr::filter(df, direction == "down")
+    }
+
+    # Extract y-axis variable and handle GO PC formatting
+    if (source == "go_pcs") {
+        df <- tidyr::separate(
+            df,
+            col = "term",
+            into = c("PC", "exp_name", "Cluster", "go_group"),
+            sep = "/",
+            remove = FALSE
+        )
+        df$label <- df$go_group
+        facet_formula <- exp_name + Cluster ~ .
+    } else {
+        df$label <- df$term
+        facet_formula <- NULL
+    }
+
+    # Only proceed if add_r2_tile is TRUE and column exists
+    if (add_r2_tile && r2_col %in% names(df)) {
+        leg_label <- ifelse(r2_col == "r2",
+            expression("R"^2),
+            expression("Adj. R"^2)
+        )
+        tile_plot <- df |>
+            ggplot2::ggplot(ggplot2::aes(
+                x = 1,
+                y = reorder(label, estimate),
+                fill = !!rlang::sym(r2_col)
+            )) +
+            ggplot2::geom_tile() +
+            scale_fill_gradient(
+                low = "#e8e1eb",
+                high = "#3f1b4f"
+            ) +
+            ggplot2::labs(x = NULL, y = NULL, fill = r2_col) +
+            ggplot2::theme_minimal() +
+            ggplot2::theme(
+                axis.text.x = ggplot2::element_blank(),
+                axis.ticks.x = ggplot2::element_blank(),
+                axis.title.y = ggplot2::element_blank(),
+                panel.grid = ggplot2::element_blank(),
+                axis.text.y = element_blank()
+            ) +
+            labs(fill = leg_label)
+    }
+
+
+    # Auto-subtitle
+    if (is.null(subtitle)) {
+        if (!is.null(covariates) && length(covariates) > 0) {
+            subtitle <- paste("Covariates:", paste(covariates, collapse = ", "))
+        }
+    }
+
+    # Plot
+    p <- ggplot2::ggplot(df, ggplot2::aes(
+        x = estimate,
+        y = reorder(label, estimate),
+        color = direction
+    )) +
+        ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
+        ggplot2::geom_errorbarh(
+            ggplot2::aes(xmin = estimate - std.error, xmax = estimate + std.error),
+            color = "grey55", height = 0.2
+        ) +
+        ggplot2::geom_point(shape = 18, size = 5, alpha = 0.5) +
+        ggplot2::scale_color_manual(values = c(
+            up = "#8E0152",
+            down = "#006666",
+            ns = "grey55"
+        )) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(
+            legend.position = "none",
+            plot.subtitle = ggplot2::element_text(face = "italic"),
+            plot.title = ggplot2::element_text(face = "bold.italic"),
+        ) +
+        ggplot2::labs(
+            x = "Effect size",
+            y = "",
+            title = paste0(tools::toTitleCase(source), "-Outcome Associations"),
+            subtitle = subtitle
+        )
+
+    if (facet && source == "go_pcs") {
+        if (!requireNamespace("ggh4x", quietly = TRUE)) {
+            warning("Faceting requires the `ggh4x` package.")
+        } else {
+            p <- p +
+                ggh4x::facet_nested_wrap(
+                    facet_formula,
+                    nrow = nrow,
+                    scales = "free_x"
+                ) +
+                ggplot2::theme(strip.text = ggplot2::element_text(face = "bold.italic"))
+        }
+    }
+
+    if (add_r2_tile && exists("tile_plot")) {
+        return(patchwork::wrap_plots(
+            p + ggplot2::theme(axis.text.y = element_text()),
+            tile_plot,
+            widths = c(3, 0.5)
+        ))
+    } else {
+        return(p)
+    }
+
     return(p)
-  }
-
-  return(p)
 }

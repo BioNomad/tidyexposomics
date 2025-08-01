@@ -40,164 +40,171 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'    n_samples = 20,
-#'    return_mae=TRUE
-#'   )
+#'     n_samples = 20,
+#'     return_mae = TRUE
+#' )
 #'
 #' # perform multiomics integration
 #' mae <- run_multiomics_integration(
-#'       mae,
-#'       method = "MCIA",
-#'       n_factors = 3)
+#'     mae,
+#'     method = "MCIA",
+#'     n_factors = 3
+#' )
 #'
 #' top_feats <- extract_top_factor_features(
-#'   mae,
-#'   factors = c("V1","V2","V3"),
-#'   method = "percentile",
-#'   percentile = 0.9,
-#'   action = "get"
+#'     mae,
+#'     factors = c("V1", "V2", "V3"),
+#'     method = "percentile",
+#'     percentile = 0.9,
+#'     action = "get"
 #' )
 #'
 #' @export
 extract_top_factor_features <- function(
     expomicset,
-    factors=NULL,
-    pval_col="p_adjust",
-    pval_thresh=0.05,
+    factors = NULL,
+    pval_col = "p_adjust",
+    pval_thresh = 0.05,
     method = "percentile",
     percentile = 0.9,
     threshold = 0.3,
     action = "add") {
+    message("Extracting top contributing features for specified factors.")
 
-  message("Extracting top contributing features for specified factors.")
+    # Get integration results
+    integration_results <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results
+    method_used <- integration_results$method
 
-  # Get integration results
-  integration_results <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results
-  method_used <- integration_results$method
+    if (is.null(factors)) {
+        factors <- MultiAssayExperiment::metadata(expomicset) |>
+            purrr::pluck(
+                "association",
+                "assoc_factors",
+                "results_df"
+            ) |>
+            dplyr::filter(!!dplyr::sym(pval_col) < pval_thresh) |>
+            dplyr::pull(term)
+    }
 
-  if(is.null(factors)){
-    factors <- MultiAssayExperiment::metadata(expomicset) |>
-      purrr::pluck("association",
-                   "assoc_factors",
-                   "results_df") |>
-      dplyr::filter(!!dplyr::sym(pval_col)<pval_thresh) |>
-      dplyr::pull(term)
-  }
-
-  # Extract factor loadings
-  loadings <- switch(
-    method_used,
-    "MOFA" = {
-      message("Using MOFA+ factor loadings.")
-      MOFA2::get_weights(integration_results$result)
-    },
-    "MCIA" = {
-      message("Using MCIA block loadings.")
-      integration_results$result@block_loadings
-    },
-    "DIABLO" = {
-      message("Using DIABLO loadings.")
-      integration_results$result$loadings
-    },
-    "RGCCA" = {
-      message("Using RGCCA loadings.")
-      integration_results$result$a
-    },
-    stop("Unsupported integration method: ", method_used)
-  )
-
-  # Convert to long format
-  loadings_df <- loadings |>
-    purrr::map2(names(loadings), function(df, exp_name) {
-      df <- as.data.frame(df)
-      df$exp_name <- exp_name
-      df$feature <- rownames(df)
-      rownames(df) <- NULL
-      df
-    }) |>
-    dplyr::bind_rows() |>
-    tidyr::pivot_longer(
-      cols = -c(feature, exp_name),
-      names_to = "factor",
-      values_to = "loading"
+    # Extract factor loadings
+    loadings <- switch(method_used,
+        "MOFA" = {
+            message("Using MOFA+ factor loadings.")
+            MOFA2::get_weights(integration_results$result)
+        },
+        "MCIA" = {
+            message("Using MCIA block loadings.")
+            integration_results$result@block_loadings
+        },
+        "DIABLO" = {
+            message("Using DIABLO loadings.")
+            integration_results$result$loadings
+        },
+        "RGCCA" = {
+            message("Using RGCCA loadings.")
+            integration_results$result$a
+        },
+        stop("Unsupported integration method: ", method_used)
     )
 
-  if (method_used %in% c("DIABLO","RGCCA")){
+    # Convert to long format
     loadings_df <- loadings |>
-      purrr::map2(names(loadings), function(df, exp_name) {
-        df <- as.data.frame(df)
-        df$feature <- rownames(df)
-        df$exp_name <- exp_name
-        rownames(df) <- NULL
-        df
-      }) |>
-      dplyr::bind_rows() |>
-      tidyr::pivot_longer(
-        cols = -c(feature, exp_name),
-        names_to = "component",
-        values_to = "loading"
-      ) |>
-      dplyr::mutate(factor = paste(exp_name, component, sep = " "))
-  }
+        purrr::map2(names(loadings), function(df, exp_name) {
+            df <- as.data.frame(df)
+            df$exp_name <- exp_name
+            df$feature <- rownames(df)
+            rownames(df) <- NULL
+            df
+        }) |>
+        dplyr::bind_rows() |>
+        tidyr::pivot_longer(
+            cols = -c(feature, exp_name),
+            names_to = "factor",
+            values_to = "loading"
+        )
 
-  # Ensure factor names are character
-  factors <- as.character(factors)
-  loadings_df <- dplyr::filter(loadings_df, factor %in% factors)
+    if (method_used %in% c("DIABLO", "RGCCA")) {
+        loadings_df <- loadings |>
+            purrr::map2(names(loadings), function(df, exp_name) {
+                df <- as.data.frame(df)
+                df$feature <- rownames(df)
+                df$exp_name <- exp_name
+                rownames(df) <- NULL
+                df
+            }) |>
+            dplyr::bind_rows() |>
+            tidyr::pivot_longer(
+                cols = -c(feature, exp_name),
+                names_to = "component",
+                values_to = "loading"
+            ) |>
+            dplyr::mutate(factor = paste(exp_name, component, sep = " "))
+    }
 
-  # Apply filtering
-  filtered_features <- switch(
-    method,
-    "percentile" = {
-      message("Applying percentile-based filtering (>",
-              percentile * 100, "%).")
-      loadings_df |>
-        group_by(factor) |>
-        mutate(rank = percent_rank(abs(loading))) |>
-        filter(rank > percentile) |>
-        ungroup()
-    },
-    "threshold" = {
-      message("Applying raw threshold-based filtering (>|", threshold, "|).")
-      dplyr::filter(loadings_df, abs(loading) > threshold)
-    },
-    stop("Invalid method. Choose 'percentile' or 'threshold'.")
-  )
+    # Ensure factor names are character
+    factors <- as.character(factors)
+    loadings_df <- dplyr::filter(loadings_df, factor %in% factors)
 
-  message("Selected ",
-          nrow(filtered_features),
-          " features contributing to specified factors.")
-
-  # Store or return results
-  if (action == "add") {
-    MultiAssayExperiment::metadata(expomicset) |>
-      purrr::pluck("multiomics_integration",
-                   "top_factor_features") <- filtered_features
-
-    step_record <- list(
-      extract_top_factor_features = list(
-        timestamp = Sys.time(),
-        params = list(
-          factors = factors,
-          method = method,
-          percentile = percentile,
-          threshold = threshold
-        ),
-        notes = paste0("Selected ",
-                       nrow(filtered_features),
-                       " features contributing to specified factors.")
-      )
+    # Apply filtering
+    filtered_features <- switch(method,
+        "percentile" = {
+            message(
+                "Applying percentile-based filtering (>",
+                percentile * 100, "%)."
+            )
+            loadings_df |>
+                group_by(factor) |>
+                mutate(rank = percent_rank(abs(loading))) |>
+                filter(rank > percentile) |>
+                ungroup()
+        },
+        "threshold" = {
+            message("Applying raw threshold-based filtering (>|", threshold, "|).")
+            dplyr::filter(loadings_df, abs(loading) > threshold)
+        },
+        stop("Invalid method. Choose 'percentile' or 'threshold'.")
     )
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$summary$steps,
-      step_record
+    message(
+        "Selected ",
+        nrow(filtered_features),
+        " features contributing to specified factors."
     )
 
-    return(expomicset)
-  } else if (action == "get") {
-    return(filtered_features)
-  } else {
-    stop("Invalid action. Choose 'add' or 'get'.")
-  }
+    # Store or return results
+    if (action == "add") {
+        MultiAssayExperiment::metadata(expomicset) |>
+            purrr::pluck(
+                "multiomics_integration",
+                "top_factor_features"
+            ) <- filtered_features
+
+        step_record <- list(
+            extract_top_factor_features = list(
+                timestamp = Sys.time(),
+                params = list(
+                    factors = factors,
+                    method = method,
+                    percentile = percentile,
+                    threshold = threshold
+                ),
+                notes = paste0(
+                    "Selected ",
+                    nrow(filtered_features),
+                    " features contributing to specified factors."
+                )
+            )
+        )
+
+        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+            step_record
+        )
+
+        return(expomicset)
+    } else if (action == "get") {
+        return(filtered_features)
+    } else {
+        stop("Invalid action. Choose 'add' or 'get'.")
+    }
 }
-

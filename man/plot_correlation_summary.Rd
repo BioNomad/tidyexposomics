@@ -41,26 +41,28 @@ using customizable modes.
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # correlate with exposures
 mae <- mae |>
-  run_correlation(
-  feature_type = "omics",
-  variable_map = mae |>
-    pivot_feature() |>
-    dplyr::select(variable=.feature,
-    exp_name=.exp_name),
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  )
+    run_correlation(
+        feature_type = "omics",
+        variable_map = mae |>
+            pivot_feature() |>
+            dplyr::select(
+                variable = .feature,
+                exp_name = .exp_name
+            ),
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 # create the correlation summary plot
 cor_summary_plot <- mae |>
-  plot_correlation_summary(
-    feature_type = "omics",
-    mode = "summary"
-  )
+    plot_correlation_summary(
+        feature_type = "omics",
+        mode = "summary"
+    )
 
 }

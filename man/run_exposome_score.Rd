@@ -53,17 +53,17 @@ them row-wise.
 \examples{
 # create the example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # create the air pollution score
 mae <- run_exposome_score(
-  mae,
-  score_type = "pca",
-  exposure_cols = c("exposure_pm25","exposure_no2"),
-  scale = TRUE,
-  score_column_name = "air_pollution_score"
+    mae,
+    score_type = "pca",
+    exposure_cols = c("exposure_pm25", "exposure_no2"),
+    scale = TRUE,
+    score_column_name = "air_pollution_score"
 )
 
 }

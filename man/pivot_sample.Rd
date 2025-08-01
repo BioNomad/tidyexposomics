@@ -34,11 +34,11 @@ converting it to a tibble.
 
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 sample_data <- mae |>
-  pivot_sample()
+    pivot_sample()
 
 }

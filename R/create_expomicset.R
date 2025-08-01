@@ -29,89 +29,90 @@
 #'
 #' # create the MultiAssayExperiment Object
 #' mae <- create_expomicset(
-#'   codebook = tmp$codebook,
-#'   exposure = tmp$exposure,
-#'   omics = tmp$omics,
-#'  row_data = tmp$row_data
+#'     codebook = tmp$codebook,
+#'     exposure = tmp$exposure,
+#'     omics = tmp$omics,
+#'     row_data = tmp$row_data
 #' )
 #'
 #' @export
-create_expomicset <- function(codebook,
-                              exposure,
-                              omics,
-                              row_data = NULL) {
-
-  # Validate inputs
-  if (!is.data.frame(exposure)) {
-    stop("The 'exposure' argument must be a data frame.")
-  }
-  if (!is.null(row_data) && !is.list(row_data)){
-    stop("The 'row_data' argument must be a list if provided.")
-  }
-
-  # Convert a single matrix input into a named list
-  if (is.matrix(omics)) {
-    omics <- list(single_omic = omics)
-  } else if (!is.list(omics)) {
-    stop("The 'omics' argument must be a list or a single matrix.")
-  }
-
-  if (!is.null(row_data) && length(row_data) != length(omics)) {
-    stop("Length of 'row_data' must match 'omics'.")
-  }
-
-  # Ensure all datasets in omics are matrices with column names
-  message("Ensuring all omics datasets are matrices with column names.")
-  omics <- lapply(omics, function(x) {
-    if (!is.matrix(x)) x <- as.matrix(x)
-    if (is.null(colnames(x))) {
-      colnames(x) <- paste0("Sample_", seq_len(ncol(x)))
+create_expomicset <- function(
+    codebook,
+    exposure,
+    omics,
+    row_data = NULL) {
+    # Validate inputs
+    if (!is.data.frame(exposure)) {
+        stop("The 'exposure' argument must be a data frame.")
     }
-    x
-  })
+    if (!is.null(row_data) && !is.list(row_data)) {
+        stop("The 'row_data' argument must be a list if provided.")
+    }
 
-  # Create row_data if not provided and ensure feature order matches assay rows
-  row_data <- row_data %||% lapply(omics, function(df) {
-    S4Vectors::DataFrame(row.names = rownames(df))
-  })
+    # Convert a single matrix input into a named list
+    if (is.matrix(omics)) {
+        omics <- list(single_omic = omics)
+    } else if (!is.list(omics)) {
+        stop("The 'omics' argument must be a list or a single matrix.")
+    }
 
-  # Ensure rowData order matches assay rownames
-  row_data <- mapply(function(row_meta, data) {
-    row_meta <- row_meta[
-      match(rownames(data), rownames(row_meta)), , drop = FALSE]
-    row_meta
-  }, row_meta = row_data, data = omics, SIMPLIFY = FALSE)
+    if (!is.null(row_data) && length(row_data) != length(omics)) {
+        stop("Length of 'row_data' must match 'omics'.")
+    }
 
-  # Create SummarizedExperiment objects with ordered samples and rowData
-  message("Creating SummarizedExperiment objects.")
-  experiments <- mapply(
-    function(data, row_meta) {
-      sample_order <- sort(colnames(data))  # Enforce ordered sample names
-      data <- data[, sample_order, drop = FALSE]  # Reorder columns
-      SummarizedExperiment::SummarizedExperiment(
-        assays = S4Vectors::SimpleList(counts = data),
-        rowData = row_meta
-      )
-    },
-    data = omics,
-    row_meta = row_data,
-    SIMPLIFY = FALSE
-  )
+    # Ensure all datasets in omics are matrices with column names
+    message("Ensuring all omics datasets are matrices with column names.")
+    omics <- lapply(omics, function(x) {
+        if (!is.matrix(x)) x <- as.matrix(x)
+        if (is.null(colnames(x))) {
+            colnames(x) <- paste0("Sample_", seq_len(ncol(x)))
+        }
+        x
+    })
 
-  col_data <- S4Vectors::DataFrame(exposure)
-  if (is.null(rownames(col_data))) {
-    stop("Exposure data must have rownames.")
-  }
+    # Create row_data if not provided and ensure feature order matches assay rows
+    row_data <- row_data %||% lapply(omics, function(df) {
+        S4Vectors::DataFrame(row.names = rownames(df))
+    })
 
-  # Create MultiAssayExperiment without enforcing sample consistency
-  message("Creating MultiAssayExperiment object.")
-  mae <- MultiAssayExperiment::MultiAssayExperiment(
-    experiments = experiments,
-    colData = col_data,  # Keep all exposure samples without filtering
-    metadata = list(codebook = codebook)
-  )
+    # Ensure rowData order matches assay rownames
+    row_data <- mapply(function(row_meta, data) {
+        row_meta <- row_meta[
+            match(rownames(data), rownames(row_meta)), ,
+            drop = FALSE
+        ]
+        row_meta
+    }, row_meta = row_data, data = omics, SIMPLIFY = FALSE)
 
-  message("MultiAssayExperiment created successfully.")
-  return(mae)
+    # Create SummarizedExperiment objects with ordered samples and rowData
+    message("Creating SummarizedExperiment objects.")
+    experiments <- mapply(
+        function(data, row_meta) {
+            sample_order <- sort(colnames(data)) # Enforce ordered sample names
+            data <- data[, sample_order, drop = FALSE] # Reorder columns
+            SummarizedExperiment::SummarizedExperiment(
+                assays = S4Vectors::SimpleList(counts = data),
+                rowData = row_meta
+            )
+        },
+        data = omics,
+        row_meta = row_data,
+        SIMPLIFY = FALSE
+    )
+
+    col_data <- S4Vectors::DataFrame(exposure)
+    if (is.null(rownames(col_data))) {
+        stop("Exposure data must have rownames.")
+    }
+
+    # Create MultiAssayExperiment without enforcing sample consistency
+    message("Creating MultiAssayExperiment object.")
+    mae <- MultiAssayExperiment::MultiAssayExperiment(
+        experiments = experiments,
+        colData = col_data, # Keep all exposure samples without filtering
+        metadata = list(codebook = codebook)
+    )
+
+    message("MultiAssayExperiment created successfully.")
+    return(mae)
 }
-

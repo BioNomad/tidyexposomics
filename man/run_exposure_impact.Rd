@@ -36,44 +36,50 @@ or factor features.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # perform correlation analyses
 # correlate with exposures
 mae <- mae |>
-  run_correlation(
-  feature_type = "omics",
-  variable_map = mae |>
-    pivot_feature() |>
-    dplyr::select(variable=.feature,
-    exp_name=.exp_name),
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  ) |>
-  run_correlation(
-  feature_type = "omics",
-  variable_map = mae |>
-    pivot_feature() |>
-    dplyr::select(variable=.feature,
-    exp_name=.exp_name),
-  feature_cors = TRUE,
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  )
+    run_correlation(
+        feature_type = "omics",
+        variable_map = mae |>
+            pivot_feature() |>
+            dplyr::select(
+                variable = .feature,
+                exp_name = .exp_name
+            ),
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    ) |>
+    run_correlation(
+        feature_type = "omics",
+        variable_map = mae |>
+            pivot_feature() |>
+            dplyr::select(
+                variable = .feature,
+                exp_name = .exp_name
+            ),
+        feature_cors = TRUE,
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 # create the networks
-mae   <- mae |>
-run_create_network(
-  feature_type = "omics_feature_cor",
-  action = "add") |>
-  run_create_network(
-   feature_type = "omics",
-   action = "add")
+mae <- mae |>
+    run_create_network(
+        feature_type = "omics_feature_cor",
+        action = "add"
+    ) |>
+    run_create_network(
+        feature_type = "omics",
+        action = "add"
+    )
 
 # perform impact analysis
 mae <- mae |>
-  run_exposure_impact(
-    feature_type = "omics"
-  )
+    run_exposure_impact(
+        feature_type = "omics"
+    )
 
 }

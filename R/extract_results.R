@@ -16,31 +16,32 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' # extract results
 #' res <- extract_results(
-#'     expomicset=mae,
-#'     result="codebook"
+#'     expomicset = mae,
+#'     result = "codebook"
 #' )
 #'
 #' @export
 extract_results <- function(
     expomicset,
-    result=c("codebook",
-             "quality_control",
-             "correlation",
-             "association",
-             "differential_analysis",
-             "multiomics_integration",
-             "network",
-             "enrichment")){
-  result <- expomicset |>
-    MultiAssayExperiment::metadata() |>
-    purrr::pluck(result)
+    result = c(
+        "codebook",
+        "quality_control",
+        "correlation",
+        "association",
+        "differential_analysis",
+        "multiomics_integration",
+        "network",
+        "enrichment"
+    )) {
+    result <- expomicset |>
+        MultiAssayExperiment::metadata() |>
+        purrr::pluck(result)
 
-  return(result)
-
+    return(result)
 }

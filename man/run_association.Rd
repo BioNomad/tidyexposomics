@@ -69,18 +69,18 @@ supports both Gaussian and binomial models.
 
 #' # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run association tests
 mae <- mae |>
-  run_association(
-  source = "exposures",
-  feature_set = c("exposure_pm25","exposure_no2"),
-  outcome = "smoker",
-  covariates = c("age"),
-  family = "binomial"
-  )
+    run_association(
+        source = "exposures",
+        feature_set = c("exposure_pm25", "exposure_no2"),
+        outcome = "smoker",
+        covariates = c("age"),
+        family = "binomial"
+    )
 
 }

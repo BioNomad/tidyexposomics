@@ -49,16 +49,16 @@ Outliers are labeled based on \code{metadata(expomicset)$pca$outliers}.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # run pca
 mae <- mae |>
-  run_pca()
+    run_pca()
 
 # create the pca plot
 pca_p <- mae |>
-  plot_pca()
+    plot_pca()
 
 }

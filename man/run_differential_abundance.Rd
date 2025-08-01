@@ -49,17 +49,17 @@ and combines the results into a unified table.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-  expomicset = mae,
-  formula = ~ smoker + sex,
-  abundance_col = "counts",
-  method = "limma_voom",
-  action = "add"
+    expomicset = mae,
+    formula = ~ smoker + sex,
+    abundance_col = "counts",
+    method = "limma_voom",
+    action = "add"
 )
 
 }

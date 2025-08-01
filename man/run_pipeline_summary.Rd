@@ -50,14 +50,14 @@ any attached notes.
 \examples{
 # Create example data
 mae <- make_example_data(
-  n_samples = 20,
-  return_mae = TRUE
+    n_samples = 20,
+    return_mae = TRUE
 )
 
 # Test for normality
 mae <- mae |>
-  run_normality_check() |>
-  transform_exposure(exposure_cols=c("age","bmi","exposure_pm25"))
+    run_normality_check() |>
+    transform_exposure(exposure_cols = c("age", "bmi", "exposure_pm25"))
 
 # Run the pipeline summary
 run_pipeline_summary(mae)

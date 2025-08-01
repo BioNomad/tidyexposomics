@@ -22,27 +22,25 @@
 #'
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 10,
-#'   return_mae=TRUE
-#'   )
+#'     n_samples = 10,
+#'     return_mae = TRUE
+#' )
 #'
 #' sample_data <- mae |>
-#'   pivot_sample()
+#'     pivot_sample()
 #'
 #' @export
 pivot_sample <- function(x, ...) {
-  if (inherits(x, "MultiAssayExperiment")) {
-    # Call your custom function
-    MultiAssayExperiment::colData(x) |>
-      as.data.frame() |>
-      tibble::rownames_to_column(".sample") |>
-      dplyr::as_tibble()
-  } else if (inherits(x, "SummarizedExperiment")) {
-    # Call the pivot_sample() from the other package
-    tidybulk::pivot_sample(x, ...)
-  } else {
-    stop("`pivot_sample()` only supports MultiAssayExperiment
-         and SummarizedExperiment objects.")
-  }
+    if (inherits(x, "MultiAssayExperiment")) {
+        # Call your custom function
+        MultiAssayExperiment::colData(x) |>
+            as.data.frame() |>
+            tibble::rownames_to_column(".sample") |>
+            dplyr::as_tibble()
+    } else if (inherits(x, "SummarizedExperiment")) {
+        # Call the pivot_sample() from the other package
+        tidybulk::pivot_sample(x, ...)
+    } else {
+        stop("Needs a MultiAssayExperiment/SummarizedExperiment object.")
+    }
 }
-

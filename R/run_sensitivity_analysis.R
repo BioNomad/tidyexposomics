@@ -51,33 +51,33 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'   n_samples = 20,
-#'   return_mae=TRUE
+#'     n_samples = 20,
+#'     return_mae = TRUE
 #' )
 #'
 #'
 #' # Run differential abundance
 #' mae <- run_differential_abundance(
-#'   expomicset = mae,
-#'   formula = ~ smoker + sex,
-#'   abundance_col = "counts",
-#'   method = "limma_voom",
-#'   action = "add"
+#'     expomicset = mae,
+#'     formula = ~ smoker + sex,
+#'     abundance_col = "counts",
+#'     method = "limma_voom",
+#'     action = "add"
 #' )
 #'
 #' # Run the sensitivity analysis
 #' mae <- run_sensitivity_analysis(
-#'   expomicset = mae,
-#'   base_formula = ~ smoker + sex,
-#'   methods = c("limma_voom"),
-#'   scaling_methods = c("none"),
-#'   covariates_to_remove = "sex",
-#'   pval_col = "P.Value",
-#'   logfc_col = "logFC",
-#'   pval_threshold = 0.05,
-#'   logFC_threshold = 0,
-#'   bootstrap_n = 3,
-#'   action = "add"
+#'     expomicset = mae,
+#'     base_formula = ~ smoker + sex,
+#'     methods = c("limma_voom"),
+#'     scaling_methods = c("none"),
+#'     covariates_to_remove = "sex",
+#'     pval_col = "P.Value",
+#'     logfc_col = "logFC",
+#'     pval_threshold = 0.05,
+#'     logFC_threshold = 0,
+#'     bootstrap_n = 3,
+#'     action = "add"
 #' )
 #'
 #' @export
@@ -97,129 +97,131 @@ run_sensitivity_analysis <- function(
     score_quantile = 0.9,
     stability_metric = "stability_score",
     action = "add",
-    bootstrap_n = 1
-) {
-  model_list <- .build_model_list(base_formula, covariates_to_remove)
+    bootstrap_n = 1) {
+    model_list <- .build_model_list(base_formula, covariates_to_remove)
 
-  if(bootstrap_n > 0) {
-    # Combine all raw differential results from bootstrap runs
-    sensitivity_df <- purrr::map_dfr(seq_len(bootstrap_n), function(b) {
-      # message(paste("Running bootstrap iteration", b, "of", bootstrap_n))
-      message(sprintf("Running bootstrap iteration %d of %d", b, bootstrap_n))
+    if (bootstrap_n > 0) {
+        # Combine all raw differential results from bootstrap runs
+        sensitivity_df <- purrr::map_dfr(seq_len(bootstrap_n), function(b) {
+            # message(paste("Running bootstrap iteration", b, "of", bootstrap_n))
+            message(sprintf("Running bootstrap iteration %d of %d", b, bootstrap_n))
 
-      mae_b <- .resample_MAE(expomicset)
+            mae_b <- .resample_MAE(expomicset)
 
-      sensitivity_df <- .run_sensitivity_grid(
-        mae_b,
-        model_list,
-        methods,
-        scaling_methods,
-        abundance_col,
-        contrasts
-      ) |>
-        dplyr::mutate(bootstrap_id = b)
-
-    })
-  } else {
-    # Run sensitivity analysis without bootstrapping
-    sensitivity_df <- .run_sensitivity_grid(
-      expomicset,
-      model_list,
-      methods,
-      scaling_methods,
-      abundance_col,
-      contrasts
-    )
-  }
-
-  # Calculate feature stability scores
-  feature_stability_df <- .calculate_feature_stability(
-    sensitivity_df,
-    pval_col,
-    logfc_col,
-    pval_threshold
-  )
-
-  # Check if stability_metric is valid
-  # if (!stability_metric %in% colnames(feature_stability_df)) {
-  #   stop(paste0("Invalid stability_metric: '", stability_metric, "'."))
-  # }
-  if (!stability_metric %in% colnames(feature_stability_df)) {
-    stop(sprintf("Invalid stability_metric: '%s'.", stability_metric))
-  }
-
-
-  # Determine score threshold if not provided
-  if (is.null(score_thresh)) {
-    stability_metric_col <- feature_stability_df[[stability_metric]]
-    score_thresh <- quantile(
-      stability_metric_col[feature_stability_df[[stability_metric]] > 0],
-      score_quantile, na.rm = TRUE
-    )
-  }
-
-  # Summarize stable features
-  .summarize_stable_features(
-    feature_stability_df,
-    score_thresh,
-    stability_metric)
-
-  # Add results to MultiAssayExperiment metadata or return as list
-  if (action == "add") {
-    all_metadata <- MultiAssayExperiment::metadata(expomicset)
-    all_metadata$differential_analysis$sensitivity_analysis <- list(
-      sensitivity_df = sensitivity_df,
-      feature_stability = feature_stability_df,
-      score_thresh = score_thresh
-    )
-    MultiAssayExperiment::metadata(expomicset) <- all_metadata
-
-    step_record <- list(
-      run_sensitivity_analysis = list(
-        timestamp = Sys.time(),
-        params = list(
-          formula = format(base_formula),
-          methods = methods,
-          scaling_methods = scaling_methods,
-          abundance_col = abundance_col,
-          contrasts = contrasts,
-          covariates_to_remove = covariates_to_remove,
-          pval_threshold = pval_threshold,
-          logFC_threshold = logFC_threshold,
-          score_quantile = score_quantile,
-          stability_metric = stability_metric,
-          bootstrap_n = bootstrap_n
-        ),
-        notes = paste(
-          "Ran sensitivity analysis across",
-          bootstrap_n, "bootstrap iterations and",
-          length(methods), "methods and",
-          length(scaling_methods), "scaling strategies.",
-          if (!is.null(covariates_to_remove)) {
-            paste("Covariates removed in model variations:",
-                  paste(covariates_to_remove, collapse = ", "))
-          } else {
-            "No covariates were removed from the base model."
-          }
+            sensitivity_df <- .run_sensitivity_grid(
+                mae_b,
+                model_list,
+                methods,
+                scaling_methods,
+                abundance_col,
+                contrasts
+            ) |>
+                dplyr::mutate(bootstrap_id = b)
+        })
+    } else {
+        # Run sensitivity analysis without bootstrapping
+        sensitivity_df <- .run_sensitivity_grid(
+            expomicset,
+            model_list,
+            methods,
+            scaling_methods,
+            abundance_col,
+            contrasts
         )
-      )
+    }
+
+    # Calculate feature stability scores
+    feature_stability_df <- .calculate_feature_stability(
+        sensitivity_df,
+        pval_col,
+        logfc_col,
+        pval_threshold
     )
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-      MultiAssayExperiment::metadata(expomicset)$summary$steps,
-      step_record
+    # Check if stability_metric is valid
+    # if (!stability_metric %in% colnames(feature_stability_df)) {
+    #   stop(paste0("Invalid stability_metric: '", stability_metric, "'."))
+    # }
+    if (!stability_metric %in% colnames(feature_stability_df)) {
+        stop(sprintf("Invalid stability_metric: '%s'.", stability_metric))
+    }
+
+
+    # Determine score threshold if not provided
+    if (is.null(score_thresh)) {
+        stability_metric_col <- feature_stability_df[[stability_metric]]
+        score_thresh <- quantile(
+            stability_metric_col[feature_stability_df[[stability_metric]] > 0],
+            score_quantile,
+            na.rm = TRUE
+        )
+    }
+
+    # Summarize stable features
+    .summarize_stable_features(
+        feature_stability_df,
+        score_thresh,
+        stability_metric
     )
 
-    return(expomicset)
-  } else if (action == "get") {
-    return(list(
-      sensitivity_df = sensitivity_df,
-      feature_stability = feature_stability_df,
-      score_thresh = score_thresh
-    ))
-  } else {
-    stop("Invalid action. Use 'add' or 'get'.")
-  }
+    # Add results to MultiAssayExperiment metadata or return as list
+    if (action == "add") {
+        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata$differential_analysis$sensitivity_analysis <- list(
+            sensitivity_df = sensitivity_df,
+            feature_stability = feature_stability_df,
+            score_thresh = score_thresh
+        )
+        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+
+        step_record <- list(
+            run_sensitivity_analysis = list(
+                timestamp = Sys.time(),
+                params = list(
+                    formula = format(base_formula),
+                    methods = methods,
+                    scaling_methods = scaling_methods,
+                    abundance_col = abundance_col,
+                    contrasts = contrasts,
+                    covariates_to_remove = covariates_to_remove,
+                    pval_threshold = pval_threshold,
+                    logFC_threshold = logFC_threshold,
+                    score_quantile = score_quantile,
+                    stability_metric = stability_metric,
+                    bootstrap_n = bootstrap_n
+                ),
+                notes = paste(
+                    "Ran sensitivity analysis across",
+                    bootstrap_n, "bootstrap iterations and",
+                    length(methods), "methods and",
+                    length(scaling_methods), "scaling strategies.",
+                    if (!is.null(covariates_to_remove)) {
+                        paste(
+                            "Covariates removed in model variations:",
+                            paste(covariates_to_remove, collapse = ", ")
+                        )
+                    } else {
+                        "No covariates were removed from the base model."
+                    }
+                )
+            )
+        )
+
+        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+            step_record
+        )
+
+        return(expomicset)
+    } else if (action == "get") {
+        return(list(
+            sensitivity_df = sensitivity_df,
+            feature_stability = feature_stability_df,
+            score_thresh = score_thresh
+        ))
+    } else {
+        stop("Invalid action. Use 'add' or 'get'.")
+    }
 }
 
 .run_sensitivity_grid <- function(
@@ -228,59 +230,60 @@ run_sensitivity_analysis <- function(
     methods,
     scalings,
     abundance_col,
-    contrasts
-) {
-  grid <- expand.grid(
-    model_name = names(model_list),
-    method = methods,
-    scaling = scalings,
-    exp_name = names(MultiAssayExperiment::experiments(expomicset)),
-    stringsAsFactors = FALSE
-  )
-
-  results <- purrr::pmap_dfr(grid, function(
-    model_name,
-    method,
-    scaling,
-    exp_name
-  ) {
-    formula <- model_list[[model_name]]
-    exp <- .update_assay_colData(expomicset, exp_name)
-
-    if (method == "DESeq2") {
-      SummarizedExperiment::assay(exp, abundance_col) <- round(
-        SummarizedExperiment::assay(exp, abundance_col), 0)
-    }
-
-    # # Use the quiet run function to suppress messages and warnings
-    # res <- .quiet_run_da_pipeline(
-    #       exp,
-    #       formula,
-    #       method,
-    #       scaling,
-    #       abundance_col,
-    #       contrasts
-    #     )
-
-    res <- .run_da_pipeline(
-      exp,
-      formula,
-      method,
-      scaling,
-      abundance_col,
-      contrasts
+    contrasts) {
+    grid <- expand.grid(
+        model_name = names(model_list),
+        method = methods,
+        scaling = scalings,
+        exp_name = names(MultiAssayExperiment::experiments(expomicset)),
+        stringsAsFactors = FALSE
     )
 
-    if (is.null(res)) return(NULL)
-    res$model <- model_name
-    res$exp_name <- exp_name
-    res
-  })
+    results <- purrr::pmap_dfr(grid, function(
+        model_name,
+        method,
+        scaling,
+        exp_name) {
+        formula <- model_list[[model_name]]
+        exp <- .update_assay_colData(expomicset, exp_name)
 
-  results <- results |>
-    tibble::as_tibble()
+        if (method == "DESeq2") {
+            SummarizedExperiment::assay(exp, abundance_col) <- round(
+                SummarizedExperiment::assay(exp, abundance_col), 0
+            )
+        }
 
-  return(results)
+        # # Use the quiet run function to suppress messages and warnings
+        # res <- .quiet_run_da_pipeline(
+        #       exp,
+        #       formula,
+        #       method,
+        #       scaling,
+        #       abundance_col,
+        #       contrasts
+        #     )
+
+        res <- .run_da_pipeline(
+            exp,
+            formula,
+            method,
+            scaling,
+            abundance_col,
+            contrasts
+        )
+
+        if (is.null(res)) {
+            return(NULL)
+        }
+        res$model <- model_name
+        res$exp_name <- exp_name
+        res
+    })
+
+    results <- results |>
+        tibble::as_tibble()
+
+    return(results)
 }
 
 .run_da_pipeline <- function(
@@ -289,68 +292,69 @@ run_sensitivity_analysis <- function(
     method,
     scaling,
     abundance_col,
-    contrasts
-) {
-  invisible(.run_se_differential_abundance(
-    se = se,
-    formula = formula,
-    abundance_col = abundance_col,
-    method = method,
-    scaling_method = scaling,
-    contrasts = contrasts
-  ))
+    contrasts) {
+    invisible(.run_se_differential_abundance(
+        se = se,
+        formula = formula,
+        abundance_col = abundance_col,
+        method = method,
+        scaling_method = scaling,
+        contrasts = contrasts
+    ))
 }
 
 .summarize_stable_features <- function(
     feature_stability_df,
     score_thresh,
-    stability_metric
-) {
-  sum <- feature_stability_df |>
-    dplyr::group_by(exp_name) |>
-    dplyr::reframe(
-      n_above = sum(!!rlang::sym(stability_metric) > score_thresh),
-      n = dplyr::n()
-    )
+    stability_metric) {
+    sum <- feature_stability_df |>
+        dplyr::group_by(exp_name) |>
+        dplyr::reframe(
+            n_above = sum(!!rlang::sym(stability_metric) > score_thresh),
+            n = dplyr::n()
+        )
 
-  message("Number Of Features Above Threshold Of ",
-          round(score_thresh, 2), ":")
-  message("----------------------------------------")
-  for (cur_exp_name in unique(feature_stability_df$exp_name)) {
-    n_above <- sum |>
-      dplyr::filter(exp_name == !!cur_exp_name) |>
-      dplyr::pull(n_above)
-    n <- sum |>
-      dplyr::filter(exp_name == !!cur_exp_name) |>
-      dplyr::pull(n)
-    message(cur_exp_name, ": ", n_above, "/", n)
-  }
+    message(
+        "Number Of Features Above Threshold Of ",
+        round(score_thresh, 2), ":"
+    )
+    message("----------------------------------------")
+    for (cur_exp_name in unique(feature_stability_df$exp_name)) {
+        n_above <- sum |>
+            dplyr::filter(exp_name == !!cur_exp_name) |>
+            dplyr::pull(n_above)
+        n <- sum |>
+            dplyr::filter(exp_name == !!cur_exp_name) |>
+            dplyr::pull(n)
+        message(cur_exp_name, ": ", n_above, "/", n)
+    }
 }
 
 # Resample samples in the MultiAssayExperiment object
 .resample_MAE <- function(mae) {
-  all_ids <- colnames(mae) |>
-    unlist() |>
-    unique()
-  sample_ids <- sample(all_ids, replace = TRUE)
-  return(mae[, sample_ids])
+    all_ids <- colnames(mae) |>
+        unlist() |>
+        unique()
+    sample_ids <- sample(all_ids, replace = TRUE)
+    return(mae[, sample_ids])
 }
 
 # build list of model formulas by removing covariates from base model
-.build_model_list <- function(base_formula,
-                              covariates_to_remove) {
-  base_terms <- all.vars(base_formula)
-  model_list <- list("full model" = base_formula)
-  if (!is.null(covariates_to_remove)) {
-    for (covar in covariates_to_remove) {
-      reduced_terms <- setdiff(base_terms, covar)
-      if (length(reduced_terms) > 1) {
-        reduced_formula <- as.formula(
-          paste("~", paste(reduced_terms, collapse = " + ")))
-        model_list[[paste("without", covar)]] <- reduced_formula
-      }
+.build_model_list <- function(
+    base_formula,
+    covariates_to_remove) {
+    base_terms <- all.vars(base_formula)
+    model_list <- list("full model" = base_formula)
+    if (!is.null(covariates_to_remove)) {
+        for (covar in covariates_to_remove) {
+            reduced_terms <- setdiff(base_terms, covar)
+            if (length(reduced_terms) > 1) {
+                reduced_formula <- as.formula(
+                    paste("~", paste(reduced_terms, collapse = " + "))
+                )
+                model_list[[paste("without", covar)]] <- reduced_formula
+            }
+        }
     }
-  }
-  return(model_list)
+    return(model_list)
 }
-

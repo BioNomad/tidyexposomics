@@ -98,33 +98,35 @@ Large graphs (> 500 nodes) will prompt the user before plotting.
 \examples{
 # create example data
 mae <- make_example_data(
-  n_samples = 10,
-  return_mae=TRUE
-  )
+    n_samples = 10,
+    return_mae = TRUE
+)
 
 # perform correlation analyses
 # correlate with exposures
 mae <- mae |>
-  run_correlation(
-  feature_type = "omics",
-  variable_map = mae |>
-    pivot_feature() |>
-    dplyr::select(
-      variable=.feature,
-      exp_name=.exp_name),
-  exposure_cols = c("exposure_pm25","exposure_no2","age","bmi")
-  )
+    run_correlation(
+        feature_type = "omics",
+        variable_map = mae |>
+            pivot_feature() |>
+            dplyr::select(
+                variable = .feature,
+                exp_name = .exp_name
+            ),
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 # create the networks
-mae   <- mae |>
-  run_create_network(
-   feature_type = "omics",
-   action = "add")
+mae <- mae |>
+    run_create_network(
+        feature_type = "omics",
+        action = "add"
+    )
 
 # plot the network
 network_p <- mae |>
-  plot_network(
-    network = "omics"
-  )
+    plot_network(
+        network = "omics"
+    )
 
 }

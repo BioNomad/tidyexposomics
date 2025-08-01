@@ -37,18 +37,19 @@
 #' @examples
 #' # create example data
 #' mae <- make_example_data(
-#'    n_samples = 20,
-#'    return_mae=TRUE
-#'   )
+#'     n_samples = 20,
+#'     return_mae = TRUE
+#' )
 #'
 #' mae <- run_multiomics_integration(
-#'       mae,
-#'       method = "MCIA",
-#'       n_factors = 3)
+#'     mae,
+#'     method = "MCIA",
+#'     n_factors = 3
+#' )
 #'
 #'
 #' top_feature_p <- mae |>
-#'   plot_top_factor_features()
+#'     plot_top_factor_features()
 #'
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom MOFA2 get_weights
@@ -64,150 +65,161 @@
 #' @export
 plot_top_factor_features <- function(
     expomicset,
-    feature_col="feature",
-    factors=NULL,
-    top_n=5,
-    facet_cols=NULL,
-    exp_name_cols=NULL,
-    alpha=0.5){
+    feature_col = "feature",
+    factors = NULL,
+    top_n = 5,
+    facet_cols = NULL,
+    exp_name_cols = NULL,
+    alpha = 0.5) {
+    # require(ggplot2)
 
-  # require(ggplot2)
+    method <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method
+    result <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result
 
-  method <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method
-  result <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result
-
-  loadings_df <- switch(
-    method,
-
-    "MOFA" = {
-      MOFA2::get_weights(result) |>
-        purrr::map2(
-          names(MOFA2::get_weights(result)),
-          ~as.data.frame(.x) |>
-            tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature,
-                                names_to="factor",
-                                values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading),
-                          exp_name = .y)
-        ) |>
-        dplyr::bind_rows()
-    },
-
-    "MCIA" = {
-      result@block_loadings |>
-        purrr::map2(
-          names(result@block_loadings),
-          ~as.data.frame(.x) |>
-            tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature,
-                                names_to="factor",
-                                values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading),
-                          exp_name = .y)
-        ) |>
-        dplyr::bind_rows()
-    },
-
-    "DIABLO" = {
-      result$loadings |>
-        purrr::map2(
-          names(result$loadings),
-          ~as.data.frame(.x) |>
-            tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature,
-                                names_to="factor",
-                                values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading),
-                          exp_name = .y)
-        ) |>
-        dplyr::bind_rows() |>
-        dplyr::mutate(factor = paste(exp_name,factor,sep = " "))
-    },
-
-    "RGCCA" = {
-      result$a |>
-        purrr::map2(
-          names(result$a),
-          ~as.data.frame(.x) |>
-            tibble::rownames_to_column("feature") |>
-            tidyr::pivot_longer(-feature,
-                                names_to="factor",
-                                values_to="loading") |>
-            dplyr::mutate(abs_loading = abs(loading),
-                          exp_name = .y)
-        ) |>
-        dplyr::bind_rows() |>
-        dplyr::mutate(factor = paste(exp_name,factor,sep = " "))
-    },
-
-    stop("Method not supported.")
-  )
-
-  # Filter by factors if provided
-  if (!is.null(factors)) {
-    loadings_df <- loadings_df |>
-      dplyr::filter(factor %in% factors)
-  }
-
-  # Select top features per factor
-  df <- loadings_df |>
-    dplyr::group_by(factor) |>
-    dplyr::arrange(dplyr::desc(abs_loading)) |>
-    dplyr::slice_head(n=top_n)
-
-  # Map to the feature data
-  df <- df |>
-    inner_join(pivot_feature(expomicset),
-               by=c("feature"=".feature",
-                    "exp_name"=".exp_name"))
-
-  # If no facet_cols provided, use default
-  facet_cols <- facet_cols %||% tidy_exp_pal[
-    seq_len(length(unique(df$factor)))
-  ]
-
-  # If no exp_name_cols provided, use default
-  exp_name_cols <- exp_name_cols %||% rev(tidy_exp_pal)[
-    seq_len(length(unique(df$exp_name)))
-  ]
-
-
-  # Create a plot of top features per factor
-  features_per_factor_plot <- df |>
-    ggplot(aes(
-      x=abs_loading,
-      y=reorder(!!dplyr::sym(feature_col), abs_loading),
-      color=exp_name
-    )) +
-    geom_point(shape=18, size=5, alpha=0.5) +
-    geom_segment(aes(
-      x=0,
-      xend=abs_loading,
-      y=!!dplyr::sym(feature_col),
-      yend=!!dplyr::sym(feature_col)),
-      color="grey55") +
-    theme_bw() +
-    theme(
-      strip.text.y = element_text(face="bold.italic", angle = 0),
-      axis.text.y = element_text(face="italic")
-    ) +
-    ggh4x::facet_grid2(
-      factor~.,
-      scales = "free_y",
-      space = "free_y",
-      strip = ggh4x::strip_themed(
-        background_y = ggh4x::elem_list_rect(
-          fill = scales::alpha(facet_cols, alpha)
-        )
-      )
-    ) +
-    scale_color_manual(values=exp_name_cols) +
-    labs(
-      x="Absolute loading",
-      y="",
-      color="Experiment"
+    loadings_df <- switch(method,
+        "MOFA" = {
+            MOFA2::get_weights(result) |>
+                purrr::map2(
+                    names(MOFA2::get_weights(result)),
+                    ~ as.data.frame(.x) |>
+                        tibble::rownames_to_column("feature") |>
+                        tidyr::pivot_longer(-feature,
+                            names_to = "factor",
+                            values_to = "loading"
+                        ) |>
+                        dplyr::mutate(
+                            abs_loading = abs(loading),
+                            exp_name = .y
+                        )
+                ) |>
+                dplyr::bind_rows()
+        },
+        "MCIA" = {
+            result@block_loadings |>
+                purrr::map2(
+                    names(result@block_loadings),
+                    ~ as.data.frame(.x) |>
+                        tibble::rownames_to_column("feature") |>
+                        tidyr::pivot_longer(-feature,
+                            names_to = "factor",
+                            values_to = "loading"
+                        ) |>
+                        dplyr::mutate(
+                            abs_loading = abs(loading),
+                            exp_name = .y
+                        )
+                ) |>
+                dplyr::bind_rows()
+        },
+        "DIABLO" = {
+            result$loadings |>
+                purrr::map2(
+                    names(result$loadings),
+                    ~ as.data.frame(.x) |>
+                        tibble::rownames_to_column("feature") |>
+                        tidyr::pivot_longer(-feature,
+                            names_to = "factor",
+                            values_to = "loading"
+                        ) |>
+                        dplyr::mutate(
+                            abs_loading = abs(loading),
+                            exp_name = .y
+                        )
+                ) |>
+                dplyr::bind_rows() |>
+                dplyr::mutate(factor = paste(exp_name, factor, sep = " "))
+        },
+        "RGCCA" = {
+            result$a |>
+                purrr::map2(
+                    names(result$a),
+                    ~ as.data.frame(.x) |>
+                        tibble::rownames_to_column("feature") |>
+                        tidyr::pivot_longer(-feature,
+                            names_to = "factor",
+                            values_to = "loading"
+                        ) |>
+                        dplyr::mutate(
+                            abs_loading = abs(loading),
+                            exp_name = .y
+                        )
+                ) |>
+                dplyr::bind_rows() |>
+                dplyr::mutate(factor = paste(exp_name, factor, sep = " "))
+        },
+        stop("Method not supported.")
     )
 
-  return(features_per_factor_plot)
+    # Filter by factors if provided
+    if (!is.null(factors)) {
+        loadings_df <- loadings_df |>
+            dplyr::filter(factor %in% factors)
+    }
+
+    # Select top features per factor
+    df <- loadings_df |>
+        dplyr::group_by(factor) |>
+        dplyr::arrange(dplyr::desc(abs_loading)) |>
+        dplyr::slice_head(n = top_n)
+
+    # Map to the feature data
+    df <- df |>
+        inner_join(pivot_feature(expomicset),
+            by = c(
+                "feature" = ".feature",
+                "exp_name" = ".exp_name"
+            )
+        )
+
+    # If no facet_cols provided, use default
+    facet_cols <- facet_cols %||% tidy_exp_pal[
+        seq_len(length(unique(df$factor)))
+    ]
+
+    # If no exp_name_cols provided, use default
+    exp_name_cols <- exp_name_cols %||% rev(tidy_exp_pal)[
+        seq_len(length(unique(df$exp_name)))
+    ]
+
+
+    # Create a plot of top features per factor
+    features_per_factor_plot <- df |>
+        ggplot(aes(
+            x = abs_loading,
+            y = reorder(!!dplyr::sym(feature_col), abs_loading),
+            color = exp_name
+        )) +
+        geom_point(shape = 18, size = 5, alpha = 0.5) +
+        geom_segment(
+            aes(
+                x = 0,
+                xend = abs_loading,
+                y = !!dplyr::sym(feature_col),
+                yend = !!dplyr::sym(feature_col)
+            ),
+            color = "grey55"
+        ) +
+        theme_bw() +
+        theme(
+            strip.text.y = element_text(face = "bold.italic", angle = 0),
+            axis.text.y = element_text(face = "italic")
+        ) +
+        ggh4x::facet_grid2(
+            factor ~ .,
+            scales = "free_y",
+            space = "free_y",
+            strip = ggh4x::strip_themed(
+                background_y = ggh4x::elem_list_rect(
+                    fill = scales::alpha(facet_cols, alpha)
+                )
+            )
+        ) +
+        scale_color_manual(values = exp_name_cols) +
+        labs(
+            x = "Absolute loading",
+            y = "",
+            color = "Experiment"
+        )
+
+    return(features_per_factor_plot)
 }
