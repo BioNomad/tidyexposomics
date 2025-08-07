@@ -1,13 +1,21 @@
 #' Extract Top Contributing Features for Factors
 #'
 #' Identifies the most influential features for specified factors
-#' using multiomics integration integration results.
+#' using multiomics integration results.
 #' Features are selected based on either a percentile cutoff
 #' or an absolute loading threshold.
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing
 #' integration results.
 #' @param factors A character vector specifying the factors of interest.
+#' If `NULL`, factors are automatically selected from the association results
+#' using the `pval_col` and `pval_thresh` criteria.
+#' @param pval_col A string specifying the column name of the p-value or
+#' adjusted p-value used for factor selection if `factors` is `NULL`.
+#' Default is `"p_adjust"`.
+#' @param pval_thresh A numeric value specifying the significance threshold
+#' for selecting factors from association results when `factors` is `NULL`.
+#' Default is `0.05`.
 #' @param method A character string specifying the feature selection method
 #' (`"percentile"` or `"threshold"`). Default is `"percentile"`.
 #' @param percentile A numeric value between 0 and 1 indicating the
@@ -23,6 +31,11 @@
 #' applies filtering based on
 #' the selected method, and identifies top contributing features for
 #' each specified factor.
+#'
+#' If `factors` is not provided, the function will automatically select
+#' statistically significant factors from `metadata(expomicset)$association$assoc_factors$results_df`
+#' using the specified `pval_col` and `pval_thresh` as criteria.
+#'
 #' Features can be selected using:
 #' - **Percentile-based filtering** (`method = "percentile"`): Selects
 #' features with absolute loadings above a specified percentile.
@@ -60,6 +73,7 @@
 #' )
 #'
 #' @export
+
 extract_top_factor_features <- function(
     expomicset,
     factors = NULL,

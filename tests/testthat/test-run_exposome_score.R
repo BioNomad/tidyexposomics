@@ -97,6 +97,6 @@ test_that("run_exposome_score throws error for invalid method", {
     # ensure it throws an error with an unsupported score_type
     expect_error(
         run_exposome_score(mae, score_type = "invalid"),
-        "Invalid score_type"
+        "Choose either 'sum', mean', 'median', 'pca', 'irt', or 'quantile'."
     )
 })

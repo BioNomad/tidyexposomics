@@ -32,8 +32,6 @@ which is populated by \code{transform_exposure()}.
 
 The plot includes both bar heights and overlaid line segments to
 reinforce the counts.
-Colors are drawn from the Lancet or UChicago palettes via
-\code{ggsci} and \code{ggpubr}.
 }
 \examples{
 # Create example data

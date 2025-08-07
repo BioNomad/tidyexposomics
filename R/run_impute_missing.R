@@ -57,6 +57,9 @@
 #'     exposure_impute_method = "median"
 #' )
 #'
+#' @importFrom naniar impute_median_all impute_mean_all
+#' @importFrom S4Vectors DataFrame
+#' @importFrom SummarizedExperiment assays
 #' @export
 run_impute_missing <- function(
     expomicset,
@@ -85,15 +88,19 @@ run_impute_missing <- function(
         } else if (method == "mean") {
             return(naniar::impute_mean_all(data))
         } else if (method == "knn") {
+            .check_suggested(pkg = "impute")
             return(as.data.frame(impute::impute.knn(as.matrix(data))$data))
         } else if (method == "mice") {
+            .check_suggested(pkg = "mice")
             return(mice::complete(mice::mice(data,
                 m = 5, maxit = 50,
                 method = "pmm", seed = 500
             )))
         } else if (method == "dep") {
+            .check_suggested(pkg = "DEP")
             return(DEP::impute(data, fun = "MinProb", q = 0.01))
         } else if (method == "missforest") {
+            .check_suggested(pkg = "missForest")
             return(missForest::missForest(as.matrix(data))$ximp)
         } else if (method == "lod_sqrt2") {
             return(impute_lod_sqrt2(data))

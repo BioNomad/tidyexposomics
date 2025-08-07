@@ -84,8 +84,6 @@
 #'     )
 #'
 #' @importFrom MultiAssayExperiment metadata
-#' @importFrom tidygraph as_tbl_graph activate filter mutate centrality_degree
-#'   arrange slice_head select as_tibble
 #' @importFrom igraph gorder
 #' @export
 plot_network <- function(
@@ -118,7 +116,10 @@ plot_network <- function(
     color_lab = "Group") {
     # require(ggraph)
     # require(tidygraph)
-
+    .check_suggested(pkg = "tidygraph")
+    .check_suggested(pkg = "ggraph")
+    # tidygraph as_tbl_graph activate filter mutate centrality_degree
+    # arrange slice_head select as_tibble
     network <- match.arg(network)
 
     net_key <- paste0("network_", network)
@@ -137,56 +138,56 @@ plot_network <- function(
 
     if (!is.null(nodes_to_include)) {
         g <- g |>
-            activate(nodes) |>
-            filter(name %in% nodes_to_include)
+            tidygraph::activate(nodes) |>
+            tidygraph::filter(name %in% nodes_to_include)
     }
 
     if (!is.null(cor_thresh)) {
         g <- g |>
-            activate(edges) |>
-            filter(abs(correlation) > cor_thresh)
+            tidygraph::activate(edges) |>
+            tidygraph::filter(abs(correlation) > cor_thresh)
     }
 
     if (!is.null(centrality_thresh)) {
         g <- g |>
-            activate(nodes) |>
-            mutate(centrality = centrality_degree()) |>
-            filter(centrality > centrality_thresh)
+            tidygraph::activate(nodes) |>
+            mutate(centrality = tidygraph::centrality_degree()) |>
+            tidygraph::filter(centrality > centrality_thresh)
     }
 
     if (!is.null(top_n_nodes)) {
         g <- g |>
-            activate(nodes) |>
-            mutate(centrality = centrality_degree()) |>
-            arrange(desc(centrality)) |>
-            slice_head(n = top_n_nodes)
+            tidygraph::activate(nodes) |>
+            tidygraph::mutate(centrality = tidygraph::centrality_degree()) |>
+            tidygraph::arrange(desc(centrality)) |>
+            tidygraph::slice_head(n = top_n_nodes)
     }
 
     if (!is.null(nodes_to_label) && isTRUE(label)) {
         g <- g |>
-            activate(nodes) |>
-            mutate(label = ifelse(name %in% nodes_to_label, name, NA))
+            tidygraph::activate(nodes) |>
+            tidygraph::mutate(label = ifelse(name %in% nodes_to_label, name, NA))
     } else if (isTRUE(label)) {
         g <- g |>
-            activate(nodes) |>
-            mutate(centrality = centrality_degree()) |>
-            arrange(desc(centrality)) |>
-            mutate(label = ifelse(row_number() <= label_top_n, name, NA))
+            tidygraph::activate(nodes) |>
+            tidygraph::mutate(centrality = tidygraph::centrality_degree()) |>
+            tidygraph::arrange(desc(centrality)) |>
+            tidygraph::mutate(label = ifelse(row_number() <= label_top_n, name, NA))
     }
 
     # Prune nodes without edges
     used_node_indices <- g |>
-        activate(edges) |>
-        as_tibble() |>
-        select(from, to) |>
+        tidygraph::activate(edges) |>
+        tidygraph::as_tibble() |>
+        tidygraph::select(from, to) |>
         unlist() |>
         unique()
 
     g <- g |>
-        activate(nodes) |>
-        mutate(node_index = row_number()) |>
-        filter(node_index %in% used_node_indices) |>
-        select(-node_index)
+        tidygraph::activate(nodes) |>
+        tidygraph::mutate(node_index = row_number()) |>
+        tidygraph::filter(node_index %in% used_node_indices) |>
+        tidygraph::select(-node_index)
 
     # Warn if plotting very large networks
     if (igraph::gorder(g) > 500) {

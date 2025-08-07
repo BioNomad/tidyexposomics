@@ -37,24 +37,20 @@
 #'     return_mae = TRUE
 #' )
 #'
-#' # perform differential abundance analysis
-#' mae <- run_differential_abundance(
-#'     expomicset = mae,
-#'     formula = ~ smoker + sex,
-#'     abundance_col = "counts",
-#'     method = "limma_voom",
-#'     action = "add"
-#' )
+#' # run correlation analysis
+#' mae <- mae |>
+#'     run_correlation(
+#'         feature_type = "exposures",
+#'         exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+#'     )
 #'
 #' # extract the differential abundance results
 #' extract_results_excel(
 #'     expomicset = mae,
-#'     result_types = "differential_analysis",
+#'     result_types = "correlation",
 #'     file = "supplemental_results.xlsx"
 #' )
 #'
-#' @importFrom openxlsx createWorkbook addWorksheet writeData addStyle
-#' setColWidths saveWorkbook createStyle
 #' @importFrom purrr iwalk
 #' @importFrom tibble enframe
 #' @export
@@ -72,6 +68,7 @@ extract_results_excel <- function(
         "pipeline"
     ),
     include_empty_tabs = FALSE) {
+    .check_suggested(pkg = "openxlsx")
     stopifnot("MultiAssayExperiment" %in% class(expomicset))
 
     # Handle "all"
@@ -89,34 +86,34 @@ extract_results_excel <- function(
         result_types <- all_types
     }
 
-    wb <- createWorkbook()
+    wb <- openxlsx::createWorkbook()
 
     safe_add_sheet <- function(name, data) {
         if (!is.null(data) && is.data.frame(data)) {
-            addWorksheet(wb, name)
-            writeData(wb, name, data, withFilter = TRUE)
+            openxlsx::addWorksheet(wb, name)
+            openxlsx::writeData(wb, name, data, withFilter = TRUE)
 
             # Bold headers + border around header row
-            header_style <- createStyle(
+            header_style <- openxlsx::createStyle(
                 textDecoration = "bold",
                 border = "TopBottomLeftRight",
                 borderStyle = "thin"
             )
 
-            addStyle(
+            openxlsx::addStyle(
                 wb,
                 sheet = name, style = header_style,
                 rows = 1, cols = seq_len(ncol(data)), gridExpand = TRUE
             )
 
-            setColWidths(
+            openxlsx::setColWidths(
                 wb,
                 sheet = name,
                 cols = seq_len(ncol(data)), widths = "auto"
             )
         } else if (include_empty_tabs) {
-            addWorksheet(wb, name)
-            writeData(wb, name, data.frame(Note = "No data available."))
+            openxlsx::addWorksheet(wb, name)
+            openxlsx::writeData(wb, name, data.frame(Note = "No data available."))
         }
     }
 
@@ -229,6 +226,6 @@ extract_results_excel <- function(
     }
 
     # Save
-    saveWorkbook(wb, file, overwrite = TRUE)
+    openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
     message("Results written to: ", normalizePath(file))
 }

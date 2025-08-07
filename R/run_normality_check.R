@@ -44,7 +44,6 @@
 #' @importFrom ggplot2 ggplot aes geom_bar geom_segment labs
 #' @importFrom stats shapiro.test
 #' @importFrom ggpubr theme_pubr
-#' @importFrom ggsci scale_fill_lancet scale_color_lancet
 #' @export
 run_normality_check <- function(expomicset,
                                 action = "add") {
@@ -106,8 +105,10 @@ run_normality_check <- function(expomicset,
             size = 1
         ) +
         ggpubr::theme_pubr(legend = "right") +
-        ggsci::scale_fill_lancet() +
-        ggsci::scale_color_lancet(guide = FALSE) +
+        # ggsci::scale_fill_lancet() +
+        # ggsci::scale_color_lancet(guide = FALSE) +
+        scale_fill_tidy_exp() +
+        scale_color_tidy_exp(guide = "none") +
         labs(
             x = "",
             y = "No. of Exposures",

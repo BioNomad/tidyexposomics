@@ -46,6 +46,8 @@
 #'         mode = "summary"
 #'     )
 #'
+#' @importFrom dplyr group_by reframe mutate ungroup arrange pull filter select
+#' @importFrom ggplot2 ggplot aes geom_bar geom_segment labs theme element_text
 #' @export
 plot_correlation_summary <- function(
     expomicset,
@@ -65,9 +67,9 @@ plot_correlation_summary <- function(
         "summary"
     ),
     top_n = 15) {
-    requireNamespace("ggplot2")
-    requireNamespace("patchwork")
-    requireNamespace("janitor")
+    .check_suggested(pkg = "janitor")
+    .check_suggested(pkg = "forcats")
+    .check_suggested(pkg = "patchwork")
 
     feature_type <- match.arg(feature_type)
     mode <- match.arg(mode)

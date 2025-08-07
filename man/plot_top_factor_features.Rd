@@ -18,6 +18,10 @@ plot_top_factor_features(
 \item{expomicset}{A \code{MultiAssayExperiment} object containing
 integration results in the \code{metadata} slot (must include \code{integration_results}).}
 
+\item{feature_col}{A character string indicating the column name to use
+for y-axis feature labels (e.g., \code{"feature"}, \code{"gene_symbol"}). This should
+match a column in the output of \code{pivot_feature()}. Default is \code{"feature"}.}
+
 \item{factors}{Character vector of factors to include
 (e.g., "Factor1", "Factor2"). If \code{NULL}, all factors are plotted.}
 
@@ -53,9 +57,14 @@ This function supports the following integration methods:
 For each factor, it:
 \itemize{
 \item Selects the top \code{top_n} features by \strong{absolute loading}.
+\item Merges with feature metadata using \code{pivot_feature()}.
 \item Creates a point-range plot showing the loading magnitude.
 \item Facets each factor with a customizable strip background.
 }
+
+The \code{feature_col} argument allows you to control which feature-level
+metadata column (e.g., gene symbols, metabolite names) is used for
+labeling the y-axis.
 
 If palettes are not provided, defaults are chosen using
 \code{ggpubr::get_palette()}.
@@ -73,7 +82,7 @@ mae <- run_multiomics_integration(
     n_factors = 3
 )
 
-
+# plot top features using default `feature` column
 top_feature_p <- mae |>
     plot_top_factor_features()
 

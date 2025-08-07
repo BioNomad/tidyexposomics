@@ -41,12 +41,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="articles/tidyexposomics.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/faq.html">FAQ</a></li>
-  </ul>
-</li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -113,7 +108,7 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install and Load Packages</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"BioNomad/tidyexposomics"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/BioNomad/tidyexposomics" class="external-link">tidyexposomics</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://BioNomad.github.io/tidyexposomics">tidyexposomics</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -230,7 +225,7 @@
 <p>Differentially abundant analysis is also supported in <code>tidyexposomics</code>. Here we use <code>limma_voom</code> to identify features associated with asthma status.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run differential abundance analysis</span></span>
-<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/run_differential_abundance.html">run_differential_abundance</a></span><span class="op">(</span></span>
 <span>    formula <span class="op">=</span> <span class="op">~</span> <span class="va">hs_asthma</span> <span class="op">+</span> <span class="va">hs_child_age_None</span> <span class="op">+</span> <span class="va">e3_sex_None</span> <span class="op">+</span> <span class="va">h_cohort</span>,</span>
 <span>    method <span class="op">=</span> <span class="st">"limma_voom"</span>,</span>
@@ -238,7 +233,7 @@
 <span>    action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span></span>
 <span>    </span>
 <span><span class="co"># Plot Differential Abundance Results</span></span>
-<span><span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
 <span>    top_n_label <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>    feature_col <span class="op">=</span> <span class="st">"feature_clean"</span>,</span>
@@ -255,14 +250,14 @@
 <p>If several omics are present, we provide functionality to perform multiomics integration. Here we use the <code>DIABLO</code> method and set the outcome variable of interest to asthma status.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform Multi-Omics Integration</span></span>
-<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/run_multiomics_integration.html">run_multiomics_integration</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"DIABLO"</span>,</span>
 <span>                             n_factors <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>                             outcome <span class="op">=</span> <span class="st">"hs_asthma"</span>,</span>
 <span>                             action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span></span>
 <span>                             </span>
 <span><span class="co"># Identify factors that correlate with the outcome</span></span>
-<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/run_association.html">run_association</a></span><span class="op">(</span></span>
 <span>    source <span class="op">=</span> <span class="st">"factors"</span>,</span>
 <span>    outcome <span class="op">=</span> <span class="st">"hs_asthma"</span>,</span>
@@ -275,7 +270,7 @@
 <span>    family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
 <span>    </span>
 <span><span class="co"># Extract top features that contribute to a factor</span></span>
-<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/extract_top_factor_features.html">extract_top_factor_features</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"percentile"</span>,</span>
 <span>                              pval_col <span class="op">=</span> <span class="st">"p_adjust"</span>,</span>
 <span>                              pval_thresh <span class="op">=</span> <span class="fl">0.05</span>, </span>
@@ -283,7 +278,7 @@
 <span>                              action <span class="op">=</span> <span class="st">"add"</span><span class="op">)</span> </span>
 <span>                              </span>
 <span><span class="co"># Determine which features drive multiple factors</span></span>
-<span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/run_factor_overlap.html">run_factor_overlap</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -293,14 +288,14 @@
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Grab top common factor features and ensure </span></span>
 <span><span class="co"># feature is renamed to variable for the variable_map</span></span>
-<span><span class="va">top_factor_features</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">top_factor_features</span> <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/extract_results.html">extract_results</a></span><span class="op">(</span>result <span class="op">=</span> <span class="st">"multiomics_integration"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html" class="external-link">pluck</a></span><span class="op">(</span><span class="st">"common_top_factor_features"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span>variable<span class="op">=</span><span class="va">feature</span>,</span>
 <span>                      <span class="va">exp_name</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Correlate top factor features with exposures</span></span>
-<span><span class="va">expom_1</span>  <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span>  <span class="op">&lt;-</span> <span class="va">expom</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="co"># Perform correlation analysis between factor features </span></span>
 <span>  <span class="co"># and exposures</span></span>
 <span>  <span class="fu"><a href="reference/run_correlation.html">run_correlation</a></span><span class="op">(</span>feature_type <span class="op">=</span> <span class="st">"omics"</span>,</span>
@@ -325,7 +320,7 @@
 <p>After identifying features associated with asthma and exposures, we can perform functional enrichment analysis to understand what biological processes are affected.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run enrichment analysis on factor features correlated with exposures</span></span>
-<span><span class="va">expom_1</span>  <span class="op">&lt;-</span> <span class="va">expom_1</span>  <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span>  <span class="op">&lt;-</span> <span class="va">expom</span>  <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/run_enrichment.html">run_enrichment</a></span><span class="op">(</span></span>
 <span>    feature_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"omics_cor"</span><span class="op">)</span>,</span>
 <span>    feature_col <span class="op">=</span> <span class="st">"feature_clean"</span>,</span>
@@ -343,7 +338,7 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot enrichment term network plot</span></span>
-<span><span class="va">expom_1</span>    <span class="op">|&gt;</span> </span>
+<span><span class="va">expom</span>    <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/plot_enrichment.html">plot_enrichment</a></span><span class="op">(</span></span>
 <span>    feature_type <span class="op">=</span> <span class="st">"omics_cor"</span>,</span>
 <span>    plot_type <span class="op">=</span> <span class="st">"network"</span>,</span>
@@ -363,8 +358,9 @@
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
+<li>
+<a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a>
+</li>
 </ul>
 </div>
 
@@ -379,7 +375,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Jason Laird <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Jason Laird <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0009-0000-5994-2236" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 

@@ -43,7 +43,6 @@ If \code{action="add"}, returns the updated \code{expomicset}.
 If \code{action="get"}, returns a list with:
 \item{sample_cluster}{A hierarchical clustering object (\code{hclust}).}
 \item{sample_groups}{A named vector of sample cluster assignments.}
-\item{heatmap}{A \code{ComplexHeatmap} object visualizing sample clustering.}
 }
 \description{
 Performs hierarchical clustering of samples using exposure data from

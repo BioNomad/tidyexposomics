@@ -45,8 +45,6 @@
 #'     \item{\code{score_thresh}}{The threshold used to define stable features.}
 #'   }
 #'
-#' @seealso \code{\link{run_differential_abundance}},
-#'  \code{\link{.run_se_differential_abundance}}
 #'
 #' @examples
 #' # create example data

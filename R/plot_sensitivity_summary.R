@@ -64,12 +64,9 @@
 #'
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom dplyr group_by summarise arrange left_join mutate n
-#' @importFrom forcats fct_reorder
 #' @importFrom ggplot2 ggplot aes geom_bar geom_segment scale_fill_manual
 #'   scale_color_manual theme labs geom_vline element_text
 #' @importFrom ggpubr theme_pubr
-#' @importFrom ggridges geom_density_ridges
-#' @importFrom patchwork plot_layout
 #' @export
 plot_sensitivity_summary <- function(
     expomicset,
@@ -78,6 +75,9 @@ plot_sensitivity_summary <- function(
     title = "Distribution of Stability Scores") {
     # require(ggplot2)
     # require(patchwork)
+    .check_suggested(pkg = "forcats")
+    .check_suggested(pkg = "ggridges")
+    .check_suggested(pkg = "patchwork")
 
     if (!"sensitivity_analysis" %in% names(
         MultiAssayExperiment::metadata(expomicset)$differential_analysis
@@ -190,7 +190,8 @@ plot_sensitivity_summary <- function(
         )
     }
 
-    return((sensitivity_ridgeplot | sensitivity_bar) + plot_layout(
-        widths = c(3, 1)
-    ))
+    return((sensitivity_ridgeplot | sensitivity_bar) +
+        patchwork::plot_layout(
+            widths = c(3, 1)
+        ))
 }

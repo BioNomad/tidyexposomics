@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Sample Clusters — plot_sample_clusters"><meta name="description" content="Generates a heatmap of sample clustering results and summarizes sample group assignments."><meta property="og:description" content="Generates a heatmap of sample clustering results and summarizes sample group assignments."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Sample Clusters — plot_sample_clusters"><meta name="description" content="Generates a heatmap of sample clustering results and
+summarizes sample group assignments."><meta property="og:description" content="Generates a heatmap of sample clustering results and
+summarizes sample group assignments."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -23,10 +25,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -50,7 +49,8 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Generates a heatmap of sample clustering results and summarizes sample group assignments.</p>
+    <p>Generates a heatmap of sample clustering results and
+summarizes sample group assignments.</p>
     </div>
 
     <div class="section level2">
@@ -63,12 +63,14 @@
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object containing sample clustering results
+<dd><p>A <code>MultiAssayExperiment</code> object containing sample
+clustering results
 in <code>metadata(expomicset)$sample_clustering</code>.</p></dd>
 
 
 <dt id="arg-exposure-cols">exposure_cols<a class="anchor" aria-label="anchor" href="#arg-exposure-cols"></a></dt>
-<dd><p>A character vector specifying columns from <code>colData</code> to include
+<dd><p>A character vector specifying columns from <code>colData</code>
+to include
 in the summary. Default is <code>NULL</code>, which includes all available columns.</p></dd>
 
 </dl></div>
@@ -78,16 +80,39 @@ in the summary. Default is <code>NULL</code>, which includes all available colum
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function:</p><ul><li><p>Extracts sample cluster assignments from <code>metadata(expomicset)$sample_clustering</code>.</p></li>
+    <p>This function:</p><ul><li><p>Extracts sample cluster assignments from
+<code>metadata(expomicset)$sample_clustering</code>.</p></li>
 <li><p>Merges cluster labels with <code>colData(expomicset)</code>.</p></li>
-<li><p>Plots the heatmap stored in <code>metadata(expomicset)$sample_clustering$heatmap</code>.</p></li>
+<li><p>Plots the heatmap stored in
+<code>metadata(expomicset)$sample_clustering$heatmap</code>.</p></li>
 </ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu">plot_sample_clusters</span><span class="op">(</span><span class="va">expom</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># create example data</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_samples <span class="op">=</span> <span class="fl">30</span>,</span></span>
+<span class="r-in"><span>    return_mae <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># determine sample clusters</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_cluster_samples.html">run_cluster_samples</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    expomicset <span class="op">=</span> <span class="va">mae</span>,</span></span>
+<span class="r-in"><span>    exposure_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exposure_pm25"</span>, <span class="st">"exposure_no2"</span>, <span class="st">"age"</span>, <span class="st">"bmi"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    clustering_approach <span class="op">=</span> <span class="st">"diana"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Starting clustering analysis...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Optimal number of clusters for samples: 12</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># plot sample clusters</span></span></span>
+<span class="r-in"><span><span class="va">sample_cluster_p</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">plot_sample_clusters</span><span class="op">(</span></span></span>
+<span class="r-in"><span>        exposure_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exposure_pm25"</span>, <span class="st">"exposure_no2"</span>, <span class="st">"age"</span>, <span class="st">"bmi"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

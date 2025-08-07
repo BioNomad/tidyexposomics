@@ -28,13 +28,17 @@ already been processed by \code{associate_all_outcome()}.}
 
 \item{pval_thresh}{Numeric threshold for significance (default = 0.05).}
 
+\item{feature_col}{A character string indicating the column name to use
+for feature labeling and highlighting (e.g., \code{"term"} or \code{"feature"}).
+Default is \code{"term"}.}
+
 \item{alpha}{Transparency applied to facet strip colors (default = 0.5).}
 
 \item{min_per_cat}{Minimum number of features per category to be shown
 (default = 1).}
 
 \item{vars_to_label}{Optional character vector of variable names to label
-explicitly.}
+explicitly, matched against the \code{feature_col} column.}
 
 \item{sig_color}{Color used for significant points (default = \code{"magenta2"}).}
 
@@ -50,7 +54,7 @@ to control panel widths (default = \code{c(1,1,1,1,1)}).}
 \item{linetype}{Line type for the horizontal threshold (default = \code{"dashed"}).}
 
 \item{facet_cols}{Optional vector of colors to use for
-facet strip backgrounds; if \code{NULL}, uses \code{ggsci::pal_npg()}.}
+facet strip backgrounds.}
 
 \item{label_size}{Numeric size of the feature label text (default = 3.5).}
 
@@ -76,6 +80,9 @@ highlighted and labeled, and strip backgrounds can be colored per facet.
 while significant ones are colored with \code{sig_color} and optionally labeled.
 \item Uses \code{ggrepel} to avoid overlapping labels and \code{ggh4x} for
 enhanced faceting.
+\item The \code{feature_col} argument allows customization of which column is used
+to label or identify features, enabling compatibility with different
+result formats.
 }
 }
 \examples{
@@ -98,6 +105,6 @@ mae <- mae |>
 
 # create the manhattan plot
 manhattan_p <- mae |>
-    plot_manhattan()
+    plot_manhattan(feature_col = "term")
 
 }

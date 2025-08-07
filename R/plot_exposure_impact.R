@@ -17,8 +17,10 @@
 #' Default is `0.3`.
 #' @param ncol,nrow Layout for optional patchwork combination
 #' (currently unused). Default: `ncol = 2`, `nrow = 1`.
-#' @param heights, widths Relative heights and widths for combined plots
-#' (currently unused). Defaults: `c(1,1)`, `c(2,1)`.
+#' @param heights Relative heights and widths for combined plots
+#' (currently unused). Default: `c(1,1)`.
+#' @param widths Relative widths for combined plots
+#' (currently unused). Default: `c(2,1)`.
 #'
 #' @return A `ggplot`/`patchwork` object showing a heatmap of
 #' scaled network centrality scores per exposure, annotated by category.
@@ -98,9 +100,9 @@
 #' element_blank margin
 #' @importFrom dplyr select distinct pull group_by summarise mutate
 #' arrange ungroup case_when
+#' @importFrom ggpubr get_palette
 #' @importFrom tidyr pivot_longer
 #' @importFrom purrr pluck
-#' @importFrom patchwork plot_layout
 #' @export
 plot_exposure_impact <- function(
     expomicset,
@@ -115,6 +117,7 @@ plot_exposure_impact <- function(
     widths = c(2, 1)) {
     # require(ggplot2)
     # require(patchwork)
+    .check_suggested(pkg = "patchwork")
 
     # Check that exposure impact analysis has been run
     if (!("exposure_impact" %in% names(
@@ -151,12 +154,15 @@ plot_exposure_impact <- function(
     if (!is.null(bar_cols)) {
         bar_cols <- bar_cols
     } else {
-        bar_cols <- ggsci::pal_uchicago("default")(length(
-            unique(
-                exposure_impact_degree |>
-                    dplyr::pull(exp_name)
+        bar_cols <- ggpubr::get_palette(
+            palette = "uchicago",
+            k = length(
+                unique(
+                    exposure_impact_degree |>
+                        dplyr::pull(exp_name)
+                )
             )
-        ))
+        )
     }
 
     centrality_heatmap_df <- exposure_impact_degree |>
@@ -231,59 +237,7 @@ plot_exposure_impact <- function(
             plot.margin = margin(2, 0, 2, 2)
         )
     heatmap_plot <- category_bar + heatmap_plot +
-        plot_layout(ncol = 2, widths = c(0.15, 1), guides = "collect")
-
-    # heatmap_plot <- centrality_heatmap_df |>
-    #   mutate(metric = case_when(
-    #     metric == "mean_degree" ~ "Mean Degree",
-    #     metric == "mean_eigen" ~ "Mean Eigenvector Centrality",
-    #     metric == "mean_closeness" ~ "Mean Closeness Centrality",
-    #     metric == "mean_betweenness" ~ "Mean Betweenness Centrality"
-    #   )) |>
-    #   ggplot(aes(x = metric,
-    #              y = reorder(exposure, -scaled_value),
-    #              fill = scaled_value)) +
-    #   geom_tile(color = "white") +
-    #   ggh4x::facet_grid2(
-    #     category~.,
-    #     scales = "free_y",
-    #     space = "free_y",
-    #     strip = ggh4x::strip_themed(
-    #       background_x = ggh4x::elem_list_rect(
-    #         fill = scales::alpha(
-    #           facet_cols,
-    #           alpha
-    #         )
-    #       )
-    #     )
-    #   ) +
-    #   scale_fill_gradient2(
-    #     low = "blue",
-    #     mid = "white",
-    #     high = "red",
-    #     midpoint = 0,
-    #     name = "Scaled\nValue"
-    #   ) +
-    #   labs(x = "",
-    #        y = "",
-    #        fill = "Scaled\nValue") +
-    #   theme_minimal(base_size = 11) +
-    #   theme(
-    #     axis.text.x = element_text(angle = 45, hjust = 1),
-    #     axis.text.y = element_text(face = "bold"),
-    #     panel.grid = element_blank(),
-    #     strip.text.y = element_text(angle=0)
-    #   )
-
-    # final_plot <- patchwork::wrap_plots(
-    #   boxplot,
-    #   heatmap_plot,
-    #   ncol = ncol,
-    #   nrow = nrow)+
-    #   patchwork::plot_layout(
-    #     heights = heights,
-    #     widths = widths
-    #   )
+        patchwork::plot_layout(ncol = 2, widths = c(0.15, 1), guides = "collect")
 
 
     return(heatmap_plot)

@@ -5,5 +5,8 @@
 ^docs$
 ^pkgdown$
 ^LICENSE\.md$
-^vignettes/.+\.png$
 ^inst/.+\.png$
+^brand.yml$
+^vignettes/.css$
+^doc$
+^Meta$

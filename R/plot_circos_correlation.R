@@ -20,7 +20,6 @@
 #'
 #' @return A ggplot object (ggraph circular plot).
 #'
-#' @import ggraph
 #' @import ggplot2
 #' @importFrom dplyr filter rename arrange
 #' @importFrom igraph graph_from_data_frame
@@ -67,6 +66,7 @@ plot_circos_correlation <- function(
     # require(ggplot2)
     # require(ggraph)
     # require(igraph)
+    .check_suggested(pkg = "ggraph")
 
     feature_type <- match.arg(feature_type)
 

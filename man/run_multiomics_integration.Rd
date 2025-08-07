@@ -69,8 +69,3 @@ mae <- run_multiomics_integration(
 )
 
 }
-\seealso{
-\code{\link{plot_factor_scores}},
-\code{\link{plot_top_factor_features}},
-\code{\link{run_factor_overlap}}, \code{\link{run_enrichment}}
-}

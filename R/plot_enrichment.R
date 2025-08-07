@@ -76,11 +76,11 @@
 #' \itemize{
 #'   \item `"dotplot"`: Enrichment terms grouped by GO group, colored by
 #'   significance.
-#'   \item `"heatmap"`: Term–gene matrix with optional logFC fill and
+#'   \item `"heatmap"`: Term - gene matrix with optional logFC fill and
 #'   shared gene highlighting.
 #'   \item `"network"`: Graph of term overlap based on shared genes,
 #'   faceted by metadata if desired.
-#'   \item `"cnet"`: Gene–term bipartite graph with gene logFC values
+#'   \item `"cnet"`: Gene - term bipartite graph with gene logFC values
 #'   and term pie slices.
 #'   \item `"summary"`: Multi-panel figure with GO group ridgeplots,
 #'   gene counts, and Venn diagram.
@@ -279,7 +279,6 @@ plot_enrichment <- function(
 #' ungroup inner_join pull
 #' @importFrom tibble rownames_to_column
 #' @importFrom purrr map
-#' @importFrom forcats fct_reorder
 #' @importFrom ggpubr theme_pubr rotate_x_text
 #'
 #' @keywords internal
@@ -291,6 +290,7 @@ plot_enrichment <- function(
     top_n_genes,
     go_groups) {
     # require(ggplot2)
+    .check_suggested(pkg = "forcats")
 
     if (nrow(enr_res) < 1) {
         return(NULL)
@@ -339,32 +339,6 @@ plot_enrichment <- function(
         as.data.frame() |>
         setNames("gene_col") |>
         tibble::rownames_to_column("go_group")
-
-    # go_group_genes_df <- enr_res |>
-    #   (\(df) split(df, df$go_group))() |>
-    #   purrr::map(~ .x |>
-    #                dplyr::pull(ids) |>
-    #                (\(x) strsplit(x, ","))() |>
-    #                unlist() |>
-    #                table() |>
-    #                sort() |>
-    #                tail(n = top_n_genes) |>
-    #                names() |>
-    #                (\(genes) {
-    #                  # Split into groups of 5 and add line breaks
-    #                  gene_chunks <- split(genes,
-    #                                       ceiling(seq_along(genes) / 5))
-    #                  paste(sapply(gene_chunks,
-    #                               function(chunk) paste(
-    #                                 chunk, collapse = ", ")),
-    #                        collapse = "\n")
-    #                })()
-    #   ) |>
-    #   as.data.frame() |>
-    #   t() |>
-    #   as.data.frame() |>
-    #   setNames("gene_col") |>
-    #   tibble::rownames_to_column("go_group")
 
     if (add_top_genes) {
         enr_res <- enr_res |>
@@ -463,7 +437,7 @@ plot_enrichment <- function(
 # --- Enrichment Heatmap -----
 #' @noRd
 #'
-#' @title Internal: Heatmap of Enrichment Term × Gene LogFC Matrix
+#' @title Internal: Heatmap of Enrichment Term by Gene LogFC Matrix
 #'
 #' @description
 #' Generates a tile-based heatmap of enrichment terms by associated genes,
@@ -489,7 +463,6 @@ plot_enrichment <- function(
 #' @importFrom dplyr filter distinct count mutate left_join inner_join select
 #' @importFrom purrr pluck
 #' @importFrom tidyr separate_rows
-#' @importFrom forcats fct_reorder fct_reorder2
 #'
 #' @keywords internal
 .plot_heatmap_enrichment <- function(
@@ -505,6 +478,7 @@ plot_enrichment <- function(
     logfc_thresh = logfc_thresh,
     pval_col = pval_col,
     pval_thresh = pval_thresh) {
+    .check_suggested("forcats")
     if (nrow(enr_res) < 1) {
         return(NULL)
     }
@@ -718,9 +692,6 @@ plot_enrichment <- function(
 #' @return A `ggraph` object.
 #'
 #' @importFrom igraph graph_from_data_frame cluster_louvain
-#' @importFrom tidygraph as_tbl_graph activate centrality_degree
-#' @importFrom ggraph create_layout ggraph geom_edge_link scale_edge_width
-#' geom_node_arc_bar
 #' @importFrom ggplot2 facet_wrap theme element_text labs scale_fill_manual
 #'  theme_void
 #' @importFrom ggrepel geom_label_repel
@@ -730,7 +701,6 @@ plot_enrichment <- function(
 #' @importFrom tidyr separate_rows
 #' @importFrom stringr str_trim
 #' @importFrom tibble as_tibble
-#' @importFrom RColorBrewer brewer.pal
 #'
 #' @keywords internal
 .plot_network_enrichment <- function(
@@ -749,6 +719,8 @@ plot_enrichment <- function(
     # require(igraph)
     # require(tidygraph)
     # require(ggraph)
+    .check_suggested(pkg = "ggraph")
+    .check_suggested(pkg = "tidygraph")
 
     if (nrow(enr_res) < 1) {
         return(NULL)
@@ -833,22 +805,25 @@ plot_enrichment <- function(
     if (is.null(pie_colors)) {
         omics_types <- unique(arc_data$exp_name)
         n_colors <- max(3, length(omics_types))
+        col_options <- c(
+            "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854",
+            "#FFD92F", "#E5C494", "#B3B3B3"
+        )
+        # Repeat colors if necessary
         pie_colors <- setNames(
-            RColorBrewer::brewer.pal(
-                n = n_colors,
-                "Set2"
-            )[seq_along(omics_types)], omics_types
+            rep(col_options, length.out = length(omics_types)),
+            omics_types
         )
     }
 
     # Final plot
-    p <- ggraph(layout) +
-        geom_edge_link(aes(width = overlap),
+    p <- ggraph::ggraph(layout) +
+        ggraph::geom_edge_link(aes(width = overlap),
             alpha = edge_alpha,
             color = "gray50"
         ) +
-        scale_edge_width(range = c(0.2, 2), guide = "none") +
-        geom_node_arc_bar(
+        ggraph::scale_edge_width(range = c(0.2, 2), guide = "none") +
+        ggraph::geom_node_arc_bar(
             data = arc_data,
             aes(
                 x0 = x, y0 = y, r0 = 0, r = node_radius,
@@ -874,9 +849,7 @@ plot_enrichment <- function(
             dplyr::left_join(category_map, by = c("name" = "term_name"))
 
         if (!net_facet_by %in% names(layout)) {
-            stop(glue::glue(
-                "Could not join `net_facet_by = '{net_facet_by}'` column."
-            ))
+            stop(sprintf("Could not join `net_facet_by` by %s.", net_facet_by))
         }
 
         p <- p +
@@ -929,7 +902,7 @@ plot_enrichment <- function(
 # --- Enrichment Cnetplot ------
 #' @noRd
 #'
-#' @title Internal: Gene–Term Network (Cnetplot)
+#' @title Internal: Gene - Term Network (Cnetplot)
 #'
 #' @description
 #' Builds a bipartite graph between genes and enriched terms,
@@ -951,17 +924,13 @@ plot_enrichment <- function(
 #'
 #' @return A `ggraph` plot object.
 #'
-#' @importFrom ggraph ggraph create_layout geom_edge_link
-#' geom_node_arc_bar geom_node_point geom_node_label
 #' @importFrom igraph graph_from_data_frame
-#' @importFrom tidygraph as_tbl_graph
 #' @importFrom ggplot2 scale_color_gradient2 theme_void labs element_text
 #' @importFrom dplyr filter mutate select distinct left_join
 #' count slice_head pull bind_rows group_by ungroup add_count if_else
 #' @importFrom tidyr separate_rows
 #' @importFrom tibble as_tibble
 #' @importFrom purrr pluck
-#' @importFrom ggnewscale new_scale_color
 #'
 #' @keywords internal
 .plot_cnet_enrichment <- function(
@@ -981,8 +950,10 @@ plot_enrichment <- function(
     if (nrow(enr_res) < 1) {
         return(NULL)
     }
-
-    # Explode to gene–term–exp rows
+    .check_suggested(pkg = "ggnewscale")
+    .check_suggested(pkg = "ggraph")
+    .check_suggested(pkg = "tidygraph")
+    # Explode to gene by term by exp rows
     long_enr <- enr_res |>
         tidyr::separate_rows(ids,
             sep = ",\\s*"
@@ -1119,12 +1090,12 @@ plot_enrichment <- function(
         )
 
     # Build plot
-    p <- ggraph(layout) +
-        geom_edge_link(alpha = edge_alpha, color = "grey70")
+    p <- ggraph::ggraph(layout) +
+        ggraph::geom_edge_link(alpha = edge_alpha, color = "grey70")
 
     # Term nodes as pie chart by exp_name
     p <- p +
-        geom_node_arc_bar(
+        ggraph::geom_node_arc_bar(
             data = term_arc_data,
             aes(
                 x0 = x, y0 = y, r0 = 0, r = node_size * term_node_correction,
@@ -1140,7 +1111,7 @@ plot_enrichment <- function(
 
     # Gene nodes colored by logFC
     p <- p +
-        geom_node_point(
+        ggraph::geom_node_point(
             data = layout |>
                 dplyr::filter(type == "gene"),
             aes(
@@ -1161,7 +1132,7 @@ plot_enrichment <- function(
 
     # Add labels
     p <- p +
-        geom_node_label(
+        ggraph::geom_node_label(
             data = layout,
             aes(
                 x = x, y = y,
@@ -1175,7 +1146,7 @@ plot_enrichment <- function(
 
     p <- p +
         labs(
-            title = "Gene–Term Network"
+            title = "Gene-Term Network"
         ) +
         theme(plot.title = element_text(face = "bold.italic"))
 
@@ -1203,10 +1174,7 @@ plot_enrichment <- function(
 #' @importFrom dplyr mutate distinct count filter left_join
 #' arrange pull select group_by ungroup
 #' @importFrom tidyr separate_rows
-#' @importFrom patchwork plot_layout plot_annotation
 #' @importFrom purrr map
-#' @importFrom ggridges geom_density_ridges theme_ridges
-#' @importFrom ggvenn ggvenn
 #'
 #' @keywords internal
 .plot_summary_enrichment <- function(
@@ -1214,6 +1182,9 @@ plot_enrichment <- function(
     if (nrow(enr_res) < 1) {
         return(NULL)
     }
+    .check_suggested("ggridges")
+    .check_suggested("ggvenn")
+    .check_suggested("patchwork")
 
     # Clean up enr_res so that go_groups have no underscore
     enr_res <- enr_res |>

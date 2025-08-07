@@ -22,8 +22,6 @@
 #'
 #' The plot includes both bar heights and overlaid line segments to
 #' reinforce the counts.
-#' Colors are drawn from the Lancet or UChicago palettes via
-#' `ggsci` and `ggpubr`.
 #'
 #' @examples
 #' # Create example data
@@ -41,6 +39,10 @@
 #' norm_p <- mae |>
 #'     plot_normality_summary()
 #'
+#' @importFrom MultiAssayExperiment metadata
+#' @importFrom ggplot2 ggplot aes geom_bar geom_segment labs scale_fill_manual scale_color_manual theme
+#' @importFrom ggpubr theme_pubr get_palette
+#' @importFrom purrr pluck
 #' @export
 plot_normality_summary <- function(
     expomicset,
@@ -125,8 +127,10 @@ plot_normality_summary <- function(
                 size = 1
             ) +
             ggpubr::theme_pubr(legend = "right") +
-            ggsci::scale_fill_lancet() +
-            ggsci::scale_color_lancet(guide = FALSE) +
+            scale_fill_tidy_exp() +
+            scale_color_tidy_exp(guide = "none") +
+            # ggsci::scale_fill_lancet() +
+            # ggsci::scale_color_lancet(guide = FALSE) +
             theme(
                 plot.title = element_text(face = "bold.italic"),
                 plot.subtitle = element_text(face = "italic")

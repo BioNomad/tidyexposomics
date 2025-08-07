@@ -424,10 +424,9 @@ run_association <- function(
                 Cluster,
                 go_group
             ),
-        function(
-            exp_name,
-            Cluster,
-            go_group) {
+        function(exp_name,
+                 Cluster,
+                 go_group) {
             df <- enrich_res |>
                 dplyr::filter(
                     exp_name == !!exp_name,

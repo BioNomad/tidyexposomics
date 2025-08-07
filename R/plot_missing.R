@@ -64,8 +64,6 @@
 #'   reframe select ungroup
 #' @importFrom purrr map
 #' @importFrom naniar miss_var_summary
-#' @importFrom forcats fct_reorder
-#' @importFrom patchwork plot_layout
 #' @importFrom ggpubr theme_pubr
 #'
 #' @export
@@ -76,6 +74,8 @@ plot_missing <- function(
     layers = NULL) {
     # require(ggplot2)
     # require(patchwork)
+    .check_suggested(pkg = "forcats")
+    .check_suggested(pkg = "patchwork")
 
     plot_type <- match.arg(plot_type)
     # grab exposure data

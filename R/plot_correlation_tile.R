@@ -69,6 +69,7 @@ plot_correlation_tile <- function(
     na_color = "grey100",
     fill_limits = c(-1, 1),
     midpoint = 0) {
+    .check_suggested(pkg = "patchwork")
     feature_type <- match.arg(feature_type)
 
     correlation_list <- MultiAssayExperiment::metadata(expomicset)$correlation

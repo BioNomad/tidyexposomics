@@ -74,6 +74,7 @@ run_exposure_impact <- function(
     pval_col = "adj.P.Val",
     pval_thresh = 0.1,
     action = c("add", "get")) {
+    .check_suggested(pkg = "tidygraph")
     feature_type <- match.arg(feature_type)
     action <- match.arg(action)
     md <- MultiAssayExperiment::metadata(expomicset)

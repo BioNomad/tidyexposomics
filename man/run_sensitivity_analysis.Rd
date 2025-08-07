@@ -119,7 +119,3 @@ mae <- run_sensitivity_analysis(
 )
 
 }
-\seealso{
-\code{\link{run_differential_abundance}},
-\code{\link{.run_se_differential_abundance}}
-}

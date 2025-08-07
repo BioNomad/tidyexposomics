@@ -27,6 +27,7 @@ download_dataset <- function(
     ),
     dest_dir = tempdir(),
     verbose = TRUE) {
+    .check_suggested("curl")
     name <- match.arg(name)
     zip_name <- paste0(name, ".zip")
     rdata_name <- paste0(name, ".RData")

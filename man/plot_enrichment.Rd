@@ -139,11 +139,11 @@ using one of several plot types:
 \itemize{
 \item \code{"dotplot"}: Enrichment terms grouped by GO group, colored by
 significance.
-\item \code{"heatmap"}: Term–gene matrix with optional logFC fill and
+\item \code{"heatmap"}: Term - gene matrix with optional logFC fill and
 shared gene highlighting.
 \item \code{"network"}: Graph of term overlap based on shared genes,
 faceted by metadata if desired.
-\item \code{"cnet"}: Gene–term bipartite graph with gene logFC values
+\item \code{"cnet"}: Gene - term bipartite graph with gene logFC values
 and term pie slices.
 \item \code{"summary"}: Multi-panel figure with GO group ridgeplots,
 gene counts, and Venn diagram.

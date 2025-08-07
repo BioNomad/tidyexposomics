@@ -8,11 +8,14 @@
 #' @param expomicset A `MultiAssayExperiment` object that has
 #' already been processed by `associate_all_outcome()`.
 #' @param pval_thresh Numeric threshold for significance (default = 0.05).
+#' @param feature_col A character string indicating the column name to use
+#' for feature labeling and highlighting (e.g., `"term"` or `"feature"`).
+#' Default is `"term"`.
 #' @param alpha Transparency applied to facet strip colors (default = 0.5).
 #' @param min_per_cat Minimum number of features per category to be shown
 #' (default = 1).
 #' @param vars_to_label Optional character vector of variable names to label
-#'  explicitly.
+#' explicitly, matched against the `feature_col` column.
 #' @param sig_color Color used for significant points (default = `"magenta2"`).
 #' @param non_sig_cols Character vector of alternating colors for
 #' non-significant points (default = `c("grey25", "grey75")`).
@@ -22,7 +25,7 @@
 #' to control panel widths (default = `c(1,1,1,1,1)`).
 #' @param linetype Line type for the horizontal threshold (default = `"dashed"`).
 #' @param facet_cols Optional vector of colors to use for
-#' facet strip backgrounds; if `NULL`, uses `ggsci::pal_npg()`.
+#' facet strip backgrounds.
 #' @param label_size Numeric size of the feature label text (default = 3.5).
 #' @param facet_angle Angle (in degrees) for strip text rotation (default = 90).
 #' @param facet_text_face Font face for facet strip labels
@@ -37,6 +40,9 @@
 #'   while significant ones are colored with `sig_color` and optionally labeled.
 #' - Uses `ggrepel` to avoid overlapping labels and `ggh4x` for
 #' enhanced faceting.
+#' - The `feature_col` argument allows customization of which column is used
+#'   to label or identify features, enabling compatibility with different
+#'   result formats.
 #'
 #' @examples
 #' # create example data
@@ -58,15 +64,13 @@
 #'
 #' # create the manhattan plot
 #' manhattan_p <- mae |>
-#'     plot_manhattan()
+#'     plot_manhattan(feature_col = "term")
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_vline
 #'   scale_color_identity labs theme element_text element_rect
 #' @importFrom dplyr filter mutate group_by ungroup n bind_rows pull
-#' @importFrom forcats fct_reorder
 #' @importFrom purrr pluck
 #' @importFrom ggrepel geom_label_repel
-#' @importFrom ggh4x facet_grid2 force_panelsizes strip_themed elem_list_rect
 #' @importFrom scales alpha
 #' @importFrom ggpubr theme_pubr
 #'
@@ -88,6 +92,8 @@ plot_manhattan <- function(
     facet_angle = 90,
     facet_text_face = "bold.italic") {
     # require(ggplot2)
+    .check_suggested(pkg = "forcats")
+    .check_suggested(pkg = "ggh4x")
 
     # Check if "correlation" is a name in metadata
     if (!("association" %in% names(MultiAssayExperiment::metadata(expomicset)))) {

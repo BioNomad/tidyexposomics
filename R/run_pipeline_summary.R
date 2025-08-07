@@ -61,7 +61,7 @@ run_pipeline_summary <- function(
     # Optionally include notes in step text
     step_labels <- purrr::map_chr(step_names, function(step) {
         note <- if (include_notes && !is.null(summary_md$steps[[step]]$notes)) {
-            paste0(" — ", summary_md$steps[[step]]$notes)
+            paste0(" - ", summary_md$steps[[step]]$notes)
         } else {
             ""
         }
@@ -81,6 +81,7 @@ run_pipeline_summary <- function(
     }
 
     if (diagram_print) {
+        .check_suggested("DiagrammeR")
         # Build Mermaid diagram
         mermaid_lines <- c("graph TD")
         for (i in seq_along(labeled_steps)[-length(labeled_steps)]) {

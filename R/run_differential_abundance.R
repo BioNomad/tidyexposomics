@@ -49,6 +49,8 @@ run_differential_abundance <- function(
     scaling_method = "none",
     action = "add") {
     message("Running differential abundance testing.")
+    .check_suggested(pkg = "edgeR")
+    .check_suggested(pkg = "limma")
 
     # Initialize a data frame to store results
     da_results_df <- list()

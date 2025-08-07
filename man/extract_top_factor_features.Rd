@@ -19,7 +19,17 @@ extract_top_factor_features(
 \item{expomicset}{A \code{MultiAssayExperiment} object containing
 integration results.}
 
-\item{factors}{A character vector specifying the factors of interest.}
+\item{factors}{A character vector specifying the factors of interest.
+If \code{NULL}, factors are automatically selected from the association results
+using the \code{pval_col} and \code{pval_thresh} criteria.}
+
+\item{pval_col}{A string specifying the column name of the p-value or
+adjusted p-value used for factor selection if \code{factors} is \code{NULL}.
+Default is \code{"p_adjust"}.}
+
+\item{pval_thresh}{A numeric value specifying the significance threshold
+for selecting factors from association results when \code{factors} is \code{NULL}.
+Default is \code{0.05}.}
 
 \item{method}{A character string specifying the feature selection method
 (\code{"percentile"} or \code{"threshold"}). Default is \code{"percentile"}.}
@@ -45,7 +55,7 @@ If \code{action = "get"}, returns a data frame containing:
 }
 \description{
 Identifies the most influential features for specified factors
-using multiomics integration integration results.
+using multiomics integration results.
 Features are selected based on either a percentile cutoff
 or an absolute loading threshold.
 }
@@ -54,6 +64,11 @@ The function extracts factor loadings from \code{metadata(expomicset)},
 applies filtering based on
 the selected method, and identifies top contributing features for
 each specified factor.
+
+If \code{factors} is not provided, the function will automatically select
+statistically significant factors from \code{metadata(expomicset)$association$assoc_factors$results_df}
+using the specified \code{pval_col} and \code{pval_thresh} as criteria.
+
 Features can be selected using:
 \itemize{
 \item \strong{Percentile-based filtering} (\code{method = "percentile"}): Selects

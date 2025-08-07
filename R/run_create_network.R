@@ -75,7 +75,6 @@
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom dplyr bind_rows select distinct
 #' @importFrom igraph graph_from_data_frame
-#' @importFrom tidygraph as_tbl_graph
 #' @export
 run_create_network <- function(
     expomicset,
@@ -93,9 +92,6 @@ run_create_network <- function(
         "add",
         "get"
     )) {
-    # require(igraph)
-    # require(tidygraph)
-
     feature_type <- match.arg(feature_type)
     action <- match.arg(action)
 

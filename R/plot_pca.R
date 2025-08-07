@@ -44,13 +44,10 @@
 #'
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom dplyr mutate case_when
-#' @importFrom ggplot2 autoplot
-#' @import ggfortify
+#' @import ggplot2
 #' @importFrom ggpubr theme_pubr
-#' @importFrom ggsci scale_color_aaas
 #' @importFrom factoextra fviz_eig
 #' @importFrom ggrepel geom_text_repel
-#' @importFrom patchwork wrap_plots
 #'
 #' @export
 plot_pca <- function(
@@ -58,8 +55,7 @@ plot_pca <- function(
     feature_col = "#00a9b2",
     sample_col = "#8a4f77",
     sample_outlier_col = "firebrick") {
-    # require(ggplot2)
-    # require(ggfortify)
+    .check_suggested(pkg = "patchwork")
 
     # Check if the required metadata is present
     if (is.null(MultiAssayExperiment::metadata(expomicset)$quality_control$pca)) {
@@ -91,17 +87,51 @@ plot_pca <- function(
 
 
     # PCA Feature Scatter Plot
-    pca_plot_feature <- autoplot(pca_feature,
-        data = dat,
-        colour = "category"
-    ) +
+    pca_plot_feature <- pca_feature |>
+        purrr::pluck("x") |>
+        as.data.frame() |>
+        mutate(category = dat$category) |>
+        ggplot(aes(
+            x = PC1,
+            y = PC2,
+            color = category
+        )) +
+        geom_point() +
         ggpubr::theme_pubr(legend = "right") +
-        ggsci::scale_color_aaas() +
-        labs(title = "PCA of Feature Space", color = "") +
+        scale_color_tidy_exp() +
+        labs(
+            title = "PCA of Feature Space",
+            color = "",
+            x = sprintf(
+                "PC1 (%s%%)",
+                round(
+                    (summary(pca_feature)$importance[2, 1:2] * 100)[1],
+                    digits = 1
+                )
+            ),
+            y = sprintf(
+                "PC2 (%s%%)",
+                round(
+                    (summary(pca_feature)$importance[2, 1:2] * 100)[2],
+                    digits = 1
+                )
+            )
+        ) +
         theme(
             plot.title = element_text(face = "bold.italic"),
             plot.subtitle = element_text(face = "italic")
         )
+    # pca_plot_feature <- autoplot(pca_feature,
+    #     data = dat,
+    #     colour = "category"
+    # ) +
+    #     ggpubr::theme_pubr(legend = "right") +
+    #     ggsci::scale_color_aaas() +
+    #     labs(title = "PCA of Feature Space", color = "") +
+    #     theme(
+    #         plot.title = element_text(face = "bold.italic"),
+    #         plot.subtitle = element_text(face = "italic")
+    #     )
 
     # PCA Feature Scree Plot
     scree_feature <- factoextra::fviz_eig(
@@ -124,22 +154,49 @@ plot_pca <- function(
         )
 
     # PCA sample scatter plot
-    pca_plot_sample <- autoplot(pca_sample, colour = sample_col) +
+    pca_plot_sample <- pca_sample |>
+        purrr::pluck("x") |>
+        as.data.frame() |>
+        (\(df){
+            df$id <- rownames(df)
+            df
+        })() |>
+        mutate(label = ifelse(id %in% outlier_samples, id, NA)) |>
+        ggplot(aes(
+            x = PC1,
+            y = PC2
+        )) +
+        geom_point(color = sample_col) +
         ggrepel::geom_text_repel(
             aes(
                 x = PC1,
                 y = PC2,
-                label = ifelse(rownames %in% outlier_samples, rownames, NA)
+                label = label
             ),
             color = sample_outlier_col
         ) +
         ggpubr::theme_pubr() +
-        labs(title = "PCA of Sample Space") +
+        labs(
+            title = "PCA of Sample Space",
+            x = sprintf(
+                "PC1 (%s%%)",
+                round(
+                    (summary(pca_sample)$importance[2, 1:2] * 100)[1],
+                    digits = 1
+                )
+            ),
+            y = sprintf(
+                "PC2 (%s%%)",
+                round(
+                    (summary(pca_sample)$importance[2, 1:2] * 100)[2],
+                    digits = 1
+                )
+            )
+        ) +
         theme(
             plot.title = element_text(face = "bold.italic"),
             plot.subtitle = element_text(face = "italic")
         )
-
 
     # Sample Scree Plot
     scree_sample <- factoextra::fviz_eig(

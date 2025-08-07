@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Missing Data Across Exposure and Omic Layers — plot_missing"><meta name="description" content="Visualizes missing data patterns in a MultiAssayExperiment object using summary bar plots or feature-level lollipop plots."><meta property="og:description" content="Visualizes missing data patterns in a MultiAssayExperiment object using summary bar plots or feature-level lollipop plots."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Missing Data Across Exposure and Omic Layers — plot_missing"><meta name="description" content="Visualizes missing data patterns in a MultiAssayExperiment object using
+summary bar plots or feature-level lollipop plots."><meta property="og:description" content="Visualizes missing data patterns in a MultiAssayExperiment object using
+summary bar plots or feature-level lollipop plots."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -23,10 +25,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -50,7 +49,8 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Visualizes missing data patterns in a <code>MultiAssayExperiment</code> object using summary bar plots or feature-level lollipop plots.</p>
+    <p>Visualizes missing data patterns in a <code>MultiAssayExperiment</code> object using
+summary bar plots or feature-level lollipop plots.</p>
     </div>
 
     <div class="section level2">
@@ -68,44 +68,72 @@
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object containing exposure and omics assays. Missing data is inferred directly from the assays.</p></dd>
+<dd><p>A <code>MultiAssayExperiment</code> object containing exposure
+and omics assays. Missing data is inferred directly from the assays.</p></dd>
 
 
 <dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
-<dd><p>Numeric. The percentage threshold (0–100) above which features are counted as missing in the summary plot. Default is <code>5</code>.</p></dd>
+<dd><p>Numeric. The percentage threshold (0–100) above which
+features are counted as missing in the summary plot. Default is <code>5</code>.</p></dd>
 
 
 <dt id="arg-plot-type">plot_type<a class="anchor" aria-label="anchor" href="#arg-plot-type"></a></dt>
-<dd><p>Character. Type of plot to generate. Either <code>"summary"</code> for a bar plot showing number of features above the missing threshold, or <code>"lollipop"</code> for a per-feature lollipop plot with layer annotations. Default is <code>"summary"</code>.</p></dd>
+<dd><p>Character. Type of plot to generate. Either <code>"summary"</code>
+for a bar plot showing number of features above the missing threshold,
+or <code>"lollipop"</code> for a per-feature lollipop plot with layer annotations.
+Default is <code>"summary"</code>.</p></dd>
 
 
 <dt id="arg-layers">layers<a class="anchor" aria-label="anchor" href="#arg-layers"></a></dt>
-<dd><p>Optional character vector. If specified, filters the plot to include only selected layers (e.g., <code>"Exposure"</code>, <code>"Transcriptome"</code>).</p></dd>
+<dd><p>Optional character vector. If specified, filters the plot
+to include only selected layers (e.g., <code>"Exposure"</code>, <code>"Transcriptome"</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>ggplot</code> or <code>patchwork</code> object depending on the selected <code>plot_type</code>.</p>
+    <p>A <code>ggplot</code> or <code>patchwork</code> object depending on the selected
+<code>plot_type</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The function calculates missing data per feature (or variable) across all assays (including exposure variables) and generates:</p><ul><li><p><strong>Summary plot (<code>plot_type = "summary</code>)</strong>: A bar plot showing the number of variables in each assay exceeding the specified missingness threshold.</p></li>
-<li><p><strong>Lollipop plot (<code>plot_type = "lollipop</code>)</strong>: A feature-level plot where each feature's percent missingness is shown, along with a color-coded tile on the side indicating its layer of origin.</p></li>
-</ul><p>The tile colors in the lollipop plot match the experiment colors used in other visualizations (e.g., via <code>scale_color_tidy_exp()</code>).</p>
+    <p>The function calculates missing data per feature (or variable) across all
+assays (including exposure variables) and generates:</p><ul><li><p><strong>Summary plot (<code>plot_type = "summary</code>)</strong>: A bar plot showing the number
+of variables in each assay exceeding the specified missingness threshold.</p></li>
+<li><p><strong>Lollipop plot (<code>plot_type = "lollipop</code>)</strong>: A feature-level plot where
+each feature's percent missingness is shown, along with a color-coded tile
+on the side indicating its layer of origin.</p></li>
+</ul><p>The tile colors in the lollipop plot match the experiment colors used in
+other visualizations (e.g., via <code>scale_color_tidy_exp()</code>).</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#' # Create example data</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_samples <span class="op">=</span> <span class="fl">20</span>,</span></span>
+<span class="r-in"><span>    return_mae <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Introduce some missingness</span></span></span>
+<span class="r-in"><span><span class="fu">MultiAssayExperiment</span><span class="fu">::</span><span class="fu">colData</span><span class="op">(</span><span class="va">mae</span><span class="op">)</span><span class="op">$</span><span class="va">exposure_pm25</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Summary bar plot of missing data</span></span></span>
-<span class="r-in"><span><span class="fu">plot_missing</span><span class="op">(</span><span class="va">expom</span>, threshold <span class="op">=</span> <span class="fl">10</span>, plot_type <span class="op">=</span> <span class="st">"summary"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">summary_p</span> <span class="op">&lt;-</span> <span class="fu">plot_missing</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">mae</span>,</span></span>
+<span class="r-in"><span>    threshold <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>    plot_type <span class="op">=</span> <span class="st">"summary"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Lollipop plot for all features with any missingness</span></span></span>
-<span class="r-in"><span><span class="fu">plot_missing</span><span class="op">(</span><span class="va">expom</span>, plot_type <span class="op">=</span> <span class="st">"lollipop"</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Lollipop plot only for exposure and proteomics layers</span></span></span>
-<span class="r-in"><span><span class="fu">plot_missing</span><span class="op">(</span><span class="va">expom</span>, plot_type <span class="op">=</span> <span class="st">"lollipop"</span>, layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Exposure"</span>, <span class="st">"Proteomics"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="va">lollipop_p</span> <span class="op">&lt;-</span> <span class="fu">plot_missing</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">mae</span>,</span></span>
+<span class="r-in"><span>    plot_type <span class="op">=</span> <span class="st">"lollipop"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

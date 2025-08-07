@@ -37,7 +37,6 @@
 #' If `action="get"`, returns a list with:
 #' \item{sample_cluster}{A hierarchical clustering object (`hclust`).}
 #' \item{sample_groups}{A named vector of sample cluster assignments.}
-#' \item{heatmap}{A `ComplexHeatmap` object visualizing sample clustering.}
 #'
 #' @examples
 #' # create example data
@@ -53,6 +52,10 @@
 #'     clustering_approach = "diana"
 #' )
 #'
+#' @importFrom dplyr select mutate left_join all_of everything across
+#' @importFrom tibble column_to_rownames
+#' @importFrom cluster daisy diana clusGap maxSE
+#' @importFrom factoextra hcut fviz_nbclust
 #' @export
 run_cluster_samples <- function(expomicset,
                                 exposure_cols = NULL,
@@ -62,6 +65,8 @@ run_cluster_samples <- function(expomicset,
                                 clustering_approach = "diana",
                                 action = "add") {
     message("Starting clustering analysis...")
+    .check_suggested(pkg = "dynamicTreeCut")
+    .check_suggested(pkg = "densityClust")
 
     # Validate exposure_cols input
     if (is.null(exposure_cols) || length(exposure_cols) == 0) {
@@ -215,8 +220,6 @@ run_cluster_samples <- function(expomicset,
 #' @keywords internal
 #' @importFrom cluster diana clusGap maxSE
 #' @importFrom factoextra hcut fviz_nbclust
-#' @importFrom dynamicTreeCut cutreeDynamic
-#' @importFrom densityClust densityClust findClusters
 #' @noRd
 .determine_k <- function(
     dist_matrix,
@@ -251,6 +254,7 @@ run_cluster_samples <- function(expomicset,
         if (is.na(k_optimal) || k_optimal < 2) k_optimal <- 3
         return(k_optimal)
     } else if (clustering_approach == "dynamic") {
+        .check_suggested(pkg = "dynamicTreeCut")
         # Determine optimal k using dynamic tree cut
         sample_cluster <- hclust(as.dist(dist_matrix), method = cluster_method)
         cut_clusters <- dynamicTreeCut::cutreeDynamic(
@@ -260,6 +264,7 @@ run_cluster_samples <- function(expomicset,
         )
         return(length(unique(cut_clusters)))
     } else if (clustering_approach == "density") {
+        .check_suggested(pkg = "densityClust")
         # Determine optimal k using density-based clustering
         dclust <- densityClust::densityClust(as.dist(dist_matrix),
             gaussian = TRUE

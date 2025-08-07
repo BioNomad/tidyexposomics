@@ -25,10 +25,7 @@ ensuring proper formatting and alignment of samples and features."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -70,37 +67,52 @@ ensuring proper formatting and alignment of samples and features.</p>
 
 
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p>A data frame containing exposure data, with rows as samples and columns as variables.</p></dd>
+<dd><p>A data frame containing exposure data,
+with rows as samples and columns as variables.</p></dd>
 
 
 <dt id="arg-omics">omics<a class="anchor" aria-label="anchor" href="#arg-omics"></a></dt>
-<dd><p>A list of matrices or a single matrix representing omics data. Each matrix should have samples as columns and features as rows.</p></dd>
+<dd><p>A list of matrices or a single matrix representing omics data.
+Each matrix should have samples as columns and features as rows.</p></dd>
 
 
 <dt id="arg-row-data">row_data<a class="anchor" aria-label="anchor" href="#arg-row-data"></a></dt>
-<dd><p>An optional list of <code>DataFrame</code> objects providing feature metadata for each omics dataset. If <code>NULL</code>, row metadata is generated automatically. Default is <code>NULL</code>.</p></dd>
+<dd><p>An optional list of <code>DataFrame</code> objects providing
+feature metadata for each omics dataset. If <code>NULL</code>,
+row metadata is generated automatically. Default is <code>NULL</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>MultiAssayExperiment</code> object containing the formatted exposure and omics datasets.</p>
+    <p>A <code>MultiAssayExperiment</code> object containing the formatted exposure
+and omics datasets.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The function validates inputs, converts <code>omics</code> into a list if necessary, ensures all datasets are matrices with column names,
-and creates <code>SummarizedExperiment</code> objects for each omics dataset. It then constructs a <code>MultiAssayExperiment</code> object
+    <p>The function validates inputs, converts <code>omics</code> into a list if necessary,
+ensures all datasets are matrices with column names,
+and creates <code>SummarizedExperiment</code> objects for each omics dataset.
+It then constructs a <code>MultiAssayExperiment</code> object
 with exposure data in <code>colData</code> and variable information stored in metadata.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">expomicset</span> <span class="op">&lt;-</span> <span class="fu">create_expomicset</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  codebook <span class="op">=</span> <span class="va">des</span>,</span></span>
-<span class="r-in"><span>  exposure <span class="op">=</span> <span class="va">meta</span>,</span></span>
-<span class="r-in"><span>  omics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mRNA <span class="op">=</span> <span class="va">mrna_mat</span>, proteomics <span class="op">=</span> <span class="va">proteomics_mat</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># make the example data</span></span></span>
+<span class="r-in"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span>n_samples <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># create the MultiAssayExperiment Object</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu">create_expomicset</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    codebook <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">codebook</span>,</span></span>
+<span class="r-in"><span>    exposure <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">exposure</span>,</span></span>
+<span class="r-in"><span>    omics <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">omics</span>,</span></span>
+<span class="r-in"><span>    row_data <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">row_data</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

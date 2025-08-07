@@ -25,10 +25,7 @@ including scatter plots and scree plots."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -76,17 +73,20 @@ in <code>metadata(expomicset)$pca</code>.</p></dd>
 
 
 <dt id="arg-feature-col">feature_col<a class="anchor" aria-label="anchor" href="#arg-feature-col"></a></dt>
-<dd><p>A character string specifying the color for the feature scree plot.
+<dd><p>A character string specifying the color for the
+feature scree plot.
 Default is <code>"#00a9b2"</code>.</p></dd>
 
 
 <dt id="arg-sample-col">sample_col<a class="anchor" aria-label="anchor" href="#arg-sample-col"></a></dt>
-<dd><p>A character string specifying the color for the sample scree plot.
+<dd><p>A character string specifying the color for the
+sample scree plot.
 Default is <code>"#8a4f77"</code>.</p></dd>
 
 
 <dt id="arg-sample-outlier-col">sample_outlier_col<a class="anchor" aria-label="anchor" href="#arg-sample-outlier-col"></a></dt>
-<dd><p>A character string specifying the color for sample outlier labels.
+<dd><p>A character string specifying the color
+for sample outlier labels.
 Default is <code>"firebrick"</code>.</p></dd>
 
 </dl></div>
@@ -97,7 +97,8 @@ Default is <code>"firebrick"</code>.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function creates four PCA visualizations:</p><ul><li><p><strong>Feature Space PCA Plot</strong>: Colored by category (e.g., omics, exposure).</p></li>
-<li><p><strong>Feature Scree Plot</strong>: Displays the variance explained by each principal component.</p></li>
+<li><p><strong>Feature Scree Plot</strong>: Displays the variance explained by each
+principal component.</p></li>
 <li><p><strong>Sample Space PCA Plot</strong>: Highlights outlier samples.</p></li>
 <li><p><strong>Sample Scree Plot</strong>: Displays variance explained in the sample PCA.</p></li>
 </ul><p>Outliers are labeled based on <code>metadata(expomicset)$pca$outliers</code>.</p>
@@ -105,9 +106,29 @@ Default is <code>"firebrick"</code>.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu">plot_pca</span><span class="op">(</span><span class="va">expom</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># create example data</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_samples <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>    return_mae <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># run pca</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="run_pca.html">run_pca</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Identifying common samples.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Subsetting exposure data.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Subsetting omics data.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing PCA on Feature Space.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing PCA on Sample Space.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No outliers detected.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># create the pca plot</span></span></span>
+<span class="r-in"><span><span class="va">pca_p</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">plot_pca</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -55,19 +55,17 @@ mae <- make_example_data(
     return_mae = TRUE
 )
 
-# perform differential abundance analysis
-mae <- run_differential_abundance(
-    expomicset = mae,
-    formula = ~ smoker + sex,
-    abundance_col = "counts",
-    method = "limma_voom",
-    action = "add"
-)
+# run correlation analysis
+mae <- mae |>
+    run_correlation(
+        feature_type = "exposures",
+        exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
+    )
 
 # extract the differential abundance results
 extract_results_excel(
     expomicset = mae,
-    result_types = "differential_analysis",
+    result_types = "correlation",
     file = "supplemental_results.xlsx"
 )
 

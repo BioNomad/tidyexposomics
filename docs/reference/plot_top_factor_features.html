@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Top Features by Factor from Integration Results — plot_top_factor_features"><meta name="description" content="Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA, MCIA, DIABLO, RGCCA)."><meta property="og:description" content="Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA, MCIA, DIABLO, RGCCA)."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Top Features by Factor from Integration Results — plot_top_factor_features"><meta name="description" content="Visualizes the top loading features for each factor from multi-omics
+integration results (e.g., MOFA, MCIA, DIABLO, RGCCA)."><meta property="og:description" content="Visualizes the top loading features for each factor from multi-omics
+integration results (e.g., MOFA, MCIA, DIABLO, RGCCA)."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -23,10 +25,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -50,7 +49,8 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Visualizes the top loading features for each factor from multi-omics integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).</p>
+    <p>Visualizes the top loading features for each factor from multi-omics
+integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).</p>
     </div>
 
     <div class="section level2">
@@ -71,32 +71,45 @@
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object containing integration results in the <code>metadata</code> slot (must include <code>integration_results</code>).</p></dd>
+<dd><p>A <code>MultiAssayExperiment</code> object containing
+integration results in the <code>metadata</code> slot (must include <code>integration_results</code>).</p></dd>
+
+
+<dt id="arg-feature-col">feature_col<a class="anchor" aria-label="anchor" href="#arg-feature-col"></a></dt>
+<dd><p>A character string indicating the column name to use
+for y-axis feature labels (e.g., <code>"feature"</code>, <code>"gene_symbol"</code>). This should
+match a column in the output of <code><a href="pivot_feature.html">pivot_feature()</a></code>. Default is <code>"feature"</code>.</p></dd>
 
 
 <dt id="arg-factors">factors<a class="anchor" aria-label="anchor" href="#arg-factors"></a></dt>
-<dd><p>Character vector of factors to include (e.g., "Factor1", "Factor2"). If <code>NULL</code>, all factors are plotted.</p></dd>
+<dd><p>Character vector of factors to include
+(e.g., "Factor1", "Factor2"). If <code>NULL</code>, all factors are plotted.</p></dd>
 
 
 <dt id="arg-top-n">top_n<a class="anchor" aria-label="anchor" href="#arg-top-n"></a></dt>
-<dd><p>Integer specifying the number of top features to show per factor. Default is <code>5</code>.</p></dd>
+<dd><p>Integer specifying the number of top features to show
+per factor. Default is <code>5</code>.</p></dd>
 
 
 <dt id="arg-facet-cols">facet_cols<a class="anchor" aria-label="anchor" href="#arg-facet-cols"></a></dt>
-<dd><p>Optional color palette for facet strip backgrounds (one per <code>exp_name</code>), used to distinguish factors.</p></dd>
+<dd><p>Optional color palette for facet strip backgrounds
+(one per <code>exp_name</code>), used to distinguish factors.</p></dd>
 
 
 <dt id="arg-exp-name-cols">exp_name_cols<a class="anchor" aria-label="anchor" href="#arg-exp-name-cols"></a></dt>
-<dd><p>Optional color palette for experiment labels in the plot (<code>exp_name</code>), passed to <code><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual()</a></code>.</p></dd>
+<dd><p>Optional color palette for experiment labels
+in the plot (<code>exp_name</code>), passed to <code><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual()</a></code>.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
-<dd><p>Numeric value between 0 and 1 controlling the transparency of facet strip background fill. Default is <code>0.5</code>.</p></dd>
+<dd><p>Numeric value between 0 and 1 controlling the
+transparency of facet strip background fill. Default is <code>0.5</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>ggplot2</code> object with one facet per factor, showing the top features and their loadings by experiment.</p>
+    <p>A <code>ggplot2</code> object with one facet per factor, showing the
+top features and their loadings by experiment.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -105,11 +118,50 @@
 <li><p><code>"DIABLO"</code>: Extracts block-specific loadings from <code>loadings</code>.</p></li>
 <li><p><code>"RGCCA"</code>: Extracts block-specific loadings from <code>a</code>.</p></li>
 </ul><p>For each factor, it:</p><ul><li><p>Selects the top <code>top_n</code> features by <strong>absolute loading</strong>.</p></li>
+<li><p>Merges with feature metadata using <code><a href="pivot_feature.html">pivot_feature()</a></code>.</p></li>
 <li><p>Creates a point-range plot showing the loading magnitude.</p></li>
 <li><p>Facets each factor with a customizable strip background.</p></li>
-</ul><p>If palettes are not provided, defaults are chosen using <code><a href="https://rpkgs.datanovia.com/ggpubr/reference/get_palette.html" class="external-link">ggpubr::get_palette()</a></code>.</p>
+</ul><p>The <code>feature_col</code> argument allows you to control which feature-level
+metadata column (e.g., gene symbols, metabolite names) is used for
+labeling the y-axis.</p>
+<p>If palettes are not provided, defaults are chosen using
+<code><a href="https://rpkgs.datanovia.com/ggpubr/reference/get_palette.html" class="external-link">ggpubr::get_palette()</a></code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># create example data</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_samples <span class="op">=</span> <span class="fl">20</span>,</span></span>
+<span class="r-in"><span>    return_mae <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_multiomics_integration.html">run_multiomics_integration</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">mae</span>,</span></span>
+<span class="r-in"><span>    method <span class="op">=</span> <span class="st">"MCIA"</span>,</span></span>
+<span class="r-in"><span>    n_factors <span class="op">=</span> <span class="fl">3</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scaling each assay in MultiAssayExperiment.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running multi-omics integration using MCIA...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying MCIA with `nipalsMCIA`</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing column-level pre-processing...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Column pre-processing completed.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing block-level preprocessing...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block pre-processing completed.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Computing order 1 scores</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Computing order 2 scores</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Computing order 3 scores</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># plot top features using default `feature` column</span></span></span>
+<span class="r-in"><span><span class="va">top_feature_p</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">plot_top_factor_features</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

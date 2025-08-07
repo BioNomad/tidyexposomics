@@ -55,6 +55,9 @@ facet categories. If \code{NULL}, a default palette is used.}
 \item{group_cols}{Optional named vector of colors for \code{group_by} levels.
 If \code{NULL}, a default palette is used.}
 
+\item{box_width}{A numeric value specifying the width of the boxplots.
+Only used when \code{plot_type = "boxplot"}. Default is \code{0.1}.}
+
 \item{fill_lab}{Legend title for the fill aesthetic
 (e.g., \code{"Sex"} or \code{"Exposure Group"}). Default is \code{""}.}
 }
@@ -77,10 +80,11 @@ or \strong{ridgeplot} (horizontal density plots per variable).
 otherwise, the fill is based on exposure \code{category}.
 \item Facets by \code{category} using \code{ggh4x::facet_grid2()}
 with color-coded strip backgrounds.
+\item The \code{box_width} argument controls the width of the boxplots when
+\code{plot_type = "boxplot"}.
 }
 }
 \examples{
-
 # create example data
 mae <- make_example_data(
     n_samples = 10,
@@ -90,7 +94,8 @@ mae <- make_example_data(
 # plot exposure data
 exposure_plot <- mae |>
     plot_exposures(
-        exposure_cols = c("exposure_pm25", "exposure_no2")
+        exposure_cols = c("exposure_pm25", "exposure_no2"),
+        box_width = 0.2
     )
 
 }

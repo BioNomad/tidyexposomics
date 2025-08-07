@@ -31,9 +31,6 @@
 #' - `"DIABLO"` performs supervised integration using the `mixOmics` package
 #' and a specified outcome.
 #'
-#' @seealso \code{\link{plot_factor_scores}},
-#' \code{\link{plot_top_factor_features}},
-#'   \code{\link{run_factor_overlap}}, \code{\link{run_enrichment}}
 #'
 #' @examples
 #' # create example data

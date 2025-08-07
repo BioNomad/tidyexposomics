@@ -37,8 +37,11 @@ Default is \code{0.3}.}
 \item{ncol, nrow}{Layout for optional patchwork combination
 (currently unused). Default: \code{ncol = 2}, \code{nrow = 1}.}
 
-\item{heights, }{widths Relative heights and widths for combined plots
-(currently unused). Defaults: \code{c(1,1)}, \code{c(2,1)}.}
+\item{heights}{Relative heights and widths for combined plots
+(currently unused). Default: \code{c(1,1)}.}
+
+\item{widths}{Relative widths for combined plots
+(currently unused). Default: \code{c(2,1)}.}
 }
 \value{
 A \code{ggplot}/\code{patchwork} object showing a heatmap of

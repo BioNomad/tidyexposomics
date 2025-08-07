@@ -5,9 +5,13 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Run Association Analysis — run_association"><meta name="description" content="Perform GLM-based association testing between a specified outcome and features from exposures, omics,
-latent factors, or GO PCs. Automatically adjusts for covariates and supports both Gaussian and binomial models."><meta property="og:description" content="Perform GLM-based association testing between a specified outcome and features from exposures, omics,
-latent factors, or GO PCs. Automatically adjusts for covariates and supports both Gaussian and binomial models."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Run Association Analysis — run_association"><meta name="description" content="Perform GLM-based association testing between a specified outcome and
+features from exposures, omics,
+latent factors, or GO PCs. Automatically adjusts for covariates and
+supports both Gaussian and binomial models."><meta property="og:description" content="Perform GLM-based association testing between a specified outcome and
+features from exposures, omics,
+latent factors, or GO PCs. Automatically adjusts for covariates and
+supports both Gaussian and binomial models."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -25,10 +29,7 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -52,8 +53,10 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
     </div>
 
     <div class="ref-description section level2">
-    <p>Perform GLM-based association testing between a specified outcome and features from exposures, omics,
-latent factors, or GO PCs. Automatically adjusts for covariates and supports both Gaussian and binomial models.</p>
+    <p>Perform GLM-based association testing between a specified outcome and
+features from exposures, omics,
+latent factors, or GO PCs. Automatically adjusts for covariates and
+supports both Gaussian and binomial models.</p>
     </div>
 
     <div class="section level2">
@@ -70,8 +73,7 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
 <span>  action <span class="op">=</span> <span class="st">"add"</span>,</span>
 <span>  min_genes <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  feature_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  mirna_assays <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  print <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  mirna_assays <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,7 +82,8 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object containing data and metadata.</p></dd>
+<dd><p>A <code>MultiAssayExperiment</code> object containing data
+and metadata.</p></dd>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
@@ -88,7 +91,8 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
 
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
-<dd><p>Source of features to test. One of <code>"omics"</code>, <code>"exposures"</code>, <code>"factors"</code>, <code>"go_pcs"</code>.</p></dd>
+<dd><p>Source of features to test. One of <code>"omics"</code>,
+<code>"exposures"</code>, <code>"factors"</code>, <code>"go_pcs"</code>.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
@@ -100,7 +104,8 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
 
 
 <dt id="arg-top-n">top_n<a class="anchor" aria-label="anchor" href="#arg-top-n"></a></dt>
-<dd><p>Optional integer: if using omics source, select top <code>n</code> most variable features.</p></dd>
+<dd><p>Optional integer: if using omics source, select top <code>n</code>
+most variable features.</p></dd>
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
@@ -112,7 +117,8 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
 
 
 <dt id="arg-action">action<a class="anchor" aria-label="anchor" href="#arg-action"></a></dt>
-<dd><p>If <code>"add"</code> (default), saves results to metadata; else returns results as list.</p></dd>
+<dd><p>If <code>"add"</code> (default), saves results to metadata;
+else returns results as list.</p></dd>
 
 
 <dt id="arg-min-genes">min_genes<a class="anchor" aria-label="anchor" href="#arg-min-genes"></a></dt>
@@ -120,29 +126,49 @@ latent factors, or GO PCs. Automatically adjusts for covariates and supports bot
 
 
 <dt id="arg-feature-col">feature_col<a class="anchor" aria-label="anchor" href="#arg-feature-col"></a></dt>
-<dd><p>If using GO PCs, the column in <code>rowData</code> for matching gene symbols or IDs.</p></dd>
+<dd><p>If using GO PCs, the column in <code>rowData</code>
+for matching gene symbols or IDs.</p></dd>
 
 
 <dt id="arg-mirna-assays">mirna_assays<a class="anchor" aria-label="anchor" href="#arg-mirna-assays"></a></dt>
-<dd><p>Optional character vector of assays to exclude when extracting GO terms.</p></dd>
-
-
-<dt id="arg-print">print<a class="anchor" aria-label="anchor" href="#arg-print"></a></dt>
-<dd><p>Optional variable name to print results for (useful for debugging).</p></dd>
+<dd><p>Optional character vector of assays to exclude
+when extracting GO terms.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>If <code>action = "add"</code>, returns updated <code>MultiAssayExperiment</code>. Otherwise, returns a list of:</p><ul><li><p><code>results_df</code>: tidy summary of associations</p></li>
+    <p>If <code>action = "add"</code>, returns updated <code>MultiAssayExperiment</code>.
+Otherwise, returns a list of:</p><ul><li><p><code>results_df</code>: tidy summary of associations</p></li>
 <li><p><code>covariates</code>: the covariates used</p></li>
 <li><p><code>model_data</code>: model matrix used in the GLMs</p></li>
 </ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu">run_association</span><span class="op">(</span><span class="va">expomicset</span>, outcome <span class="op">=</span> <span class="st">"BMI"</span>, source <span class="op">=</span> <span class="st">"exposures"</span>, covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#' # create example data</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_samples <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>    return_mae <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># run association tests</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">run_association</span><span class="op">(</span></span></span>
+<span class="r-in"><span>        source <span class="op">=</span> <span class="st">"exposures"</span>,</span></span>
+<span class="r-in"><span>        feature_set <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exposure_pm25"</span>, <span class="st">"exposure_no2"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        outcome <span class="op">=</span> <span class="st">"smoker"</span>,</span></span>
+<span class="r-in"><span>        covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        family <span class="op">=</span> <span class="st">"binomial"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running GLMs.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>glm.fit: algorithm did not converge</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>glm.fit: fitted probabilities numerically 0 or 1 occurred</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

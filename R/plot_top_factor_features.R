@@ -5,10 +5,13 @@
 #'
 #' @param expomicset A `MultiAssayExperiment` object containing
 #' integration results in the `metadata` slot (must include `integration_results`).
+#' @param feature_col A character string indicating the column name to use
+#' for y-axis feature labels (e.g., `"feature"`, `"gene_symbol"`). This should
+#' match a column in the output of `pivot_feature()`. Default is `"feature"`.
 #' @param factors Character vector of factors to include
 #' (e.g., "Factor1", "Factor2"). If `NULL`, all factors are plotted.
 #' @param top_n Integer specifying the number of top features to show
-#'  per factor. Default is `5`.
+#' per factor. Default is `5`.
 #' @param facet_cols Optional color palette for facet strip backgrounds
 #' (one per `exp_name`), used to distinguish factors.
 #' @param exp_name_cols Optional color palette for experiment labels
@@ -25,8 +28,13 @@
 #'
 #' For each factor, it:
 #' - Selects the top `top_n` features by **absolute loading**.
+#' - Merges with feature metadata using `pivot_feature()`.
 #' - Creates a point-range plot showing the loading magnitude.
 #' - Facets each factor with a customizable strip background.
+#'
+#' The `feature_col` argument allows you to control which feature-level
+#' metadata column (e.g., gene symbols, metabolite names) is used for
+#' labeling the y-axis.
 #'
 #' If palettes are not provided, defaults are chosen using
 #' `ggpubr::get_palette()`.
@@ -47,7 +55,7 @@
 #'     n_factors = 3
 #' )
 #'
-#'
+#' # plot top features using default `feature` column
 #' top_feature_p <- mae |>
 #'     plot_top_factor_features()
 #'
@@ -60,7 +68,6 @@
 #' bind_rows inner_join sym
 #' @importFrom ggplot2 ggplot aes geom_point geom_segment theme_bw
 #' theme labs scale_color_manual element_text
-#' @importFrom ggh4x facet_grid2 strip_themed elem_list_rect
 #' @importFrom scales alpha
 #' @export
 plot_top_factor_features <- function(
@@ -72,6 +79,7 @@ plot_top_factor_features <- function(
     exp_name_cols = NULL,
     alpha = 0.5) {
     # require(ggplot2)
+    .check_suggested(pkg = "ggh4x")
 
     method <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method
     result <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result

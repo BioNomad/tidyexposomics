@@ -31,7 +31,7 @@
 #' @param deg_logfc_threshold Threshold to select DEGs by absolute logFC
 #' (default: `log2(1.5)`).
 #' @param db Enrichment database to use. One of `"GO"`,
-#'  `"KEGG"`, `"Reactome"`, `"BioPlanet"`, `"WikiPathways"`.
+#'  `"KEGG"`, `"Reactome"`.
 #' @param species Species name (required for GO enrichment,
 #' e.g., `"Homo sapiens"`). Ignored for other databases.
 #' @param fenr_col Column name for gene IDs used by `fenr`
@@ -127,7 +127,7 @@ run_enrichment <- function(
     deg_pval_threshold = 0.05,
     deg_logfc_col = "logFC",
     deg_logfc_threshold = log2(1.5),
-    db = c("GO", "KEGG", "Reactome", "BioPlanet", "WikiPathways"),
+    db = c("GO", "KEGG", "Reactome"),
     species = NULL,
     fenr_col = "gene_symbol",
     padj_method = "fdr",
@@ -272,7 +272,7 @@ run_enrichment <- function(
 #' @param universe_genes Character vector of all background/universe
 #' gene identifiers.
 #' @param db Character string specifying the database.
-#' One of `"GO"`, `"KEGG"`, `"Reactome"`, `"BioPlanet"`, or `"WikiPathways"`.
+#' One of `"GO"`, `"KEGG"`, `"Reactome"`.
 #' @param species Optional character string specifying species name
 #' (required for GO).
 #' @param fenr_col Column name in the term mappings corresponding to gene IDs
@@ -296,7 +296,7 @@ run_enrichment <- function(
 .run_fenr <- function(
     selected_genes,
     universe_genes,
-    db = c("GO", "KEGG", "Reactome", "BioPlanet", "WikiPathways"),
+    db = c("GO", "KEGG", "Reactome"),
     species = NULL,
     fenr_col = "gene_symbol") {
     # require(fenr)
@@ -307,9 +307,7 @@ run_enrichment <- function(
     fetch_fun <- switch(db,
         GO = fenr::fetch_go,
         KEGG = fenr::fetch_kegg,
-        Reactome = fenr::fetch_reactome,
-        BioPlanet = fenr::fetch_bioplanet,
-        WikiPathways = fenr::fetch_wikipathways
+        Reactome = fenr::fetch_reactome
     )
 
     # Handle species if required
@@ -377,12 +375,13 @@ run_enrichment <- function(
 #'
 #' Supported \code{feature_type} values (no \code{*_cor} here):
 #' \itemize{
-#'   \item \code{"degs"} — select DEGs by adjusted p-value and |logFC|
-#'   \item \code{"degs_robust"} — select features using
+#'   \item \code{"degs"} - select DEGs by adjusted p-value and absolute value
+#'   of the logFC
+#'   \item \code{"degs_robust"} - select features using
 #'   sensitivity/stability scores
-#'   \item \code{"factor_features"} — select features from multi-omics
+#'   \item \code{"factor_features"} - select features from multi-omics
 #'    integration
-#'   \item \code{"omics"} — select features using a \code{variable_map}
+#'   \item \code{"omics"} - select features using a \code{variable_map}
 #' }
 #'
 #' @param expomicset A \code{MultiAssayExperiment} with experiments and
@@ -390,8 +389,7 @@ run_enrichment <- function(
 #' @param feature_type Character; one of \code{"degs"}, \code{"degs_robust"},
 #'   \code{"factor_features"}, \code{"omics"}.
 #' @param db Enrichment database: one of \code{"GO"}, \code{"KEGG"},
-#' \code{"Reactome"},
-#'   \code{"BioPlanet"}, \code{"WikiPathways"}.
+#' \code{"Reactome"}.
 #' @param species Species identifier required by the underlying database
 #' (used by \code{.run_fenr}).
 #' @param fenr_col Column name of gene IDs expected by the enrichment backend
@@ -567,6 +565,10 @@ run_enrichment <- function(
         enr_res[[exp]] <- enr
     }
 
+    if (all(purrr::map_lgl(enr_res, is.null))) {
+      return(tibble::tibble())
+    }
+
     # Multiple-hypothesis correction after all tests are done
     enr_res <- enr_res |>
         dplyr::bind_rows() |>
@@ -593,7 +595,7 @@ run_enrichment <- function(
 #'   \item \code{"factor_features_cor"}: correlation between factor features and exposures
 #' }
 #'
-#' For each experiment × category pair, it:
+#' For each experiment by category pair, it:
 #' \enumerate{
 #'   \item Extracts the gene universe from \code{rowData()}.
 #'   \item Selects features based on correlation metadata and
@@ -747,6 +749,11 @@ run_enrichment <- function(
             enr_res[[exp]] <- enr
         }
     }
+
+    if (all(purrr::map_lgl(enr_res, is.null))) {
+      return(tibble::tibble())
+    }
+
     # Multiple-hypothesis correction after all tests are done
     enr_res <- enr_res |>
         dplyr::bind_rows() |>
@@ -786,7 +793,7 @@ run_enrichment <- function(
 #' @noRd
 .group_enr_res <- function(enr_res, clustering_approach = "diana") {
     if (nrow(enr_res) < 2) {
-        message("GO clustering skipped — fewer than 2 enriched terms.")
+        message("GO clustering skipped - fewer than 2 enriched terms.")
         enr_res$go_group <- rep(NA_character_, nrow(enr_res))
         return(enr_res)
     }
@@ -802,7 +809,7 @@ run_enrichment <- function(
         dplyr::summarise(genes = list(unique(gene_list)), .groups = "drop")
 
     if (nrow(go_term_list) < 2) {
-        message("GO clustering skipped — fewer than 2 unique terms.")
+        message("GO clustering skipped - fewer than 2 unique terms.")
         enr_res$go_group <- rep(NA_character_, nrow(enr_res))
         return(enr_res)
     }
@@ -821,7 +828,7 @@ run_enrichment <- function(
         ))()
 
     if (is.null(go_groups) || nrow(go_groups) == 0) {
-        message("GO clustering failed — no clusters found.")
+        message("GO clustering failed - no clusters found.")
         enr_res$go_group <- rep(NA_character_, nrow(enr_res))
         return(enr_res)
     }

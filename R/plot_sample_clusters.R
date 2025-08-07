@@ -49,8 +49,8 @@ plot_sample_clusters <- function(
     expomicset,
     exposure_cols = NULL) {
     # check for suggested packages
-    .check_suggested(pkg="tidyHeatmap")
-    .check_suggested(pkg="circlize")
+    .check_suggested(pkg = "tidyHeatmap")
+    .check_suggested(pkg = "circlize")
     if (!"sample_clustering" %in% names(
         MultiAssayExperiment::metadata(expomicset)$quality_control
     )) {

@@ -99,7 +99,7 @@ run_exposome_score <- function(
     } else if (score_type == "median") {
         # Calculate median exposome score
         message("Calculating median exposure scores...")
-
+        .check_suggested("matrixStats")
         scores <- data |>
             dplyr::mutate(exposome_score_median = matrixStats::rowMedians(
                 as.matrix(
@@ -120,10 +120,7 @@ run_exposome_score <- function(
     } else if (score_type == "irt") {
         # Calculate IRT exposome score
         message("Calculating IRT exposure scores...")
-
-        if (!requireNamespace("mirt", quietly = TRUE)) {
-            stop("Package 'mirt' is required for IRT scoring but is not installed.")
-        }
+        .check_suggested("mirt")
 
         exposures_ordinal <- apply(data, 2, function(x) dplyr::ntile(x, 10))
         model <- mirt::mirt(exposures_ordinal, 1, itemtype = "graded")
@@ -153,7 +150,7 @@ run_exposome_score <- function(
     } else if (score_type == "var") {
         # Calculate variance exposome score
         message("Calculating variance exposure scores...")
-
+        .check_suggested("matrixStats")
         scores <- data |>
             dplyr::mutate(exposome_score_var = matrixStats::rowVars(
                 as.matrix(

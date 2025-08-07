@@ -354,122 +354,6 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
     return(feature_stability_df)
 }
 
-# --- Correlate Se with colData --------
-#' Correlate SummarizedExperiment Features with Exposure Variables
-#'
-#' Computes correlations between assay features and exposure variables using Spearman or other correlation methods.
-#'
-#' @keywords internal
-#' @importFrom Hmisc rcorr
-#' @importFrom reshape2 melt
-#' @importFrom tibble rownames_to_column column_to_rownames
-#' @importFrom dplyr inner_join filter mutate arrange
-#' @noRd
-.correlate_se_with_coldata <- function(
-    se,
-    exposure_cols,
-    correlation_method = "spearman",
-    correlation_cutoff = 0.0,
-    cor_pval_column = "p.value",
-    pval_cutoff = 0.05) {
-    # require(tidyverse)
-    # require(Hmisc)
-    # require(reshape2)
-
-    message("Performing correlation analysis on summarized experiment.")
-
-    # Ensure colData has the specified exposures
-    exposure_data <- SummarizedExperiment::colData(se) |>
-        as.data.frame()
-
-    numeric_exposures <- intersect(colnames(exposure_data), exposure_cols)
-
-    if (length(numeric_exposures) == 0) {
-        stop("No valid exposure variables found in colData.")
-    }
-
-    # Extract assay data
-    assay_data <- SummarizedExperiment::assays(se)[[1]] |>
-        t() |>
-        as.data.frame()
-
-    # Ensure colData and assay samples match
-    common_samples <- intersect(rownames(assay_data), rownames(exposure_data))
-
-    if (length(common_samples) == 0) {
-        stop("No common samples between assay and colData.")
-    }
-
-    # Subset both data frames to common samples
-    assay_data <- assay_data[common_samples, , drop = FALSE]
-    exposure_data <- exposure_data[
-        common_samples, numeric_exposures,
-        drop = FALSE
-    ]
-
-    # Merge into a single dataframe for correlation
-    merged_data <- assay_data |>
-        tibble::rownames_to_column("id") |>
-        dplyr::inner_join(
-            exposure_data |>
-                tibble::rownames_to_column("id"),
-            by = "id"
-        ) |>
-        tibble::column_to_rownames("id")
-
-    # Perform correlation analysis
-    message("Running Spearman correlation analysis.")
-    correlation_matrix <- merged_data |>
-        as.matrix() |>
-        Hmisc::rcorr(type = correlation_method)
-
-    # Convert correlation and p-values to tidy format
-    correlation_df <- correlation_matrix$r |>
-        as.data.frame() |>
-        tibble::rownames_to_column("feature") |>
-        reshape2::melt(id.vars = "feature") |>
-        `colnames<-`(c("feature", "exposure", "correlation"))
-
-    pvalue_df <- correlation_matrix$P |>
-        as.data.frame() |>
-        tibble::rownames_to_column("feature") |>
-        reshape2::melt(id.vars = "feature") |>
-        `colnames<-`(c("feature", "exposure", "p.value"))
-
-    # Merge correlation results
-    correlation_results <- correlation_df |>
-        dplyr::inner_join(pvalue_df,
-            by = c("feature", "exposure")
-        ) |>
-        dplyr::filter(!(abs(correlation) > 1)) |>
-        dplyr::filter(abs(correlation) > correlation_cutoff) |>
-        dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
-        dplyr::filter(!!sym(cor_pval_column) < pval_cutoff) |>
-        dplyr::arrange(desc(abs(correlation))) |>
-        dplyr::filter(feature %in% rownames(se)) |>
-        dplyr::filter(exposure %in% numeric_exposures)
-
-    message("Correlation analysis completed.")
-
-    return(correlation_results)
-}
-
-# --- Get miRNA Targets ----------
-#' Retrieve miRNA Target Genes from Omnipath
-#'
-#' Queries the Omnipath database to extract target genes for specified miRNAs.
-#'
-#' @keywords internal
-#' @noRd
-.get_mirna_targets <- function(mirnas) {
-    # pull omnipath database
-    mirna_db <- OmnipathR::import_mirnatarget_interactions()
-    mirna_targets <- mirna_db |>
-        dplyr::filter(source_genesymbol %in% mirnas) |>
-        dplyr::select(source_genesymbol, target_genesymbol)
-    return(mirna_targets)
-}
-
 
 # --- Pairwise Overlaps -------------
 #' Compute Pairwise Overlaps Between Sets
@@ -520,10 +404,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
             shared_terms <- paste(Reduce(intersect, list(set1, set2)), collapse = ",")
 
             set_intersect <- set1[match(set2, set1, 0L)]
-            set_union <- .Internal(unique(c(set1, set2),
-                incomparables = FALSE,
-                fromLast = FALSE, nmax = NA
-            ))
+            set_union <- unique(c(set1, set2))
             num_shared <- length(set_intersect)
             overlap <- num_shared / min(length(set1), length(set2))
             jaccard <- num_shared / length(set_union)
@@ -590,10 +471,9 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
     }
 
     # Function to determine optimal k based on the selected clustering approach
-    determine_k <- function(
-        dist_matrix,
-        cluster_method,
-        clustering_approach) {
+    determine_k <- function(dist_matrix,
+                            cluster_method,
+                            clustering_approach) {
         if (clustering_approach == "diana") {
             # Determine optimal k using the height difference method
             sample_cluster <- cluster::diana(as.dist(dist_matrix))
@@ -621,6 +501,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
             if (is.na(k_optimal) || k_optimal < 2) k_optimal <- 3
             return(k_optimal)
         } else if (clustering_approach == "dynamic") {
+            .check_suggested("dynamicTreeCut")
             # Determine optimal k using dynamic tree cut
             sample_cluster <- hclust(as.dist(dist_matrix), method = cluster_method)
             cut_clusters <- dynamicTreeCut::cutreeDynamic(
@@ -630,6 +511,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
             )
             return(length(unique(cut_clusters)))
         } else if (clustering_approach == "density") {
+            .check_suggested("densityClust")
             # Determine optimal k using density-based clustering
             dclust <- densityClust::densityClust(
                 as.dist(dist_matrix),
@@ -677,18 +559,20 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @noRd
 .check_suggested <- function(
     pkg, reason = NULL, call_stop = TRUE) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    msg <- paste0("Please install '", pkg, "'",
-                  if (!is.null(reason)) paste0(" (", reason, ")"),
-                  " to use this function.")
-    if (call_stop){
-      stop(msg, call. = FALSE)
-      } else {
-        warning(msg, call. = FALSE)
-      }
-    return(FALSE)
-  }
-  invisible(TRUE)
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+        msg <- paste0(
+            "Please install '", pkg, "'",
+            if (!is.null(reason)) paste0(" (", reason, ")"),
+            " to use this function."
+        )
+        if (call_stop) {
+            stop(msg, call. = FALSE)
+        } else {
+            warning(msg, call. = FALSE)
+        }
+        return(FALSE)
+    }
+    invisible(TRUE)
 }
 
 # --- TidyGraph to Data Frame -------------
@@ -702,7 +586,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 .tidygraph_to_df <- function(tg) {
     # require(tidygraph)
     # require(dplyr)
-
+    .check_suggested(pkg = "tidygraph")
     merged_df <- tg |>
         # Grab edge attributes
         tidygraph::activate(edges) |>
@@ -738,6 +622,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .summarize_graph <- function(g) {
+    .check_suggested(pkg = "tidygraph")
     tibble::tibble(
         "No. of Nodes" = g |> igraph::gorder(),
         "No. of Edges" = g |> igraph::gsize(),
@@ -759,11 +644,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #'
 #' @keywords internal
 #' @importFrom ggplot2 labs scale_color_manual theme element_text
-#' @importFrom ggraph geom_node_point geom_node_label geom_edge_fan
-#' @importFrom tidygraph centrality_degree activate as_tibble
 #' @importFrom dplyr pull mutate
-#' @importFrom ggraph ggraph theme_graph
-#' @importFrom ggh4x facet_grid2 strip_themed elem_list_rect
 #' @importFrom scales alpha
 #' @noRd
 .build_ggraph_plot <- function(
@@ -780,25 +661,27 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
     color_lab) {
     # require(ggplot2)
     # require(tidygraph)
+    .check_suggested(pkg = "ggh4x")
+    .check_suggested(pkg = "ggraph")
 
     if (!is.null(node_color_var)) {
         p <- g |>
             mutate(centrality = tidygraph::centrality_degree()) |>
-            ggraph(layout = "kk") +
-            geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
-            geom_node_point(aes(size = centrality, color = !!sym(node_color_var))) +
-            theme_graph(fg_text_colour = fg_text_colour) +
+            ggraph::ggraph(layout = "kk") +
+            ggraph::geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
+            ggraph::geom_node_point(aes(size = centrality, color = !!sym(node_color_var))) +
+            ggraph::theme_graph(fg_text_colour = fg_text_colour) +
             labs(
                 size = size_lab,
                 color = color_lab
             )
     } else {
         p <- g |>
-            mutate(centrality = tidygraph::centrality_degree()) |>
-            ggraph(layout = "kk") +
-            geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
-            geom_node_point(aes(size = centrality)) +
-            theme_graph(fg_text_colour = fg_text_colour) +
+            tidygraph::mutate(centrality = tidygraph::centrality_degree()) |>
+            ggraph::ggraph(layout = "kk") +
+            ggraph::geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
+            ggraph::geom_node_point(aes(size = centrality)) +
+            ggraph::theme_graph(fg_text_colour = fg_text_colour) +
             labs(size = size_lab)
     }
 
@@ -830,10 +713,11 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
     }
 
     if (label) {
-        p <- p + geom_node_label(aes(label = label),
-            fontface = "italic",
-            repel = TRUE
-        )
+        p <- p +
+            ggraph::geom_node_label(aes(label = label),
+                fontface = "italic",
+                repel = TRUE
+            )
     }
 
     if (include_stats) {

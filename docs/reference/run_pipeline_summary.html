@@ -7,12 +7,14 @@
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Summarize and Visualize Analysis Pipeline Steps — run_pipeline_summary"><meta name="description" content="This function prints and visualizes the analysis steps stored in the
 metadata of a MultiAssayExperiment object. The steps are optionally
-printed to the console as a numbered list and can be rendered as a left-to-right
-Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+printed to the console as a numbered list and can be rendered as a
+left-to-right Mermaid flowchart.
+The flowchart connects steps with arrows and includes step notes
 if requested."><meta property="og:description" content="This function prints and visualizes the analysis steps stored in the
 metadata of a MultiAssayExperiment object. The steps are optionally
-printed to the console as a numbered list and can be rendered as a left-to-right
-Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+printed to the console as a numbered list and can be rendered as a
+left-to-right Mermaid flowchart.
+The flowchart connects steps with arrows and includes step notes
 if requested."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -31,10 +33,7 @@ if requested."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -60,8 +59,9 @@ if requested."></head><body>
     <div class="ref-description section level2">
     <p>This function prints and visualizes the analysis steps stored in the
 metadata of a <code>MultiAssayExperiment</code> object. The steps are optionally
-printed to the console as a numbered list and can be rendered as a left-to-right
-Mermaid flowchart. The flowchart connects steps with arrows and includes step notes
+printed to the console as a numbered list and can be rendered as a
+left-to-right Mermaid flowchart.
+The flowchart connects steps with arrows and includes step notes
 if requested.</p>
     </div>
 
@@ -81,24 +81,29 @@ if requested.</p>
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object that contains a "summary"
+<dd><p>A <code>MultiAssayExperiment</code> object that contains a
+"summary"
 entry in its metadata, which includes a list named <code>steps</code>.</p></dd>
 
 
 <dt id="arg-show-index">show_index<a class="anchor" aria-label="anchor" href="#arg-show-index"></a></dt>
-<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>, prefixes each step with its index.</p></dd>
+<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>,
+prefixes each step with its index.</p></dd>
 
 
 <dt id="arg-console-print">console_print<a class="anchor" aria-label="anchor" href="#arg-console-print"></a></dt>
-<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>, prints the step list to the console.</p></dd>
+<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>,
+prints the step list to the console.</p></dd>
 
 
 <dt id="arg-diagram-print">diagram_print<a class="anchor" aria-label="anchor" href="#arg-diagram-print"></a></dt>
-<dd><p>Logical, default <code>FALSE</code>. If <code>TRUE</code>, renders a Mermaid diagram of the steps.</p></dd>
+<dd><p>Logical, default <code>FALSE</code>. If <code>TRUE</code>,
+renders a Mermaid diagram of the steps.</p></dd>
 
 
 <dt id="arg-include-notes">include_notes<a class="anchor" aria-label="anchor" href="#arg-include-notes"></a></dt>
-<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>, appends any "notes" associated with each step to the label.</p></dd>
+<dd><p>Logical, default <code>TRUE</code>. If <code>TRUE</code>,
+appends any "notes" associated with each step to the label.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -109,15 +114,35 @@ console output and/or diagram rendering.</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The Mermaid flowchart is rendered left-to-right and connects
-each step in sequence. Each node is labeled using the step name and, optionally,
+each step in sequence. Each node is labeled using the step name and,
+optionally,
 any attached notes.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu">run_pipeline_summary</span><span class="op">(</span><span class="va">expomicset</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create example data</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_samples <span class="op">=</span> <span class="fl">20</span>,</span></span>
+<span class="r-in"><span>    return_mae <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Test for normality</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="run_normality_check.html">run_normality_check</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="transform_exposure.html">transform_exposure</a></span><span class="op">(</span>exposure_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"bmi"</span>, <span class="st">"exposure_pm25"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Checking Normality Using Shapiro-Wilk Test</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 4 Exposure Variables are Normally Distributed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 0 Exposure Variables are NOT Normally Distributed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying the boxcox_best transformation.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Run the pipeline summary</span></span></span>
+<span class="r-in"><span><span class="fu">run_pipeline_summary</span><span class="op">(</span><span class="va">mae</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1. run_normality_check - Assessed normality of 4 numeric exposure variables. 4 were normally distributed (p &gt; 0.05), 0 were not.2. transform_exposure - Applied 'boxcox_best' transformation to 3 exposure variables. 3 passed normality (Shapiro-Wilk p &gt; 0.05, 100%).</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

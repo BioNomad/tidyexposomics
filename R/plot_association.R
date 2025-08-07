@@ -77,6 +77,7 @@ plot_association <- function(
     requireNamespace("ggplot2")
     requireNamespace("dplyr")
     requireNamespace("tidyr")
+    .check_suggested(pkg = "patchwork")
 
     source <- match.arg(source)
     assoc_key <- paste0("assoc_", source)

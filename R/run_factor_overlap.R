@@ -149,10 +149,10 @@ run_factor_overlap <- function(
             )
         )
 
-    message(glue::glue(
-        "Found {length(unique(top_factor_features$exp_name_feature))}
-    common features across factors."
-    ))
+    sprintf(
+        "Found %s common features across factors",
+        length(unique(top_factor_features$exp_name_feature))
+    )
 
     if (action == "add") {
         all_metadata <- MultiAssayExperiment::metadata(expomicset)

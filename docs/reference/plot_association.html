@@ -5,8 +5,10 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Association Results (Unified Forest Plot) — plot_association"><meta name="description" content="Generates a forest plot for association results from any source stored in the metadata of a MultiAssayExperiment object.
-Supports faceting and visual augmentation with R^2 tiles when available."><meta property="og:description" content="Generates a forest plot for association results from any source stored in the metadata of a MultiAssayExperiment object.
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Plot Association Results (Unified Forest Plot) — plot_association"><meta name="description" content="Generates a forest plot for association results from any source stored
+in the metadata of a MultiAssayExperiment object.
+Supports faceting and visual augmentation with R^2 tiles when available."><meta property="og:description" content="Generates a forest plot for association results from any source stored
+in the metadata of a MultiAssayExperiment object.
 Supports faceting and visual augmentation with R^2 tiles when available."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -25,10 +27,7 @@ Supports faceting and visual augmentation with R^2 tiles when available."></head
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/BioNomad/tidyexposomics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -52,7 +51,8 @@ Supports faceting and visual augmentation with R^2 tiles when available."></head
     </div>
 
     <div class="ref-description section level2">
-    <p>Generates a forest plot for association results from any source stored in the metadata of a <code>MultiAssayExperiment</code> object.
+    <p>Generates a forest plot for association results from any source stored
+in the metadata of a <code>MultiAssayExperiment</code> object.
 Supports faceting and visual augmentation with R^2 tiles when available.</p>
     </div>
 
@@ -65,7 +65,7 @@ Supports faceting and visual augmentation with R^2 tiles when available.</p>
 <span>  filter_col <span class="op">=</span> <span class="st">"p.value"</span>,</span>
 <span>  filter_thresh <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  direction_filter <span class="op">=</span> <span class="st">"all"</span>,</span>
-<span>  add_r2_tile <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  add_r2_tile <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  r2_col <span class="op">=</span> <span class="st">"adj_r2"</span>,</span>
 <span>  facet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -78,31 +78,38 @@ Supports faceting and visual augmentation with R^2 tiles when available.</p>
 
 
 <dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
-<dd><p>A <code>MultiAssayExperiment</code> object containing association results in metadata.</p></dd>
+<dd><p>A <code>MultiAssayExperiment</code> object containing association
+results in metadata.</p></dd>
 
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
-<dd><p>Character string indicating the association source. One of <code>"omics"</code>, <code>"exposures"</code>, <code>"factors"</code>, or <code>"go_pcs"</code>.</p></dd>
+<dd><p>Character string indicating the association source.
+One of <code>"omics"</code>, <code>"exposures"</code>, <code>"factors"</code>, or <code>"go_pcs"</code>.</p></dd>
 
 
 <dt id="arg-terms">terms<a class="anchor" aria-label="anchor" href="#arg-terms"></a></dt>
-<dd><p>Optional character vector of term names to subset the plot to. Default is <code>NULL</code> (include all).</p></dd>
+<dd><p>Optional character vector of term names to subset the plot to.
+Default is <code>NULL</code> (include all).</p></dd>
 
 
 <dt id="arg-filter-col">filter_col<a class="anchor" aria-label="anchor" href="#arg-filter-col"></a></dt>
-<dd><p>Column used to assess statistical significance (default: <code>"p.value"</code>).</p></dd>
+<dd><p>Column used to assess statistical significance
+(default: <code>"p.value"</code>).</p></dd>
 
 
 <dt id="arg-filter-thresh">filter_thresh<a class="anchor" aria-label="anchor" href="#arg-filter-thresh"></a></dt>
-<dd><p>Numeric threshold applied to <code>filter_col</code> (default: <code>0.05</code>).</p></dd>
+<dd><p>Numeric threshold applied to <code>filter_col</code>
+(default: <code>0.05</code>).</p></dd>
 
 
 <dt id="arg-direction-filter">direction_filter<a class="anchor" aria-label="anchor" href="#arg-direction-filter"></a></dt>
-<dd><p>Direction of associations to retain. One of <code>"all"</code> (default), <code>"up"</code>, or <code>"down"</code>.</p></dd>
+<dd><p>Direction of associations to retain.
+One of <code>"all"</code> (default), <code>"up"</code>, or <code>"down"</code>.</p></dd>
 
 
 <dt id="arg-add-r-tile">add_r2_tile<a class="anchor" aria-label="anchor" href="#arg-add-r-tile"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, includes a tile plot for <code>r2_col</code> (default: <code>TRUE</code>).</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, includes a tile plot for <code>r2_col</code>
+(default: <code>TRUE</code>).</p></dd>
 
 
 <dt id="arg-r-col">r2_col<a class="anchor" aria-label="anchor" href="#arg-r-col"></a></dt>
@@ -110,7 +117,8 @@ Supports faceting and visual augmentation with R^2 tiles when available.</p>
 
 
 <dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
-<dd><p>Logical; if <code>TRUE</code> and <code>source == "go_pcs"</code>, apply nested faceting by experiment and GO cluster (default: <code>FALSE</code>).</p></dd>
+<dd><p>Logical; if <code>TRUE</code> and <code>source == "go_pcs"</code>,
+apply nested faceting by experiment and GO cluster (default: <code>FALSE</code>).</p></dd>
 
 
 <dt id="arg-nrow">nrow<a class="anchor" aria-label="anchor" href="#arg-nrow"></a></dt>
@@ -118,33 +126,54 @@ Supports faceting and visual augmentation with R^2 tiles when available.</p>
 
 
 <dt id="arg-subtitle">subtitle<a class="anchor" aria-label="anchor" href="#arg-subtitle"></a></dt>
-<dd><p>Optional subtitle for the plot. If <code>NULL</code>, automatically generated from covariates used in the model.</p></dd>
+<dd><p>Optional subtitle for the plot. If <code>NULL</code>,
+automatically generated from covariates used in the model.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>ggplot2</code> object: either a single forest plot or a composite plot with an R^2 tile strip.</p>
+    <p>A <code>ggplot2</code> object: either a single forest plot or a composite plot
+with an R^2 tile strip.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function visualizes effect size estimates and confidence intervals from association analyses. It allows filtering by
-direction (<code>"up"</code> for positive, <code>"down"</code> for negative) and by significance. For <code>source = "go_pcs"</code>, it supports special
+    <p>This function visualizes effect size estimates and confidence intervals from
+association analyses. It allows filtering by
+direction (<code>"up"</code> for positive, <code>"down"</code> for negative) and by significance.
+For <code>source = "go_pcs"</code>, it supports special
 formatting by splitting term labels into nested facets.</p>
-<p>The R^2 tile (if enabled) adds a side heatmap indicating model fit for each association. This can be useful for model diagnostics.</p>
+<p>The R^2 tile (if enabled) adds a side heatmap indicating model fit for
+each association. This can be useful for model diagnostics.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Basic usage</span></span></span>
-<span class="r-in"><span><span class="fu">plot_association</span><span class="op">(</span><span class="va">expomicset</span>, source <span class="op">=</span> <span class="st">"omics"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># create example data</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_example_data.html">make_example_data</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_samples <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>    return_mae <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring all omics datasets are matrices with column names.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating SummarizedExperiment objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Creating MultiAssayExperiment object.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> MultiAssayExperiment created successfully.</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Subset to only significant up-regulated features</span></span></span>
-<span class="r-in"><span><span class="fu">plot_association</span><span class="op">(</span><span class="va">expomicset</span>, source <span class="op">=</span> <span class="st">"omics"</span>, direction_filter <span class="op">=</span> <span class="st">"up"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># run association tests</span></span></span>
+<span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="run_association.html">run_association</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        source <span class="op">=</span> <span class="st">"exposures"</span>,</span></span>
+<span class="r-in"><span>        feature_set <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exposure_pm25"</span>, <span class="st">"exposure_no2"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        outcome <span class="op">=</span> <span class="st">"smoker"</span>,</span></span>
+<span class="r-in"><span>        covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        family <span class="op">=</span> <span class="st">"binomial"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running GLMs.</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot with nested facets for GO PCs</span></span></span>
-<span class="r-in"><span><span class="fu">plot_association</span><span class="op">(</span><span class="va">expomicset</span>, source <span class="op">=</span> <span class="st">"go_pcs"</span>, facet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="va">assoc_plot</span> <span class="op">&lt;-</span> <span class="va">mae</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">plot_association</span><span class="op">(</span></span></span>
+<span class="r-in"><span>        source <span class="op">=</span> <span class="st">"exposures"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

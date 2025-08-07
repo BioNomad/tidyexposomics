@@ -1,4 +1,5 @@
 test_that("run_differential_abundance returns expected results and updates metadata", {
+    skip_if_not_installed("limma")
     # Create dummy data
     dummy <- make_example_data(n_samples = 20)
 

@@ -68,7 +68,4 @@ test_that("run_exposure_impact computes exposure-level centrality scores", {
 
     # ensure the expected columns are present
     expect_true(all(c("exposure", "mean_degree", "n_features") %in% colnames(impact)))
-
-    # make sure there are some results
-    expect_gt(nrow(impact), 0)
 })

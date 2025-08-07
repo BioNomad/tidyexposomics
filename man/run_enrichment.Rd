@@ -17,7 +17,7 @@ run_enrichment(
   deg_pval_threshold = 0.05,
   deg_logfc_col = "logFC",
   deg_logfc_threshold = log2(1.5),
-  db = c("GO", "KEGG", "Reactome", "BioPlanet", "WikiPathways"),
+  db = c("GO", "KEGG", "Reactome"),
   species = NULL,
   fenr_col = "gene_symbol",
   padj_method = "fdr",
@@ -65,7 +65,7 @@ gene identifiers.}
 (default: \code{log2(1.5)}).}
 
 \item{db}{Enrichment database to use. One of \code{"GO"},
-\code{"KEGG"}, \code{"Reactome"}, \code{"BioPlanet"}, \code{"WikiPathways"}.}
+\code{"KEGG"}, \code{"Reactome"}.}
 
 \item{species}{Species name (required for GO enrichment,
 e.g., \code{"Homo sapiens"}). Ignored for other databases.}

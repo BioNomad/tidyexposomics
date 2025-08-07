@@ -9,8 +9,7 @@ output:
     toc_float: true
     toc: true
 vignette: >
-  %\VignetteIndexEntry{tidyexposomics: integrated exposure-omics analysis 
-  powered by tidy principles}
+  %\VignetteIndexEntry{tidyexposomics: integrated exposure-omics analysis powered by tidy principles}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
