@@ -209,28 +209,33 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
     se,
     formula,
     abundance_col = "counts",
-    method = "limma_voom",
+    method = "limma_trend",
     scaling_method = "none",
     contrasts = NULL) {
     # Confirm there are no negative values
     if (min(SummarizedExperiment::assay(se, abundance_col)) < 0) {
-        # add a absolute value of minimum and
-        # add pseudocount to avoid negative values
         message("Negative values detected. Adding pseudocount to all values..")
-
         min_value <- abs(min(SummarizedExperiment::assay(se, abundance_col))) + 1
         new_assay <- SummarizedExperiment::assay(se, abundance_col) + min_value
         SummarizedExperiment::assay(se, abundance_col) <- new_assay
     }
 
-    # Check for contrast input
+    # if using limma_trend, skip tidybulk
+    if (method == "limma_trend") {
+        return(.run_limma_trend(
+            se = se,
+            formula = formula,
+            abundance_col = abundance_col,
+            contrasts = contrasts,
+            scaling_method = scaling_method
+        ))
+    }
+
+    # Otherwise, use tidybulk path
     if (!is.null(contrasts)) {
         res_list <- list()
         for (contrast in contrasts) {
-            # Run differential abundance analysis
             contrast_results <- se |>
-                # Hard coding minimum counts and proportion
-                # to 0 since filtering is per omic
                 tidybulk::identify_abundant(
                     minimum_counts = 0,
                     minimum_proportion = 0
@@ -243,11 +248,8 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
                     scaling_method = scaling_method
                 )
 
-            # Extract results
             res <- as.data.frame(S4Vectors::elementMetadata(contrast_results))
             colnames(res) <- gsub("__.*", "", colnames(res))
-
-            # Add metadata
             res <- res |>
                 dplyr::mutate(
                     feature = rownames(contrast_results),
@@ -255,14 +257,11 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
                     method = method,
                     scaling = scaling_method
                 )
-
             res_list[[contrast]] <- res
         }
         return(dplyr::bind_rows(res_list))
     } else {
         contrast_results <- se |>
-            # Hard coding minimum counts and proportion
-            # to 0 since filtering is per omic
             tidybulk::identify_abundant(
                 minimum_counts = 0,
                 minimum_proportion = 0
@@ -274,11 +273,8 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
                 scaling_method = scaling_method
             )
 
-        # Extract results
         res <- as.data.frame(S4Vectors::elementMetadata(contrast_results))
         colnames(res) <- gsub("__.*", "", colnames(res))
-
-        # Add metadata
         res <- res |>
             dplyr::mutate(
                 feature = rownames(contrast_results),
@@ -286,10 +282,95 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
                 method = method,
                 scaling = scaling_method
             )
-
         return(res)
     }
 }
+
+# .run_se_differential_abundance <- function(
+#     se,
+#     formula,
+#     abundance_col = "counts",
+#     method = "limma_voom",
+#     scaling_method = "none",
+#     contrasts = NULL) {
+#     # Confirm there are no negative values
+#     if (min(SummarizedExperiment::assay(se, abundance_col)) < 0) {
+#         # add a absolute value of minimum and
+#         # add pseudocount to avoid negative values
+#         message("Negative values detected. Adding pseudocount to all values..")
+#
+#         min_value <- abs(min(SummarizedExperiment::assay(se, abundance_col))) + 1
+#         new_assay <- SummarizedExperiment::assay(se, abundance_col) + min_value
+#         SummarizedExperiment::assay(se, abundance_col) <- new_assay
+#     }
+#
+#     # Check for contrast input
+#     if (!is.null(contrasts)) {
+#         res_list <- list()
+#         for (contrast in contrasts) {
+#             # Run differential abundance analysis
+#             contrast_results <- se |>
+#                 # Hard coding minimum counts and proportion
+#                 # to 0 since filtering is per omic
+#                 tidybulk::identify_abundant(
+#                     minimum_counts = 0,
+#                     minimum_proportion = 0
+#                 ) |>
+#                 tidybulk::test_differential_abundance(
+#                     formula,
+#                     .abundance = !!sym(abundance_col),
+#                     method = method,
+#                     contrasts = contrast,
+#                     scaling_method = scaling_method
+#                 )
+#
+#             # Extract results
+#             res <- as.data.frame(S4Vectors::elementMetadata(contrast_results))
+#             colnames(res) <- gsub("__.*", "", colnames(res))
+#
+#             # Add metadata
+#             res <- res |>
+#                 dplyr::mutate(
+#                     feature = rownames(contrast_results),
+#                     contrast = contrast,
+#                     method = method,
+#                     scaling = scaling_method
+#                 )
+#
+#             res_list[[contrast]] <- res
+#         }
+#         return(dplyr::bind_rows(res_list))
+#     } else {
+#         contrast_results <- se |>
+#             # Hard coding minimum counts and proportion
+#             # to 0 since filtering is per omic
+#             tidybulk::identify_abundant(
+#                 minimum_counts = 0,
+#                 minimum_proportion = 0
+#             ) |>
+#             tidybulk::test_differential_abundance(
+#                 formula,
+#                 .abundance = !!sym(abundance_col),
+#                 method = method,
+#                 scaling_method = scaling_method
+#             )
+#
+#         # Extract results
+#         res <- as.data.frame(S4Vectors::elementMetadata(contrast_results))
+#         colnames(res) <- gsub("__.*", "", colnames(res))
+#
+#         # Add metadata
+#         res <- res |>
+#             dplyr::mutate(
+#                 feature = rownames(contrast_results),
+#                 contrast = all.vars(formula)[1],
+#                 method = method,
+#                 scaling = scaling_method
+#             )
+#
+#         return(res)
+#     }
+# }
 
 # --- Calculate Feature Stability -------
 #' Calculate Feature Stability Across Sensitivity Conditions

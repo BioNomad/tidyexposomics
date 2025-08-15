@@ -302,14 +302,14 @@ run_correlation <- function(
                 var1 %in% exposure_vars,
                 var2 %in% features,
                 abs(correlation) > correlation_cutoff
-            ) |>
-            dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
-            dplyr::filter(!!rlang::sym(cor_pval_column) < pval_cutoff)
+            )
 
         correlation_results[[i]] <- merged
     }
 
-    dplyr::bind_rows(correlation_results)
+    dplyr::bind_rows(correlation_results) |>
+        dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
+        dplyr::filter(!!rlang::sym(cor_pval_column) < pval_cutoff)
 }
 
 
@@ -392,14 +392,14 @@ run_correlation <- function(
             pval_df,
             by = c("var1", "var2")
         ) |>
-            dplyr::filter(abs(correlation) > correlation_cutoff) |>
-            dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
-            dplyr::filter(!!rlang::sym(cor_pval_column) < pval_cutoff)
+            dplyr::filter(abs(correlation) > correlation_cutoff)
 
         correlation_results[[i]] <- merged
     }
 
-    dplyr::bind_rows(correlation_results)
+    dplyr::bind_rows(correlation_results) |>
+        dplyr::mutate(FDR = p.adjust(p.value, method = "fdr")) |>
+        dplyr::filter(!!rlang::sym(cor_pval_column) < pval_cutoff)
 }
 
 # --- Run and Clean Correlation Function --------------

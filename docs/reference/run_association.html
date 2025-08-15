@@ -64,9 +64,10 @@ supports both Gaussian and binomial models.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_association</span><span class="op">(</span></span>
 <span>  <span class="va">expomicset</span>,</span>
 <span>  <span class="va">outcome</span>,</span>
-<span>  source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"omics"</span>, <span class="st">"exposures"</span>, <span class="st">"factors"</span>, <span class="st">"go_pcs"</span><span class="op">)</span>,</span>
+<span>  source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"omics"</span>, <span class="st">"exposures"</span>, <span class="st">"factors"</span><span class="op">)</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  feature_set <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  log_trans <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  top_n <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
 <span>  correction_method <span class="op">=</span> <span class="st">"fdr"</span>,</span>
@@ -92,7 +93,7 @@ and metadata.</p></dd>
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
 <dd><p>Source of features to test. One of <code>"omics"</code>,
-<code>"exposures"</code>, <code>"factors"</code>, <code>"go_pcs"</code>.</p></dd>
+<code>"exposures"</code>, <code>"factors"</code>.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
@@ -101,6 +102,11 @@ and metadata.</p></dd>
 
 <dt id="arg-feature-set">feature_set<a class="anchor" aria-label="anchor" href="#arg-feature-set"></a></dt>
 <dd><p>Optional character vector of exposure or GO terms to test.</p></dd>
+
+
+<dt id="arg-log-trans">log_trans<a class="anchor" aria-label="anchor" href="#arg-log-trans"></a></dt>
+<dd><p>Optional boolean value dictating whether or not to log2
+transform omics features.</p></dd>
 
 
 <dt id="arg-top-n">top_n<a class="anchor" aria-label="anchor" href="#arg-top-n"></a></dt>

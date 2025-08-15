@@ -8,7 +8,7 @@ run_differential_abundance(
   expomicset,
   formula,
   abundance_col = "counts",
-  method = "limma_voom",
+  method = "limma_trend",
   contrasts = NULL,
   scaling_method = "none",
   action = "add"
@@ -24,7 +24,7 @@ run_differential_abundance(
 for abundance values. Default is \code{"counts"}.}
 
 \item{method}{Character. Differential analysis method to use.
-Currently supports \code{"limma_voom"} (default).}
+Currently supports \code{"limma_trend"} (default).}
 
 \item{contrasts}{A named list of contrasts for pairwise comparisons.
 Default is \code{NULL} (uses default group comparisons).}
@@ -41,8 +41,8 @@ or a tibble with differential abundance results (if \code{action = "get"}).
 }
 \description{
 Performs differential abundance testing across all assays in a
-\code{MultiAssayExperiment} object using a specified statistical method
-such as \code{limma_voom}. The function updates each assay with its
+\code{MultiAssayExperiment} object using a specified statistical method.
+The function updates each assay with its
 corresponding \code{colData}, fits the model using the provided formula,
 and combines the results into a unified table.
 }
@@ -58,7 +58,7 @@ mae <- run_differential_abundance(
     expomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
-    method = "limma_voom",
+    method = "limma_trend",
     action = "add"
 )
 

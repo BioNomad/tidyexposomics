@@ -7,9 +7,10 @@
 run_association(
   expomicset,
   outcome,
-  source = c("omics", "exposures", "factors", "go_pcs"),
+  source = c("omics", "exposures", "factors"),
   covariates = NULL,
   feature_set = NULL,
+  log_trans = TRUE,
   top_n = NULL,
   family = "gaussian",
   correction_method = "fdr",
@@ -26,11 +27,14 @@ and metadata.}
 \item{outcome}{The outcome variable name (must be in \code{colData}).}
 
 \item{source}{Source of features to test. One of \code{"omics"},
-\code{"exposures"}, \code{"factors"}, \code{"go_pcs"}.}
+\code{"exposures"}, \code{"factors"}.}
 
 \item{covariates}{Optional vector of covariate names to include in the model.}
 
 \item{feature_set}{Optional character vector of exposure or GO terms to test.}
+
+\item{log_trans}{Optional boolean value dictating whether or not to log2
+transform omics features.}
 
 \item{top_n}{Optional integer: if using omics source, select top \code{n}
 most variable features.}

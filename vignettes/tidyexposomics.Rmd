@@ -761,6 +761,8 @@ the type of score to calculate. Here we could use:
 
 - `quantile`: Calculates the quantile of the exposure variables.
 
+- `var`: Calculates the variance of the exposure variables.
+
 The `score_column_name` argument is used to set the name of the column 
 to store the exposome score in. Here we will define a score for 
 PFAS using a variety of different methods and demonstrate their use 
@@ -863,7 +865,7 @@ associated with a particular outcome across several omics' layers. The
 differential abundance analysis. The `formula` argument is used to set the
 formula for the model. 
 The `method` argument is used to set the method to use for the differential 
-abundance analysis. Here we use the `limma_voom` method, which is a popular
+abundance analysis. Here we use the `limma_trend` method, which is a popular
 method for differential abundance analysis. The `minimum_counts` and 
 `minimum_proportion` arguments are used to filter out features with low counts 
 or low proportions. The `scaling_method` argument is used to set the 
@@ -876,7 +878,7 @@ existing object.
 expom_1 <- expom_1 |>
     run_differential_abundance(
         formula = ~ hs_asthma + hs_child_age_None + e3_sex_None + h_cohort,
-        method = "limma_voom",
+        method = "limma_trend",
         scaling_method = "none",
         action = "add"
     )
@@ -987,7 +989,7 @@ indicates variability in statistical signal.
 expom_1 <- expom_1 |>
     run_sensitivity_analysis(
         base_formula = ~ hs_asthma + hs_child_age_None + h_cohort,
-        methods = c("limma_voom"),
+        methods = c("limma_trend"),
         scaling_methods = c("none"),
         covariates_to_remove = c(
             "hs_child_age_None",
@@ -1008,14 +1010,14 @@ expom_1 <- expom_1 |>
 Here we plot the sensitivity analysis results using the
 `plot_sensitivity_summary` function. The `stability_score_thresh`
 argument is used to set the stability score threshold for significance.
-Here we use a threshold of 0.1, but this can again be adjusted as needed.
+Here we use a threshold of 0.31, but this can again be adjusted as needed.
 
 
 ```{r,warning=FALSE,message=FALSE,fig.align='center',fig.width=8,fig.height=3}
 # Plot sensitivity analysis results
 expom_1 |>
     plot_sensitivity_summary(
-        stability_score_thresh = 0.1,
+        stability_score_thresh = 0.31,
         stability_metric = "stability_score"
     )
 ```
@@ -1698,7 +1700,7 @@ summary to the console. Setting `include_notes` to `TRUE` will include notes on
 the steps taken in the analysis.
 
 
-```{r,fig.width=5,fig.height=15,message=FALSE,warning=FALSE}
+```{r,fig.width=5,fig.height=15,warning=FALSE}
 # Run the pipeline summary
 expom_1 |>
     run_pipeline_summary(

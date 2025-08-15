@@ -9,7 +9,7 @@
 #' @param abundance_col Character. Name of the column in the assays representing
 #'  abundance. Default is `"counts"`.
 #' @param methods Character vector of differential expression methods.
-#' Options include `"limma_voom"`, `"DESeq2"`, and `"edgeR_quasi_likelihood"`.
+#' Options include `"limma_trend"` ,`"limma_voom"`, `"DESeq2"`, and `"edgeR_quasi_likelihood"`.
 #' @param scaling_methods Character vector of normalization methods to try.
 #'  Options include `"none"`, `"TMM"`, and `"quantile"`.
 #' @param contrasts Optional list of contrasts to apply for differential testing.
@@ -83,7 +83,7 @@ run_sensitivity_analysis <- function(
     expomicset,
     base_formula,
     abundance_col = "counts",
-    methods = c("limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
+    methods = c("limma_trend", "limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
     scaling_methods = c("none", "TMM", "quantile"),
     contrasts = NULL,
     covariates_to_remove = NULL,
@@ -237,11 +237,10 @@ run_sensitivity_analysis <- function(
         stringsAsFactors = FALSE
     )
 
-    results <- purrr::pmap_dfr(grid, function(
-        model_name,
-        method,
-        scaling,
-        exp_name) {
+    results <- purrr::pmap_dfr(grid, function(model_name,
+                                              method,
+                                              scaling,
+                                              exp_name) {
         formula <- model_list[[model_name]]
         exp <- .update_assay_colData(expomicset, exp_name)
 

@@ -812,6 +812,8 @@ exposure variables.</p></li>
 exposome score.</p></li>
 <li><p><code>quantile</code>: Calculates the quantile of the exposure
 variables.</p></li>
+<li><p><code>var</code>: Calculates the variance of the exposure
+variables.</p></li>
 </ul>
 <p>The <code>score_column_name</code> argument is used to set the name
 of the column to store the exposome score in. Here we will define a
@@ -908,13 +910,14 @@ layers. The <code>run_differential_abundance</code> function is used to
 run the differential abundance analysis. The <code>formula</code>
 argument is used to set the formula for the model. The
 <code>method</code> argument is used to set the method to use for the
-differential abundance analysis. Here we use the <code>limma_voom</code>
-method, which is a popular method for differential abundance analysis.
-The <code>minimum_counts</code> and <code>minimum_proportion</code>
-arguments are used to filter out features with low counts or low
-proportions. The <code>scaling_method</code> argument is used to set the
-scaling method to use. Here we use <code>none</code>, but we could also
-use <code>quantile</code> or <code>TMM</code>. The <code>action</code>
+differential abundance analysis. Here we use the
+<code>limma_trend</code> method, which is a popular method for
+differential abundance analysis. The <code>minimum_counts</code> and
+<code>minimum_proportion</code> arguments are used to filter out
+features with low counts or low proportions. The
+<code>scaling_method</code> argument is used to set the scaling method
+to use. Here we use <code>none</code>, but we could also use
+<code>quantile</code> or <code>TMM</code>. The <code>action</code>
 argument is set to <code>add</code> to add the results to the existing
 object.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
@@ -922,7 +925,7 @@ object.</p>
 <span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/run_differential_abundance.html">run_differential_abundance</a></span><span class="op">(</span></span>
 <span>        formula <span class="op">=</span> <span class="op">~</span> <span class="va">hs_asthma</span> <span class="op">+</span> <span class="va">hs_child_age_None</span> <span class="op">+</span> <span class="va">e3_sex_None</span> <span class="op">+</span> <span class="va">h_cohort</span>,</span>
-<span>        method <span class="op">=</span> <span class="st">"limma_voom"</span>,</span>
+<span>        method <span class="op">=</span> <span class="st">"limma_trend"</span>,</span>
 <span>        scaling_method <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>        action <span class="op">=</span> <span class="st">"add"</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
@@ -1023,7 +1026,7 @@ p-values; indicates variability in statistical signal.</p></li>
 <span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/run_sensitivity_analysis.html">run_sensitivity_analysis</a></span><span class="op">(</span></span>
 <span>        base_formula <span class="op">=</span> <span class="op">~</span> <span class="va">hs_asthma</span> <span class="op">+</span> <span class="va">hs_child_age_None</span> <span class="op">+</span> <span class="va">h_cohort</span>,</span>
-<span>        methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"limma_voom"</span><span class="op">)</span>,</span>
+<span>        methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"limma_trend"</span><span class="op">)</span>,</span>
 <span>        scaling_methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span><span class="op">)</span>,</span>
 <span>        covariates_to_remove <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>            <span class="st">"hs_child_age_None"</span>,</span>
@@ -1042,12 +1045,12 @@ p-values; indicates variability in statistical signal.</p></li>
 <code>plot_sensitivity_summary</code> function. The
 <code>stability_score_thresh</code> argument is used to set the
 stability score threshold for significance. Here we use a threshold of
-0.1, but this can again be adjusted as needed.</p>
+0.31, but this can again be adjusted as needed.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot sensitivity analysis results</span></span>
 <span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/plot_sensitivity_summary.html">plot_sensitivity_summary</a></span><span class="op">(</span></span>
-<span>        stability_score_thresh <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>        stability_score_thresh <span class="op">=</span> <span class="fl">0.31</span>,</span>
 <span>        stability_metric <span class="op">=</span> <span class="st">"stability_score"</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
 <p><img src="tidyexposomics_files/figure-html/unnamed-chunk-38-1.png" width="768" style="display: block; margin: auto;"></p>
@@ -1771,6 +1774,10 @@ will include notes on the steps taken in the analysis.</p>
 <span>        console_print <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>        include_notes <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## 1. filter_missing - Filtered exposure variables and omics features with more than 5% missing values. QC plots generated for exposure and omics data.2. run_impute_missing - 3. filter_omics_Methylation - Filtered omics features from 'Methylation'</span></span>
+<span><span class="co">##         Using method = 'variance': 40253 removed of 59844 (67.3%).4. filter_omics_Metabolomics - Filtered omics features from 'Metabolomics'</span></span>
+<span><span class="co">##         Using method = 'variance': 78 removed of 177 (44.1%).5. filter_omics_Gene Expression - Filtered omics features from 'Gene Expression'</span></span>
+<span><span class="co">##         Using method = 'expression': 24 removed of 28738 (0.1%).6. run_normality_check - Assessed normality of 180 numeric exposure variables. 29 were normally distributed (p &gt; 0.05), 151 were not.7. transform_exposure - Applied 'boxcox_best' transformation to 22 exposure variables. 6 passed normality (Shapiro-Wilk p &gt; 0.05, 27.3%).8. run_pca - Outliers:  s73, s1183, s376, s899, s828, s9939. filter_sample_outliers - Outliers:  s73, s1183, s376, s899, s828, s99310. run_correlation_pcs - Correlated pcs features with exposures.11. run_cluster_samples - Optimal number of clusters for samples: 512. run_correlation_exposures - Correlated exposures features with exposures.13. run_association - Performed association analysis using source: exposures14. run_association - Performed association analysis using source: exposures15. run_exposome_score_exposome_median_score - Exposome score computed using method: 'median'16. run_exposome_score_exposome_pca_score - Exposome score computed using method: 'pca'17. run_exposome_score_exposome_irt_score - Exposome score computed using method: 'irt'18. run_exposome_score_exposome_quantile_score - Exposome score computed using method: 'quantile'19. run_exposome_score_exposome_var_score - Exposome score computed using method: 'var'20. run_association - Performed association analysis using source: exposures21. run_differential_abundance - Performed differential abundance analysis across all assays.22. run_sensitivity_analysis - Ran sensitivity analysis across 10 bootstrap iterations and 1 methods and 1 scaling strategies. Covariates removed in model variations: hs_child_age_None, e3_sex_None, h_cohort23. run_multiomics_integration - Performed multi-omics integration using DIABLO with 5 latent factors. Scaling was enabled.24. run_association - Performed association analysis using source: exposures25. extract_top_factor_features - Selected 9664 features contributing to specified factors.26. run_factor_overlap - Annotated based on 'stability_score' score &gt; 0.341.27. run_correlation_omics - Correlated omics features with exposures.28. run_correlation_omics - Correlated omics features with exposures.29. run_create_network - Created undirected network from correlation results for'omics_feature_cor'.30. run_create_network - Created undirected network from correlation results for'omics_feature_cor'.31. run_exposure_impact - Computed exposure impact using omics correlation network.32. run_enrichment - Performed GO enrichment on omics_cor features.</span></span></code></pre>
 <div class="section level3">
 <h3 id="saving-results">Saving Results<a class="anchor" aria-label="anchor" href="#saving-results"></a>
 </h3>
@@ -1778,7 +1785,7 @@ will include notes on the steps taken in the analysis.</p>
 spreadsheet using the <code>extract_results_excel</code> function. Here
 we add all of our results to the excel file, but we can choose certain
 results by changing the <code>result_types</code> argument.</p>
-<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_results_excel.html">extract_results_excel</a></span><span class="op">(</span><span class="va">expom_1</span>,</span>
 <span>    file <span class="op">=</span> <span class="st">"./supplementary_results.xlsx"</span>,</span>
 <span>    result_types <span class="op">=</span> <span class="st">"all"</span></span>
@@ -1787,7 +1794,7 @@ results by changing the <code>result_types</code> argument.</p>
 <div class="section level3">
 <h3 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h3>
-<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## R version 4.4.1 (2024-06-14 ucrt)</span></span>
 <span><span class="co">## Platform: x86_64-w64-mingw32/x64</span></span>

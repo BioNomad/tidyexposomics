@@ -566,7 +566,7 @@ run_enrichment <- function(
     }
 
     if (all(purrr::map_lgl(enr_res, is.null))) {
-      return(tibble::tibble())
+        return(tibble::tibble())
     }
 
     # Multiple-hypothesis correction after all tests are done
@@ -751,7 +751,7 @@ run_enrichment <- function(
     }
 
     if (all(purrr::map_lgl(enr_res, is.null))) {
-      return(tibble::tibble())
+        return(tibble::tibble())
     }
 
     # Multiple-hypothesis correction after all tests are done

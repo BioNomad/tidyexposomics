@@ -9,9 +9,11 @@
 #' and metadata.
 #' @param outcome The outcome variable name (must be in `colData`).
 #' @param source Source of features to test. One of `"omics"`,
-#' `"exposures"`, `"factors"`, `"go_pcs"`.
+#' `"exposures"`, `"factors"`.
 #' @param covariates Optional vector of covariate names to include in the model.
 #' @param feature_set Optional character vector of exposure or GO terms to test.
+#' @param log_trans Optional boolean value dictating whether or not to log2
+#' transform omics features.
 #' @param top_n Optional integer: if using omics source, select top `n`
 #'  most variable features.
 #' @param family GLM family; `"gaussian"` or `"binomial"`.
@@ -48,14 +50,16 @@
 #'         covariates = c("age"),
 #'         family = "binomial"
 #'     )
-#'
+#' @importFrom stats binomial glm logLik as.formula coef family
+#' @importFrom rlang .data
 #' @export
 run_association <- function(
     expomicset,
     outcome,
-    source = c("omics", "exposures", "factors", "go_pcs"),
+    source = c("omics", "exposures", "factors"),
     covariates = NULL,
     feature_set = NULL,
+    log_trans = TRUE,
     top_n = NULL,
     family = "gaussian",
     correction_method = "fdr",
@@ -76,20 +80,21 @@ run_association <- function(
     features_df <- switch(source,
         omics = .extract_omics_features(
             expomicset,
+            log_trans = log_trans,
             top_n
         ),
         exposures = .extract_exposures(
             data,
             feature_set
         ),
-        factors = .extract_latent_factors(expomicset),
-        go_pcs = .extract_go_pcs(expomicset,
-            geneset = feature_set,
-            covariates,
-            min_genes = min_genes,
-            feature_col = feature_col,
-            mirna_assays = mirna_assays
-        )
+        factors = .extract_latent_factors(expomicset)
+        # go_pcs = .extract_go_pcs(expomicset,
+        #     geneset = feature_set,
+        #     covariates,
+        #     min_genes = min_genes,
+        #     feature_col = feature_col,
+        #     mirna_assays = mirna_assays
+        # )
     )
 
     # create the model data
@@ -175,8 +180,18 @@ run_association <- function(
 
         }
         # Compute R^2
-        model_filtered$r2 <- .calc_r2(model, model_data)$r2
-        model_filtered$adj_r2 <- .calc_r2(model, model_data)$adj_r2
+        model_filtered$r2 <- .calc_r2(
+            model,
+            model_data,
+            family = family,
+            outcome = outcome
+        )$r2
+        model_filtered$adj_r2 <- .calc_r2(
+            model,
+            model_data,
+            family = family,
+            outcome = outcome
+        )$adj_r2
         return(model_filtered)
     }) |>
         dplyr::mutate(
@@ -275,8 +290,13 @@ run_association <- function(
 #' @keywords internal
 #' @noRd
 .extract_omics_features <- function(expomicset,
+                                    log_trans = TRUE,
                                     top_n = NULL) {
-    log2_assays <- .log2_multiassay(expomicset)
+    if (log_trans) {
+        log2_assays <- .log2_multiassay(expomicset)
+    } else {
+        log2_assays <- expomicset
+    }
 
     selected <- if (!is.null(top_n)) {
         .top_var_multiassay(log2_assays, n = top_n)
@@ -399,77 +419,75 @@ run_association <- function(
 #' For each GO group in the enrichment results, compute
 #' the first PC of the associated genes.
 #'
-#' @keywords internal
-#' @noRd
-.extract_go_pcs <- function(
-    expomicset, geneset,
-    covariates,
-    min_genes = 10,
-    feature_col = NULL,
-    mirna_assays = NULL) {
-    enrich_res <- expomicset |>
-        MultiAssayExperiment::metadata() |>
-        purrr::pluck("enrichment") |>
-        purrr::pluck(geneset)
-
-    if (!is.null(mirna_assays)) {
-        enrich_res <- enrich_res |>
-            dplyr::filter(!exp_name %in% mirna_assays)
-    }
-
-    pc_dfs <- purrr::pmap_dfr(
-        enrich_res |>
-            dplyr::distinct(
-                exp_name,
-                Cluster,
-                go_group
-            ),
-        function(exp_name,
-                 Cluster,
-                 go_group) {
-            df <- enrich_res |>
-                dplyr::filter(
-                    exp_name == !!exp_name,
-                    Cluster == !!Cluster,
-                    go_group == !!go_group
-                )
-
-            genes <- unique(unlist(stringr::str_split(df$geneID, "/")))
-
-            if (length(genes) < min_genes) {
-                return(NULL)
-            }
-
-            exp <- .update_assay_colData(expomicset, exp_name)
-
-            if (!is.null(feature_col)) {
-                genes <- exp |>
-                    tidybulk::pivot_transcript() |>
-                    dplyr::filter(!!rlang::sym(feature_col) %in% genes) |>
-                    dplyr::pull(.feature)
-            }
-
-            assay <- SummarizedExperiment::assay(exp)
-
-            assay <- assay[rownames(assay) %in% genes, , drop = FALSE]
-
-            if (nrow(assay) < 2 || all(apply(assay, 1, var) == 0)) {
-                return(NULL)
-            }
-
-            pc1 <- prcomp(t(log2(assay + 1)), scale. = TRUE)$x[, 1]
-
-            id <- rownames(pc1)
-
-            tibble::tibble(
-                id = id,
-                !!paste("PC", exp_name, Cluster, go_group, sep = "/") := pc1
-            )
-        }
-    )
-
-    return(pc_dfs)
-}
+# .extract_go_pcs <- function(
+#     expomicset, geneset,
+#     covariates,
+#     min_genes = 10,
+#     feature_col = NULL,
+#     mirna_assays = NULL) {
+#     enrich_res <- expomicset |>
+#         MultiAssayExperiment::metadata() |>
+#         purrr::pluck("enrichment") |>
+#         purrr::pluck(geneset)
+#
+#     if (!is.null(mirna_assays)) {
+#         enrich_res <- enrich_res |>
+#             dplyr::filter(!exp_name %in% mirna_assays)
+#     }
+#
+#     pc_dfs <- purrr::pmap_dfr(
+#         enrich_res |>
+#             dplyr::distinct(
+#                 exp_name,
+#                 Cluster,
+#                 go_group
+#             ),
+#         function(exp_name,
+#                  Cluster,
+#                  go_group) {
+#             df <- enrich_res |>
+#                 dplyr::filter(
+#                     exp_name == !!exp_name,
+#                     Cluster == !!Cluster,
+#                     go_group == !!go_group
+#                 )
+#
+#             genes <- unique(unlist(stringr::str_split(df$geneID, "/")))
+#
+#             if (length(genes) < min_genes) {
+#                 return(NULL)
+#             }
+#
+#             exp <- .update_assay_colData(expomicset, exp_name)
+#
+#             if (!is.null(feature_col)) {
+#                 genes <- exp |>
+#                     tidybulk::pivot_transcript() |>
+#                     dplyr::filter(!!rlang::sym(feature_col) %in% genes) |>
+#                     dplyr::pull(.feature)
+#             }
+#
+#             assay <- SummarizedExperiment::assay(exp)
+#
+#             assay <- assay[rownames(assay) %in% genes, , drop = FALSE]
+#
+#             if (nrow(assay) < 2 || all(apply(assay, 1, var) == 0)) {
+#                 return(NULL)
+#             }
+#
+#             pc1 <- prcomp(t(log2(assay + 1)), scale. = TRUE)$x[, 1]
+#
+#             id <- rownames(pc1)
+#
+#             tibble::tibble(
+#                 id = id,
+#                 !!paste("PC", exp_name, Cluster, go_group, sep = "/") := pc1
+#             )
+#         }
+#     )
+#
+#     return(pc_dfs)
+# }
 
 # --- R2 Function ---------
 #' Calculate R-squared and adjusted R-squared from a GLM
@@ -495,21 +513,55 @@ run_association <- function(
 #' @noRd
 .calc_r2 <- function(
     model,
-    model_data) {
-    # Compute R-squared and adjusted R-squared
+    model_data,
+    family = NULL,
+    outcome = NULL) {
+    fam <- if (is.null(family)) stats::family(model)$family else family
     n <- nrow(model_data)
-    # includes intercept
-    p <- length(coef(model))
+    p <- length(stats::coef(model)) # includes intercept
 
-    # calculate the r2 and adj r2
-    r2 <- 1 - model$deviance / model$null.deviance
-    adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
+    if (identical(fam, "gaussian")) {
+        # regular adjusted R2
+        r2 <- 1 - model$deviance / model$null.deviance
+        adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
+        return(list(r2 = r2, adj_r2 = adj_r2))
+    }
 
-    return(list(
-        r2 = r2,
-        adj_r2 = adj_r2
-    ))
+    if (identical(fam, "binomial")) {
+        if (is.null(outcome)) stop("Provide `outcome` for binomial metrics.")
+        ll_full <- as.numeric(stats::logLik(model))
+        mod_null <- stats::glm(stats::as.formula(paste(outcome, "~ 1")),
+            data = model_data, family = stats::binomial()
+        )
+        ll_null <- as.numeric(stats::logLik(mod_null))
+
+        # McFadden and adjusted McFadden R2
+        r2 <- 1 - (ll_full / ll_null)
+        adj_r2 <- 1 - ((ll_full - p) / ll_null)
+
+        return(list(r2 = r2, adj_r2 = adj_r2))
+    }
+
+    list(r2 = NA_real_, adj_r2 = NA_real_)
 }
+
+# .calc_r2 <- function(
+#     model,
+#     model_data) {
+#     # Compute R-squared and adjusted R-squared
+#     n <- nrow(model_data)
+#     # includes intercept
+#     p <- length(coef(model))
+#
+#     # calculate the r2 and adj r2
+#     r2 <- 1 - model$deviance / model$null.deviance
+#     adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
+#
+#     return(list(
+#         r2 = r2,
+#         adj_r2 = adj_r2
+#     ))
+# }
 
 # --- Annotate the Model Results By Model Source ---------
 #' Annotate association results based on feature source

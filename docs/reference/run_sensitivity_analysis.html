@@ -62,7 +62,7 @@ assess the stability of differentially abundant features.</p>
 <span>  <span class="va">expomicset</span>,</span>
 <span>  <span class="va">base_formula</span>,</span>
 <span>  abundance_col <span class="op">=</span> <span class="st">"counts"</span>,</span>
-<span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"limma_voom"</span>, <span class="st">"DESeq2"</span>, <span class="st">"edgeR_quasi_likelihood"</span><span class="op">)</span>,</span>
+<span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"limma_trend"</span>, <span class="st">"limma_voom"</span>, <span class="st">"DESeq2"</span>, <span class="st">"edgeR_quasi_likelihood"</span><span class="op">)</span>,</span>
 <span>  scaling_methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"TMM"</span>, <span class="st">"quantile"</span><span class="op">)</span>,</span>
 <span>  contrasts <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  covariates_to_remove <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -97,7 +97,7 @@ abundance. Default is <code>"counts"</code>.</p></dd>
 
 <dt id="arg-methods">methods<a class="anchor" aria-label="anchor" href="#arg-methods"></a></dt>
 <dd><p>Character vector of differential expression methods.
-Options include <code>"limma_voom"</code>, <code>"DESeq2"</code>, and <code>"edgeR_quasi_likelihood"</code>.</p></dd>
+Options include <code>"limma_trend"</code> ,<code>"limma_voom"</code>, <code>"DESeq2"</code>, and <code>"edgeR_quasi_likelihood"</code>.</p></dd>
 
 
 <dt id="arg-scaling-methods">scaling_methods<a class="anchor" aria-label="anchor" href="#arg-scaling-methods"></a></dt>

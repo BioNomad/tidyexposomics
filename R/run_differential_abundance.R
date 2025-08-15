@@ -1,8 +1,8 @@
 #' Run Differential Abundance Analysis
 #'
 #' Performs differential abundance testing across all assays in a
-#' `MultiAssayExperiment` object using a specified statistical method
-#' such as `limma_voom`. The function updates each assay with its
+#' `MultiAssayExperiment` object using a specified statistical method.
+#' The function updates each assay with its
 #' corresponding `colData`, fits the model using the provided formula,
 #' and combines the results into a unified table.
 #'
@@ -12,7 +12,7 @@
 #' @param abundance_col Character. The name of the assay matrix to use
 #' for abundance values. Default is `"counts"`.
 #' @param method Character. Differential analysis method to use.
-#' Currently supports `"limma_voom"` (default).
+#' Currently supports `"limma_trend"` (default).
 #' @param contrasts A named list of contrasts for pairwise comparisons.
 #'  Default is `NULL` (uses default group comparisons).
 #' @param scaling_method Character. Scaling method to apply before modeling.
@@ -35,16 +35,19 @@
 #'     expomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
-#'     method = "limma_voom",
+#'     method = "limma_trend",
 #'     action = "add"
 #' )
 #'
+#' @importFrom limma lmFit eBayes topTable makeContrasts contrasts.fit
+#' @importFrom stats binomial
+#' @importFrom rlang .data
 #' @export
 run_differential_abundance <- function(
     expomicset,
     formula,
     abundance_col = "counts",
-    method = "limma_voom",
+    method = "limma_trend",
     contrasts = NULL,
     scaling_method = "none",
     action = "add") {
@@ -120,4 +123,89 @@ run_differential_abundance <- function(
         stop("Invalid action specified. Use 'add' or 'get'.")
     }
     return(expomicset)
+}
+
+
+# --- Limma Trend Option ----------------------
+#' Run Differential Abundance Analysis using limma-trend
+#'
+#' Performs differential abundance analysis on a `SummarizedExperiment`
+#' using the limma-trend method. Limma-trend can be used for preprocessed
+#' (e.g. log-transformed) abundance data such as logCPM, log-intensity,
+#' or log2(TPM+1).
+#'
+#' @importFrom stats binomial
+#' @importFrom rlang .data
+#' @importFrom limma lmFit eBayes topTable makeContrasts contrasts.fit
+#' @keywords internal
+#' @noRd
+.run_limma_trend <- function(
+    se,
+    formula,
+    abundance_col,
+    contrasts = NULL,
+    scaling_method = "none",
+    robust = TRUE) {
+    .check_suggested("limma")
+
+    mat <- SummarizedExperiment::assay(se, abundance_col)
+    if (!is.matrix(mat)) mat <- as.matrix(mat)
+
+    # Optional scaling
+    if (identical(scaling_method, "zscore")) {
+        mat <- t(scale(t(mat)))
+    }
+
+    # Log2 transform if needed
+    if (max(mat, na.rm = TRUE) > 50) {
+        mat <- log2(mat + 1)
+    }
+
+    df <- as.data.frame(SummarizedExperiment::colData(se))
+    design <- stats::model.matrix(formula, data = df)
+
+    fit <- limma::lmFit(mat, design)
+    fit <- limma::eBayes(fit, trend = TRUE, robust = robust)
+
+    results <- list()
+    if (!is.null(contrasts)) {
+        cm <- limma::makeContrasts(contrasts = contrasts, levels = design)
+        fit2 <- limma::contrasts.fit(fit, cm)
+        fit2 <- limma::eBayes(fit2, trend = TRUE, robust = robust)
+        for (i in seq_len(ncol(cm))) {
+            tb <- limma::topTable(fit2, coef = i, number = Inf, sort.by = "none")
+            tb$contrast <- colnames(cm)[i]
+            results[[i]] <- tb
+        }
+    } else {
+        coef_idx <- setdiff(
+            seq_len(ncol(design)),
+            which(colnames(design) == "(Intercept)")
+        )
+        for (k in coef_idx) {
+            tb <- limma::topTable(fit, coef = k, number = Inf, sort.by = "none")
+            tb$contrast <- colnames(design)[k]
+            results[[length(results) + 1]] <- tb
+        }
+    }
+
+    out <- dplyr::bind_rows(results)
+
+    out <- out |>
+        tibble::rownames_to_column("feature") |>
+        dplyr::mutate(
+            feature = gsub("\\.\\.\\..*", "", feature),
+            method = "limma_trend",
+            .abundant = TRUE,
+            scaling = scaling_method
+        ) |>
+        dplyr::left_join(
+            se |>
+                tidybulk::pivot_transcript(),
+            by = c("feature" = ".feature")
+        ) |>
+        dplyr::filter(grepl(all.vars(formula)[1], contrast)) |>
+        tibble::as_tibble()
+
+    return(out)
 }

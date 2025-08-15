@@ -8,7 +8,7 @@ run_sensitivity_analysis(
   expomicset,
   base_formula,
   abundance_col = "counts",
-  methods = c("limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
+  methods = c("limma_trend", "limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
   scaling_methods = c("none", "TMM", "quantile"),
   contrasts = NULL,
   covariates_to_remove = NULL,
@@ -32,7 +32,7 @@ run_sensitivity_analysis(
 abundance. Default is \code{"counts"}.}
 
 \item{methods}{Character vector of differential expression methods.
-Options include \code{"limma_voom"}, \code{"DESeq2"}, and \code{"edgeR_quasi_likelihood"}.}
+Options include \code{"limma_trend"} ,\code{"limma_voom"}, \code{"DESeq2"}, and \code{"edgeR_quasi_likelihood"}.}
 
 \item{scaling_methods}{Character vector of normalization methods to try.
 Options include \code{"none"}, \code{"TMM"}, and \code{"quantile"}.}
