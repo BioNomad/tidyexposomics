@@ -54,10 +54,8 @@ library(tidyverse)
 We provide example data based off the [ISGlobal Exposome data challenge 2021](https://www.sciencedirect.com/science/article/pii/S016041202200349X?via%3Dihub). Here, we will examine how exposures and omics features relate to asthma status.
 
 ```R
-data(meta)           # Exposure & phenotype metadata
-data(annotated_cb)   # Ontology-annotated codebook
-data(omics_list)     # Omics data list
-data(fdata)          # Omics row metadata
+# Load the example data
+load_example_data()
 
 # Create ExpOmicSet
 expom <- create_expomicset(

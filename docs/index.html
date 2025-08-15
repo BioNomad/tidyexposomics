@@ -103,10 +103,8 @@
 </h2>
 <p>We provide example data based off the <a href="https://www.sciencedirect.com/science/article/pii/S016041202200349X?via%3Dihub" class="external-link">ISGlobal Exposome data challenge 2021</a>. Here, we will examine how exposures and omics features relate to asthma status.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">meta</span><span class="op">)</span>           <span class="co"># Exposure &amp; phenotype metadata</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">annotated_cb</span><span class="op">)</span>   <span class="co"># Ontology-annotated codebook</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">omics_list</span><span class="op">)</span>     <span class="co"># Omics data list</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fdata</span><span class="op">)</span>          <span class="co"># Omics row metadata</span></span>
+<code class="sourceCode R"><span><span class="co"># Load the example data</span></span>
+<span><span class="fu"><a href="reference/load_example_data.html">load_example_data</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create ExpOmicSet</span></span>
 <span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/create_expomicset.html">create_expomicset</a></span><span class="op">(</span></span>
