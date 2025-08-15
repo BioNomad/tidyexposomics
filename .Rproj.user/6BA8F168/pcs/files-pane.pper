@@ -6,7 +6,7 @@
         },
         {
             "columnIndex": 2,
-            "ascending": true
+            "ascending": false
         },
         {
             "columnIndex": 3,

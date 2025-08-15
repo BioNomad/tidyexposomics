@@ -86,5 +86,4 @@ mae <- mae |>
         covariates = c("age"),
         family = "binomial"
     )
-
 }

@@ -135,7 +135,6 @@ plot_exposures <- function(
     if (!is.null(facet_cols)) {
         facet_cols <- facet_cols
     } else {
-        # facet_cols <- tidy_exp_pal[1:length(unique(sample_metadata$category))]
         facet_cols <- tidy_exp_pal[
             seq_len(length(unique(sample_metadata$category)))
         ]
@@ -150,7 +149,6 @@ plot_exposures <- function(
     if (!is.null(group_cols)) {
         group_cols <- group_cols
     } else {
-        # group_cols <- tidy_exp_pal[1:length(unique(sample_metadata[[group_var]]))]
         group_cols <- tidy_exp_pal[
             seq_len(length(unique(sample_metadata[[group_var]])))
         ]

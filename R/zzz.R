@@ -6,7 +6,7 @@
 #' @importFrom methods as
 
 utils::globalVariables(c(
-    ".exp_name", ".feature", ".sample", ":=", "binomial","contrast",
+    ".exp_name", ".feature", ".sample", ":=", "binomial", "contrast",
     "Category", "Cluster", "FDR", "Freq", "GO_group", "PC1", "PC2", "Sample",
     "Var1", "abs_loading", "ancestors", "angle", "avg", "category",
     "centrality", "centrality_betweenness", "centrality_closeness",

@@ -10,3 +10,4 @@
 ^vignettes/.css$
 ^doc$
 ^Meta$
+^\.github$

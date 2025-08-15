@@ -1,3 +1,8 @@
+<!-- badges: start -->
+  [![R-CMD-check](https://github.com/BioNomad/tidyexposomics/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/BioNomad/tidyexposomics/actions/workflows/R-CMD-check.yaml)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<!-- badges: end -->
+  
 # tidyexposomics <a href="#"><img src="./vignettes/logo.png" align="right" height="200" /></a>
 
 <br>
@@ -8,26 +13,14 @@
 
 - **Website:** https://bionomad.github.io/tidyexposomics/index.html
 
-- **BioConductor:** 
-
-- **Paper:** 
-
 ## Overview
 
-The `tidyexposomics` package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. We structure our commands to fit into the tidyverse framework, where commands are designed to be simplified and intuitive. Here we provide functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
+The `tidyexposomics` package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. Functions follow the tidyverse framework, where commands are designed to be simplified and intuitive. The tidyexposomics package provides functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
 
 <p align="center" width="100%">
     <img width="80%" src="vignettes/overview.png">
 </p>
 
-## Installation
-
-You can install the development version of `tidyexposomics` from GitHub with:
-
-```r
-# Install directly through GitHub
-remotes::install_github("BioNomad/tidyexposomics")
-```
 
 ## Command Structure
 
@@ -37,21 +30,17 @@ To make the package more user-friendly, we have named our functions to be more i
     <img width="80%" src="vignettes/command_str.png">
 </p>
 
-We provide functionality to either `add` results to the existing object storing the omics/exposure data or to return the direct results using the `get` option using the `action` argument. We suggest adding results, as we also include a `run_pipeline_summary()` function to generate a diagram or print out of the workflow. This is useful for keeping track of the pipeline steps. 
+Results can be added to the `MultiAssayExperiment` object or returned directly with `action = 'get'`. We suggest adding results, given that pipeline steps are tracked and can be output to the R console, plotted as a workflow diagram, or exported to an excel worksheet.
 
 
 ## Quick Start
 
-The following code is a great way to get started with the package. It includes loading example data, performing basic quality control, running exposure-wide association studies (ExWAS), differential abundance analysis, correlating differentially expressed genes (DEGs) with exposures, and functional enrichment analysis.
-
-### More to tidyexposomics!
-
-However, there is so much more to the `tidyexposomics` package! So check out the [Get Started](articles/tidyexposomics.html) page for a more detailed walkthrough of the package's functionality.
+The following code is an example of a basic tidyexposomics workflow. It includes loading example data, performing basic quality control, running exposure-wide association studies (ExWAS), differential abundance analysis, correlating differentially expressed genes (DEGs) with exposures, and functional enrichment analysis. However, there is so much more to the `tidyexposomics` package! So check out the [Get Started](articles/tidyexposomics.html) page for a more detailed walkthrough of the package's functionality.
 
 
 ## Installation
 
-You can install `tidyexposomics` using the following code:
+The `tidyexposomics` package depends on R (>= 4.4.0) and can be installed using the following code:
 
 ```R
 # Install and Load Packages
@@ -141,7 +130,7 @@ expom <- expom |>
 
 ## ExWAS 
 
-We may associate our exposures with a health outcome, and in this case, we associate our exposures with asthma status and adjust our model for child age, biological sex, and cohort.
+Here we model the association between exposures and asthma status and adjust our model for child age, biological sex, and cohort.
 
 ```R
 # Perform ExWAS Analysis
@@ -174,14 +163,14 @@ expom |>
 
 ## Differential Abundance
 
-Differentially abundant analysis is also supported in `tidyexposomics`. Here we use `limma_voom` to identify features associated with asthma status.
+Differentially abundance analysis is supported in `tidyexposomics`. Here we use `limma_trend` to identify features associated with asthma status.
 
 ```R
 # Run differential abundance analysis
 expom <- expom |> 
   run_differential_abundance(
     formula = ~ hs_asthma + hs_child_age_None + e3_sex_None + h_cohort,
-    method = "limma_voom",
+    method = "limma_trend",
     scaling_method = "none",
     action = "add")
     
@@ -201,7 +190,7 @@ expom |>
 
 ## Multi-Omics Integration
 
-If several omics are present, we provide functionality to perform multiomics integration. Here we use the `DIABLO` method and set the outcome variable of interest to asthma status.
+Multi-omics integration is supported to derive insights across omics layers. Here we use the `DIABLO` method and set the outcome variable of interest to asthma status.
 
 ```R
 # Perform Multi-Omics Integration
@@ -240,7 +229,7 @@ expom <- expom |>
 
 ## Exposure-Omics Association
 
-Now that we have our multiomics features associated with asthma status, we can correlate these with our exposures to identify how certain classes of exposures may be affecting asthma biology.
+Now that we have our multi-omics features associated with asthma status, we can correlate these with our exposures. This helps identify how exposure classes may affect asthma biology.
 
 ```R
 # Grab top common factor features and ensure 
@@ -265,7 +254,7 @@ expom  <- expom |>
   # Perform correlation analysis between factor features
   run_correlation(feature_type = "omics",
                   variable_map = top_factor_features,
-                  feature_cors = T,
+                  feature_cors = TRUE,
                   action = "add",
                   correlation_cutoff = 0.2,
                   pval_cutoff = 0.05,
@@ -288,7 +277,7 @@ expom  <- expom  |>
     species = "goa_human", 
     fenr_col = "gene_symbol",
     padj_method = "none",
-    pval_thresh = .1,
+    pval_thresh = 0.1,
     min_set = 1,
     max_set = 800,
 

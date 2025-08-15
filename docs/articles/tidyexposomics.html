@@ -81,22 +81,22 @@ Laird</h4>
 <p>Exposure to environmental factors is a major determinant of health
 and disease. The exposome is a term that represents the totality of
 environmental exposures that drive disease and overall health <a href="https://pubmed.ncbi.nlm.nih.gov/16103423/" class="external-link">(Wild et al. 2005)</a>.
-To tackle the daunting task of characterizing the relationship between a
-multiplicity of exposures and disease outcomes, epidemiological studies
-have moved towards exposure wide association studies (ExWAS) where sets
-of exposures are associated with an outcome <a href="https://academic.oup.com/exposome/article/4/1/osae001/7574628" class="external-link">(Chung
+Characterizing the relationship between a multiplicity of exposures and
+disease outcomes can be a daunting task. Epidemiological studies have
+moved towards exposure-wide association studies (ExWAS) where sets of
+exposures are associated with an outcome <a href="https://academic.oup.com/exposome/article/4/1/osae001/7574628" class="external-link">(Chung
 et al. 2024)</a>. The advent of high-throughput technologies has enabled
-profiling of several layers of biological information. These layers too
-can be integrated to better understand the relationship between
+profiling of several layers of biological information. These layers can
+also be integrated to better understand the relationship between
 exposures and disease outcomes.</p>
 <p>The <code>tidyexposomics</code> package is designed to facilitate the
 integration of exposure and omics data to identify exposure-omics
 associations and their relevance to health outcomes. We structure our
-commands to fit into the <code>tidyverse</code> framework, where
-commands are designed to be simplified and intuitive. Here we provide
-functionality to perform quality control, sample and exposure
-association analysis, differential abundance analysis, multi-omics
-integration, and functional enrichment analysis.</p>
+commands to fit into the <code>tidyverse</code> framework, with a
+simple, intuitive interface. Here we provide functionality to perform
+quality control, sample and exposure association analysis, differential
+abundance analysis, multi-omics integration, and functional enrichment
+analysis.</p>
 <div class="figure" style="text-align: center">
 <img src="overview.png" alt="**tidyexposomics pipeline overview.** Exposure and omics data are stored in a MultiAssayExperiment. Data then undergoes quality control, sample and exposure associations, differential abundance analysis, multi-omics integration, and functional enrichment analysis. The pipeline is designed to be flexible and modular, allowing users to customize their analysis." width="120%"><p class="caption">
 <strong>tidyexposomics pipeline overview.</strong> Exposure and omics
@@ -126,15 +126,14 @@ to be more intuitive. For example, we use the following naming
 conventions:</p>
 <p><img src="command_str.png" width="474" style="display: block; margin: auto;"></p>
 <p>We provide functionality to either <code>add</code> results to the
-existing object storing the omics/exposure data or to return the direct
-results using the <code>get</code> option using the <code>action</code>
-argument. We suggest adding results, as we also include a
-<code><a href="../reference/run_pipeline_summary.html">run_pipeline_summary()</a></code> function to generate a diagram of
-the workflow. This is useful for keeping track of the pipeline
-steps.</p>
+existing object storing the omics/exposure data or to return results
+directly using using <code>action = "get"</code>. We suggest adding
+results, given that pipeline steps are tracked and can be output to the
+R console, plotted as a workflow diagram, or exported to an Excel
+worksheet.</p>
 </div>
 <div class="section level2">
-<h2 id="exposure-meta-data-and-ontology-annotation">Exposure Meta data and Ontology Annotation<a class="anchor" aria-label="anchor" href="#exposure-meta-data-and-ontology-annotation"></a>
+<h2 id="exposure-metadata-and-ontology-annotation">Exposure Metadata and Ontology Annotation<a class="anchor" aria-label="anchor" href="#exposure-metadata-and-ontology-annotation"></a>
 </h2>
 <hr>
 <div class="section level3">
@@ -177,7 +176,7 @@ data.</p></li>
 Entities of Biological Interest</a> to annotate your chemical exposure
 variables.</p></li>
 </ul>
-<p><strong>Now why should you bother doing this?</strong></p>
+<p><strong>Why annotate with ontologies?</strong></p>
 <ul>
 <li><p><strong>Interpretability</strong>: Ontology labels clarify
 ambiguous or inconsistently named variables.</p></li>
@@ -206,14 +205,14 @@ file.</p></li>
 annotation term and search in the <strong>Choose Ontology Term</strong>
 dropdown.</p></li>
 <li><p>After you select a term you will see a short description of the
-the term.</p></li>
-<li><p>After your are done click <strong>Apply Annotate</strong> to save
+term.</p></li>
+<li><p>After you are done, click <strong>Apply Annotate</strong> to save
 the annotation.</p></li>
 <li><p>Now you can group exposures into larger categories by selecting
-each line and then your ontology, and root depth level (where a lower
-number means a more general term).</p></li>
+each line and then choose your ontology and root depth level (where a
+lower number means a more general term).</p></li>
 <li><p>Then you can click <strong>Apply Categorization</strong> to apply
-the changes to the selected rows.</p></li>
+the selected categorization to the selected rows.</p></li>
 <li><p>If the ontology has nothing to do with your variable, you may
 manually enter a category in the <strong>Category</strong> column. This
 will change the <strong>Category Source</strong> to <code>manual</code>
@@ -230,18 +229,18 @@ Annotated CSV</strong> to save the annotated metadata file.</p></li>
 <hr>
 <p>To get started we need to load the data. The
 <code>create_expomicset</code> function is used to create a
-MultiAssayExperiment object that contains exposure and omics data. As a
-quick introduction, a MultiAssayExperiment object is a container for
-storing multiple assays (e.g., omics data) and their associated
-metadata:</p>
+<code>MultiAssayExperiment</code> object that contains exposure and
+omics data. As a quick introduction, a <code>MultiAssayExperiment</code>
+object is a container for storing multiple assays (e.g., omics data) and
+their associated metadata:</p>
 <div class="figure" style="text-align: center">
-<img src="mae_rep.png" alt="**Overview of the MultiAssayExperiment Object Structure.** Subject level data is captured within the `colData` of the MultiAssayExperiment. Observations are stored within `experiments` slots in the MultiAssayExperiment and `sampleMap` is used to link the data ( [MultiAssay Special Interest Group 2024](https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) )." width="328"><p class="caption">
+<img src="mae_rep.png" alt="**Overview of the MultiAssayExperiment Object Structure.** Subject level data is captured within the `colData` of the MultiAssayExperiment. Observations are stored within `experiments` slots in the MultiAssayExperiment and `sampleMap` is used to link the data ( [MultiAssayExperiment Special Interest Group (2024)](https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) )." width="328"><p class="caption">
 <strong>Overview of the MultiAssayExperiment Object Structure.</strong>
 Subject level data is captured within the <code>colData</code> of the
 MultiAssayExperiment. Observations are stored within
 <code>experiments</code> slots in the MultiAssayExperiment and
-<code>sampleMap</code> is used to link the data ( <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html" class="external-link">MultiAssay
-Special Interest Group 2024</a> ).
+<code>sampleMap</code> is used to link the data ( <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html" class="external-link">MultiAssayExperiment
+Special Interest Group (2024)</a> ).
 </p>
 </div>
 <p>We use the MultiAssayExperiment object to store the exposure and
@@ -249,7 +248,7 @@ omics data. The <code>create_expomicset</code> function has several
 arguments:</p>
 <ul>
 <li><p>The <code>codebook</code> argument is a data frame that contains
-information about the variables in the exposure meta data. <strong>The
+information about the variables in the exposure metadata. <strong>The
 column names must contain <code>variable</code></strong> where the
 values are the column names of the exposure data frame, <strong>and
 <code>category</code></strong> which contains general categories for the
@@ -263,7 +262,7 @@ contain the omics data.</p></li>
 contain information about the rows of each omics data frame.</p></li>
 </ul>
 <p>We are going to start by loading in example data pulled from the <a href="https://www.sciencedirect.com/science/article/pii/S016041202200349X?via%3Dihub" class="external-link">ISGlobal
-Exposome data challenge 2021</a>. Specifically, we will examine how
+Exposome Data Challenge 2021</a>. Specifically, we will examine how
 exposures and omics features relate to asthma status.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load Libraries</span></span>
@@ -288,7 +287,7 @@ socioeconomic status (SES):</p>
 <span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom</span><span class="op">[</span>, <span class="va">expom</span><span class="op">$</span><span class="va">FAS_cat_None</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Low"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">expom</span><span class="op">)</span></span></code></pre></div>
 <p>We are interested in how exposure affects health outcomes, so let’s
-define which meta data variables are our exposure variables of
+define which metadata variables are our exposure variables of
 interest.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Grab exposure variables</span></span>
@@ -313,7 +312,7 @@ interest.</p>
 <h3 id="missingness">Missingness<a class="anchor" aria-label="anchor" href="#missingness"></a>
 </h3>
 <p>Oftentimes when collecting data, there are missing values. Let’s use
-the <code>plot_missing</code> function to determine where are missing
+the <code>plot_missing</code> function to determine where our missing
 values are:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
@@ -433,7 +432,7 @@ the minimum value, respectively.</p>
 <h3 id="normality-check">Normality Check<a class="anchor" aria-label="anchor" href="#normality-check"></a>
 </h3>
 <p>When determining variable associations, it is important to check the
-normality of the data. The <code>run_check_normality</code> function is
+normality of the data. The <code>run_normality_check</code> function is
 used to check the normality of the data.</p>
 <p>The <code>transform_exposure</code> function is used to transform the
 data to make it more normal. Here the <code>transform_method</code> is
@@ -488,7 +487,7 @@ the distance between a point and a distribution.</p>
 <span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/plot_pca.html">plot_pca</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tidyexposomics_files/figure-html/unnamed-chunk-18-1.png" width="864" style="display: block; margin: auto;"></p>
-<p>Here we see have a few sample outliers, and that most variation is
+<p>Here we see a few sample outliers, and that most variation is
 captured in the first two principal components for both features and
 samples. We can filter out these samples using the
 <code>filter_sample_outliers</code> function.</p>
@@ -499,13 +498,13 @@ samples. We can filter out these samples using the
 <span>        outliers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"s73"</span>, <span class="st">"s1183"</span>, <span class="st">"s376"</span>, <span class="st">"s899"</span>, <span class="st">"s828"</span>, <span class="st">"s993"</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
 <p>To understand the relationship between the principal components and
-exposures we can correlate them using the <code>run_corrleation</code>
+exposures we can correlate them using the <code>run_correlation</code>
 function. Here we specify that the <code>feature_type</code> is
 <code>pcs</code> for principal components, specify a set of exposure
 variables, <code>exp_vars</code>, and the number of principal
 components, <code>n_pcs</code>. We set <code>correlation_cutoff</code>
-to 0 and <code>pval_cutoff</code> to ` to initially include all
-correlations.</p>
+to <code>0</code> and <code>pval_cutoff</code> to <code>1</code> to
+initially include all correlations.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/run_correlation.html">run_correlation</a></span><span class="op">(</span></span>
@@ -575,7 +574,7 @@ the columns to summarize.</p>
 <code>plot_exposures</code> function. This function allows us to plot
 the exposure data in a variety of ways. Here we will plot the exposure
 data using a boxplot. The <code>exposure_cat</code> argument is used to
-set the exposure category to plot. Additionally, we could specify,
+set the exposure category to plot. Additionally, we could specify
 <code>exposure_cols</code> to only plot certain exposures. The
 <code>plot_type</code> argument is used to set the type of plot to
 create. Here we use a boxplot, but we could also use a ridge plot.</p>
@@ -670,12 +669,11 @@ of 0.3, but this can be adjusted based on the data.</p>
 <span>        correlation_cutoff <span class="op">=</span> <span class="fl">0.3</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
 <p>To visualize the exposure correlations, we can use the
-<code>plot_circos_correlation</code> or
-<code>plot_heatmap_correlate_exposure</code> functions. Here we will
-plot the circos plot. This function creates a circular plot of the
-exposure correlations. The <code>correlation_cutoff</code> argument is
-used to set the minimum correlation score for the association. Here we
-use a cutoff of 0.3.</p>
+<code>plot_circos_correlation</code> function. Here we will plot the
+circos plot. This function creates a circular plot of the exposure
+correlations. The <code>correlation_cutoff</code> argument is used to
+set the minimum correlation score for the association. Here we use a
+cutoff of 0.3.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/plot_circos_correlation.html">plot_circos_correlation</a></span><span class="op">(</span></span>
@@ -685,12 +683,12 @@ use a cutoff of 0.3.</p>
 <span>    <span class="op">)</span></span></code></pre></div>
 <p><img src="tidyexposomics_files/figure-html/unnamed-chunk-27-1.png" width="960" style="display: block; margin: auto;"></p>
 <p>Here we see that particulate matter exposure variables are highly
-correlated and also correlated with maternalpregnancy BPA
+correlated and also correlated with maternal pregnancy BPA
 (<code>hs_bpa_madj_Log2</code>) and childhood PCB-153
 (<code>hs_pcb153_cadj_Log2</code>) exposure.</p>
 </div>
 <div class="section level3">
-<h3 id="exwas-association">ExWAS Association<a class="anchor" aria-label="anchor" href="#exwas-association"></a>
+<h3 id="exposure-wide-association-exwas">Exposure-wide association (ExWAS)<a class="anchor" aria-label="anchor" href="#exposure-wide-association-exwas"></a>
 </h3>
 <p>The <code>run_association</code> function is used to run the
 association analysis. The <code>source</code> argument is used to set
@@ -879,7 +877,7 @@ outcome, we can use the <code>plot_association</code> function:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/plot_association.html">plot_association</a></span><span class="op">(</span></span>
-<span>        subtitle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Covariates: Age, Biological Sex, Cohort"</span><span class="op">)</span>,</span>
+<span>        subtitle <span class="op">=</span> <span class="st">"Covariates: Age, Biological Sex, Cohort"</span>,</span>
 <span>        source <span class="op">=</span> <span class="st">"exposures"</span>,</span>
 <span>        terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>            <span class="st">"exposome_median_score"</span>,</span>
@@ -892,7 +890,7 @@ outcome, we can use the <code>plot_association</code> function:</p>
 <span>        filter_thresh <span class="op">=</span> <span class="fl">0.05</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
 <p><img src="tidyexposomics_files/figure-html/unnamed-chunk-34-1.png" width="480" style="display: block; margin: auto;"></p>
-<p>Here we see that most scores are associated with a increased
+<p>Here we see that most scores are associated with an increased
 probability of asthma. The item response theory (IRT) score is the only
 one that is significant.</p>
 </div>
@@ -905,7 +903,7 @@ one that is significant.</p>
 <h3 id="differential-abundance-1">Differential Abundance<a class="anchor" aria-label="anchor" href="#differential-abundance-1"></a>
 </h3>
 <p>We also provide functionality to assess differentially abundant
-features associated with a particular outcome across several omics’
+features associated with a particular outcome across several omics
 layers. The <code>run_differential_abundance</code> function is used to
 run the differential abundance analysis. The <code>formula</code>
 argument is used to set the formula for the model. The
@@ -981,6 +979,8 @@ conditions as well as the consistency of the effect size:</p>
 <span class="math inline">\(i^{th}\)</span> test</p></li>
 <li><p><span class="math inline">\(\alpha\)</span> is the significance
 threshold</p></li>
+<li><p><span class="math inline">\(\beta\)</span> is the log fold
+change</p></li>
 <li><p><span class="math inline">\(N\)</span> is the number of
 tests</p></li>
 <li><p><span class="math inline">\(\sigma_{\beta}\)</span> is the
@@ -1088,10 +1088,10 @@ outcome-aligned latent factors implemented using the <a href="https://www.biocon
 package</a>.</p></li>
 </ul>
 <p>Here we are interested in integrating our omics layers with the end
-goal of identifying multiomics features that are associated with asthma
+goal of identifying multi-omics features that are associated with asthma
 status. So we will use the <code>DIABLO</code> method.</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Perform Multi-Omics Integration</span></span>
+<code class="sourceCode R"><span><span class="co"># Perform multi-omics integration</span></span>
 <span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/run_multiomics_integration.html">run_multiomics_integration</a></span><span class="op">(</span></span>
 <span>        method <span class="op">=</span> <span class="st">"DIABLO"</span>,</span>
@@ -1138,7 +1138,7 @@ after adjusting for child age, sex, and cohort:</p>
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/plot_association.html">plot_association</a></span><span class="op">(</span></span>
 <span>        source <span class="op">=</span> <span class="st">"factors"</span>,</span>
-<span>        subtitle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Covariates: Age, Sex, Cohort"</span><span class="op">)</span>,</span>
+<span>        subtitle <span class="op">=</span> <span class="st">"Covariates: Age, Sex, Cohort"</span>,</span>
 <span>        filter_col <span class="op">=</span> <span class="st">"p_adjust"</span>,</span>
 <span>        filter_thresh <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>        r2_col <span class="op">=</span> <span class="st">"adj_r2"</span></span>
@@ -1149,7 +1149,7 @@ have loading scores which indicate the strength of the association
 between the factor and the features. Here we can extract the top
 features, those in the 90th percentile, per omic, associated with our
 factors of interest. We set the <code>pval_col</code> and
-<code>pva_thresh</code> to filter our association results to grab the
+<code>pval_thresh</code> to filter our association results to grab the
 factors that pass our thresholds. However, we could specify specific
 factors with the <code>factors</code> argument too.</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
@@ -1199,7 +1199,7 @@ factors.</p>
 <h3 id="exposure-omics-association-1">Exposure-Omics Association<a class="anchor" aria-label="anchor" href="#exposure-omics-association-1"></a>
 </h3>
 <p>Now we have the option to correlate either the top factor features,
-differentially abundant features, or user specified omics features (by
+differentially abundant features, or user-specified omics features (by
 using a variable map, a data frame with two columns,
 <code>exp_name</code> for the name of the omics assay, and
 <code>variable</code> for the name of the molecular feature) with
@@ -1245,7 +1245,7 @@ association.</p>
 <span>        cor_pval_column <span class="op">=</span> <span class="st">"p.value"</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
 <p>We can plot the results of the exposure-omics association analysis
-using the <code>plot_bar_correlate_summary</code> function. Here we set
+using the <code>plot_correlation_summary</code> function. Here we set
 the mode to <code>summary</code>, which will plot the number of
 associations per exposure and feature type. The
 <code>feature_type</code> argument is used to set the type of features
@@ -1260,16 +1260,15 @@ features.</p>
 <p><img src="tidyexposomics_files/figure-html/unnamed-chunk-47-1.png" width="1248" style="display: block; margin: auto;"></p>
 <p>Here we note that gene expression features have a greater number of
 associations with exposures. Among exposures, we see that aerosols have
-the greatest number of associations with features. Although this is
-probably due to there being more aerosol exposures than other exposure
-types.</p>
+the greatest number of associations with features, which may reflect the
+larger number of aerosol variables.</p>
 <p>It may also be useful to identify which exposures are correlated with
 similar molecular features. We can do this with the
 <code>plot_circos_correlation</code> function. This function will plot a
 circos plot of the exposures and their shared features. The
 <code>feature_type</code> argument is used to set the correlation
 results to use for the analysis. Here we use the <code>omics</code>
-feature set, which plots the feature - exposure correlation information.
+feature set, which plots the feature-exposure correlation information.
 The cutoff argument is used to set the minimum number of shared features
 to plot. Here we set the <code>shared_cutoff</code> to 1, which means
 that only exposures that share at least one feature will be plotted.</p>
@@ -1294,9 +1293,8 @@ similar effects on the molecular features.</p>
 <p>The <code>run_create_network</code> function is used to create a
 network of exposures and omics features. The correlation results are
 used to create the network. The <code>feature_type</code> argument is
-used to set the type of features to use for the network. Here we use
-<code>omics</code>, the top factor features we isolated. However we
-could choose any of the following:</p>
+used to set the type of features to use for the network. We could choose
+any of the following:</p>
 <ul>
 <li><p><code>degs</code>: Differentially abundant features correlated
 with exposures.</p></li>
@@ -1305,6 +1303,16 @@ exposures.</p></li>
 <li><p><code>omics</code>: User specified omics features correlated with
 exposures.</p></li>
 </ul>
+<p>Here we create networks based on two correlation tables generated
+above:</p>
+<ul>
+<li><p><code>omics</code>: Correlations between omics and exposure
+variables.</p></li>
+<li><p><code>omics_feature_cor</code>: Correlation just between the
+omics features.</p></li>
+</ul>
+<p>This allows us to quantify a bipartite graph between exposures and
+omics features and a graph just between the omics features.</p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/run_create_network.html">run_create_network</a></span><span class="op">(</span></span>
@@ -1322,7 +1330,7 @@ the number of nodes to plot. The <code>node_color_var</code> argument is
 used to set the variable to color the nodes by. The <code>label</code>
 argument is used to set whether or not to label the nodes. We can label
 the top n nodes, where the default is 5 nodes based on centrality.
-Additionally, we can chose to label certain nodes using the
+Additionally, we can choose to label certain nodes using the
 <code>nodes_to_label</code> argument. The <code>facet_var</code>
 argument is used to set the variable to facet the plot by. The
 <code>foreground</code> argument is used to set the color of the facets.
@@ -1363,15 +1371,17 @@ communities.</p></li>
 <div class="section level3">
 <h3 id="exposure-omics-impact-network-analysis">Exposure-Omics Impact Network Analysis<a class="anchor" aria-label="anchor" href="#exposure-omics-impact-network-analysis"></a>
 </h3>
-<p>When we examine the relationships between exposures and omics
-features, we can see that some features are more central to the network
-than others. This is because some features are more highly correlated
-with exposures than others. The <code>run_exposure_impact</code>
-function is used to run an exposure-omics impact analysis. This function
-calculates centrality metrics for each exposure in the network.
-Centrality metrics are used to identify features that are more central
-to the network and may be more important in the context of the
-exposure-omics relationships. The centrality metrics included are:</p>
+<p>The bipartite graph above describes how exposures are connected with
+omics features. However, this does not describe if exposures are
+associated with features that are more central in the feature-only graph
+(i.e. are exposures associated with features that are more central or
+peripheral to the graph?). To answer this question we can use the
+<code>run_exposure_impact</code> function to calculate centrality
+metrics for the omics features associated with a given exposure.
+Centrality is computed on the feature-only graph. Centrality metrics are
+used to identify features that are more central to the network and may
+be more important in the context of the exposure-omics relationships.
+The centrality metrics included are:</p>
 <ul>
 <li><p><strong>Mean Betweenness Centrality</strong>: Measures how often
 a node lies on the shortest path between other nodes where high values
@@ -1381,12 +1391,12 @@ node is to all others in the network where high values indicate faster
 access to all nodes.</p></li>
 <li><p><strong>Mean Degree</strong>: The average number of direct
 connections or edges a node has.</p></li>
-<li><p><strong>Mean Eigenvector Centrality</strong>: Measure how
+<li><p><strong>Mean Eigenvector Centrality</strong>: Measures how
 well-connected a node is and how well-connected its neighbors are, where
 high values suggest influence in a well-connected cluster.</p></li>
 </ul>
 <div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Run exposure-omics impact analaysis</span></span>
+<code class="sourceCode R"><span><span class="co"># Run exposure-omics impact analysis</span></span>
 <span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/run_exposure_impact.html">run_exposure_impact</a></span><span class="op">(</span>feature_type <span class="op">=</span> <span class="st">"omics"</span><span class="op">)</span></span></code></pre></div>
 <p>To plot the results of the exposure-omics impact analysis, we can use
@@ -1441,9 +1451,9 @@ correlated with exposures. We specify <code>feature_col</code> to
 represent the column in our feature metadata with IDs that can be mapped
 (i.e. gene names). We will be performing Gene ontology enrichment
 powered by the <a href="https://www.bioconductor.org/packages/release/bioc/html/fenr.html" class="external-link"><code>fenr</code>
-package</a>. You’ll notice that we specify a
-<code>clustering_approach</code>. This will cluster our enrichment terms
-by the molecular feature overlap.</p>
+package</a>. Note that we specify a <code>clustering_approach</code>.
+This will cluster our enrichment terms by the molecular feature
+overlap.</p>
 <div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run enrichment analysis on factor features correlated with exposures</span></span>
 <span><span class="va">expom_1</span> <span class="op">&lt;-</span> <span class="va">expom_1</span> <span class="op">|&gt;</span></span>
@@ -1454,7 +1464,7 @@ by the molecular feature overlap.</p>
 <span>        species <span class="op">=</span> <span class="st">"goa_human"</span>,</span>
 <span>        fenr_col <span class="op">=</span> <span class="st">"gene_symbol"</span>,</span>
 <span>        padj_method <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>        pval_thresh <span class="op">=</span> <span class="fl">.1</span>,</span>
+<span>        pval_thresh <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>        min_set <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>        max_set <span class="op">=</span> <span class="fl">800</span>,</span>
 <span>        clustering_approach <span class="op">=</span> <span class="st">"diana"</span>,</span>
@@ -1551,8 +1561,8 @@ the methylation data driving terms related to lipid metabolism.</p>
 us understand which genes are driving the enrichment terms. We have the
 additional benefit of being able to color our tiles by the Log_2_Fold
 Change from our differential abundance testing. Here we will examine
-group 5, given it seems be driven by the most terms and multiple omics
-layers.</p>
+group 5, given it seems to be driven by the most terms and multiple
+omics layers.</p>
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/plot_enrichment.html">plot_enrichment</a></span><span class="op">(</span></span>
@@ -1566,7 +1576,7 @@ layers.</p>
 <p>Here we see that methylation features have the strongest fold change
 with respect to asthma status. Interestingly, we see that methylation of
 <em>CYP2E1</em>, an enzyme responsible for toxicant metabolism, is
-downregulated in asthma and correlated with with exposures in the
+downregulated in asthma and correlated with exposures in the
 <code>polyatomic entity</code> category containing chemicals like
 triclosan, BPA and several PFAS.</p>
 </div>
@@ -1590,17 +1600,16 @@ where the enrichment terms are connected to the genes driving them.</p>
 <div class="section level2">
 <h2 id="custom-analysis">Custom Analysis<a class="anchor" aria-label="anchor" href="#custom-analysis"></a>
 </h2>
-<p>Now what if there are analyses, summary statistics, or plots that you
-would like to create on your own? We provide functionality to access the
-underlying data in the <code>MultiAssayExperiment</code> object and
-construct tibbles for your own analysis:</p>
+<p>We provide functionality to access the underlying data in the
+<code>MultiAssayExperiment</code> object and to construct tibbles for
+your own analysis:</p>
 <ul>
 <li><p><code>pivot_sample</code>: Pivot the sample data to a tibble with
 samples as rows and exposures as columns.</p></li>
-<li><p><code>pivot_feature</code>: Pivot the feature meta data to a
-tibble with features as rows and feature meta data as columns.</p></li>
+<li><p><code>pivot_feature</code>: Pivot the feature metadata to a
+tibble with features as rows and feature metadata as columns.</p></li>
 <li><p><code>pivot_exp</code>: Pivot the sample and experiment assay
-data to a tibble with samples as rows and sample meta data as columns.
+data to a tibble with samples as rows and sample metadata as columns.
 Additionally, there will be a column for values for specified features
 in specified assays.</p></li>
 </ul>
@@ -1636,24 +1645,22 @@ sex:</p>
 <div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expom_1</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/pivot_sample.html">pivot_sample</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">hs_asthma</span>, <span class="va">hs_smk_parents_None</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">hs_asthma</span>, <span class="va">e3_sex_None</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   hs_asthma [2]</span></span></span>
-<span><span class="co">##   hs_asthma hs_smk_parents_None     n</span></span>
-<span><span class="co">##       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>         0 both                   24</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>         0 neither                69</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>         0 one                    26</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span>         1 both                    2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span>         1 neither                 7</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span>         1 one                    11</span></span></code></pre>
+<span><span class="co">##   hs_asthma e3_sex_None     n</span></span>
+<span><span class="co">##       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>         0 female         67</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>         0 male           52</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>         1 female         10</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span>         1 male           10</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="pivot-feature">Pivot Feature<a class="anchor" aria-label="anchor" href="#pivot-feature"></a>
 </h3>
-<p>The <code>pivot_feature</code> function pivots the feature meta data
-to a tibble with features as rows and feature meta data as columns. This
+<p>The <code>pivot_feature</code> function pivots the feature metadata
+to a tibble with features as rows and feature metadata as columns. This
 can be useful for exploring the feature metadata in a more flexible
 way.</p>
 <div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
@@ -1781,9 +1788,9 @@ will include notes on the steps taken in the analysis.</p>
 <div class="section level3">
 <h3 id="saving-results">Saving Results<a class="anchor" aria-label="anchor" href="#saving-results"></a>
 </h3>
-<p>We can export the results in our MultiAssayExperiment to an excel
+<p>We can export the results in our MultiAssayExperiment to an Excel
 spreadsheet using the <code>extract_results_excel</code> function. Here
-we add all of our results to the excel file, but we can choose certain
+we add all of our results to the Excel file, but we can choose certain
 results by changing the <code>result_types</code> argument.</p>
 <div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_results_excel.html">extract_results_excel</a></span><span class="op">(</span><span class="va">expom_1</span>,</span>
@@ -1873,8 +1880,8 @@ results by changing the <code>result_types</code> argument.</p>
 <span><span class="co">##  [95] dendextend_1.19.1           plyr_1.8.9                 </span></span>
 <span><span class="co">##  [97] crayon_1.5.3                abind_1.4-8                </span></span>
 <span><span class="co">##  [99] naniar_1.1.0                mixOmics_6.28.0            </span></span>
-<span><span class="co">## [101] locfit_1.5-9.12             graphlayouts_1.2.2         </span></span>
-<span><span class="co">## [103] bit_4.6.0                   codetools_0.2-20           </span></span>
+<span><span class="co">## [101] locfit_1.5-9.12             bit_4.6.0                  </span></span>
+<span><span class="co">## [103] graphlayouts_1.2.2          codetools_0.2-20           </span></span>
 <span><span class="co">## [105] textshaping_1.0.1           recipes_1.3.1              </span></span>
 <span><span class="co">## [107] bslib_0.9.0                 GetoptLong_1.0.5           </span></span>
 <span><span class="co">## [109] plotly_4.11.0               MultiAssayExperiment_1.30.3</span></span>
