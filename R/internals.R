@@ -931,14 +931,16 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .check_mofa_safe <- function() {
-  if (!requireNamespace("MOFA2", quietly = TRUE)) {
-    stop("MOFA2 is required for this function. Please install it.",
-         call. = FALSE)
-  }
-  if (Sys.info()[["sysname"]] == "Darwin" &&
-      grepl("arm64", R.version$platform)) {
-    stop("MOFA2 is not supported on macOS ARM64 (segfault risk with OpenMP).",
-         call. = FALSE)
-  }
-  TRUE
+    if (!requireNamespace("MOFA2", quietly = TRUE)) {
+        stop("MOFA2 is required for this function. Please install it.",
+            call. = FALSE
+        )
+    }
+    if (Sys.info()[["sysname"]] == "Darwin" &&
+        grepl("arm64", R.version$platform)) {
+        stop("MOFA2 is not supported on macOS ARM64 (segfault risk with OpenMP).",
+            call. = FALSE
+        )
+    }
+    TRUE
 }

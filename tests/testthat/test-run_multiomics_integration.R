@@ -1,58 +1,54 @@
 test_that("run_multiomics_integration works with MOFA", {
-    # skip unless MOFA2 is available and Python backend is good to go
-    if (!requireNamespace("MOFA2", quietly = TRUE)) {
-        skip("MOFA2 not available")
-    }
-    # skip on arm64 darwin macs where MOFA2 breaks
+    skip_if_not_installed("MOFA2")
     if (Sys.info()[["sysname"]] == "Darwin" &&
         grepl("arm64", R.version$platform)) {
         skip("Skip MOFA2 test on macOS ARM64 - issue with CI segfault")
     }
 
-    # make the example data
-    dummy <- make_example_data(n_samples = 20)
-    mae <- create_exposomicset(
-        codebook = dummy$codebook,
-        exposure = dummy$exposure,
-        omics = dummy$omics,
-        row_data = dummy$row_data
-    )
-
-    # run multiomics integration
-    mae <- run_multiomics_integration(
-        mae,
-        method = "MOFA",
-        n_factors = 3,
-        scale = TRUE,
-        action = "add"
-    )
-
-    # grab the integration results
-    res <- metadata(mae)$multiomics_integration$integration_results
-
-    # check that the right method was recorded
-    expect_equal(res$method, "MOFA")
-
-    # ensure that sample level scores are captured
-    # by seeing if the sample ids are present
-    expect_equal(
-        rownames(MOFA2::get_factors(res$result)[[1]]) |>
-            sort(),
-        rownames(mae@colData) |>
-            sort()
-    )
-
-    # ensure that loading scores are captured
-    for (exp_name in names(mae@ExperimentList)) {
-        expect_equal(
-            rownames(mae@ExperimentList[[exp_name]]),
-            rownames(MOFA2::get_weights(res$result)[[exp_name]])
+    local({
+        dummy <- make_example_data(n_samples = 20)
+        mae <- create_exposomicset(
+            codebook = dummy$codebook,
+            exposure = dummy$exposure,
+            omics = dummy$omics,
+            row_data = dummy$row_data
         )
-    }
 
-    # ensure that the step was recorded
-    step_names <- names(metadata(mae)$summary$steps)
-    expect_true(any(grepl("run_multiomics_integration", step_names)))
+        mae <- run_multiomics_integration(
+            mae,
+            method = "MOFA",
+            n_factors = 3,
+            scale = TRUE,
+            action = "add"
+        )
+
+        res <- metadata(mae)$multiomics_integration$integration_results
+
+        # check that the right method was recorded
+        expect_equal(res$method, "MOFA")
+
+        # safely grab MOFA2 functions
+        get_factors <- get("get_factors", asNamespace("MOFA2"))
+        get_weights <- get("get_weights", asNamespace("MOFA2"))
+
+        # ensure that sample level scores are captured
+        expect_equal(
+            rownames(get_factors(res$result)[[1]]) |> sort(),
+            rownames(mae@colData) |> sort()
+        )
+
+        # ensure that loading scores are captured
+        for (exp_name in names(mae@ExperimentList)) {
+            expect_equal(
+                rownames(mae@ExperimentList[[exp_name]]),
+                rownames(get_weights(res$result)[[exp_name]])
+            )
+        }
+
+        # ensure that the step was recorded
+        step_names <- names(metadata(mae)$summary$steps)
+        expect_true(any(grepl("run_multiomics_integration", step_names)))
+    })
 })
 
 
