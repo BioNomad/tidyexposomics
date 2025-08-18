@@ -3,7 +3,7 @@ test_that("filter_non_normal removes non-normal exposures in expomicset", {
     dummy <- make_example_data(n_samples = 100)
 
     # Create MultiAssayExperiment
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

@@ -4,7 +4,7 @@ test_that("run_impute_missing() performs exposure and omics imputation correctly
 
     # Create dummy data with missing values injected
     dummy <- make_example_data(n_samples = 20)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

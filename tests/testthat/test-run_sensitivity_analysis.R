@@ -3,7 +3,7 @@ test_that("run_sensitivity_analysis returns results with action = 'get'", {
 
     # create dummy data
     dummy <- make_example_data(n_samples = 20)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

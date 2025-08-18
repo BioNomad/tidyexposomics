@@ -3,7 +3,7 @@ test_that("run_exposure_impact computes exposure-level centrality scores", {
 
     # Create dummy expomicset
     dummy <- make_example_data(n_samples = 20)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

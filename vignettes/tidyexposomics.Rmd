@@ -203,7 +203,7 @@ library(tidyexposomics)
 load_example_data()
 
 # Create the expomicset object
-expom <- create_expomicset(
+expom <- create_exposomicset(
     codebook = annotated_cb,
     exposure = meta,
     omics = omics_list,

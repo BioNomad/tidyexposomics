@@ -3,7 +3,7 @@ test_that("run_differential_abundance returns expected results and updates metad
     # Create dummy data
     dummy <- make_example_data(n_samples = 20)
 
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

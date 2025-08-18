@@ -10,7 +10,7 @@ test_that("extract_top_factor_features works for MOFA", {
     }
 
     dummy <- make_example_data(n_samples = 10)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,
@@ -44,7 +44,7 @@ test_that("extract_top_factor_features works for MCIA", {
     skip_if_not_installed("nipalsMCIA")
 
     dummy <- make_example_data(n_samples = 10)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,
@@ -79,7 +79,7 @@ test_that("extract_top_factor_features works for DIABLO", {
     skip_if_not_installed("mixOmics")
 
     dummy <- make_example_data(n_samples = 10)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,
@@ -119,7 +119,7 @@ test_that("extract_top_factor_features works for RGCCA", {
     skip_if_not_installed("RGCCA")
 
     dummy <- make_example_data(n_samples = 10)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

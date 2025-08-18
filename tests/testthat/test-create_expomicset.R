@@ -3,10 +3,10 @@ library(testthat)
 library(MultiAssayExperiment)
 library(S4Vectors)
 
-test_that("create_expomicset returns a valid MultiAssayExperiment", {
+test_that("create_exposomicset returns a valid MultiAssayExperiment", {
     dummy <- make_example_data(n_samples = 10, n_proteins = 50)
 
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,
@@ -41,12 +41,12 @@ test_that("create_expomicset returns a valid MultiAssayExperiment", {
     expect_true("codebook" %in% names(metadata(mae)))
 })
 
-test_that("create_expomicset works with single omics input", {
+test_that("create_exposomicset works with single omics input", {
     dummy <- make_example_data(n_samples = 8)
     single_matrix <- dummy$omics$mRNA
     single_row_data <- dummy$row_data$mRNA
 
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = list("Gene Expression" = single_matrix),
@@ -59,10 +59,10 @@ test_that("create_expomicset works with single omics input", {
     expect_true("Gene Expression" %in% names(experiments(mae)))
 })
 
-test_that("create_expomicset generates row_data if not provided", {
+test_that("create_exposomicset generates row_data if not provided", {
     dummy <- make_example_data(n_samples = 6)
 
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics
@@ -75,30 +75,30 @@ test_that("create_expomicset generates row_data if not provided", {
     expect_true(is(rowData(mae[["mRNA"]]), "DataFrame"))
 })
 
-test_that("create_expomicset throws error on invalid input types", {
+test_that("create_exposomicset throws error on invalid input types", {
     dummy <- make_example_data()
 
     # error out if exposure is not a df
     expect_error(
-        create_expomicset(codebook = dummy$codebook, exposure = as.matrix(dummy$exposure), omics = dummy$omics),
+        create_exposomicset(codebook = dummy$codebook, exposure = as.matrix(dummy$exposure), omics = dummy$omics),
         "must be a data frame"
     )
 
     # error out if omics is not a list or matrix
     expect_error(
-        create_expomicset(codebook = dummy$codebook, exposure = dummy$exposure, omics = 42),
+        create_exposomicset(codebook = dummy$codebook, exposure = dummy$exposure, omics = 42),
         "must be a list or a single matrix"
     )
 
     # error out if the row data is not a list
     expect_error(
-        create_expomicset(codebook = dummy$codebook, exposure = dummy$exposure, omics = dummy$omics, row_data = "not_a_list"),
+        create_exposomicset(codebook = dummy$codebook, exposure = dummy$exposure, omics = dummy$omics, row_data = "not_a_list"),
         "must be a list"
     )
 
     # error out if the rowdata does not match omics length
     expect_error(
-        create_expomicset(codebook = dummy$codebook, exposure = dummy$exposure, omics = dummy$omics, row_data = list(S4Vectors::DataFrame())),
+        create_exposomicset(codebook = dummy$codebook, exposure = dummy$exposure, omics = dummy$omics, row_data = list(S4Vectors::DataFrame())),
         "Length of 'row_data' must match 'omics'"
     )
 })

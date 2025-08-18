@@ -6,7 +6,7 @@ test_that("filter_sample_outliers removes PCA-identified outliers", {
     dummy$omics$mRNA[1:3, 1] <- c(1e5, -1e5, 1e5)
 
     # create the multiassayexperiment
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

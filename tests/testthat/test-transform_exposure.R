@@ -3,7 +3,7 @@ test_that("transform_exposure applies boxcox_best correctly", {
 
     # Create dummy data
     dummy <- make_example_data(n_samples = 20)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,
@@ -46,7 +46,7 @@ test_that("transform_exposure applies boxcox_best correctly", {
 test_that("transform_exposure applies log2 transformation", {
     # Create dummy data
     dummy <- make_example_data(n_samples = 20)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

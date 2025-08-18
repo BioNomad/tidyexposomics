@@ -1,7 +1,7 @@
 test_that("run_pca works as expected", {
     # make the example data
     dummy <- make_example_data(n_samples = 20)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

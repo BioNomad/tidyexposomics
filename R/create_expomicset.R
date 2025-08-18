@@ -28,7 +28,7 @@
 #' tmp <- make_example_data(n_samples = 10)
 #'
 #' # create the MultiAssayExperiment Object
-#' mae <- create_expomicset(
+#' mae <- create_exposomicset(
 #'     codebook = tmp$codebook,
 #'     exposure = tmp$exposure,
 #'     omics = tmp$omics,
@@ -36,7 +36,7 @@
 #' )
 #'
 #' @export
-create_expomicset <- function(
+create_exposomicset <- function(
     codebook,
     exposure,
     omics,

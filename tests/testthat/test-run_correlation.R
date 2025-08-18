@@ -1,7 +1,7 @@
 test_that("run_correlation computes correlations between exposures and omics", {
     # Create dummy data
     dummy <- make_example_data(n_samples = 30)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,
@@ -38,7 +38,7 @@ test_that("run_correlation computes correlations between exposures and omics", {
 test_that("run_correlation computes correlations between exposures", {
     # Create dummy data
     dummy <- make_example_data(n_samples = 30)
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,

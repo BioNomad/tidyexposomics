@@ -7,7 +7,7 @@ test_that("filter_missing removes features and generates QC plots", {
     dummy$omics$mRNA[1:2, 1:5] <- NA
     dummy$omics$proteomics[1:4, 1:3] <- NA
 
-    mae <- create_expomicset(
+    mae <- create_exposomicset(
         codebook = dummy$codebook,
         exposure = dummy$exposure,
         omics = dummy$omics,
