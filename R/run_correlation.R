@@ -739,7 +739,6 @@ run_correlation <- function(
 #'
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom purrr pluck
-#' @importFrom MOFA2 get_factors
 #' @importFrom tibble rownames_to_column
 .extract_factor_matrix <- function(expomicset) {
     result <- MultiAssayExperiment::metadata(expomicset) |>
@@ -748,6 +747,7 @@ run_correlation <- function(
             "integration_results"
         )
     mat <- if (result$method == "MOFA") {
+        .check_suggested("MOFA2")
         MOFA2::get_factors(result$result)[[1]]
     } else if (result$method == "MCIA") {
         result$result@global_scores

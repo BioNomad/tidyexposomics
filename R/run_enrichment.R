@@ -203,10 +203,13 @@ run_enrichment <- function(
     }
 
     # --- Group Terms ------------
-    enr_res <- .group_enr_res(
-        enr_res,
-        clustering_approach = clustering_approach
-    )
+    if (is.data.frame(enr_res) && nrow(enr_res) > 0L &&
+        all(c("term_name", "ids") %in% names(enr_res))) {
+        enr_res <- .group_enr_res(
+            enr_res,
+            clustering_approach = clustering_approach
+        )
+    }
 
     # --- Store or return ---
     if (action == "add") {
@@ -303,6 +306,12 @@ run_enrichment <- function(
 
     db <- match.arg(db)
 
+    # avoid small selected gene sets
+    if (length(selected_genes) <= 1L ||
+        is.null(universe_genes) || all(is.na(universe_genes))) {
+        return(tibble::tibble())
+    }
+
     # Fetch functional terms + mapping
     fetch_fun <- switch(db,
         GO = fenr::fetch_go,
@@ -315,19 +324,18 @@ run_enrichment <- function(
         stop("Please specify a species designation for GO.")
     }
 
-    if (db == "GO") {
-        term_data <- fetch_fun(species = species)
-    } else {
-        term_data <- fetch_fun()
+    term_data <- tryCatch(
+        {
+            if (db == "GO") fetch_fun(species = species) else fetch_fun()
+        },
+        error = function(e) {
+            message(e$message)
+            return(NULL)
+        }
+    )
+    if (is.null(term_data)) {
+        return(tibble::tibble())
     }
-
-    # Prepare for enrichment
-    # terms_obj <- fenr::prepare_for_enrichment(
-    #   terms = term_data$terms,
-    #   mapping = term_data$mapping,
-    #   all_features = universe_genes,
-    #   feature_name = fenr_col
-    # )
 
     # Prepare for enrichment
     terms_obj <- tryCatch(
@@ -345,21 +353,26 @@ run_enrichment <- function(
             return(NULL)
         }
     )
+    if (is.null(terms_obj)) {
+        return(tibble::tibble())
+    }
 
 
     # Run enrichment
-
-    if (!is.null(terms_obj)) {
-        enrichment_results <- fenr::functional_enrichment(
+    out <- tryCatch(
+        fenr::functional_enrichment(
             feat_all = universe_genes,
             feat_sel = selected_genes,
             term_data = terms_obj
-        )
-    } else {
-        enrichment_results <- NULL
-    }
+        ),
+        error = function(e) {
+            # e.g., internal size assertions
+            message(e$message)
+            tibble::tibble()
+        }
+    )
 
-    return(enrichment_results)
+    tibble::as_tibble(out)
 }
 
 # --- Run Enrichment on Features ------------
@@ -546,7 +559,7 @@ run_enrichment <- function(
             }
         )
 
-        if (length(selected_genes) < 1) {
+        if (length(selected_genes) < 2) {
             enr <- NULL
         } else if (is.null(universe_genes) | all(is.na(universe_genes))) {
             enr <- NULL
@@ -571,10 +584,14 @@ run_enrichment <- function(
 
     # Multiple-hypothesis correction after all tests are done
     enr_res <- enr_res |>
-        dplyr::bind_rows() |>
-        dplyr::mutate(padj = p.adjust(p_value,
-            method = padj_method
-        )) |>
+        dplyr::bind_rows()
+
+    if (nrow(enr_res) == 0L) {
+        return(tibble::tibble())
+    }
+
+    enr_res <- enr_res |>
+        dplyr::mutate(padj = p.adjust(p_value, method = padj_method)) |>
         dplyr::filter(padj < pval_thresh) |>
         dplyr::filter(
             n_with_sel > min_set,
@@ -729,7 +746,7 @@ run_enrichment <- function(
                 }
             )
 
-            if (length(selected_genes) < 1) {
+            if (length(selected_genes) < 2) {
                 enr <- NULL
             } else if (is.null(universe_genes) | all(is.na(universe_genes))) {
                 enr <- NULL
@@ -756,10 +773,14 @@ run_enrichment <- function(
 
     # Multiple-hypothesis correction after all tests are done
     enr_res <- enr_res |>
-        dplyr::bind_rows() |>
-        dplyr::mutate(padj = p.adjust(p_value,
-            method = padj_method
-        )) |>
+        dplyr::bind_rows()
+
+    if (nrow(enr_res) == 0L) {
+        return(tibble::tibble())
+    }
+
+    enr_res <- enr_res |>
+        dplyr::mutate(padj = p.adjust(p_value, method = padj_method)) |>
         dplyr::filter(padj < pval_thresh) |>
         dplyr::filter(
             n_with_sel > min_set,

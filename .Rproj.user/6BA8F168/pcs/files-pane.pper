@@ -1,11 +1,11 @@
 {
     "sortOrder": [
         {
-            "columnIndex": 4,
-            "ascending": false
+            "columnIndex": 2,
+            "ascending": true
         },
         {
-            "columnIndex": 2,
+            "columnIndex": 4,
             "ascending": false
         },
         {
@@ -13,5 +13,5 @@
             "ascending": false
         }
     ],
-    "path": "~/jhu/projects/tidyexposomics"
+    "path": "~/jhu/projects/tidyexposomics/R"
 }

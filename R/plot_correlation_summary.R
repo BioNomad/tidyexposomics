@@ -154,7 +154,7 @@ plot_correlation_summary <- function(
                 yend = as.numeric(reorder(category, n)) + 0.45,
                 y = as.numeric(reorder(category, n)) - 0.45,
                 color = category
-            ), size = 1) +
+            ), linewidth = 1) +
             scale_fill_tidy_exp() +
             scale_color_tidy_exp() +
             ggpubr::theme_pubr() +
@@ -184,7 +184,7 @@ plot_correlation_summary <- function(
                 yend = as.numeric(reorder(exp_name, n)) + 0.45,
                 y = as.numeric(reorder(exp_name, n)) - 0.45,
                 color = exp_name
-            ), size = 1) +
+            ), linewidth = 1) +
             scale_fill_tidy_exp(rev = TRUE) +
             scale_color_tidy_exp(rev = TRUE) +
             ggpubr::theme_pubr() +

@@ -140,13 +140,11 @@ run_multiomics_integration <- function(
 #' @return A trained MOFA model object.
 #' @keywords internal
 #' @noRd
-#' @importFrom MOFA2 create_mofa get_default_model_options
-#' @importFrom MOFA2 get_default_data_options get_default_training_options
-#' @importFrom MOFA2 prepare_mofa run_mofa load_model
 .run_mofa2 <- function(
     expomicset_mo,
     n_factors) {
     message("Applying MOFA+ integration.")
+    .check_suggested("MOFA2")
 
     # Create MOFA object from the MultiAssayExperiment
     mofa <- MOFA2::create_mofa(expomicset_mo)

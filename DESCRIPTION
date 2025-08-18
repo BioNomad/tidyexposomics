@@ -2,11 +2,32 @@ Package: tidyexposomics
 Title: Integrated Exposure-Omics Analysis Powered by Tidy Principles
 Version: 0.99.0
 Authors@R: 
+    c(
     person(given = "Jason",
     family  = "Laird",
     email = "jasonlaird5353@gmail.com",
     role = c("aut", "cre"),
     comment = c(ORCID = "0009-0000-5994-2236")
+    ),
+    person(given = "Thomas",
+    family  = "Hartung",
+    email = "thartun1@jhu.edu",
+    role = c("ctb"),
+    comment = c(ORCID = "0000-0003-1359-7689")
+    ),
+    person(given = "Fenna",
+    family  = "Sillé",
+    email = "fsille1@jhu.edu",
+    role = c("ctb"),
+    comment = c(ORCID = "0000-0003-4305-2049")
+    ),
+    person(given = "Alexandra",
+    family  = "Maertens",
+    email = "amaerte1@jhu.edu",
+    role = c("ctb"),
+    comment = c(ORCID = "0000-0002-2077-2011")
+    ),
+    person("JHU Discovery Award", role = "fnd")
     )
 Description: The tidyexposomics package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. We structure our commands to fit into the tidyverse framework, where commands are designed to be simplified and intuitive. Here we provide functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.
 License: MIT + file LICENSE
@@ -37,7 +58,7 @@ Imports:
     dplyr,
     factoextra,
     fenr,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
     ggpubr,
     ggrepel,
     Hmisc,
@@ -46,7 +67,6 @@ Imports:
     MASS,
     methods,
     mixOmics,
-    MOFA2,
     MultiAssayExperiment,
     naniar,
     nipalsMCIA,
@@ -90,6 +110,7 @@ Suggests:
     mice,
     mirt,
     missForest,
+    MOFA2,
     openxlsx,
     patchwork,
     rmarkdown,

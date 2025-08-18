@@ -102,7 +102,7 @@ run_normality_check <- function(expomicset,
                 yend = Freq,
                 color = Var1
             ),
-            size = 1
+            linewidth = 1
         ) +
         ggpubr::theme_pubr(legend = "right") +
         # ggsci::scale_fill_lancet() +

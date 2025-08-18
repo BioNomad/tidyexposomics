@@ -130,7 +130,7 @@ plot_missing <- function(
                 y = as.numeric(forcats::fct_reorder(exp_label, missingness)) - 0.45,
                 yend = as.numeric(forcats::fct_reorder(exp_label, missingness)) + 0.45,
                 color = exp_name
-            ), size = 1) +
+            ), linewidth = 1) +
             scale_fill_tidy_exp() +
             scale_color_tidy_exp() +
             labs(

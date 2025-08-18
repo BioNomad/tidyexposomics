@@ -79,6 +79,7 @@ plot_factor_summary <- function(
 
     factor_contrib_plot <- switch(method,
         "MOFA" = {
+            .check_suggested("MOFA2")
             MOFA2::plot_variance_explained(
                 result,
                 x = "view",

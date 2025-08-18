@@ -354,7 +354,10 @@ run_association <- function(
         purrr::pluck("integration_results")
 
     mat <- switch(result$method,
-        "MOFA" = MOFA2::get_factors(result$result)[[1]],
+        "MOFA" = {
+            .check_suggested("MOFA2")
+            MOFA2::get_factors(result$result)[[1]]
+        },
         "MCIA" = result$result@global_scores,
         "MCCA" = {
             result$result$sample_scores |>

@@ -60,7 +60,6 @@
 #'     plot_top_factor_features()
 #'
 #' @importFrom MultiAssayExperiment metadata
-#' @importFrom MOFA2 get_weights
 #' @importFrom purrr map2
 #' @importFrom tibble rownames_to_column
 #' @importFrom tidyr pivot_longer
@@ -86,6 +85,7 @@ plot_top_factor_features <- function(
 
     loadings_df <- switch(method,
         "MOFA" = {
+            .check_suggested("MOFA2")
             MOFA2::get_weights(result) |>
                 purrr::map2(
                     names(MOFA2::get_weights(result)),

@@ -73,7 +73,6 @@
 #' )
 #'
 #' @export
-
 extract_top_factor_features <- function(
     expomicset,
     factors = NULL,
@@ -103,6 +102,7 @@ extract_top_factor_features <- function(
     # Extract factor loadings
     loadings <- switch(method_used,
         "MOFA" = {
+            .check_suggested("MOFA2")
             message("Using MOFA+ factor loadings.")
             MOFA2::get_weights(integration_results$result)
         },

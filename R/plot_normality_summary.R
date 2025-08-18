@@ -82,7 +82,7 @@ plot_normality_summary <- function(
                     yend = value,
                     color = var
                 ),
-                size = 1
+                linewidth = 1
             ) +
             ggpubr::theme_pubr(legend = "right") +
             scale_fill_manual(
@@ -124,7 +124,7 @@ plot_normality_summary <- function(
                     yend = value,
                     color = var
                 ),
-                size = 1
+                linewidth = 1
             ) +
             ggpubr::theme_pubr(legend = "right") +
             scale_fill_tidy_exp() +

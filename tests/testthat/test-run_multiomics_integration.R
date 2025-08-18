@@ -1,5 +1,13 @@
 test_that("run_multiomics_integration works with MOFA", {
-    skip_if_not_installed("MOFA2")
+    # skip unless MOFA2 is available and Python backend is good to go
+    if (!requireNamespace("MOFA2", quietly = TRUE)) {
+        skip("MOFA2 not available")
+    }
+    # skip on arm64 darwin macs where MOFA2 breaks
+    if (Sys.info()[["sysname"]] == "Darwin" &&
+        grepl("arm64", R.version$platform)) {
+        skip("Skip MOFA2 test on macOS ARM64 - issue with CI segfault")
+    }
 
     # make the example data
     dummy <- make_example_data(n_samples = 20)
