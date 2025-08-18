@@ -3,7 +3,7 @@
 #' This helper function generates a reproducible dummy dataset
 #' containing exposures, mRNA data, and proteomics data. It can
 #' optionally return the data as a \code{MultiAssayExperiment} using
-#' \code{\link{create_expomicset}}.
+#' \code{\link{create_exposomicset}}.
 #'
 #' @param n_samples Integer. Number of samples to simulate (default: 12).
 #' @param n_proteins Integer. Number of proteins to simulate (default: 80).
@@ -11,7 +11,7 @@
 #' include a "batch" variable in the exposure data (default: FALSE).
 #' @param return_mae Logical. If \code{TRUE},
 #' return a \code{MultiAssayExperiment} created using
-#' \code{create_expomicset()} (default: FALSE).
+#' \code{create_exposomicset()} (default: FALSE).
 #'
 #' @return Either:
 #' \itemize{
@@ -208,7 +208,7 @@ make_example_data <- function(
             omics = omics,
             row_data = row_data
         )
-        res <- create_expomicset(
+        res <- create_exposomicset(
             codebook = res_list$codebook,
             exposure = res_list$exposure,
             omics = res_list$omics,

@@ -1,4 +1,4 @@
-#' Create an expomicset Object
+#' Create an Exposomicset Object
 #'
 #' Constructs a `MultiAssayExperiment` object from exposure data and omics datasets,
 #' ensuring proper formatting and alignment of samples and features.

@@ -21,7 +21,7 @@ include a "batch" variable in the exposure data (default: FALSE).}
 
 \item{return_mae}{Logical. If \code{TRUE},
 return a \code{MultiAssayExperiment} created using
-\code{create_expomicset()} (default: FALSE).}
+\code{create_exposomicset()} (default: FALSE).}
 }
 \value{
 Either:
@@ -36,7 +36,7 @@ if \code{return_mae = FALSE}.
 This helper function generates a reproducible dummy dataset
 containing exposures, mRNA data, and proteomics data. It can
 optionally return the data as a \code{MultiAssayExperiment} using
-\code{\link{create_expomicset}}.
+\code{\link{create_exposomicset}}.
 }
 \examples{
 # Return as a list

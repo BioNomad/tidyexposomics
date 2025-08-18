@@ -95,7 +95,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install and Load Packages</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"BioNomad/tidyexposomics"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tidyexposomics</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://BioNomad.github.io/tidyexposomics">tidyexposomics</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -107,7 +107,7 @@
 <span><span class="fu"><a href="reference/load_example_data.html">load_example_data</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create ExpOmicSet</span></span>
-<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/create_expomicset.html">create_expomicset</a></span><span class="op">(</span></span>
+<span><span class="va">expom</span> <span class="op">&lt;-</span> <span class="fu">create_expomicset</span><span class="op">(</span></span>
 <span>  codebook <span class="op">=</span> <span class="va">annotated_cb</span>,</span>
 <span>  exposure <span class="op">=</span> <span class="va">meta</span>,</span>
 <span>  omics <span class="op">=</span> <span class="va">omics_list</span>,</span>

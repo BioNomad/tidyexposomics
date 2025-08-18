@@ -144,7 +144,7 @@ run_multiomics_integration <- function(
     expomicset_mo,
     n_factors) {
     message("Applying MOFA+ integration.")
-    .check_suggested("MOFA2")
+    .check_mofa_safe()
 
     # Create MOFA object from the MultiAssayExperiment
     mofa <- MOFA2::create_mofa(expomicset_mo)

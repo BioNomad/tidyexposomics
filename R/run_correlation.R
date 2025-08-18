@@ -747,7 +747,7 @@ run_correlation <- function(
             "integration_results"
         )
     mat <- if (result$method == "MOFA") {
-        .check_suggested("MOFA2")
+        .check_mofa_safe()
         MOFA2::get_factors(result$result)[[1]]
     } else if (result$method == "MCIA") {
         result$result@global_scores
