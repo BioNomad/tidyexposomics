@@ -62,11 +62,14 @@ mae <- mae |>
         exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi")
     )
 
-# extract the differential abundance results
+# file path of the output file
+tmp <- tempfile(fileext = ".xlsx")
+
+# extract the correlation results
 extract_results_excel(
     expomicset = mae,
     result_types = "correlation",
-    file = "supplemental_results.xlsx"
+    file = tmp
 )
 
 }

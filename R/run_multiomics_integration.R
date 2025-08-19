@@ -136,41 +136,44 @@ run_multiomics_integration <- function(
 #' @keywords internal
 #' @noRd
 .mofa_backend <- function() {
-  # user override wins
-  backend <- getOption("tidyexposomics.mofa.backend", NULL)
-  if (!is.null(backend)) return(backend)
+    # user override wins
+    backend <- getOption("tidyexposomics.mofa.backend", NULL)
+    if (!is.null(backend)) {
+        return(backend)
+    }
 
-  # auto-detect: Apple Silicon → reticulate, otherwise basilisk
-  if (Sys.info()[["sysname"]] == "Darwin" &&
-      grepl("arm64", R.version$platform)) {
-    return("reticulate")
-  } else {
-    return("basilisk")
-  }
+    # auto-detect: Apple Silicon, reticulate, otherwise basilisk
+    if (Sys.info()[["sysname"]] == "Darwin" &&
+        grepl("arm64", R.version$platform)) {
+        return("reticulate")
+    } else {
+        return("basilisk")
+    }
 }
 
 #' Check that the chosen backend is safe to use
 #' @keywords internal
 #' @noRd
 .check_mofa_safe <- function(backend = .mofa_backend()) {
-  if (backend == "reticulate") {
-    if (!requireNamespace("reticulate", quietly = TRUE)) {
-      stop("reticulate backend requested, but 'reticulate' is not installed.")
+    if (identical(backend, "reticulate")) {
+        if (!requireNamespace("reticulate", quietly = TRUE)) {
+            stop("reticulate backend requested, but 'reticulate' is not installed.", call. = FALSE)
+        }
+        ret <- asNamespace("reticulate")
+        if (!isTRUE(ret$py_available(initialize = FALSE))) {
+            stop("reticulate backend requested, but no Python is available.", call. = FALSE)
+        }
+        if (!isTRUE(ret$py_module_available("mofapy2"))) {
+            stop("reticulate backend requested, but Python module 'mofapy2' is missing.", call. = FALSE)
+        }
+    } else if (identical(backend, "basilisk")) {
+        if (!requireNamespace("MOFA2", quietly = TRUE)) {
+            stop("basilisk backend requested, but 'MOFA2' is not installed.", call. = FALSE)
+        }
+    } else {
+        stop("Unknown backend: '", backend, "'.", call. = FALSE)
     }
-    if (!reticulate::py_available(initialize = FALSE)) {
-      stop("reticulate backend requested, but no Python is available.")
-    }
-    if (!reticulate::py_module_available("mofapy2")) {
-      stop("reticulate backend requested, but Python module 'mofapy2' is missing.")
-    }
-  } else if (backend == "basilisk") {
-    if (!requireNamespace("MOFA2", quietly = TRUE)) {
-      stop("basilisk backend requested, but 'MOFA2' is not installed.")
-    }
-    # optional: further checks, e.g. MOFA2:::.basiliskEnvExists()
-  } else {
-    stop("Unknown backend: ", backend)
-  }
+    invisible(TRUE)
 }
 
 #' Run MOFA2 safely with backend switching
@@ -181,47 +184,47 @@ run_multiomics_integration <- function(
 #' @keywords internal
 #' @noRd
 .run_mofa2 <- function(expomicset_mo, n_factors) {
-  backend <- .mofa_backend()
-  message("Using MOFA backend: ", backend)
-  .check_mofa_safe(backend)
+    backend <- .mofa_backend()
+    message("Using MOFA backend: ", backend)
+    .check_mofa_safe(backend)
 
-  # limit threads for stability
-  Sys.setenv(
-    OMP_NUM_THREADS = "1",
-    MKL_NUM_THREADS = "1",
-    OPENBLAS_NUM_THREADS = "1",
-    VECLIB_MAXIMUM_THREADS = "1",
-    NUMEXPR_NUM_THREADS = "1"
-  )
+    # limit threads for stability
+    Sys.setenv(
+        OMP_NUM_THREADS = "1",
+        MKL_NUM_THREADS = "1",
+        OPENBLAS_NUM_THREADS = "1",
+        VECLIB_MAXIMUM_THREADS = "1",
+        NUMEXPR_NUM_THREADS = "1"
+    )
 
-  # Create MOFA object
-  mofa <- MOFA2::create_mofa(expomicset_mo)
+    # Create MOFA object
+    mofa <- MOFA2::create_mofa(expomicset_mo)
 
-  # Options
-  model_opts <- MOFA2::get_default_model_options(mofa)
-  model_opts$num_factors <- n_factors
-  data_opts  <- MOFA2::get_default_data_options(mofa)
-  train_opts <- MOFA2::get_default_training_options(mofa)
+    # Options
+    model_opts <- MOFA2::get_default_model_options(mofa)
+    model_opts$num_factors <- n_factors
+    data_opts <- MOFA2::get_default_data_options(mofa)
+    train_opts <- MOFA2::get_default_training_options(mofa)
 
-  # Prepare model
-  mofa <- MOFA2::prepare_mofa(
-    object = mofa,
-    data_options = data_opts,
-    model_options = model_opts,
-    training_options = train_opts
-  )
+    # Prepare model
+    mofa <- MOFA2::prepare_mofa(
+        object = mofa,
+        data_options = data_opts,
+        model_options = model_opts,
+        training_options = train_opts
+    )
 
-  outfile <- file.path(tempdir(), "mofa_model.hdf5")
+    outfile <- file.path(tempdir(), "mofa_model.hdf5")
 
-  # Switch runner based on backend
-  if (backend == "reticulate") {
-    mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = FALSE)
-  } else {
-    mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
-  }
+    # Switch runner based on backend
+    if (backend == "reticulate") {
+        mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = FALSE)
+    } else {
+        mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
+    }
 
-  # Reload trained model
-  MOFA2::load_model(outfile)
+    # Reload trained model
+    MOFA2::load_model(outfile)
 }
 # .run_mofa2 <- function(
 #     expomicset_mo,

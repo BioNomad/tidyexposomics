@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_exposomicset.R
 \name{create_exposomicset}
 \alias{create_exposomicset}
-\title{Create an expomicset Object}
+\title{Create an Exposomicset Object}
 \usage{
 create_exposomicset(codebook, exposure, omics, row_data = NULL)
 }
