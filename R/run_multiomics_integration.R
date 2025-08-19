@@ -130,45 +130,128 @@ run_multiomics_integration <- function(
 }
 
 # --- MOFA2 Integration Function ---------------
-#' @title Run MOFA2 Integration
-#' @description Applies MOFA+ unsupervised integration on a
-#' MultiAssayExperiment.
+#' Decide which backend to use (basilisk vs reticulate)
 #'
-#' @param expomicset_mo A MultiAssayExperiment object containing omics data.
-#' @param n_factors Integer. Number of latent factors to infer.
-#'
-#' @return A trained MOFA model object.
+#' @return "basilisk" or "reticulate"
 #' @keywords internal
 #' @noRd
-.run_mofa2 <- function(
-    expomicset_mo,
-    n_factors) {
-    message("Applying MOFA+ integration.")
-    .check_mofa_safe()
+.mofa_backend <- function() {
+  # user override wins
+  backend <- getOption("tidyexposomics.mofa.backend", NULL)
+  if (!is.null(backend)) return(backend)
 
-    # Create MOFA object from the MultiAssayExperiment
-    mofa <- MOFA2::create_mofa(expomicset_mo)
-
-    # Set MOFA options
-    model_opts <- MOFA2::get_default_model_options(mofa)
-    model_opts$num_factors <- n_factors
-    data_opts <- MOFA2::get_default_data_options(mofa)
-    train_opts <- MOFA2::get_default_training_options(mofa)
-
-    # Prepare & train MOFA model
-    mofa <- MOFA2::prepare_mofa(
-        object = mofa,
-        data_options = data_opts,
-        model_options = model_opts,
-        training_options = train_opts
-    )
-
-    outfile <- file.path(tempdir(), "mofa_model.hdf5")
-    mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
-
-    # Load trained MOFA model
-    result <- MOFA2::load_model(outfile)
+  # auto-detect: Apple Silicon → reticulate, otherwise basilisk
+  if (Sys.info()[["sysname"]] == "Darwin" &&
+      grepl("arm64", R.version$platform)) {
+    return("reticulate")
+  } else {
+    return("basilisk")
+  }
 }
+
+#' Check that the chosen backend is safe to use
+#' @keywords internal
+#' @noRd
+.check_mofa_safe <- function(backend = .mofa_backend()) {
+  if (backend == "reticulate") {
+    if (!requireNamespace("reticulate", quietly = TRUE)) {
+      stop("reticulate backend requested, but 'reticulate' is not installed.")
+    }
+    if (!reticulate::py_available(initialize = FALSE)) {
+      stop("reticulate backend requested, but no Python is available.")
+    }
+    if (!reticulate::py_module_available("mofapy2")) {
+      stop("reticulate backend requested, but Python module 'mofapy2' is missing.")
+    }
+  } else if (backend == "basilisk") {
+    if (!requireNamespace("MOFA2", quietly = TRUE)) {
+      stop("basilisk backend requested, but 'MOFA2' is not installed.")
+    }
+    # optional: further checks, e.g. MOFA2:::.basiliskEnvExists()
+  } else {
+    stop("Unknown backend: ", backend)
+  }
+}
+
+#' Run MOFA2 safely with backend switching
+#'
+#' @param expomicset_mo A MultiAssayExperiment object
+#' @param n_factors Number of latent factors to infer
+#' @return A trained MOFA model object
+#' @keywords internal
+#' @noRd
+.run_mofa2 <- function(expomicset_mo, n_factors) {
+  backend <- .mofa_backend()
+  message("Using MOFA backend: ", backend)
+  .check_mofa_safe(backend)
+
+  # limit threads for stability
+  Sys.setenv(
+    OMP_NUM_THREADS = "1",
+    MKL_NUM_THREADS = "1",
+    OPENBLAS_NUM_THREADS = "1",
+    VECLIB_MAXIMUM_THREADS = "1",
+    NUMEXPR_NUM_THREADS = "1"
+  )
+
+  # Create MOFA object
+  mofa <- MOFA2::create_mofa(expomicset_mo)
+
+  # Options
+  model_opts <- MOFA2::get_default_model_options(mofa)
+  model_opts$num_factors <- n_factors
+  data_opts  <- MOFA2::get_default_data_options(mofa)
+  train_opts <- MOFA2::get_default_training_options(mofa)
+
+  # Prepare model
+  mofa <- MOFA2::prepare_mofa(
+    object = mofa,
+    data_options = data_opts,
+    model_options = model_opts,
+    training_options = train_opts
+  )
+
+  outfile <- file.path(tempdir(), "mofa_model.hdf5")
+
+  # Switch runner based on backend
+  if (backend == "reticulate") {
+    mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = FALSE)
+  } else {
+    mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
+  }
+
+  # Reload trained model
+  MOFA2::load_model(outfile)
+}
+# .run_mofa2 <- function(
+#     expomicset_mo,
+#     n_factors) {
+#     message("Applying MOFA+ integration.")
+#     .check_mofa_safe()
+#
+#     # Create MOFA object from the MultiAssayExperiment
+#     mofa <- MOFA2::create_mofa(expomicset_mo)
+#
+#     # Set MOFA options
+#     model_opts <- MOFA2::get_default_model_options(mofa)
+#     model_opts$num_factors <- n_factors
+#     data_opts <- MOFA2::get_default_data_options(mofa)
+#     train_opts <- MOFA2::get_default_training_options(mofa)
+#
+#     # Prepare & train MOFA model
+#     mofa <- MOFA2::prepare_mofa(
+#         object = mofa,
+#         data_options = data_opts,
+#         model_options = model_opts,
+#         training_options = train_opts
+#     )
+#
+#     outfile <- file.path(tempdir(), "mofa_model.hdf5")
+#     mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
+#
+#     # Load trained MOFA model
+#     result <- MOFA2::load_model(outfile)
+# }
 # --- MCIA Integration Function ----------------
 #' @title Run MCIA Integration
 #' @description Applies MCIA using `nipalsMCIA` on a

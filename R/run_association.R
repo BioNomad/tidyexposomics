@@ -355,7 +355,7 @@ run_association <- function(
 
     mat <- switch(result$method,
         "MOFA" = {
-            .check_mofa_safe()
+            .check_suggested("MOFA2")
             MOFA2::get_factors(result$result)[[1]]
         },
         "MCIA" = result$result@global_scores,

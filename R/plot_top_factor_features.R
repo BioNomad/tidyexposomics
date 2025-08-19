@@ -85,7 +85,7 @@ plot_top_factor_features <- function(
 
     loadings_df <- switch(method,
         "MOFA" = {
-            .check_mofa_safe()
+            .check_suggested("MOFA2")
             MOFA2::get_weights(result) |>
                 purrr::map2(
                     names(MOFA2::get_weights(result)),
