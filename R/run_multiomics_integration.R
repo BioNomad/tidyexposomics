@@ -188,14 +188,6 @@ run_multiomics_integration <- function(
     message("Using MOFA backend: ", backend)
     .check_mofa_safe(backend)
 
-    # limit threads for stability
-    Sys.setenv(
-        OMP_NUM_THREADS = "1",
-        MKL_NUM_THREADS = "1",
-        OPENBLAS_NUM_THREADS = "1",
-        VECLIB_MAXIMUM_THREADS = "1",
-        NUMEXPR_NUM_THREADS = "1"
-    )
 
     # Create MOFA object
     mofa <- MOFA2::create_mofa(expomicset_mo)
