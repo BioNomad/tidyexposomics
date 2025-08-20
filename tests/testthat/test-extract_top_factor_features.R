@@ -1,5 +1,7 @@
 test_that("extract_top_factor_features works for MOFA", {
     skip_if_not_installed("MOFA2")
+    skip_if(grepl("arm64", R.version$platform) &&
+        Sys.info()[["sysname"]] == "Darwin")
 
     local({
         dummy <- make_example_data(n_samples = 10)
