@@ -105,14 +105,14 @@ plot_pca <- function(
             x = sprintf(
                 "PC1 (%s%%)",
                 round(
-                    (summary(pca_feature)$importance[2, 1:2] * 100)[1],
+                    (summary(pca_feature)$importance[2, seq_len(2)] * 100)[1],
                     digits = 1
                 )
             ),
             y = sprintf(
                 "PC2 (%s%%)",
                 round(
-                    (summary(pca_feature)$importance[2, 1:2] * 100)[2],
+                    (summary(pca_feature)$importance[2, seq_len(2)] * 100)[2],
                     digits = 1
                 )
             )
@@ -181,14 +181,14 @@ plot_pca <- function(
             x = sprintf(
                 "PC1 (%s%%)",
                 round(
-                    (summary(pca_sample)$importance[2, 1:2] * 100)[1],
+                    (summary(pca_sample)$importance[2, seq_len(2)] * 100)[1],
                     digits = 1
                 )
             ),
             y = sprintf(
                 "PC2 (%s%%)",
                 round(
-                    (summary(pca_sample)$importance[2, 1:2] * 100)[2],
+                    (summary(pca_sample)$importance[2, seq_len(2)] * 100)[2],
                     digits = 1
                 )
             )

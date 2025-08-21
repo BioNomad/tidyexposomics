@@ -1,7 +1,9 @@
 test_that("extract_top_factor_features works for MOFA", {
-    skip_if_not_installed("MOFA2")
+    # MOFA2 has an issue running on Mac-arm64
+    skip_on_os("mac")
     skip_if(grepl("arm64", R.version$platform) &&
         Sys.info()[["sysname"]] == "Darwin")
+    skip_if_not_installed("MOFA2")
 
     local({
         dummy <- make_example_data(n_samples = 10)
