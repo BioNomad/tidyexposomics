@@ -33,3 +33,14 @@ utils::globalVariables(c(
     "var2_type", "var_exp", "var_label", "var_max", "var_min", "var_pc",
     "variable", "weight", "x", "y"
 ))
+
+#' Internal - onLoad hook to register www assets
+#'
+#' Registers \code{inst/app/www} as a Shiny resource path \code{"www"} if present.
+#'
+#' @keywords internal
+#' @importFrom shiny addResourcePath
+.onLoad <- function(libname, pkgname) {
+  www <- system.file("app", "www", package = pkgname)
+  if (dir.exists(www)) shiny::addResourcePath("www", www)
+}

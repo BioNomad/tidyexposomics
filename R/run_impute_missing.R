@@ -101,7 +101,7 @@ run_impute_missing <- function(
             return(DEP::impute(data, fun = "MinProb", q = 0.01))
         } else if (method == "missforest") {
             .check_suggested(pkg = "missForest")
-            return(missForest::missForest(as.matrix(data))$ximp)
+            return(missForest::missForest(data)$ximp)
         } else if (method == "lod_sqrt2") {
             return(impute_lod_sqrt2(data))
         } else {
