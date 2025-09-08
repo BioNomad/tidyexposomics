@@ -9,9 +9,17 @@
 <url><loc>https://BioNomad.github.io/tidyexposomics/LICENSE.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/news/index.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/reference/annotated_cb.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/build_ont_annot_app.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/reference/chebi.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/reference/create_expomicset.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/reference/create_exposomicset.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/dot-can_use_network.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/dot-get_ols_description.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/dot-load_ontologies.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/dot-onLoad.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/dot-ont_annot_build_server.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/dot-ont_annot_build_ui.html</loc></url>
+<url><loc>https://BioNomad.github.io/tidyexposomics/reference/dot-run_categorize_ontology.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/reference/download_dataset.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/reference/ecto.html</loc></url>
 <url><loc>https://BioNomad.github.io/tidyexposomics/reference/extract_omics_exposure_df.html</loc></url>

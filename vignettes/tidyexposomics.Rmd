@@ -149,7 +149,9 @@ We use the MultiAssayExperiment object to store the exposure and omics data. The
 - `row_data`: argument is a list of data frames that contain information about the rows of each omics data frame.
 
 
-We are going to start by loading in example data pulled from the [ISGlobal Exposome Data Challenge 2021](https://www.sciencedirect.com/science/article/pii/S016041202200349X#b0065) (Maitre et al., 2022). Specifically, we will examine how exposures and omics features relate to asthma status.
+We are going to start by loading in [modified example data](https://doi.org/10.5281/zenodo.17049350) (10.5281/zenodo.17049350) from the [ISGlobal Exposome Data Challenge 2021](https://www.sciencedirect.com/science/article/pii/S016041202200349X#b0065) (Maitre et al., 2022). Please cite the original study and data creators when using this bundle. 
+
+Here we will examine how exposures and omics features relate to asthma status.
 
 ```{r,warning=FALSE,message=FALSE}
 # Load Libraries

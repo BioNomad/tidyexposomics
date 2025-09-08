@@ -1,4 +1,13 @@
-#' Download and load a zipped .RData file from the tidyexposomics GitHub release
+#' Download tidyexposomics zenodo data
+#'
+#' Download and load a zipped .RData file from the tidyexposomics
+#' Zenodo release: https://doi.org/10.5281/zenodo.17049349. The data bundle
+#' contains ontology data from ECTO, CHEBI, and HPO, and processed data from
+#' the ISGlobal Exposome Data Challenge 2021
+#' (Maitre et al., Environment International, 2022;
+#' DOI: 10.1016/j.envint.2022.107422). Please cite the original study
+#' and data creators when using this bundle.
+#'
 #'
 #' @param name The name of the dataset (without .zip or .RData extension).
 #'   Valid options include: "omics_list", "fdata", "meta", "annotated_cb",
@@ -33,7 +42,7 @@ download_dataset <- function(
     rdata_name <- paste0(name, ".RData")
 
     url <- paste0(
-        "https://github.com/bionomad/tidyexposomics/releases/download/data-v1/",
+        "https://zenodo.org/records/17049350/files/",
         zip_name
     )
     zip_path <- file.path(dest_dir, zip_name)

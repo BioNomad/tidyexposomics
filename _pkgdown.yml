@@ -46,7 +46,7 @@ reference:
 
 - title: Ontology Annotation App
   contents:
-  - starts_with("ont")
+  - starts_with("build")
 
 - title: Example Data
   contents:
