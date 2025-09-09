@@ -33,7 +33,7 @@ download_dataset <- function(
     rdata_name <- paste0(name, ".RData")
 
     url <- paste0(
-        "https://github.com/bionomad/tidyexposomics/releases/download/data-v1/",
+        "https://zenodo.org/records/17049350/files/",
         zip_name
     )
     zip_path <- file.path(dest_dir, zip_name)

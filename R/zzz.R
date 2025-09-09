@@ -38,9 +38,11 @@ utils::globalVariables(c(
 #'
 #' Registers \code{inst/app/www} as a Shiny resource path \code{"www"} if present.
 #'
+#' @return Invisibly returns \code{NULL}
 #' @keywords internal
 #' @importFrom shiny addResourcePath
 .onLoad <- function(libname, pkgname) {
   www <- system.file("app", "www", package = pkgname)
   if (dir.exists(www)) shiny::addResourcePath("www", www)
+  invisible(NULL)
 }

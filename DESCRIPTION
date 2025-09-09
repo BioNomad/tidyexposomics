@@ -35,7 +35,7 @@ URL: https://BioNomad.github.io/tidyexposomics
 BugReports: https://github.com/BioNomad/tidyexposomics/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 biocViews: 
     Software, 
@@ -94,7 +94,6 @@ Suggests:
     circlize,
     curl,
     densityClust,
-    DEP,
     DiagrammeR,
     dynamicTreeCut,
     edgeR,
@@ -119,7 +118,6 @@ Suggests:
     patchwork,
     reticulate,
     rmarkdown,
-    shiny,
     testthat (>= 3.0.0),
     tidygraph,
     tidyHeatmap,

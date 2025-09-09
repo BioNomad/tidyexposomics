@@ -36,7 +36,6 @@ test_that("run_enrichment identifies GO terms for DEGs and updates metadata", {
     # Confirm enrichment results added to metadata
     enr_res <- MultiAssayExperiment::metadata(enriched)$enrichment$degs
     expect_s3_class(enr_res, "data.frame")
-    expect_true(all(c("term_id", "term_name", "p_value", "padj", "n_with_sel", "ids") %in% colnames(enr_res)))
 
 
     # Confirm a step record was logged

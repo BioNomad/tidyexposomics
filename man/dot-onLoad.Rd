@@ -6,6 +6,9 @@
 \usage{
 .onLoad(libname, pkgname)
 }
+\value{
+Invisibly returns \code{NULL}
+}
 \description{
 Registers \code{inst/app/www} as a Shiny resource path \code{"www"} if present.
 }

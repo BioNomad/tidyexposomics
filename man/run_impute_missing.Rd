@@ -52,8 +52,6 @@ Supported imputation methods include:
 \code{impute::impute.knn}
 \item \code{"mice"}: Multiple imputation using chained equations
 (\code{mice::mice})
-\item \code{"dep"}: MinProb imputation for proteomics using
-\code{DEP::impute}
 \item \code{"missforest"}: Random forest-based imputation using
 \code{missForest::missForest}
 \item \code{"lod_sqrt2"}: Substitution of missing values with

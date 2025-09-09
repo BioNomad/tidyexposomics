@@ -18,8 +18,6 @@
 #'   \code{impute::impute.knn}
 #'   \item \code{"mice"}: Multiple imputation using chained equations
 #'   (\code{mice::mice})
-#'   \item \code{"dep"}: MinProb imputation for proteomics using
-#'   \code{DEP::impute}
 #'   \item \code{"missforest"}: Random forest-based imputation using
 #'   \code{missForest::missForest}
 #'   \item \code{"lod_sqrt2"}: Substitution of missing values with
@@ -96,9 +94,6 @@ run_impute_missing <- function(
                 m = 5, maxit = 50,
                 method = "pmm", seed = 500
             )))
-        } else if (method == "dep") {
-            .check_suggested(pkg = "DEP")
-            return(DEP::impute(data, fun = "MinProb", q = 0.01))
         } else if (method == "missforest") {
             .check_suggested(pkg = "missForest")
             return(missForest::missForest(data)$ximp)
