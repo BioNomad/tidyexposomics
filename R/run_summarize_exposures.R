@@ -3,12 +3,12 @@
 #' Computes summary statistics for numeric exposure variables and
 #' optionally stores the results in the `MultiAssayExperiment` metadata.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' @param exposomicset A `MultiAssayExperiment` object containing exposure
 #' data in the sample metadata.
 #' @param exposure_cols A character vector of exposure variable names
 #' to summarize. If `NULL`, all numeric exposure variables are included.
 #' @param action A string specifying the action to take. Use `"add"`
-#' to attach the summary table to `metadata(expomicset)` or `"get"`
+#' to attach the summary table to `metadata(exposomicset)` or `"get"`
 #' to return the summary table directly. Default is `"add"`.
 #'
 #' @details
@@ -25,7 +25,7 @@
 #'   - Variance, standard deviation
 #'   - Coefficient of variation (`sd / mean`)
 #' - Merges the result with variable metadata stored in
-#' `metadata(expomicset)$codebook`.
+#' `metadata(exposomicset)$codebook`.
 #'
 #' @return
 #' A modified `MultiAssayExperiment` object (if `action = "add"`),
@@ -52,14 +52,14 @@
 #' @importFrom purrr pluck
 #' @export
 run_summarize_exposures <- function(
-    expomicset,
+    exposomicset,
     exposure_cols = NULL,
     action = "add") {
     # library(dplyr)
     # library(tidyr)
 
     # Extract exposure data
-    exposure_df <- expomicset |>
+    exposure_df <- exposomicset |>
         pivot_sample()
 
     # Subset to selected columns if specified
@@ -104,7 +104,7 @@ run_summarize_exposures <- function(
     # Merge with variable info
     exposure_summary_df <- exposure_summary_df |>
         dplyr::inner_join(
-            expomicset |>
+            exposomicset |>
                 MultiAssayExperiment::metadata() |>
                 purrr::pluck("codebook"),
             by = "variable"
@@ -113,9 +113,9 @@ run_summarize_exposures <- function(
 
     if (action == "add") {
         # Store results
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$quality_control$exposure_summary_df <- exposure_summary_df
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         # Add step record
         step_record <- list(
@@ -141,12 +141,12 @@ run_summarize_exposures <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         # Return the summary data frame
         return(exposure_summary_df)

@@ -5,7 +5,7 @@
 \title{Calculate Exposure Impact from Feature-Exposure Correlation Networks}
 \usage{
 run_exposure_impact(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "omics", "factor_features"),
   pval_col = "adj.P.Val",
   pval_thresh = 0.1,
@@ -13,7 +13,7 @@ run_exposure_impact(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with correlation
+\item{exposomicset}{A \code{MultiAssayExperiment} object with correlation
 and network metadata.}
 
 \item{feature_type}{One of \code{"degs"}, \code{"omics"}, or \code{"factor_features"}.}

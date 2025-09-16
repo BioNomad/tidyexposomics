@@ -5,7 +5,7 @@
 \title{Run Sensitivity Analysis for Differential Abundance}
 \usage{
 run_sensitivity_analysis(
-  expomicset,
+  exposomicset,
   base_formula,
   abundance_col = "counts",
   methods = c("limma_trend", "limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
@@ -24,7 +24,7 @@ run_sensitivity_analysis(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} containing the assays to analyze.}
+\item{exposomicset}{A \code{MultiAssayExperiment} containing the assays to analyze.}
 
 \item{base_formula}{The base model formula used for differential analysis.}
 
@@ -70,7 +70,7 @@ If 0, no resampling is performed. Default is 1.}
 \value{
 If \code{action = "add"}, returns a \code{MultiAssayExperiment}
 with results stored in
-\code{metadata(expomicset)$differential_analysis$sensitivity_analysis}.
+\code{metadata(exposomicset)$differential_analysis$sensitivity_analysis}.
 If \code{action = "get"},
 returns a list with three elements:
 \describe{
@@ -96,7 +96,7 @@ mae <- make_example_data(
 
 # Run differential abundance
 mae <- run_differential_abundance(
-    expomicset = mae,
+    exposomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
     method = "limma_voom",
@@ -105,7 +105,7 @@ mae <- run_differential_abundance(
 
 # Run the sensitivity analysis
 mae <- run_sensitivity_analysis(
-    expomicset = mae,
+    exposomicset = mae,
     base_formula = ~ smoker + sex,
     methods = c("limma_voom"),
     scaling_methods = c("none"),

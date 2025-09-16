@@ -12,7 +12,7 @@ test_that("run_sensitivity_analysis returns results with action = 'get'", {
 
     # Run differential abundance
     mae <- run_differential_abundance(
-        expomicset = mae,
+        exposomicset = mae,
         formula = ~ smoker + sex,
         abundance_col = "counts",
         method = "limma_voom",
@@ -21,7 +21,7 @@ test_that("run_sensitivity_analysis returns results with action = 'get'", {
 
     # Run the sensitivity analysis
     mae <- run_sensitivity_analysis(
-        expomicset = mae,
+        exposomicset = mae,
         base_formula = ~ smoker + sex,
         methods = c("limma_voom"),
         scaling_methods = c("none"),

@@ -3,8 +3,8 @@
 #' Generates a **volcano plot** to visualize differential abundance results
 #' across one or more omics layers.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing differential
-#' abundance results in `metadata(expomicset)$differential_abundance`.
+#' @param exposomicset A `MultiAssayExperiment` object containing differential
+#' abundance results in `metadata(exposomicset)$differential_abundance`.
 #' @param pval_col A character string specifying the column containing p-values.
 #'  Default is `"adj.P.Val"`.
 #' @param pval_thresh A numeric threshold for significance. Features with
@@ -31,7 +31,7 @@
 #' @details
 #' The function:
 #' - Extracts differential abundance results from
-#' `metadata(expomicset)$differential_abundance`.
+#' `metadata(exposomicset)$differential_abundance`.
 #' - Assigns each feature a direction of change:
 #' **Upregulated**, **Downregulated**, or **Not-Significant**.
 #' - Uses `logFC_thresh` and `pval_thresh` to define thresholds.
@@ -50,7 +50,7 @@
 #'
 #' # perform differential abundance analysis
 #' mae <- run_differential_abundance(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
 #'     method = "limma_voom",
@@ -70,7 +70,7 @@
 #' @importFrom ggpubr theme_pubr
 #' @export
 plot_volcano <- function(
-    expomicset,
+    exposomicset,
     pval_col = "adj.P.Val",
     pval_thresh = 0.05,
     logFC_col = "logFC",
@@ -87,14 +87,14 @@ plot_volcano <- function(
 
     # Check to see if Differential Abundance Results are available
     if (!"differential_abundance" %in% names(
-        MultiAssayExperiment::metadata(expomicset)$differential_analysis
+        MultiAssayExperiment::metadata(exposomicset)$differential_analysis
     )) {
         stop("Please run `run_differential_abundance()` first.")
     }
 
     if (plot_n_sig) {
         # Grab the significant features per experiment
-        exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
+        exp_sum <- MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck(
                 "differential_analysis",
                 "differential_abundance"
@@ -118,7 +118,7 @@ plot_volcano <- function(
                 sep = ""
             ))
     } else {
-        exp_sum <- MultiAssayExperiment::metadata(expomicset) |>
+        exp_sum <- MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck(
                 "differential_analysis",
                 "differential_abundance"
@@ -135,7 +135,7 @@ plot_volcano <- function(
     }
 
 
-    plot_df <- MultiAssayExperiment::metadata(expomicset) |>
+    plot_df <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "differential_analysis",
             "differential_abundance"

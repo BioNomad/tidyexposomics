@@ -4,10 +4,10 @@
 \alias{run_normality_check}
 \title{Assess Normality of Exposure Variables}
 \usage{
-run_normality_check(expomicset, action = "add")
+run_normality_check(exposomicset, action = "add")
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing exposure
 data in \code{colData}.}
 
 \item{action}{A character string specifying whether to store (\code{"add"})
@@ -34,7 +34,7 @@ This function:
 \item Generates a bar plot visualizing the normality results.
 \item \strong{Output Handling}:
 \itemize{
-\item \code{"add"}: Stores results in \code{metadata(expomicset)$normality}.
+\item \code{"add"}: Stores results in \code{metadata(exposomicset)$normality}.
 \item \code{"get"}: Returns a list containing the normality test results and plot.
 }
 }

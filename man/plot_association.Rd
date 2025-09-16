@@ -5,7 +5,7 @@
 \title{Plot Association Results (Unified Forest Plot)}
 \usage{
 plot_association(
-  expomicset,
+  exposomicset,
   source = c("omics", "exposures", "factors", "go_pcs"),
   terms = NULL,
   filter_col = "p.value",
@@ -19,7 +19,7 @@ plot_association(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing association
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing association
 results in metadata.}
 
 \item{source}{Character string indicating the association source.

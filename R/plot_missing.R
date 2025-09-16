@@ -3,9 +3,9 @@
 #' Visualizes missing data patterns in a `MultiAssayExperiment` object using
 #' summary bar plots or feature-level lollipop plots.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' @param exposomicset A `MultiAssayExperiment` object containing exposure
 #' and omics assays. Missing data is inferred directly from the assays.
-#' @param threshold Numeric. The percentage threshold (0–100) above which
+#' @param threshold Numeric. The percentage threshold (0-100) above which
 #' features are counted as missing in the summary plot. Default is `5`.
 #' @param plot_type Character. Type of plot to generate. Either `"summary"`
 #' for a bar plot showing number of features above the missing threshold,
@@ -68,7 +68,7 @@
 #'
 #' @export
 plot_missing <- function(
-    expomicset,
+    exposomicset,
     threshold = 5,
     plot_type = c("summary", "lollipop"),
     layers = NULL) {
@@ -79,20 +79,20 @@ plot_missing <- function(
 
     plot_type <- match.arg(plot_type)
     # grab exposure data
-    exposure <- MultiAssayExperiment::colData(expomicset) |>
+    exposure <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame()
 
     # grab omics assay data
     omics <- lapply(
-        names(MultiAssayExperiment::experiments(expomicset)),
+        names(MultiAssayExperiment::experiments(exposomicset)),
         function(exp_name) {
-            exp <- expomicset[[exp_name]]
+            exp <- exposomicset[[exp_name]]
             assay <- SummarizedExperiment::assay(exp) |>
                 t() |>
                 as.data.frame()
         }
     ) |>
-        setNames(names(MultiAssayExperiment::experiments(expomicset)))
+        setNames(names(MultiAssayExperiment::experiments(exposomicset)))
 
     # get the number of NA values per exposure variable and omic feature
     na_df <- c(

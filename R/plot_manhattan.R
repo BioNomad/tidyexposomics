@@ -5,7 +5,7 @@
 #' across omics features, grouped by category. Significant features can be
 #' highlighted and labeled, and strip backgrounds can be colored per facet.
 #'
-#' @param expomicset A `MultiAssayExperiment` object that has
+#' @param exposomicset A `MultiAssayExperiment` object that has
 #' already been processed by `associate_all_outcome()`.
 #' @param pval_thresh Numeric threshold for significance (default = 0.05).
 #' @param feature_col A character string indicating the column name to use
@@ -76,7 +76,7 @@
 #'
 #' @export
 plot_manhattan <- function(
-    expomicset,
+    exposomicset,
     pval_thresh = 0.05,
     feature_col = "term",
     alpha = 0.5,
@@ -96,12 +96,12 @@ plot_manhattan <- function(
     .check_suggested(pkg = "ggh4x")
 
     # Check if "correlation" is a name in metadata
-    if (!("association" %in% names(MultiAssayExperiment::metadata(expomicset)))) {
+    if (!("association" %in% names(MultiAssayExperiment::metadata(exposomicset)))) {
         stop("Please run `run_association() first.`")
     }
 
     # If exp_names in manhattan_data, replace with experiment names
-    exposure_res_df <- expomicset |>
+    exposure_res_df <- exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck("association") |>
         purrr::pluck("assoc_exposures") |>
@@ -109,7 +109,7 @@ plot_manhattan <- function(
 
     exposure_res_df[[feature_col]] <- exposure_res_df$term
 
-    manhattan_data <- expomicset |>
+    manhattan_data <- exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck("association") |>
         purrr::pluck("assoc_omics") |>

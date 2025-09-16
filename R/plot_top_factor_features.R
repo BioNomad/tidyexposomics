@@ -3,7 +3,7 @@
 #' Visualizes the top loading features for each factor from multi-omics
 #' integration results (e.g., MOFA, MCIA, DIABLO, RGCCA).
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing
+#' @param exposomicset A `MultiAssayExperiment` object containing
 #' integration results in the `metadata` slot (must include `integration_results`).
 #' @param feature_col A character string indicating the column name to use
 #' for y-axis feature labels (e.g., `"feature"`, `"gene_symbol"`). This should
@@ -70,7 +70,7 @@
 #' @importFrom scales alpha
 #' @export
 plot_top_factor_features <- function(
-    expomicset,
+    exposomicset,
     feature_col = "feature",
     factors = NULL,
     top_n = 5,
@@ -80,8 +80,8 @@ plot_top_factor_features <- function(
     # require(ggplot2)
     .check_suggested(pkg = "ggh4x")
 
-    method <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method
-    result <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$result
+    method <- MultiAssayExperiment::metadata(exposomicset)$multiomics_integration$integration_results$method
+    result <- MultiAssayExperiment::metadata(exposomicset)$multiomics_integration$integration_results$result
 
     loadings_df <- switch(method,
         "MOFA" = {
@@ -172,7 +172,7 @@ plot_top_factor_features <- function(
 
     # Map to the feature data
     df <- df |>
-        inner_join(pivot_feature(expomicset),
+        inner_join(pivot_feature(exposomicset),
             by = c(
                 "feature" = ".feature",
                 "exp_name" = ".exp_name"

@@ -5,14 +5,14 @@
 \title{Plot Correlation Summary from Exposure-Feature Correlations}
 \usage{
 plot_correlation_summary(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "omics", "factors", "factor_features", "exposures", "pcs"),
   mode = c("top_exposures", "top_features", "exposure_category", "assay", "summary"),
   top_n = 15
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with
+\item{exposomicset}{A \code{MultiAssayExperiment} object with
 correlation results in metadata.}
 
 \item{feature_type}{One of \code{"degs"}, \code{"factors"},

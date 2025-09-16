@@ -5,7 +5,7 @@
 \title{Cluster Samples Based on Exposure Data}
 \usage{
 run_cluster_samples(
-  expomicset,
+  exposomicset,
   exposure_cols = NULL,
   dist_method = NULL,
   user_k = NULL,
@@ -15,11 +15,11 @@ run_cluster_samples(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing omics
 and exposure data.}
 
 \item{exposure_cols}{A character vector of column names in
-\code{colData(expomicset)} to use for clustering.}
+\code{colData(exposomicset)} to use for clustering.}
 
 \item{dist_method}{A character string specifying the distance metric
 (\code{"euclidean"}, \code{"gower"}, etc.). If \code{NULL}, it is automatically determined.}
@@ -39,19 +39,19 @@ or \code{"density"}). Default is \code{"diana"}.}
 Default is \code{"add"}.}
 }
 \value{
-If \code{action="add"}, returns the updated \code{expomicset}.
+If \code{action="add"}, returns the updated \code{exposomicset}.
 If \code{action="get"}, returns a list with:
 \item{sample_cluster}{A hierarchical clustering object (\code{hclust}).}
 \item{sample_groups}{A named vector of sample cluster assignments.}
 }
 \description{
 Performs hierarchical clustering of samples using exposure data from
-\code{colData(expomicset)}.
+\code{colData(exposomicset)}.
 }
 \details{
 This function:
 \itemize{
-\item Extracts \strong{numeric exposure data} from \code{colData(expomicset)}.
+\item Extracts \strong{numeric exposure data} from \code{colData(exposomicset)}.
 \item Computes a \strong{distance matrix} (\code{"gower"} for mixed data,
 \code{"euclidean"} for numeric).
 \item Determines the \strong{optimal number of clusters (\code{k})} using the
@@ -59,7 +59,7 @@ specified method.
 \item Performs \strong{hierarchical clustering} (\code{hclust}) and assigns
 samples to clusters.
 \item Generates a \strong{heatmap} of scaled exposure values.
-\item Stores results in \code{metadata(expomicset)$sample_clustering}
+\item Stores results in \code{metadata(exposomicset)$sample_clustering}
 when \code{action="add"}.
 }
 }
@@ -72,7 +72,7 @@ mae <- make_example_data(
 
 # determine sample clusters
 mae <- run_cluster_samples(
-    expomicset = mae,
+    exposomicset = mae,
     exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi"),
     clustering_approach = "diana"
 )

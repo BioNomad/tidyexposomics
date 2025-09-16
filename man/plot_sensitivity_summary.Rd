@@ -5,21 +5,21 @@
 \title{Plot Sensitivity Analysis Summary}
 \usage{
 plot_sensitivity_summary(
-  expomicset,
+  exposomicset,
   stability_score_thresh = NULL,
   stability_metric = "stability_score",
   title = "Distribution of Stability Scores"
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing sensitivity
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing sensitivity
 analysis results
-in \code{metadata(expomicset)$sensitivity_analysis}.}
+in \code{metadata(exposomicset)$sensitivity_analysis}.}
 
 \item{stability_score_thresh}{A numeric threshold for stability scores.
 Default is \code{NULL},
 which uses the threshold stored in
-\code{metadata(expomicset)$sensitivity_analysis$score_thresh}.}
+\code{metadata(exposomicset)$sensitivity_analysis$score_thresh}.}
 
 \item{stability_metric}{A character string specifying which
 stability metric to plot (e.g., "stability_score",
@@ -39,7 +39,7 @@ scores across assays.
 \details{
 This function:
 \itemize{
-\item Extracts feature stability scores from \code{metadata(expomicset)$sensitivity_analysis$feature_stability}.
+\item Extracts feature stability scores from \code{metadata(exposomicset)$sensitivity_analysis$feature_stability}.
 \item Displays a \strong{ridge plot} of stability score distributions per assay.
 \item Displays a \strong{bar chart} of the number of features per assay.
 \item Prints the number of features with stability scores above the threshold.
@@ -55,7 +55,7 @@ mae <- make_example_data(
 
 # Run differential abundance
 mae <- run_differential_abundance(
-    expomicset = mae,
+    exposomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
     method = "limma_voom",
@@ -64,7 +64,7 @@ mae <- run_differential_abundance(
 
 # Run the sensitivity analysis
 mae <- run_sensitivity_analysis(
-    expomicset = mae,
+    exposomicset = mae,
     base_formula = ~ smoker + sex,
     methods = c("limma_voom"),
     scaling_methods = c("none"),

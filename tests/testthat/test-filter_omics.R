@@ -9,14 +9,14 @@ test_that("filter_omics removes low-quality features using variance method", {
     )
 
     # Get initial feature counts
-    initial_nrow <- nrow(assay(experiments(mae)[["proteomics"]]))
+    initial_nrow <- nrow(SummarizedExperiment::assay(MultiAssayExperiment::experiments(mae)[["proteomics"]]))
 
     # Artificially lower expression in proteomics
-    assay(experiments(mae)[["proteomics"]])[1:15, ] <- 0
+    SummarizedExperiment::assay(MultiAssayExperiment::experiments(mae)[["proteomics"]])[1:15, ] <- 0
 
     # Apply variance filter
     filtered <- filter_omics(
-        expomicset = mae,
+        exposomicset = mae,
         method = "variance",
         assays = "proteomics",
         assay_name = 1,
@@ -25,7 +25,7 @@ test_that("filter_omics removes low-quality features using variance method", {
     )
 
     # Check that features were removed
-    final_nrow <- nrow(assay(experiments(filtered)[["proteomics"]]))
+    final_nrow <- nrow(SummarizedExperiment::assay(MultiAssayExperiment::experiments(filtered)[["proteomics"]]))
     expect_lt(final_nrow, initial_nrow)
 
     # Check metadata logging
@@ -44,14 +44,14 @@ test_that("filter_omics removes low-expressed features using expression method",
     )
 
     # Artificially lower expression in mRNA
-    assay(experiments(mae)[["mRNA"]])[1:5, ] <- 0
+    SummarizedExperiment::assay(MultiAssayExperiment::experiments(mae)[["mRNA"]])[1:5, ] <- 0
 
     # Get initial feature counts
-    initial_nrow <- nrow(assay(experiments(mae)[["mRNA"]]))
+    initial_nrow <- nrow(SummarizedExperiment::assay(MultiAssayExperiment::experiments(mae)[["mRNA"]]))
 
     # Apply expression filter
     filtered <- filter_omics(
-        expomicset = mae,
+        exposomicset = mae,
         method = "expression",
         assays = "mRNA",
         assay_name = 1,
@@ -61,7 +61,7 @@ test_that("filter_omics removes low-expressed features using expression method",
     )
 
     # Check that features were removed
-    final_nrow <- nrow(assay(experiments(filtered)[["mRNA"]]))
+    final_nrow <- nrow(SummarizedExperiment::assay(MultiAssayExperiment::experiments(filtered)[["mRNA"]]))
     expect_lt(final_nrow, initial_nrow)
 
     # Check metadata logging

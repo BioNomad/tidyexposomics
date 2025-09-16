@@ -5,7 +5,7 @@
 \title{Plot Circular Network of Exposure Relationships}
 \usage{
 plot_circos_correlation(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "omics", "factors", "factor_features", "exposures", "pcs"),
   exposure_cols = NULL,
   corr_threshold = NULL,
@@ -18,7 +18,7 @@ plot_circos_correlation(
 )
 }
 \arguments{
-\item{expomicset}{A MultiAssayExperiment object.}
+\item{exposomicset}{A MultiAssayExperiment object.}
 
 \item{feature_type}{One of "exposures", "degs", or "factors".}
 

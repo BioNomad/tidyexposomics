@@ -7,7 +7,7 @@
 #' The flowchart connects steps with arrows and includes step notes
 #' if requested.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} object that contains a
+#' @param exposomicset A \code{MultiAssayExperiment} object that contains a
 #' "summary"
 #' entry in its metadata, which includes a list named \code{steps}.
 #' @param show_index Logical, default \code{TRUE}. If \code{TRUE},
@@ -44,13 +44,13 @@
 #'
 #' @export
 run_pipeline_summary <- function(
-    expomicset,
+    exposomicset,
     show_index = TRUE,
     console_print = TRUE,
     diagram_print = FALSE,
     include_notes = TRUE) {
     # Validate metadata
-    summary_md <- MultiAssayExperiment::metadata(expomicset)$summary
+    summary_md <- MultiAssayExperiment::metadata(exposomicset)$summary
     if (!("steps" %in% names(summary_md))) {
         stop("Please run analysis steps before running the pipeline summary.")
     }

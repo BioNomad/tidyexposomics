@@ -22,7 +22,7 @@ launch the app. Please call \code{shiny::runApp()} yourself (see examples).
 }
 \examples{
 if (interactive()) {
-  app <- build_ont_annot_app()
-  shiny::runApp(app)
+    app <- build_ont_annot_app()
+    shiny::runApp(app)
 }
 }

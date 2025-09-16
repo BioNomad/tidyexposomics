@@ -4,10 +4,10 @@
 \alias{pivot_exp}
 \title{Pivot a selected omics dataset from a MultiAssayExperiment into tidybulk format}
 \usage{
-pivot_exp(expomicset, omics_name, features = NULL)
+pivot_exp(exposomicset, omics_name, features = NULL)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 omics assays.}
 
 \item{omics_name}{A character string. The name of the omics dataset
@@ -24,10 +24,8 @@ indicating the assay source.
 \description{
 Extracts a specified omics dataset from a \code{MultiAssayExperiment},
 optionally filters by feature (row) names,
-and returns a tidy tibble in the structure of
-\code{tidybulk::tidybulk()}. The output includes assay values along with
-sample metadata
-(from \code{colData}) and feature metadata (from \code{rowData}).
+and returns a tidy tibble. The output includes assay values along with
+sample metadata and feature metadata.
 }
 \examples{
 

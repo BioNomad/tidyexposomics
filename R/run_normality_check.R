@@ -3,7 +3,7 @@
 #' Performs Shapiro-Wilk tests to check the normality of numeric exposure
 #' variables in `colData` of a `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' @param exposomicset A `MultiAssayExperiment` object containing exposure
 #' data in `colData`.
 #' @param action A character string specifying whether to store (`"add"`)
 #' or return (`"get"`) the results. Default is `"add"`.
@@ -15,7 +15,7 @@
 #' - Summarizes the number of normally and non-normally distributed exposures.
 #' - Generates a bar plot visualizing the normality results.
 #' - **Output Handling**:
-#'   - `"add"`: Stores results in `metadata(expomicset)$normality`.
+#'   - `"add"`: Stores results in `metadata(exposomicset)$normality`.
 #'   - `"get"`: Returns a list containing the normality test results and plot.
 #'
 #' @return A `MultiAssayExperiment` object with normality results added to
@@ -45,14 +45,14 @@
 #' @importFrom stats shapiro.test
 #' @importFrom ggpubr theme_pubr
 #' @export
-run_normality_check <- function(expomicset,
+run_normality_check <- function(exposomicset,
                                 action = "add") {
     # require(ggplot2)
 
     message("Checking Normality Using Shapiro-Wilk Test")
 
     # Extract numeric exposure data from colData
-    exposure_data <- MultiAssayExperiment::colData(expomicset) |>
+    exposure_data <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame() |>
         dplyr::select_if(is.numeric) |>
         dplyr::select_if(function(x) !all(x == x[1]))
@@ -132,13 +132,13 @@ run_normality_check <- function(expomicset,
     )
 
     if (action == "add") {
-        # Add normality results to expomicset metadata
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        # Add normality results to exposomicset metadata
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$quality_control$normality <- list(
             norm_df = norm_df,
             norm_summary = norm_summary
         )
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         # Add step record
         step_record <- list(
@@ -160,16 +160,16 @@ run_normality_check <- function(expomicset,
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         # Return normality results
         return(list(norm_df = norm_df, norm_plot = norm_plot))
     } else {
-        stop("Use 'add' to add results to expomicset or 'get' to return results.")
+        stop("Use 'add' to add results to exposomicset or 'get' to return results.")
     }
 }

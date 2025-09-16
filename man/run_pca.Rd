@@ -5,14 +5,14 @@
 \title{Perform Principal Component Analysis (PCA)}
 \usage{
 run_pca(
-  expomicset,
+  exposomicset,
   log_trans_exp = FALSE,
   log_trans_omics = TRUE,
   action = "add"
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing omics
 and exposure data.}
 
 \item{log_trans_exp}{A boolean value specifying whether to log2
@@ -45,7 +45,7 @@ This function:
 detect outliers.
 \item \strong{Output Handling}:
 \itemize{
-\item \code{"add"}: Stores results in \code{metadata(expomicset)$pca} and
+\item \code{"add"}: Stores results in \code{metadata(exposomicset)$pca} and
 updates \code{colData} with PCs.
 \item \code{"get"}: Returns a list containing the PCA results.
 }

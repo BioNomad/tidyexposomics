@@ -4,10 +4,10 @@
 \alias{plot_normality_summary}
 \title{Plot Normality Summary of Exposure Variables}
 \usage{
-plot_normality_summary(expomicset, transformed = FALSE)
+plot_normality_summary(exposomicset, transformed = FALSE)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with quality control
+\item{exposomicset}{A \code{MultiAssayExperiment} object with quality control
 metadata.}
 
 \item{transformed}{Logical; if \code{TRUE}, use results after transformation.
@@ -25,9 +25,9 @@ tests (e.g., Shapiro-Wilk) before or after transformation.
 \details{
 This function assumes that \code{run_normality_check()} has been executed and
 that the results are
-stored in \code{metadata(expomicset)$quality_control$normality}.
+stored in \code{metadata(exposomicset)$quality_control$normality}.
 If \code{transformed = TRUE}, the function will
-instead plot the transformation summary stored in \code{metadata(expomicset)$quality_control$transformation$norm_summary},
+instead plot the transformation summary stored in \code{metadata(exposomicset)$quality_control$transformation$norm_summary},
 which is populated by \code{transform_exposure()}.
 
 The plot includes both bar heights and overlaid line segments to

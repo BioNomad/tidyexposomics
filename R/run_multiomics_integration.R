@@ -5,7 +5,7 @@
 #'  object with two or more assays and computes shared latent factors
 #'  across omics layers.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with at least two assays.
+#' @param exposomicset A `MultiAssayExperiment` object with at least two assays.
 #' @param method Character. Integration method to use. Options are
 #' `"MOFA"`, `"MCIA"`, `"RGCCA"`, or `"DIABLO"`.
 #' @param n_factors Integer. Number of latent factors/components to compute.
@@ -19,7 +19,7 @@
 #'
 #' @return If `action = "add"`, returns a `MultiAssayExperiment` with
 #'  integration results
-#' stored in `metadata(expomicset)$multiomics_integration$integration_results`.
+#' stored in `metadata(exposomicset)$multiomics_integration$integration_results`.
 #'  If `action = "get"`, returns a list with integration `method` and `result`.
 #'
 #' @details
@@ -48,39 +48,39 @@
 #'
 #' @export
 run_multiomics_integration <- function(
-    expomicset,
+    exposomicset,
     method = "MCIA",
     n_factors = 10,
     scale = TRUE,
     outcome = NULL,
     action = "add") {
-    if (length(MultiAssayExperiment::experiments(expomicset)) < 2) {
+    if (length(MultiAssayExperiment::experiments(exposomicset)) < 2) {
         stop("Multi-Omics Integration requires at least two assays.")
     }
 
     if (scale) {
-        expomicset_mo <- .scale_multiassay(expomicset)
+        exposomicset_mo <- .scale_multiassay(exposomicset)
     } else {
-        expomicset_mo <- expomicset
+        exposomicset_mo <- exposomicset
     }
 
     message("Running multi-omics integration using ", method, "...")
 
     result <- switch(method,
         "MOFA" = .run_mofa2(
-            expomicset_mo = expomicset_mo,
+            exposomicset_mo = exposomicset_mo,
             n_factors = n_factors
         ),
         "MCIA" = .run_mcia(
-            expomicset_mo = expomicset_mo,
+            exposomicset_mo = exposomicset_mo,
             n_factors = n_factors
         ),
         "RGCCA" = .run_rgcca(
-            expomicset_mo = expomicset_mo,
+            exposomicset_mo = exposomicset_mo,
             n_factors = n_factors
         ),
         "DIABLO" = .run_diablo(
-            expomicset_mo = expomicset_mo,
+            exposomicset_mo = exposomicset_mo,
             n_factors = n_factors,
             outcome = outcome
         )
@@ -88,12 +88,12 @@ run_multiomics_integration <- function(
 
     if (action == "add") {
         # Store results in MultiAssayExperiment metadata
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$multiomics_integration$integration_results <- list(
             method = method,
             result = result
         )
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         # Add analysis step record
         step_record <- list(
@@ -112,13 +112,13 @@ run_multiomics_integration <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         return(list(
             method = method,
@@ -178,19 +178,19 @@ run_multiomics_integration <- function(
 
 #' Run MOFA2 safely with backend switching
 #'
-#' @param expomicset_mo A MultiAssayExperiment object
+#' @param exposomicset_mo A MultiAssayExperiment object
 #' @param n_factors Number of latent factors to infer
 #' @return A trained MOFA model object
 #' @keywords internal
 #' @noRd
-.run_mofa2 <- function(expomicset_mo, n_factors) {
+.run_mofa2 <- function(exposomicset_mo, n_factors) {
     backend <- .mofa_backend()
     message("Using MOFA backend: ", backend)
     .check_mofa_safe(backend)
 
 
     # Create MOFA object
-    mofa <- MOFA2::create_mofa(expomicset_mo)
+    mofa <- MOFA2::create_mofa(exposomicset_mo)
 
     # Options
     model_opts <- MOFA2::get_default_model_options(mofa)
@@ -219,13 +219,13 @@ run_multiomics_integration <- function(
     MOFA2::load_model(outfile)
 }
 # .run_mofa2 <- function(
-#     expomicset_mo,
+#     exposomicset_mo,
 #     n_factors) {
 #     message("Applying MOFA+ integration.")
 #     .check_mofa_safe()
 #
 #     # Create MOFA object from the MultiAssayExperiment
-#     mofa <- MOFA2::create_mofa(expomicset_mo)
+#     mofa <- MOFA2::create_mofa(exposomicset_mo)
 #
 #     # Set MOFA options
 #     model_opts <- MOFA2::get_default_model_options(mofa)
@@ -252,7 +252,7 @@ run_multiomics_integration <- function(
 #' @description Applies MCIA using `nipalsMCIA` on a
 #' MultiAssayExperiment.
 #'
-#' @param expomicset_mo A MultiAssayExperiment object containing omics data.
+#' @param exposomicset_mo A MultiAssayExperiment object containing omics data.
 #' @param n_factors Integer. Number of components (PCs) to compute.
 #'
 #' @return An MCIA result object from `nipalsMCIA::nipals_multiblock()`.
@@ -260,14 +260,14 @@ run_multiomics_integration <- function(
 #' @noRd
 #' @importFrom nipalsMCIA nipals_multiblock
 .run_mcia <- function(
-    expomicset_mo,
+    exposomicset_mo,
     n_factors) {
     message("Applying MCIA with `nipalsMCIA`")
 
     # Run NIPALS MCIA on the MultiAssayExperiment
 
     result <- nipalsMCIA::nipals_multiblock(
-        expomicset_mo,
+        exposomicset_mo,
         col_preproc_method = "colprofile",
         num_PCs = n_factors,
         tol = 1e-12,
@@ -279,7 +279,7 @@ run_multiomics_integration <- function(
 #' @description Applies unsupervised RGCCA to integrate multiple
 #' omics blocks.
 #'
-#' @param expomicset_mo A MultiAssayExperiment object containing omics data.
+#' @param exposomicset_mo A MultiAssayExperiment object containing omics data.
 #' @param n_factors Integer. Number of components to extract.
 #'
 #' @return An RGCCA result object from `RGCCA::rgcca()`.
@@ -289,13 +289,13 @@ run_multiomics_integration <- function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom MultiAssayExperiment experiments
 .run_rgcca <- function(
-    expomicset_mo,
+    exposomicset_mo,
     n_factors) {
     message("Applying RGCCA integration.")
 
     # Prepare data: list of assays (samples x features)
     x <- purrr::map(
-        MultiAssayExperiment::experiments(expomicset_mo),
+        MultiAssayExperiment::experiments(exposomicset_mo),
         ~ t(SummarizedExperiment::assay(.x)) # transpose to samples x features
     )
 
@@ -320,7 +320,7 @@ run_multiomics_integration <- function(
 #' @description Applies supervised integration using DIABLO (block.splsda)
 #' from mixOmics.
 #'
-#' @param expomicset_mo A MultiAssayExperiment object containing omics data.
+#' @param exposomicset_mo A MultiAssayExperiment object containing omics data.
 #' @param n_factors Integer. Number of components per block.
 #' @param outcome Character. Column name in colData to use as the outcome.
 #'
@@ -331,7 +331,7 @@ run_multiomics_integration <- function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom MultiAssayExperiment experiments colData
 .run_diablo <- function(
-    expomicset_mo,
+    exposomicset_mo,
     n_factors,
     outcome) {
     message("Applying DIABLO supervised integration.")
@@ -341,21 +341,21 @@ run_multiomics_integration <- function(
     }
     # Ensure that only the common samples are taken
     common <- purrr::map(
-        MultiAssayExperiment::experiments(expomicset_mo),
+        MultiAssayExperiment::experiments(exposomicset_mo),
         ~ colnames(.x)
     ) |>
         (\(lst) Reduce(intersect, lst))()
 
     # Subset the samples
-    expomicset_mo <- expomicset_mo[, common]
+    exposomicset_mo <- exposomicset_mo[, common]
 
     # Extract colData and outcome
-    y <- MultiAssayExperiment::colData(expomicset_mo)[[outcome]]
+    y <- MultiAssayExperiment::colData(exposomicset_mo)[[outcome]]
     if (!is.factor(y)) y <- as.factor(y)
 
-    # Prepare blocks (assays) as list of matrices (samples × features)
+    # Prepare blocks (assays) as list of matrices (samples x features)
     blocks <- purrr::map(
-        MultiAssayExperiment::experiments(expomicset_mo),
+        MultiAssayExperiment::experiments(exposomicset_mo),
         ~ t(SummarizedExperiment::assay(.x))
     )
 
@@ -379,7 +379,7 @@ run_multiomics_integration <- function(
 # else if (method == "MCCA") {
 #   # MCCA integration using PMA package
 #   x <- purrr::map(
-#     .x = MultiAssayExperiment::experiments(expomicset_mo),
+#     .x = MultiAssayExperiment::experiments(exposomicset_mo),
 #     .f = ~ SummarizedExperiment::assay(.x)
 #   )
 #   # Ensure all assays have the same columns

@@ -2,12 +2,10 @@
 #'
 #' Extracts a specified omics dataset from a \code{MultiAssayExperiment},
 #' optionally filters by feature (row) names,
-#' and returns a tidy tibble in the structure of
-#' \code{tidybulk::tidybulk()}. The output includes assay values along with
-#' sample metadata
-#' (from \code{colData}) and feature metadata (from \code{rowData}).
+#' and returns a tidy tibble. The output includes assay values along with
+#' sample metadata and feature metadata.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} object containing
+#' @param exposomicset A \code{MultiAssayExperiment} object containing
 #' omics assays.
 #' @param omics_name A character string. The name of the omics dataset
 #' to extract (e.g., "Proteomics").
@@ -38,12 +36,12 @@
 #'
 #' @export
 pivot_exp <- function(
-    expomicset,
+    exposomicset,
     omics_name,
     features = NULL) {
     # Extract the SummarizedExperiment
     se <- .update_assay_colData(
-        expomicset,
+        exposomicset,
         exp_name = omics_name
     )
 

@@ -2,7 +2,7 @@
 #'
 #' @param name The name of the dataset (without .zip or .RData extension).
 #'   Valid options include: "omics_list", "fdata", "meta", "annotated_cb",
-#'    "chebi", "ecto", "hpo".
+#'    "expom_1", "chebi", "ecto", "hpo".
 #' @param dest_dir Destination directory to save
 #' and extract the file (default: tempdir()).
 #' @param verbose Print messages? (default: TRUE)
@@ -21,6 +21,7 @@ download_dataset <- function(
         "fdata",
         "meta",
         "annotated_cb",
+        "expom_1",
         "chebi",
         "ecto",
         "hpo"
@@ -33,7 +34,7 @@ download_dataset <- function(
     rdata_name <- paste0(name, ".RData")
 
     url <- paste0(
-        "https://zenodo.org/records/17049350/files/",
+        "https://zenodo.org/records/17137560/files/",
         zip_name
     )
     zip_path <- file.path(dest_dir, zip_name)

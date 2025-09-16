@@ -3,10 +3,10 @@
 #' Computes correlations between exposures and feature types including DEGs,
 #'  omics, latent factors,
 #' top factor features, or principal components (PCs). Optionally computes
-#' feature–feature correlations
+#' feature-feature correlations
 #' to support network analysis.
 #'
-#' @param expomicset A `MultiAssayExperiment` object.
+#' @param exposomicset A `MultiAssayExperiment` object.
 #' @param feature_type Type of features to correlate. One of `"degs"`,
 #'  `"omics"`, `"factors"`, `"factor_features"`, `"exposures"`, or `"pcs"`.
 #' @param exposure_cols Optional vector of exposure column names
@@ -54,7 +54,7 @@
 #'
 #' @export
 run_correlation <- function(
-    expomicset,
+    exposomicset,
     feature_type = c(
         "degs",
         "omics",
@@ -83,7 +83,7 @@ run_correlation <- function(
     feature_type <- match.arg(feature_type)
     action <- match.arg(action)
 
-    col_df <- MultiAssayExperiment::colData(expomicset) |>
+    col_df <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame()
     # dplyr::select(-dplyr::starts_with("PC"))
 
@@ -102,7 +102,7 @@ run_correlation <- function(
 
     feature_matrix <- switch(feature_type,
         degs = .extract_deg_matrix(
-            expomicset,
+            exposomicset,
             robust,
             score_col,
             score_thresh,
@@ -112,15 +112,15 @@ run_correlation <- function(
             deg_logfc_thresh
         ),
         omics = .extract_omics_matrix(
-            expomicset,
+            exposomicset,
             variable_map
         ),
-        factors = .extract_factor_matrix(expomicset),
+        factors = .extract_factor_matrix(exposomicset),
         exposures = .extract_exposure_matrix(
             col_df,
             exposure_cols
         ),
-        factor_features = .extract_factor_feature_matrix(expomicset),
+        factor_features = .extract_factor_feature_matrix(exposomicset),
         pcs = .extract_pc_matrix(col_df, n_pcs = n_pcs)
     )
 
@@ -144,7 +144,7 @@ run_correlation <- function(
 
 
     correlation_df <- .run_and_clean_correlation(
-        expomicset = expomicset,
+        exposomicset = exposomicset,
         merged_data = merged_data,
         feature_vars = feature_vars,
         exposure_vars = exposure_vars,
@@ -159,10 +159,10 @@ run_correlation <- function(
 
     if (action == "add") {
         if (feature_cors) {
-            all_metadata <- MultiAssayExperiment::metadata(expomicset)
+            all_metadata <- MultiAssayExperiment::metadata(exposomicset)
             res_name <- paste0(feature_type, "_feature_cor")
             all_metadata$correlation[[res_name]] <- correlation_df
-            MultiAssayExperiment::metadata(expomicset) <- all_metadata
+            MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
             step_record <- list(
                 run_correlation = list(
@@ -182,9 +182,9 @@ run_correlation <- function(
             )
             names(step_record) <- paste0("run_correlation_", feature_type)
         } else {
-            all_metadata <- MultiAssayExperiment::metadata(expomicset)
+            all_metadata <- MultiAssayExperiment::metadata(exposomicset)
             all_metadata$correlation[[feature_type]] <- correlation_df
-            MultiAssayExperiment::metadata(expomicset) <- all_metadata
+            MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
             step_record <- list(
                 run_correlation = list(
@@ -206,18 +206,18 @@ run_correlation <- function(
         }
 
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
-        return(expomicset)
+        return(exposomicset)
     } else {
         return(correlation_df)
     }
 }
 
-# --- Run exposure–feature correlation function ----------
-#' Compute exposure–feature correlations in batches
+# --- Run exposure-feature correlation function ----------
+#' Compute exposure-feature correlations in batches
 #'
 #' Internal helper that correlates a set of exposure variables against a set
 #' of feature variables by processing features in batches. Uses
@@ -241,7 +241,7 @@ run_correlation <- function(
 #' @param pval_cutoff Numeric; maximum allowed value for \code{cor_pval_column}.
 #' @param batch_size Integer; number of feature columns processed per batch.
 #'
-#' @return A \code{data.frame} with one row per retained exposure–feature pair
+#' @return A \code{data.frame} with one row per retained exposure-feature pair
 #' and columns: \code{var1} (exposure), \code{var2} (feature),
 #' \code{correlation}, \code{p.value}, and \code{FDR}.
 #' Returns an empty data frame when no pairs pass filters.
@@ -313,8 +313,8 @@ run_correlation <- function(
 }
 
 
-# --- Run feature–feature correlation function ------------
-#' Compute feature–feature correlations in batches
+# --- Run feature-feature correlation function ------------
+#' Compute feature-feature correlations in batches
 #'
 #' Internal helper that correlates a (potentially large) set of feature
 #' variables against itself by processing features in batches. Uses
@@ -337,7 +337,7 @@ run_correlation <- function(
 #' @param pval_cutoff Numeric; maximum allowed value for \code{cor_pval_column}.
 #' @param batch_size Integer; number of feature columns processed per batch.
 #'
-#' @return A \code{data.frame} with one row per retained feature–feature pair
+#' @return A \code{data.frame} with one row per retained feature-feature pair
 #'   and columns: \code{var1}, \code{var2}, \code{correlation}, \code{p.value},
 #'   and \code{FDR}. Returns an empty data frame when no pairs pass filters.
 #'
@@ -406,7 +406,7 @@ run_correlation <- function(
 #' Run correlation and normalize variable names
 #'
 #' Internal helper that dispatches to the appropriate correlation routine
-#' (exposure–feature vs feature–feature), then normalizes variable names by
+#' (exposure-feature vs feature-feature), then normalizes variable names by
 #' stripping assay/experiment prefixes from feature columns. When correlating
 #' exposures with features, the function also joins the codebook metadata.
 #'
@@ -415,13 +415,13 @@ run_correlation <- function(
 #' \code{exposure} (== \code{var1}) and \code{feature} (== \code{var2}).
 #' It also annotates \code{var1_type} and \code{var2_type}.
 #'
-#' @param expomicset A \code{MultiAssayExperiment}.
+#' @param exposomicset A \code{MultiAssayExperiment}.
 #' @param merged_data Data frame used for correlation (rows = samples).
 #' @param feature_vars Character vector of feature column names.
 #' @param exposure_vars Character vector of exposure column names.
 #' @param feature_type One of \code{"degs"}, \code{"omics"}, \code{"factors"},
 #'   \code{"factor_features"}, \code{"exposures"}, or \code{"pcs"}.
-#' @param feature_cors Logical; if \code{TRUE}, do feature–feature correlation.
+#' @param feature_cors Logical; if \code{TRUE}, do feature-feature correlation.
 #' @param correlation_method Correlation method for \code{Hmisc::rcorr()}.
 #' @param correlation_cutoff Keep pairs with \eqn{|r| >} this threshold.
 #' @param cor_pval_column Name of p-value column to filter (e.g., "p.value",
@@ -441,7 +441,7 @@ run_correlation <- function(
 #' @importFrom dplyr left_join mutate
 #' @importFrom stringr str_extract str_remove str_replace_all
 .run_and_clean_correlation <- function(
-    expomicset,
+    exposomicset,
     merged_data,
     feature_vars,
     exposure_vars,
@@ -470,7 +470,7 @@ run_correlation <- function(
         )
 
         # Grab experiment names
-        exp_names <- names(MultiAssayExperiment::experiments(expomicset))
+        exp_names <- names(MultiAssayExperiment::experiments(exposomicset))
 
         # Change names of the columns to match column type
         correlation_df <- correlation_df |>
@@ -533,7 +533,7 @@ run_correlation <- function(
         "factor_features"
     )) {
         # Grab experiment names
-        exp_names <- names(MultiAssayExperiment::experiments(expomicset))
+        exp_names <- names(MultiAssayExperiment::experiments(exposomicset))
 
         # Change names of the columns to match column type
         correlation_df <- correlation_df |>
@@ -565,7 +565,7 @@ run_correlation <- function(
         # Merge with exposure metadata
         correlation_df <- correlation_df |>
             dplyr::left_join(
-                MultiAssayExperiment::metadata(expomicset)$codebook,
+                MultiAssayExperiment::metadata(exposomicset)$codebook,
                 by = c("exposure" = "variable")
             )
     }
@@ -580,7 +580,7 @@ run_correlation <- function(
 #' \code{MultiAssayExperiment}, optionally restricted to robust features
 #' based on sensitivity analysis.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} containing DEG and (optional)
+#' @param exposomicset A \code{MultiAssayExperiment} containing DEG and (optional)
 #'   sensitivity metadata.
 #' @param robust Logical; if \code{TRUE}, filter to robust features using
 #'   sensitivity scores.
@@ -604,7 +604,7 @@ run_correlation <- function(
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr full_join
 .extract_deg_matrix <- function(
-    expomicset,
+    exposomicset,
     robust,
     score_col,
     score_thresh,
@@ -612,7 +612,7 @@ run_correlation <- function(
     deg_logfc_col,
     deg_pval_thresh,
     deg_logfc_thresh) {
-    da <- MultiAssayExperiment::metadata(expomicset) |>
+    da <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "differential_analysis",
             "differential_abundance"
@@ -626,7 +626,7 @@ run_correlation <- function(
         )
 
     if (robust) {
-        sens <- MultiAssayExperiment::metadata(expomicset) |>
+        sens <- MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck(
                 "differential_analysis",
                 "sensitivity_analysis"
@@ -644,7 +644,7 @@ run_correlation <- function(
     }
 
     mats <- lapply(unique(da$exp_name), function(name) {
-        se <- .update_assay_colData(expomicset, name)
+        se <- .update_assay_colData(exposomicset, name)
         feats <- da |>
             dplyr::filter(exp_name == name) |>
             dplyr::pull(feature)
@@ -667,7 +667,7 @@ run_correlation <- function(
 #' omics features in a \code{MultiAssayExperiment}, optionally restricted to
 #' a subset defined by a variable mapping table.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} object with omics assays.
+#' @param exposomicset A \code{MultiAssayExperiment} object with omics assays.
 #' @param variable_map Optional data frame with columns \code{variable} and
 #'   \code{exp_name} indicating which features to extract from which assays.
 #'
@@ -682,8 +682,8 @@ run_correlation <- function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr full_join
-.extract_omics_matrix <- function(expomicset, variable_map) {
-    log2_omics <- .log2_multiassay(expomicset)
+.extract_omics_matrix <- function(exposomicset, variable_map) {
+    log2_omics <- .log2_multiassay(exposomicset)
     selected <- if (!is.null(variable_map)) {
         split(
             variable_map$variable,
@@ -716,17 +716,17 @@ run_correlation <- function(
 }
 
 # --- Extract Latent Factor to Correlate Function ---------
-#' Extract sample × factor matrix from multi-omics integration
+#' Extract sample x factor matrix from multi-omics integration
 #'
 #' Internal helper that retrieves sample-level factor scores from the stored
 #' multi-omics integration results in a \code{MultiAssayExperiment}. Supports
 #' \code{MOFA}, \code{MCIA}, and \code{MCCA}. Returns a data frame with one row
 #' per sample and a column \code{"id"} for sample IDs.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} with integration results
-#'   saved in \code{metadata(expomicset)$multiomics_integration$integration_results}.
+#' @param exposomicset A \code{MultiAssayExperiment} with integration results
+#'   saved in \code{metadata(exposomicset)$multiomics_integration$integration_results}.
 #'
-#' @return A data frame of sample × factor scores with an \code{"id"} column.
+#' @return A data frame of sample x factor scores with an \code{"id"} column.
 #'
 #' @details
 #' For MOFA, factors are obtained via \code{MOFA2::get_factors()} (first view).
@@ -740,8 +740,8 @@ run_correlation <- function(
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom purrr pluck
 #' @importFrom tibble rownames_to_column
-.extract_factor_matrix <- function(expomicset) {
-    result <- MultiAssayExperiment::metadata(expomicset) |>
+.extract_factor_matrix <- function(exposomicset) {
+    result <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "multiomics_integration",
             "integration_results"
@@ -762,13 +762,13 @@ run_correlation <- function(
 # --- Extract Latent Factor Features to Correlate Function ---------
 #' Extract matrix for top factor features across assays
 #'
-#' Internal helper that builds a sample × feature matrix for features selected
+#' Internal helper that builds a sample x feature matrix for features selected
 #' from multi-omics integration (stored in
-#' \code{metadata(expomicset)$multiomics_integration$top_factor_features}).
+#' \code{metadata(exposomicset)$multiomics_integration$top_factor_features}).
 #' For each assay, it subsets to the specified features, extracts log2 values,
 #' and returns a joined data frame with an \code{"id"} column.
 #'
-#' @param expomicset A \code{MultiAssayExperiment} containing omics assays and
+#' @param exposomicset A \code{MultiAssayExperiment} containing omics assays and
 #'   multi-omics integration metadata with a \code{top_factor_features} table
 #'   that includes \code{exp_name} and \code{feature} columns.
 #'
@@ -783,8 +783,8 @@ run_correlation <- function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr full_join
-.extract_factor_feature_matrix <- function(expomicset) {
-    top_feats <- MultiAssayExperiment::metadata(expomicset) |>
+.extract_factor_feature_matrix <- function(exposomicset) {
+    top_feats <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "multiomics_integration",
             "top_factor_features"
@@ -795,7 +795,7 @@ run_correlation <- function(
         stop("top_factor_features must contain 'exp_name' and 'feature' columns.")
     }
 
-    log2_omics <- .log2_multiassay(expomicset)
+    log2_omics <- .log2_multiassay(exposomicset)
     selected <- split(top_feats$feature, top_feats$exp_name)
 
     dfs <- purrr::imap(
@@ -821,7 +821,7 @@ run_correlation <- function(
 #' Extract numeric exposures from colData
 #'
 #' Internal helper that selects numeric exposure variables from a sample-level
-#' data frame (e.g., \code{colData(expomicset)}). Optionally restricts to a
+#' data frame (e.g., \code{colData(exposomicset)}). Optionally restricts to a
 #' user-provided set of exposure column names.
 #'
 #' @param col_df A data frame of sample metadata (rows = samples).

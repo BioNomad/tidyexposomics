@@ -2,10 +2,10 @@
 % Please edit documentation in R/run_enrichment.R
 \name{run_enrichment}
 \alias{run_enrichment}
-\title{Perform enrichment analysis on selected features from a expomicset object}
+\title{Perform enrichment analysis on selected features from a exposomicset object}
 \usage{
 run_enrichment(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "degs_robust", "omics", "factor_features", "degs_cor",
     "omics_cor", "factor_features_cor"),
   score_col = "stability_score",
@@ -29,7 +29,7 @@ run_enrichment(
 )
 }
 \arguments{
-\item{expomicset}{An \code{expomicset} (a \code{MultiAssayExperiment}
+\item{exposomicset}{An \code{exposomicset} (a \code{MultiAssayExperiment}
 object with metadata) containing omics and metadata.}
 
 \item{feature_type}{Character string indicating the feature source.
@@ -91,7 +91,7 @@ Defaults to \code{"diana"}.}
 or \code{"get"} to return results as a data frame.}
 }
 \value{
-If \code{action = "add"}, returns the modified \code{ExpOmicSet} with
+If \code{action = "add"}, returns the modified \code{exposomicset} with
 enrichment results added to metadata.
 If \code{action = "get"}, returns a \code{data.frame} of enrichment results
 with GO term clusters (if applicable).
@@ -99,7 +99,7 @@ with GO term clusters (if applicable).
 \description{
 This function performs enrichment analysis using selected features derived
 from differential expression, correlation analysis,
-or multi-omics factor features across experiments in an \code{expomicset}.
+or multi-omics factor features across experiments in an \code{exposomicset}.
 It supports multiple enrichment databases (e.g., GO, KEGG, Reactome),
 applies FDR correction, and optionally clusters GO terms by Jaccard overlap.
 }
@@ -123,7 +123,7 @@ mae <- make_example_data(
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-    expomicset = mae,
+    exposomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
     method = "limma_voom",
@@ -132,7 +132,7 @@ mae <- run_differential_abundance(
 
 # perform enrichment analysis
 mae <- run_enrichment(
-    expomicset = mae,
+    exposomicset = mae,
     feature_type = "degs",
     feature_col = "symbol",
     species = "goa_human",

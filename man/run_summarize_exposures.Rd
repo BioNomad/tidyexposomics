@@ -4,17 +4,17 @@
 \alias{run_summarize_exposures}
 \title{Summarize Exposure Variables}
 \usage{
-run_summarize_exposures(expomicset, exposure_cols = NULL, action = "add")
+run_summarize_exposures(exposomicset, exposure_cols = NULL, action = "add")
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing exposure
 data in the sample metadata.}
 
 \item{exposure_cols}{A character vector of exposure variable names
 to summarize. If \code{NULL}, all numeric exposure variables are included.}
 
 \item{action}{A string specifying the action to take. Use \code{"add"}
-to attach the summary table to \code{metadata(expomicset)} or \code{"get"}
+to attach the summary table to \code{metadata(exposomicset)} or \code{"get"}
 to return the summary table directly. Default is \code{"add"}.}
 }
 \value{
@@ -42,7 +42,7 @@ This function:
 \item Coefficient of variation (\code{sd / mean})
 }
 \item Merges the result with variable metadata stored in
-\code{metadata(expomicset)$codebook}.
+\code{metadata(exposomicset)$codebook}.
 }
 }
 \examples{

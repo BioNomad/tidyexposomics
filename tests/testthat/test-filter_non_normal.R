@@ -1,4 +1,4 @@
-test_that("filter_non_normal removes non-normal exposures in expomicset", {
+test_that("filter_non_normal removes non-normal exposures in exposomicset", {
     # Create dummy data
     dummy <- make_example_data(n_samples = 100)
 

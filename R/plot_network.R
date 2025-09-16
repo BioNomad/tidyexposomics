@@ -5,7 +5,7 @@
 #' Nodes can represent features (e.g., genes or factors) or exposures,
 #' and edges represent correlations or shared connections.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing network results
+#' @param exposomicset A `MultiAssayExperiment` object containing network results
 #' in metadata.
 #' @param network Character string specifying the network type.
 #' One of `"degs"`, `"omics"`, `"factors"`,
@@ -87,7 +87,7 @@
 #' @importFrom igraph gorder
 #' @export
 plot_network <- function(
-    expomicset,
+    exposomicset,
     network = c(
         "degs",
         "omics",
@@ -123,7 +123,7 @@ plot_network <- function(
     network <- match.arg(network)
 
     net_key <- paste0("network_", network)
-    net_obj <- MultiAssayExperiment::metadata(expomicset)$network[[net_key]]
+    net_obj <- MultiAssayExperiment::metadata(exposomicset)$network[[net_key]]
 
     if (is.null(net_obj)) {
         stop(

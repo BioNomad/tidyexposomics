@@ -4,7 +4,7 @@
 #' pass or fail normality
 #' tests (e.g., Shapiro-Wilk) before or after transformation.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with quality control
+#' @param exposomicset A `MultiAssayExperiment` object with quality control
 #'  metadata.
 #' @param transformed Logical; if `TRUE`, use results after transformation.
 #' Default is `FALSE`.
@@ -15,9 +15,9 @@
 #' @details
 #' This function assumes that `run_normality_check()` has been executed and
 #'  that the results are
-#' stored in `metadata(expomicset)$quality_control$normality`.
+#' stored in `metadata(exposomicset)$quality_control$normality`.
 #'  If `transformed = TRUE`, the function will
-#' instead plot the transformation summary stored in `metadata(expomicset)$quality_control$transformation$norm_summary`,
+#' instead plot the transformation summary stored in `metadata(exposomicset)$quality_control$transformation$norm_summary`,
 #' which is populated by `transform_exposure()`.
 #'
 #' The plot includes both bar heights and overlaid line segments to
@@ -45,13 +45,13 @@
 #' @importFrom purrr pluck
 #' @export
 plot_normality_summary <- function(
-    expomicset,
+    exposomicset,
     transformed = FALSE) {
     # require(ggplot2)
 
     # Check if "normality" is a name in metadata
     if (!("normality" %in% names(
-        MultiAssayExperiment::metadata(expomicset)$quality_control
+        MultiAssayExperiment::metadata(exposomicset)$quality_control
     ))) {
         stop("Please run `run_normality_check() first.`")
     }
@@ -59,7 +59,7 @@ plot_normality_summary <- function(
     # Check if "transformation" is a name in metadata
     if (transformed) {
         if (!("transformation" %in% names(
-            MultiAssayExperiment::metadata(expomicset)$quality_control
+            MultiAssayExperiment::metadata(exposomicset)$quality_control
         ))) {
             stop("Please run `transform_exposure() first.`")
         }
@@ -67,7 +67,7 @@ plot_normality_summary <- function(
 
     # Plot normality results
     if (transformed) {
-        norm_plot <- MultiAssayExperiment::metadata(expomicset)$quality_control$transformation$norm_summary |>
+        norm_plot <- MultiAssayExperiment::metadata(exposomicset)$quality_control$transformation$norm_summary |>
             ggplot(aes(
                 x = var,
                 y = value,
@@ -104,7 +104,7 @@ plot_normality_summary <- function(
                 subtitle = "Shapiro-Wilk Test"
             )
     } else {
-        norm_plot <- MultiAssayExperiment::metadata(expomicset) |>
+        norm_plot <- MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck(
                 "quality_control",
                 "normality",

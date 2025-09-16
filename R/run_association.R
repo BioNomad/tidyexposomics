@@ -5,7 +5,7 @@
 #' latent factors, or GO PCs. Automatically adjusts for covariates and
 #' supports both Gaussian and binomial models.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing data
+#' @param exposomicset A `MultiAssayExperiment` object containing data
 #' and metadata.
 #' @param outcome The outcome variable name (must be in `colData`).
 #' @param source Source of features to test. One of `"omics"`,
@@ -54,7 +54,7 @@
 #' @importFrom rlang .data
 #' @export
 run_association <- function(
-    expomicset,
+    exposomicset,
     outcome,
     source = c("omics", "exposures", "factors"),
     covariates = NULL,
@@ -71,7 +71,7 @@ run_association <- function(
     source <- match.arg(source)
 
     # grab coldata and scale if numeric
-    data <- expomicset |>
+    data <- exposomicset |>
         MultiAssayExperiment::colData() |>
         as.data.frame() |>
         dplyr::mutate_if(is.numeric, ~ as.numeric(scale(.)))
@@ -79,7 +79,7 @@ run_association <- function(
     # switch based on input
     features_df <- switch(source,
         omics = .extract_omics_features(
-            expomicset,
+            exposomicset,
             log_trans = log_trans,
             top_n
         ),
@@ -87,8 +87,8 @@ run_association <- function(
             data,
             feature_set
         ),
-        factors = .extract_latent_factors(expomicset)
-        # go_pcs = .extract_go_pcs(expomicset,
+        factors = .extract_latent_factors(exposomicset)
+        # go_pcs = .extract_go_pcs(exposomicset,
         #     geneset = feature_set,
         #     covariates,
         #     min_genes = min_genes,
@@ -206,25 +206,25 @@ run_association <- function(
     results <- .annotate_results_by_source(
         results = results,
         source = source,
-        expomicset = expomicset
+        exposomicset = exposomicset
     )
 
     if (
         (paste0("assoc_", source) %in%
-            names(MultiAssayExperiment::metadata(expomicset)$association)) &&
+            names(MultiAssayExperiment::metadata(exposomicset)$association)) &&
             identical(
                 covariates,
-                MultiAssayExperiment::metadata(expomicset)$association[[
+                MultiAssayExperiment::metadata(exposomicset)$association[[
                     paste0("assoc_", source)
                 ]]$covariates
             )) {
         if (any(results$term %in%
-            MultiAssayExperiment::metadata(expomicset)$association[[
+            MultiAssayExperiment::metadata(exposomicset)$association[[
                 paste0("assoc_", source)
             ]]$results_df$term)) {
             stop("Association results for this feature already exists.")
         } else {
-            results <- expomicset |>
+            results <- exposomicset |>
                 MultiAssayExperiment::metadata() |>
                 purrr::pluck("association") |>
                 purrr::pluck(paste0("assoc_", source)) |>
@@ -235,7 +235,7 @@ run_association <- function(
 
     # add results to metadata
     if (action == "add") {
-        MultiAssayExperiment::metadata(expomicset)$association[[
+        MultiAssayExperiment::metadata(exposomicset)$association[[
             paste0("assoc_", source)
         ]] <- list(
             results_df = results,
@@ -265,12 +265,12 @@ run_association <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else {
         return(list(
             results_df = results,
@@ -289,13 +289,13 @@ run_association <- function(
 #'
 #' @keywords internal
 #' @noRd
-.extract_omics_features <- function(expomicset,
+.extract_omics_features <- function(exposomicset,
                                     log_trans = TRUE,
                                     top_n = NULL) {
     if (log_trans) {
-        log2_assays <- .log2_multiassay(expomicset)
+        log2_assays <- .log2_multiassay(exposomicset)
     } else {
-        log2_assays <- expomicset
+        log2_assays <- exposomicset
     }
 
     selected <- if (!is.null(top_n)) {
@@ -347,8 +347,8 @@ run_association <- function(
 #'
 #' @keywords internal
 #' @noRd
-.extract_latent_factors <- function(expomicset) {
-    result <- expomicset |>
+.extract_latent_factors <- function(exposomicset) {
+    result <- exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck("multiomics_integration") |>
         purrr::pluck("integration_results")
@@ -423,12 +423,12 @@ run_association <- function(
 #' the first PC of the associated genes.
 #'
 # .extract_go_pcs <- function(
-#     expomicset, geneset,
+#     exposomicset, geneset,
 #     covariates,
 #     min_genes = 10,
 #     feature_col = NULL,
 #     mirna_assays = NULL) {
-#     enrich_res <- expomicset |>
+#     enrich_res <- exposomicset |>
 #         MultiAssayExperiment::metadata() |>
 #         purrr::pluck("enrichment") |>
 #         purrr::pluck(geneset)
@@ -461,7 +461,7 @@ run_association <- function(
 #                 return(NULL)
 #             }
 #
-#             exp <- .update_assay_colData(expomicset, exp_name)
+#             exp <- .update_assay_colData(exposomicset, exp_name)
 #
 #             if (!is.null(feature_col)) {
 #                 genes <- exp |>
@@ -590,7 +590,7 @@ run_association <- function(
 #'   `term` column.
 #' @param source Character string: the feature source (`"omics"`, `"factors"`,
 #'   or `"exposures"`).
-#' @param expomicset A `MultiAssayExperiment` containing experiments, metadata,
+#' @param exposomicset A `MultiAssayExperiment` containing experiments, metadata,
 #'   and codebook information.
 #'
 #' @return A data frame of association results with additional metadata columns
@@ -609,14 +609,14 @@ run_association <- function(
 .annotate_results_by_source <- function(
     results,
     source,
-    expomicset) {
+    exposomicset) {
     if (source %in% c("omics", "factors")) {
-        exp_names <- names(MultiAssayExperiment::experiments(expomicset)) |>
+        exp_names <- names(MultiAssayExperiment::experiments(exposomicset)) |>
             (\(chr) gsub(" ", "_", chr))()
 
         matched <- data.frame(
             exp_name = exp_names,
-            exp_name_clean = names(MultiAssayExperiment::experiments(expomicset))
+            exp_name_clean = names(MultiAssayExperiment::experiments(exposomicset))
         )
 
         results <- results |>
@@ -637,7 +637,7 @@ run_association <- function(
             dplyr::rename(category = exp_name_clean)
 
         if (source == "factors") {
-            method <- MultiAssayExperiment::metadata(expomicset) |>
+            method <- MultiAssayExperiment::metadata(exposomicset) |>
                 purrr::pluck(
                     "multiomics_integration",
                     "integration_results",
@@ -656,17 +656,17 @@ run_association <- function(
     if (source == "exposures") {
         results <- results |>
             dplyr::left_join(
-                MultiAssayExperiment::metadata(expomicset)$codebook,
+                MultiAssayExperiment::metadata(exposomicset)$codebook,
                 by = c("term" = "variable")
             )
     }
 
     if (source == "omics") {
         feature_df <- lapply(
-            names(MultiAssayExperiment::experiments(expomicset)),
+            names(MultiAssayExperiment::experiments(exposomicset)),
             function(name) {
                 SummarizedExperiment::rowData(
-                    MultiAssayExperiment::experiments(expomicset)[[name]]
+                    MultiAssayExperiment::experiments(exposomicset)[[name]]
                 ) |>
                     as.data.frame() |>
                     tibble::rownames_to_column(".feature") |>

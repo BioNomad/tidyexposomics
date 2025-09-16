@@ -8,13 +8,13 @@
 #' associated with each exposure. It also suppresses nonsignificant tiles
 #'  based on a specified p-value threshold.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing correlation
+#' @param exposomicset A `MultiAssayExperiment` object containing correlation
 #' results in metadata.
 #' @param feature_type Type of correlation results to plot.
 #'  One of `"pcs"`, `"degs"`, `"omics"`,
 #' `"factors"`, `"factor_features"`, or `"exposures"`.
 #'  Must match the key used in
-#' `metadata(expomicset)$correlation[[feature_type]]`.
+#' `metadata(exposomicset)$correlation[[feature_type]]`.
 #' @param pval_cutoff Numeric p-value cutoff below which
 #' correlations are displayed.
 #' Nonsignificant tiles are rendered in the `na_color`.
@@ -56,7 +56,7 @@
 #'
 #' @export
 plot_correlation_tile <- function(
-    expomicset,
+    exposomicset,
     feature_type = c(
         "pcs",
         "degs",
@@ -72,7 +72,7 @@ plot_correlation_tile <- function(
     .check_suggested(pkg = "patchwork")
     feature_type <- match.arg(feature_type)
 
-    correlation_list <- MultiAssayExperiment::metadata(expomicset)$correlation
+    correlation_list <- MultiAssayExperiment::metadata(exposomicset)$correlation
     if (is.null(correlation_list) || !feature_type %in% names(correlation_list)) {
         stop(
             "Correlation results for feature_type '",

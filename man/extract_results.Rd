@@ -5,13 +5,13 @@
 \title{Extract Results from \code{MultiAssayExperiment} Metadata}
 \usage{
 extract_results(
-  expomicset,
+  exposomicset,
   result = c("codebook", "quality_control", "correlation", "association",
     "differential_analysis", "multiomics_integration", "network", "enrichment")
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object.}
 
 \item{result}{A character string indicating which result to
 extract from metadata. Must be one of:
@@ -20,7 +20,7 @@ extract from metadata. Must be one of:
 or \code{"enrichment"}.}
 }
 \value{
-The corresponding result object stored in \code{metadata(expomicset)},
+The corresponding result object stored in \code{metadata(exposomicset)},
 or \code{NULL} if not present.
 }
 \description{
@@ -36,7 +36,7 @@ mae <- make_example_data(
 
 # extract results
 res <- extract_results(
-    expomicset = mae,
+    exposomicset = mae,
     result = "codebook"
 )
 

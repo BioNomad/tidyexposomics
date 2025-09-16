@@ -4,10 +4,10 @@
 \alias{filter_missing}
 \title{Filter Features and Variables with High Missingness}
 \usage{
-filter_missing(expomicset, na_thresh = 20, na_plot_thresh = 5)
+filter_missing(exposomicset, na_thresh = 20, na_plot_thresh = 5)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 exposure and omics data.}
 
 \item{na_thresh}{A numeric value specifying the percentage of
@@ -20,7 +20,7 @@ minimum missing percentage for inclusion in QC plots. Default is \code{5}.}
 A \code{MultiAssayExperiment} object with filtered exposure
 variables and omics features.
 QC results, including missingness summaries and plots,
-are stored in \code{metadata(expomicset)$na_qc}.
+are stored in \code{metadata(exposomicset)$na_qc}.
 }
 \description{
 Removes exposure variables and omics features with
@@ -28,8 +28,8 @@ missing values above a specified threshold.
 Generates missing data summaries and quality control (QC) plots.
 }
 \details{
-The function assesses missingness in both \code{colData(expomicset)}
-(exposure data) and \code{experiments(expomicset)} (omics data).
+The function assesses missingness in both \code{colData(exposomicset)}
+(exposure data) and \code{experiments(exposomicset)} (omics data).
 \itemize{
 \item Exposure variables with more than \code{na_thresh}\% missing values are removed.
 \item Omics features (rows in assay matrices) exceeding \code{na_thresh}\%
@@ -50,7 +50,7 @@ MultiAssayExperiment::colData(mae)$exposure_pm25[sample(1:20, 5)] <- NA
 
 # Filter features and exposures with high missingness
 mae_filtered <- filter_missing(
-    expomicset = mae,
+    exposomicset = mae,
     na_thresh = 20,
     na_plot_thresh = 5
 )

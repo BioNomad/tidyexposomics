@@ -5,7 +5,7 @@
 #' in a `MultiAssayExperiment` object. Optionally applies log2 transformation
 #' to omics data and restricts features based on a variable map.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing
+#' @param exposomicset A `MultiAssayExperiment` object containing
 #' omics and exposure data.
 #' @param variable_map A data frame with columns `"variable"` and `"exp_name"`,
 #'  indicating which variables belong to each omics or exposure domain.
@@ -36,7 +36,7 @@
 #'
 #' @export
 extract_omics_exposure_df <- function(
-    expomicset,
+    exposomicset,
     variable_map = NULL,
     log2_trans = TRUE) {
     # Validate variable_map
@@ -45,7 +45,7 @@ extract_omics_exposure_df <- function(
     }
 
     # Extract and preprocess colData
-    col_df <- expomicset |>
+    col_df <- exposomicset |>
         MultiAssayExperiment::colData() |>
         as.data.frame()
 
@@ -65,9 +65,9 @@ extract_omics_exposure_df <- function(
 
     if (log2_trans) {
         # Log2-transform omics
-        omics_data <- .log2_multiassay(expomicset)
+        omics_data <- .log2_multiassay(exposomicset)
     } else {
-        omics_data <- expomicset
+        omics_data <- exposomicset
     }
 
     # Determine selected features per omics dataset

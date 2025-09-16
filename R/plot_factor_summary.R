@@ -3,9 +3,9 @@
 #' Generates a summary plot of factor contributions from multi-omics
 #' integration results stored in a `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing integration
+#' @param exposomicset A `MultiAssayExperiment` object containing integration
 #' results in
-#'   `metadata(expomicset)$multiomics_integration$integration_results`.
+#'   `metadata(exposomicset)$multiomics_integration$integration_results`.
 #' @param low Color for low values in the fill gradient.
 #' Default is `"#006666"`.
 #' @param mid Color for midpoint in the fill gradient.
@@ -56,7 +56,7 @@
 #' @importFrom purrr discard imap map
 #' @export
 plot_factor_summary <- function(
-    expomicset,
+    exposomicset,
     low = "#006666",
     mid = "white",
     high = "#8E0152",
@@ -64,7 +64,7 @@ plot_factor_summary <- function(
     # require("ggplot2")
     # require("ggpubr")
 
-    integration <- MultiAssayExperiment::metadata(expomicset) |>
+    integration <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "multiomics_integration",
             "integration_results"

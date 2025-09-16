@@ -3,8 +3,8 @@
 #' Generates PCA plots for both feature space and sample space,
 #' including scatter plots and scree plots.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing PCA results
-#' in `metadata(expomicset)$pca`.
+#' @param exposomicset A `MultiAssayExperiment` object containing PCA results
+#' in `metadata(exposomicset)$pca`.
 #' @param feature_col A character string specifying the color for the
 #'  feature scree plot.
 #' Default is `"#00a9b2"`.
@@ -23,7 +23,7 @@
 #' - **Sample Space PCA Plot**: Highlights outlier samples.
 #' - **Sample Scree Plot**: Displays variance explained in the sample PCA.
 #'
-#' Outliers are labeled based on `metadata(expomicset)$pca$outliers`.
+#' Outliers are labeled based on `metadata(exposomicset)$pca$outliers`.
 #'
 #' @return A combined `ggplot` object containing the four PCA plots.
 #'
@@ -51,27 +51,27 @@
 #'
 #' @export
 plot_pca <- function(
-    expomicset,
+    exposomicset,
     feature_col = "#00a9b2",
     sample_col = "#8a4f77",
     sample_outlier_col = "firebrick") {
     .check_suggested(pkg = "patchwork")
 
     # Check if the required metadata is present
-    if (is.null(MultiAssayExperiment::metadata(expomicset)$quality_control$pca)) {
+    if (is.null(MultiAssayExperiment::metadata(exposomicset)$quality_control$pca)) {
         stop("Please run `run_pca` first.")
     }
 
     # grab data
-    dat <- MultiAssayExperiment::metadata(expomicset)$quality_control$pca$pca_df |>
+    dat <- MultiAssayExperiment::metadata(exposomicset)$quality_control$pca$pca_df |>
         as.data.frame()
-    pca_feature <- MultiAssayExperiment::metadata(expomicset) |>
+    pca_feature <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "quality_control",
             "pca",
             "pca_feature"
         )
-    pca_sample <- MultiAssayExperiment::metadata(expomicset) |>
+    pca_sample <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "quality_control",
             "pca",
@@ -146,7 +146,7 @@ plot_pca <- function(
         )
 
     # Define outliers
-    outlier_samples <- MultiAssayExperiment::metadata(expomicset) |>
+    outlier_samples <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "quality_control",
             "pca",

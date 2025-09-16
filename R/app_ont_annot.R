@@ -11,14 +11,14 @@
 #' @return A \code{shiny.appobj}.
 #' @examples
 #' if (interactive()) {
-#'   app <- build_ont_annot_app()
-#'   shiny::runApp(app)
+#'     app <- build_ont_annot_app()
+#'     shiny::runApp(app)
 #' }
 #' @export
 #' @importFrom shiny shinyApp
 build_ont_annot_app <- function(use_demo = TRUE, ...) {
-  ont <- .load_ontologies(use_demo = use_demo, ...)
-  ui  <- .ont_annot_build_ui()
-  srv <- .ont_annot_build_server(ontologies = ont)
-  shiny::shinyApp(ui = ui, server = srv)
+    ont <- .load_ontologies(use_demo = use_demo, ...)
+    ui <- .ont_annot_build_ui()
+    srv <- .ont_annot_build_server(ontologies = ont)
+    shiny::shinyApp(ui = ui, server = srv)
 }

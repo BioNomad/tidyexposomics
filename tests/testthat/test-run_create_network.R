@@ -10,7 +10,7 @@ test_that("run_create_network builds igraph object from omics_feature_cor", {
 
     # compute feature-feature correlations (required for network)
     mae <- run_correlation(
-        expomicset = mae,
+        exposomicset = mae,
         feature_type = "omics",
         feature_cors = TRUE,
         correlation_method = "spearman",
@@ -21,7 +21,7 @@ test_that("run_create_network builds igraph object from omics_feature_cor", {
 
     # build correlation network
     mae_net <- run_create_network(
-        expomicset = mae,
+        exposomicset = mae,
         feature_type = "omics_feature_cor",
         action = "add"
     )
@@ -53,7 +53,7 @@ test_that("run_create_network returns igraph object when action = 'get'", {
     )
 
     mae <- run_correlation(
-        expomicset = mae,
+        exposomicset = mae,
         feature_type = "omics",
         feature_cors = TRUE,
         correlation_method = "spearman",
@@ -63,7 +63,7 @@ test_that("run_create_network returns igraph object when action = 'get'", {
     )
 
     net <- run_create_network(
-        expomicset = mae,
+        exposomicset = mae,
         feature_type = "omics_feature_cor",
         action = "get"
     )

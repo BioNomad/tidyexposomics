@@ -3,14 +3,14 @@
 #' Retrieves a specific analysis result
 #' from the metadata slot of a `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object.
+#' @param exposomicset A `MultiAssayExperiment` object.
 #' @param result A character string indicating which result to
 #' extract from metadata. Must be one of:
 #' `"codebook"`, `"quality_control"`, `"correlation"`, `"association"`,
 #' `"differential_analysis"`, `"multiomics_integration"`, `"network"`,
 #'  or `"enrichment"`.
 #'
-#' @return The corresponding result object stored in `metadata(expomicset)`,
+#' @return The corresponding result object stored in `metadata(exposomicset)`,
 #'  or `NULL` if not present.
 #'
 #' @examples
@@ -22,13 +22,13 @@
 #'
 #' # extract results
 #' res <- extract_results(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     result = "codebook"
 #' )
 #'
 #' @export
 extract_results <- function(
-    expomicset,
+    exposomicset,
     result = c(
         "codebook",
         "quality_control",
@@ -39,7 +39,7 @@ extract_results <- function(
         "network",
         "enrichment"
     )) {
-    result <- expomicset |>
+    result <- exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck(result)
 

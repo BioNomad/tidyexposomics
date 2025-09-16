@@ -5,7 +5,7 @@
 #' Features are selected based on either a percentile cutoff
 #' or an absolute loading threshold.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing
+#' @param exposomicset A `MultiAssayExperiment` object containing
 #' integration results.
 #' @param factors A character vector specifying the factors of interest.
 #' If `NULL`, factors are automatically selected from the association results
@@ -27,13 +27,13 @@
 #' (`"get"`) or add them to metadata (`"add"`). Default is `"add"`.
 #'
 #' @details
-#' The function extracts factor loadings from `metadata(expomicset)`,
+#' The function extracts factor loadings from `metadata(exposomicset)`,
 #' applies filtering based on
 #' the selected method, and identifies top contributing features for
 #' each specified factor.
 #'
 #' If `factors` is not provided, the function will automatically select
-#' statistically significant factors from `metadata(expomicset)$association$assoc_factors$results_df`
+#' statistically significant factors from `metadata(exposomicset)$association$assoc_factors$results_df`
 #' using the specified `pval_col` and `pval_thresh` as criteria.
 #'
 #' Features can be selected using:
@@ -42,7 +42,7 @@
 #' - **Threshold-based filtering** (`method = "threshold"`): Selects
 #' features with absolute loadings exceeding a fixed value.
 #'
-#' @return If `action = "add"`, returns the modified `expomicset` with
+#' @return If `action = "add"`, returns the modified `exposomicset` with
 #' selected features stored in metadata.
 #' If `action = "get"`, returns a data frame containing:
 #' \item{feature}{The selected feature contributing to the factor.}
@@ -74,7 +74,7 @@
 #'
 #' @export
 extract_top_factor_features <- function(
-    expomicset,
+    exposomicset,
     factors = NULL,
     pval_col = "p_adjust",
     pval_thresh = 0.05,
@@ -85,11 +85,11 @@ extract_top_factor_features <- function(
     message("Extracting top contributing features for specified factors.")
 
     # Get integration results
-    integration_results <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results
+    integration_results <- MultiAssayExperiment::metadata(exposomicset)$multiomics_integration$integration_results
     method_used <- integration_results$method
 
     if (is.null(factors)) {
-        factors <- MultiAssayExperiment::metadata(expomicset) |>
+        factors <- MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck(
                 "association",
                 "assoc_factors",
@@ -187,7 +187,7 @@ extract_top_factor_features <- function(
 
     # Store or return results
     if (action == "add") {
-        MultiAssayExperiment::metadata(expomicset) |>
+        MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck(
                 "multiomics_integration",
                 "top_factor_features"
@@ -210,12 +210,12 @@ extract_top_factor_features <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         return(filtered_features)
     } else {

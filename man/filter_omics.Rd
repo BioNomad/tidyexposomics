@@ -5,7 +5,7 @@
 \title{Filter low-quality features in omics assays}
 \usage{
 filter_omics(
-  expomicset,
+  exposomicset,
   method = c("variance", "expression"),
   assays = NULL,
   assay_name = 1,
@@ -16,7 +16,7 @@ filter_omics(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing omics assays.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing omics assays.}
 
 \item{method}{Filtering method: either \code{"variance"} or \code{"expression"}.}
 
@@ -48,7 +48,7 @@ before downstream analysis.
 \examples{
 # Filter the proteomics assay by variance
 filtered_mae <- filter_omics(
-    expomicset = make_example_data(return_mae = TRUE),
+    exposomicset = make_example_data(return_mae = TRUE),
     method = c("variance"),
     assays = "proteomics",
     assay_name = 1,

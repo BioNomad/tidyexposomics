@@ -5,7 +5,7 @@
 \title{Summarize and Visualize Analysis Pipeline Steps}
 \usage{
 run_pipeline_summary(
-  expomicset,
+  exposomicset,
   show_index = TRUE,
   console_print = TRUE,
   diagram_print = FALSE,
@@ -13,7 +13,7 @@ run_pipeline_summary(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object that contains a
+\item{exposomicset}{A \code{MultiAssayExperiment} object that contains a
 "summary"
 entry in its metadata, which includes a list named \code{steps}.}
 

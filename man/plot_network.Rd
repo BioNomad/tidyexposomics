@@ -5,7 +5,7 @@
 \title{Plot Network Graph of Features or Exposures}
 \usage{
 plot_network(
-  expomicset,
+  exposomicset,
   network = c("degs", "omics", "factors", "factor_features", "exposures",
     "degs_feature_cor", "omics_feature_cor", "factor_features_feature_cor"),
   include_stats = TRUE,
@@ -27,7 +27,7 @@ plot_network(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing network results
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing network results
 in metadata.}
 
 \item{network}{Character string specifying the network type.

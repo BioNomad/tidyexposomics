@@ -14,7 +14,7 @@ test_that("run_exposome_score computes scores with all supported methods", {
 
     for (method in methods) {
         result <- run_exposome_score(
-            expomicset = mae,
+            exposomicset = mae,
             score_type = method,
             scale = TRUE
         )
@@ -44,7 +44,7 @@ test_that("run_exposome_score computes score for user-defined columns", {
     exposure_vars <- c("age", "bmi", "exposure_pm25")
 
     result <- run_exposome_score(
-        expomicset = mae,
+        exposomicset = mae,
         score_type = "sum",
         exposure_cols = exposure_vars,
         scale = FALSE,
@@ -72,7 +72,7 @@ test_that("run_exposome_score with IRT works if mirt is available", {
     exposure_vars <- c("age", "bmi", "exposure_pm25")
 
     result <- run_exposome_score(
-        expomicset = mae,
+        exposomicset = mae,
         score_type = "irt",
         exposure_cols = exposure_vars,
         scale = TRUE

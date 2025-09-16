@@ -4,12 +4,12 @@
 \alias{plot_sample_clusters}
 \title{Plot Sample Clusters}
 \usage{
-plot_sample_clusters(expomicset, exposure_cols = NULL)
+plot_sample_clusters(exposomicset, exposure_cols = NULL)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing sample
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing sample
 clustering results
-in \code{metadata(expomicset)$sample_clustering}.}
+in \code{metadata(exposomicset)$sample_clustering}.}
 
 \item{exposure_cols}{A character vector specifying columns from \code{colData}
 to include
@@ -26,10 +26,10 @@ summarizes sample group assignments.
 This function:
 \itemize{
 \item Extracts sample cluster assignments from
-\code{metadata(expomicset)$sample_clustering}.
-\item Merges cluster labels with \code{colData(expomicset)}.
+\code{metadata(exposomicset)$sample_clustering}.
+\item Merges cluster labels with \code{colData(exposomicset)}.
 \item Plots the heatmap stored in
-\code{metadata(expomicset)$sample_clustering$heatmap}.
+\code{metadata(exposomicset)$sample_clustering$heatmap}.
 }
 }
 \examples{
@@ -41,7 +41,7 @@ mae <- make_example_data(
 
 # determine sample clusters
 mae <- run_cluster_samples(
-    expomicset = mae,
+    exposomicset = mae,
     exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi"),
     clustering_approach = "diana"
 )

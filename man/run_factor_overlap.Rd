@@ -5,7 +5,7 @@
 \title{Identify and Annotate Shared Top Features Across Integration Factors}
 \usage{
 run_factor_overlap(
-  expomicset,
+  exposomicset,
   robust = TRUE,
   stability_score = NULL,
   score_col = "stability_score",
@@ -17,7 +17,7 @@ run_factor_overlap(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} with integration results
+\item{exposomicset}{A \code{MultiAssayExperiment} with integration results
 and top factor features.}
 
 \item{robust}{Logical; if \code{TRUE}, uses sensitivity score. Otherwise,
@@ -49,7 +49,7 @@ shared top features.
 \description{
 Identifies top features shared across factors based on integration method.
 For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA,
-takes features recurring in ≥2 block-specific components.
+takes features recurring in more than 2 block-specific components.
 }
 \examples{
 # create example data
@@ -77,7 +77,7 @@ mae <- extract_top_factor_features(
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-    expomicset = mae,
+    exposomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
     method = "limma_voom",

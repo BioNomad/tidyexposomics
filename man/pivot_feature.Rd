@@ -4,10 +4,10 @@
 \alias{pivot_feature}
 \title{Extract Feature Metadata from a MultiAssayExperiment}
 \usage{
-pivot_feature(expomicset)
+pivot_feature(exposomicset)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object.}
 }
 \value{
 A tibble with feature metadata from all assays,
@@ -21,7 +21,7 @@ Extracts feature-level metadata across all assays in a
 This function:
 \itemize{
 \item Iterates over all assays in the \code{MultiAssayExperiment}.
-\item Updates each assay’s sample metadata (\code{colData}) using
+\item Updates each assay's sample metadata (\code{colData}) using
 \code{.update_assay_colData()}.
 \item Extracts feature-level metadata using \code{tidybulk::pivot_transcript()}.
 \item Combines results across assays into a single tibble,

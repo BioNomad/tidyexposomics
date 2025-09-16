@@ -2,9 +2,9 @@
 #'
 #' Identifies top features shared across factors based on integration method.
 #' For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA,
-#' takes features recurring in ≥2 block-specific components.
+#' takes features recurring in more than 2 block-specific components.
 #'
-#' @param expomicset A `MultiAssayExperiment` with integration results
+#' @param exposomicset A `MultiAssayExperiment` with integration results
 #' and top factor features.
 #' @param robust Logical; if `TRUE`, uses sensitivity score. Otherwise,
 #'  uses DEG thresholds.
@@ -50,7 +50,7 @@
 #'
 #' # perform differential abundance analysis
 #' mae <- run_differential_abundance(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
 #'     method = "limma_voom",
@@ -66,7 +66,7 @@
 #'
 #' @export
 run_factor_overlap <- function(
-    expomicset,
+    exposomicset,
     robust = TRUE,
     stability_score = NULL,
     score_col = "stability_score",
@@ -77,14 +77,14 @@ run_factor_overlap <- function(
     action = "add") {
     # Ensure top features exist
     if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(
-        expomicset
+        exposomicset
     )$multiomics_integration)) {
         stop("Please run 'extract_top_factor_features()' first.")
     }
 
-    method <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$integration_results$method
+    method <- MultiAssayExperiment::metadata(exposomicset)$multiomics_integration$integration_results$method
 
-    top_factor_features <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$top_factor_features |>
+    top_factor_features <- MultiAssayExperiment::metadata(exposomicset)$multiomics_integration$top_factor_features |>
         dplyr::mutate(exp_name_feature = paste(exp_name, feature, sep = "_"))
 
     # Identify common features across factors
@@ -109,14 +109,14 @@ run_factor_overlap <- function(
     da_res <- if (robust) {
         score <- stability_score %||%
             purrr::pluck(
-                MultiAssayExperiment::metadata(expomicset),
+                MultiAssayExperiment::metadata(exposomicset),
                 "differential_analysis",
                 "sensitivity_analysis",
                 "score_thresh"
             )
 
         purrr::pluck(
-            MultiAssayExperiment::metadata(expomicset),
+            MultiAssayExperiment::metadata(exposomicset),
             "differential_analysis",
             "sensitivity_analysis",
             "feature_stability"
@@ -125,7 +125,7 @@ run_factor_overlap <- function(
             dplyr::mutate(exp_name_feature = paste(exp_name, feature, sep = "_"))
     } else {
         purrr::pluck(
-            MultiAssayExperiment::metadata(expomicset),
+            MultiAssayExperiment::metadata(exposomicset),
             "differential_analysis",
             "differential_abundance"
         ) |>
@@ -142,7 +142,7 @@ run_factor_overlap <- function(
     # Optional: Add annotations using pivot_feature()
     top_factor_features <- top_factor_features |>
         dplyr::left_join(
-            pivot_feature(expomicset),
+            pivot_feature(exposomicset),
             by = c(
                 "feature" = ".feature",
                 "exp_name" = ".exp_name"
@@ -155,10 +155,10 @@ run_factor_overlap <- function(
     )
 
     if (action == "add") {
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$multiomics_integration$common_top_factor_features <-
             top_factor_features
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         step_record <- list(
             run_factor_overlap = list(
@@ -188,12 +188,12 @@ run_factor_overlap <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else {
         return(top_factor_features)
     }

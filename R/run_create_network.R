@@ -1,13 +1,13 @@
 #' Create Correlation Network from Feature Data
 #'
-#' Constructs an undirected feature–feature or feature–exposure
+#' Constructs an undirected feature-feature or feature-exposure
 #' correlation network from correlation results stored in a
 #' `MultiAssayExperiment` object. The function
 #' supports multiple correlation formats depending on `feature_type`,
 #' and stores or returns an `igraph` object with associated node
 #' and edge metadata.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing correlation
+#' @param exposomicset A `MultiAssayExperiment` object containing correlation
 #' results in metadata.
 #' @param feature_type Type of correlation result to convert to a network.
 #'  One of:
@@ -77,7 +77,7 @@
 #' @importFrom igraph graph_from_data_frame
 #' @export
 run_create_network <- function(
-    expomicset,
+    exposomicset,
     feature_type = c(
         "degs",
         "omics",
@@ -95,110 +95,104 @@ run_create_network <- function(
     feature_type <- match.arg(feature_type)
     action <- match.arg(action)
 
-    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata <- MultiAssayExperiment::metadata(exposomicset)
     cor_data <- all_metadata$correlation[[feature_type]]
 
-
     if (is.null(cor_data)) {
-        stop(sprintf(
-            "No correlation data found for feature_type = '%s'",
-            feature_type
-        ))
+        stop(sprintf("No correlation data found for feature_type = '%s'", feature_type))
     }
-
 
     message("Creating network from correlation results.")
 
-    # Detect variable structure
-    if (all(c(
-        "feature",
-        "exposure",
-        "exp_name",
-        "category"
-    ) %in% colnames(cor_data))) {
-        node_tbl <- dplyr::bind_rows(
-            dplyr::select(cor_data, name = feature, group = exp_name),
-            dplyr::select(cor_data, name = exposure, group = category)
-        ) |> dplyr::distinct()
+    # --- exposure-feature correlations
+    if (all(c("feature", "exposure", "exp_name", "category") %in% colnames(cor_data))) {
+        node_tbl <- dplyr::distinct(
+            dplyr::bind_rows(
+                dplyr::select(cor_data, name = feature, group = exp_name),
+                dplyr::select(cor_data, name = exposure, group = category)
+            )
+        ) |>
+            dplyr::mutate(vertex_id = paste(name, group, sep = "_"))
 
-        edge_df <- dplyr::select(cor_data,
-            from = exposure,
-            to = feature,
-            correlation, FDR
-        )
-    } else if (all(c(
-        "var1",
-        "var2",
-        "var1_type",
-        "var2_type"
-    ) %in% colnames(cor_data))) {
-        node_tbl <- dplyr::bind_rows(
-            dplyr::select(cor_data, name = var1, group = var1_type),
-            dplyr::select(cor_data, name = var2, group = var2_type)
-        ) |> dplyr::distinct()
+        edge_df <- cor_data |>
+            dplyr::mutate(
+                from = paste(exposure, category, sep = "_"),
+                to   = paste(feature, exp_name, sep = "_")
+            ) |>
+            dplyr::select(from, to, correlation, FDR)
 
-        edge_df <- dplyr::select(cor_data,
-            from = var1,
-            to = var2,
-            correlation, FDR
-        )
-    } else if (all(c(
-        "var1",
-        "var2",
-        "exp_name_1",
-        "exp_name_2"
-    ) %in% colnames(cor_data))) {
-        node_tbl <- dplyr::bind_rows(
-            dplyr::select(cor_data, name = var1, group = exp_name_1),
-            dplyr::select(cor_data, name = var2, group = exp_name_2)
-        ) |> dplyr::distinct()
+        # --- generic pairwise with var1/var2
+    } else if (all(c("var1", "var2", "var1_type", "var2_type") %in% colnames(cor_data))) {
+        node_tbl <- dplyr::distinct(
+            dplyr::bind_rows(
+                dplyr::select(cor_data, name = var1, group = var1_type),
+                dplyr::select(cor_data, name = var2, group = var2_type)
+            )
+        ) |>
+            dplyr::mutate(vertex_id = paste(name, group, sep = "_"))
 
-        edge_df <- dplyr::select(cor_data,
-            from = var1,
-            to = var2,
-            correlation,
-            FDR
-        )
+        edge_df <- cor_data |>
+            dplyr::mutate(
+                from = paste(var1, var1_type, sep = "_"),
+                to   = paste(var2, var2_type, sep = "_")
+            ) |>
+            dplyr::select(from, to, correlation, FDR)
+
+        # --- correlations across experiments
+    } else if (all(c("var1", "var2", "exp_name_1", "exp_name_2") %in% colnames(cor_data))) {
+        node_tbl <- dplyr::distinct(
+            dplyr::bind_rows(
+                dplyr::select(cor_data, name = var1, group = exp_name_1),
+                dplyr::select(cor_data, name = var2, group = exp_name_2)
+            )
+        ) |>
+            dplyr::mutate(vertex_id = paste(name, group, sep = "_"))
+
+        edge_df <- cor_data |>
+            dplyr::mutate(
+                from = paste(var1, exp_name_1, sep = "_"),
+                to   = paste(var2, exp_name_2, sep = "_")
+            ) |>
+            dplyr::select(from, to, correlation, FDR)
     } else {
         stop("Unrecognized correlation format.")
     }
 
-    g <- igraph::graph_from_data_frame(edge_df,
-        directed = FALSE,
-        vertices = node_tbl
-    )
-    net_summary <- .summarize_graph(g)
+    # --- build graph safely with unique vertex_id ---
+    vertices <- node_tbl |>
+        dplyr::transmute(
+            name = vertex_id, # unique ID for igraph
+            label = name, # original biological name
+            group = group # grouping info
+        )
 
+    g <- igraph::graph_from_data_frame(
+        edge_df,
+        directed = FALSE,
+        vertices = vertices
+    )
+
+    net_summary <- .summarize_graph(g)
     net_name <- paste0("network_", feature_type)
 
     if (action == "add") {
-        MultiAssayExperiment::metadata(expomicset)[["network"]][[net_name]] <- list(
+        MultiAssayExperiment::metadata(exposomicset)[["network"]][[net_name]] <- list(
             graph = g,
             summary = net_summary
         )
-
-        # Add analysis step to metadata
-        step_record <- list(
-            run_create_network = list(
-                timestamp = Sys.time(),
-                params = list(
-                    feature_type = feature_type
-                ),
-                notes = paste0(
-                    "Created undirected network from correlation results for'",
-                    feature_type,
-                    "'."
-                )
+        step_record <- list(run_create_network = list(
+            timestamp = Sys.time(),
+            params = list(feature_type = feature_type),
+            notes = paste0(
+                "Created undirected network from correlation results for '",
+                feature_type, "'."
             )
-        )
-
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
-            step_record
-        )
+        ))
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <-
+            c(MultiAssayExperiment::metadata(exposomicset)$summary$steps, step_record)
 
         message("Network added to metadata as: ", net_name)
-        return(expomicset)
+        return(exposomicset)
     } else {
         return(list(graph = g, summary = net_summary))
     }

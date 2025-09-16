@@ -5,14 +5,14 @@
 \title{Create Correlation Network from Feature Data}
 \usage{
 run_create_network(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "omics", "factors", "factor_features", "exposures",
     "degs_feature_cor", "omics_feature_cor", "factor_features_feature_cor"),
   action = c("add", "get")
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing correlation
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing correlation
 results in metadata.}
 
 \item{feature_type}{Type of correlation result to convert to a network.
@@ -31,7 +31,7 @@ If \code{action = "get"}, returns a list with \code{graph}
 (an \code{igraph} object) and \code{summary} (a tibble).
 }
 \description{
-Constructs an undirected feature–feature or feature–exposure
+Constructs an undirected feature-feature or feature-exposure
 correlation network from correlation results stored in a
 \code{MultiAssayExperiment} object. The function
 supports multiple correlation formats depending on \code{feature_type},

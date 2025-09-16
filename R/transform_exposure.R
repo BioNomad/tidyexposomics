@@ -5,11 +5,11 @@
 #' (e.g., log, Box-Cox, sqrt). Transformation results and normality
 #' statistics are stored in metadata for tracking.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' @param exposomicset A `MultiAssayExperiment` object containing exposure
 #' variables in `colData`.
 #' @param exposure_cols Optional character vector of exposure variable
 #' names to transform.
-#'   If `NULL`, uses exposures found in `metadata(expomicset)$quality_control$normality$norm_df$exposure`.
+#'   If `NULL`, uses exposures found in `metadata(exposomicset)$quality_control$normality$norm_df$exposure`.
 #' @param transform_method Character. Transformation method to apply. Options:
 #'   \itemize{
 #'     \item `"none"`: no transformation
@@ -23,13 +23,13 @@
 #' @return A `MultiAssayExperiment` object with transformed exposures
 #' in `colData`, and transformation details stored in:
 #' \itemize{
-#'   \item `metadata(expomicset)$quality_control$transformation$norm_df`:
+#'   \item `metadata(exposomicset)$quality_control$transformation$norm_df`:
 #'    Shapiro-Wilk test results
-#'   \item `metadata(expomicset)$quality_control$transformation$norm_summary`:
+#'   \item `metadata(exposomicset)$quality_control$transformation$norm_summary`:
 #'   Summary of normality
-#'   \item `metadata(expomicset)$codebook`: Updated with transformation info
+#'   \item `metadata(exposomicset)$codebook`: Updated with transformation info
 #'    per variable
-#'   \item `metadata(expomicset)$summary$steps`: Updated with step record
+#'   \item `metadata(exposomicset)$summary$steps`: Updated with step record
 #' }
 #'
 #' @details
@@ -58,10 +58,10 @@
 #'
 #' @export
 transform_exposure <- function(
-    expomicset,
+    exposomicset,
     exposure_cols = NULL,
     transform_method = "boxcox_best") {
-    col_data <- as.data.frame(MultiAssayExperiment::colData(expomicset))
+    col_data <- as.data.frame(MultiAssayExperiment::colData(exposomicset))
     # numeric_cols <- names(col_data)[sapply(col_data, is.numeric)]
     numeric_cols <- names(col_data)[
         vapply(col_data, is.numeric, FUN.VALUE = logical(1))
@@ -70,7 +70,7 @@ transform_exposure <- function(
         exposure_cols
     } else {
         MultiAssayExperiment::metadata(
-            expomicset
+            exposomicset
         )$quality_control$normality$norm_df$exposure
     }
     variables_to_transform <- intersect(variables_to_transform, numeric_cols)
@@ -109,7 +109,7 @@ transform_exposure <- function(
         non_numeric_data,
         transformed_numeric
     )
-    MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(
+    MultiAssayExperiment::colData(exposomicset) <- S4Vectors::DataFrame(
         updated_col_data
     )
 
@@ -129,18 +129,18 @@ transform_exposure <- function(
         tibble::rownames_to_column("var") |>
         setNames(c("var", "value"))
 
-    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata <- MultiAssayExperiment::metadata(exposomicset)
     all_metadata$quality_control$transformation <- list(
         norm_df = norm_results,
         norm_summary = norm_summary
     )
-    MultiAssayExperiment::metadata(expomicset) <- all_metadata
+    MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
     # Add step record
     n_transformed <- length(variables_to_transform)
 
     # Pull normality results
-    all_metadata <- MultiAssayExperiment::metadata(expomicset)
+    all_metadata <- MultiAssayExperiment::metadata(exposomicset)
     norm_df <- all_metadata$quality_control$transformation$norm_df
 
     n_normal <- sum(norm_df$p.value > 0.05, na.rm = TRUE)
@@ -168,13 +168,13 @@ transform_exposure <- function(
         )
     )
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-        MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps,
         step_record
     )
 
     # Merge with existing codebook or initialize
-    existing_codebook <- MultiAssayExperiment::metadata(expomicset)$codebook
+    existing_codebook <- MultiAssayExperiment::metadata(exposomicset)$codebook
 
     # Create a new data frame for the updated variable information
     updated_codebook <- existing_codebook |>
@@ -184,9 +184,9 @@ transform_exposure <- function(
         )
 
     # Update the codebook in the metadata
-    MultiAssayExperiment::metadata(expomicset)$codebook <- updated_codebook
+    MultiAssayExperiment::metadata(exposomicset)$codebook <- updated_codebook
 
-    return(expomicset)
+    return(exposomicset)
 }
 
 # --- Box-Cox Best Function ------

@@ -4,7 +4,7 @@
 #' in the metadata of a `MultiAssayExperiment` object.
 #' Supports faceting and visual augmentation with R^2 tiles when available.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing association
+#' @param exposomicset A `MultiAssayExperiment` object containing association
 #' results in metadata.
 #' @param source Character string indicating the association source.
 #' One of `"omics"`, `"exposures"`, `"factors"`, or `"go_pcs"`.
@@ -63,7 +63,7 @@
 #'
 #' @export
 plot_association <- function(
-    expomicset,
+    exposomicset,
     source = c("omics", "exposures", "factors", "go_pcs"),
     terms = NULL,
     filter_col = "p.value",
@@ -83,7 +83,7 @@ plot_association <- function(
     assoc_key <- paste0("assoc_", source)
 
     # Check metadata
-    assoc_metadata <- MultiAssayExperiment::metadata(expomicset)$association
+    assoc_metadata <- MultiAssayExperiment::metadata(exposomicset)$association
     if (is.null(assoc_metadata) || !assoc_key %in% names(assoc_metadata)) {
         stop(
             "Association results for source '",

@@ -1,7 +1,7 @@
 test_that("run_exposure_impact computes exposure-level centrality scores", {
     library(MultiAssayExperiment)
 
-    # Create dummy expomicset
+    # Create dummy exposomicset
     dummy <- make_example_data(n_samples = 20)
     mae <- create_exposomicset(
         codebook = dummy$codebook,
@@ -12,7 +12,7 @@ test_that("run_exposure_impact computes exposure-level centrality scores", {
 
     # mae differential abundance
     mae <- run_differential_abundance(
-        expomicset = mae,
+        exposomicset = mae,
         formula = ~ smoker + sex,
         abundance_col = "counts",
         method = "limma_voom",

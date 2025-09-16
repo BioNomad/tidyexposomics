@@ -3,7 +3,7 @@
 #' Runs PCA on the feature and sample spaces of a `MultiAssayExperiment` object,
 #' identifying outliers based on Mahalanobis distance.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics
+#' @param exposomicset A `MultiAssayExperiment` object containing omics
 #' and exposure data.
 #' @param log_trans_exp A boolean value specifying whether to log2
 #' transform the exposure data
@@ -19,7 +19,7 @@
 #' - Performs **PCA on samples** and computes Mahalanobis distance to
 #' detect outliers.
 #' - **Output Handling**:
-#'   - `"add"`: Stores results in `metadata(expomicset)$pca` and
+#'   - `"add"`: Stores results in `metadata(exposomicset)$pca` and
 #'   updates `colData` with PCs.
 #'   - `"get"`: Returns a list containing the PCA results.
 #'
@@ -43,19 +43,19 @@
 #'
 #' @export
 run_pca <- function(
-    expomicset,
+    exposomicset,
     log_trans_exp = FALSE,
     log_trans_omics = TRUE,
     action = "add") {
     # Identify common samples across all data
     message("Identifying common samples.")
 
-    common_samples <- rownames(MultiAssayExperiment::colData(expomicset))
-    for (omics_name in names(MultiAssayExperiment::experiments(expomicset))) {
+    common_samples <- rownames(MultiAssayExperiment::colData(exposomicset))
+    for (omics_name in names(MultiAssayExperiment::experiments(exposomicset))) {
         common_samples <- intersect(
             common_samples,
             colnames(MultiAssayExperiment::experiments(
-                expomicset
+                exposomicset
             )[[omics_name]])
         )
     }
@@ -68,7 +68,7 @@ run_pca <- function(
     message("Subsetting exposure data.")
 
     exposure_data <- MultiAssayExperiment::colData(
-        expomicset
+        exposomicset
     )[common_samples, ] |>
         as.data.frame() |>
         dplyr::select(where(is.numeric)) |>
@@ -87,10 +87,10 @@ run_pca <- function(
     message("Subsetting omics data.")
 
     omics_data <- lapply(
-        names(MultiAssayExperiment::experiments(expomicset)),
+        names(MultiAssayExperiment::experiments(exposomicset)),
         function(omics_name) {
             SummarizedExperiment::assays(
-                MultiAssayExperiment::experiments(expomicset)[[omics_name]]
+                MultiAssayExperiment::experiments(exposomicset)[[omics_name]]
             )[[1]][
                 , common_samples,
                 drop = FALSE
@@ -163,7 +163,7 @@ run_pca <- function(
     }
 
     # add in PCs for samples to the colData
-    col_data <- MultiAssayExperiment::colData(expomicset) |>
+    col_data <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame() |>
         (\(df){
             df$id_to_map <- rownames(df)
@@ -180,11 +180,11 @@ run_pca <- function(
         ) |>
         tibble::column_to_rownames("id_to_map")
 
-    MultiAssayExperiment::colData(expomicset) <- col_data
+    MultiAssayExperiment::colData(exposomicset) <- col_data
 
     if (action == "add") {
         # Store results
-        MultiAssayExperiment::metadata(expomicset)$quality_control$pca <- list(
+        MultiAssayExperiment::metadata(exposomicset)$quality_control$pca <- list(
             pca_df = tibble(dat),
             pca_feature = pca_feature,
             pca_sample = pca_sample,
@@ -203,12 +203,12 @@ run_pca <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         return(list(
             pca_df = tibble(dat),

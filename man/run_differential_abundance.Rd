@@ -5,7 +5,7 @@
 \title{Run Differential Abundance Analysis}
 \usage{
 run_differential_abundance(
-  expomicset,
+  exposomicset,
   formula,
   abundance_col = "counts",
   method = "limma_trend",
@@ -15,7 +15,7 @@ run_differential_abundance(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} containing assays to test.}
+\item{exposomicset}{A \code{MultiAssayExperiment} containing assays to test.}
 
 \item{formula}{A model formula for the differential analysis
 (e.g., ~ group + batch).}
@@ -32,7 +32,7 @@ Default is \code{NULL} (uses default group comparisons).}
 \item{scaling_method}{Character. Scaling method to apply before modeling.
 Options include \code{"none"} (default), \code{"zscore"}, etc.}
 
-\item{action}{Character. Whether to \code{"add"} results to \code{expomicset}
+\item{action}{Character. Whether to \code{"add"} results to \code{exposomicset}
 metadata or \code{"get"} the results as a data frame. Default is \code{"add"}.}
 }
 \value{
@@ -55,7 +55,7 @@ mae <- make_example_data(
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-    expomicset = mae,
+    exposomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
     method = "limma_trend",

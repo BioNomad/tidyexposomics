@@ -4,7 +4,7 @@
 #'  missing values above a specified threshold.
 #' Generates missing data summaries and quality control (QC) plots.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing
+#' @param exposomicset A `MultiAssayExperiment` object containing
 #' exposure and omics data.
 #' @param na_thresh A numeric value specifying the percentage of
 #' missing data allowed before a variable or feature is removed. Default is `20`.
@@ -12,8 +12,8 @@
 #' minimum missing percentage for inclusion in QC plots. Default is `5`.
 #'
 #' @details
-#' The function assesses missingness in both `colData(expomicset)`
-#' (exposure data) and `experiments(expomicset)` (omics data).
+#' The function assesses missingness in both `colData(exposomicset)`
+#' (exposure data) and `experiments(exposomicset)` (omics data).
 #' - Exposure variables with more than `na_thresh`% missing values are removed.
 #' - Omics features (rows in assay matrices) exceeding `na_thresh`%
 #' missing values are filtered.
@@ -23,7 +23,7 @@
 #' @return A `MultiAssayExperiment` object with filtered exposure
 #' variables and omics features.
 #' QC results, including missingness summaries and plots,
-#'  are stored in `metadata(expomicset)$na_qc`.
+#'  are stored in `metadata(exposomicset)$na_qc`.
 #'
 #' @examples
 #' # Create example data
@@ -37,14 +37,14 @@
 #'
 #' # Filter features and exposures with high missingness
 #' mae_filtered <- filter_missing(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     na_thresh = 20,
 #'     na_plot_thresh = 5
 #' )
 #'
 #' @export
 filter_missing <- function(
-    expomicset,
+    exposomicset,
     na_thresh = 20,
     na_plot_thresh = 5) {
     # Helper function to identify variables/features to exclude
@@ -59,11 +59,11 @@ filter_missing <- function(
     }
 
     # Handle metadata (colData)
-    exposure <- as.data.frame(MultiAssayExperiment::colData(expomicset))
+    exposure <- as.data.frame(MultiAssayExperiment::colData(exposomicset))
     col_exclude <- get_vars_to_exclude(exposure, na_thresh)
-    MultiAssayExperiment::colData(expomicset) <- as(
-        MultiAssayExperiment::colData(expomicset)[
-            , !colnames(MultiAssayExperiment::colData(expomicset)) %in%
+    MultiAssayExperiment::colData(exposomicset) <- as(
+        MultiAssayExperiment::colData(exposomicset)[
+            , !colnames(MultiAssayExperiment::colData(exposomicset)) %in%
                 col_exclude$to_exclude,
             drop = FALSE
         ],
@@ -71,7 +71,7 @@ filter_missing <- function(
     )
 
     # QC plot for metadata
-    MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc <- list(
+    MultiAssayExperiment::metadata(exposomicset)$quality_control$na_qc <- list(
         exposure = list(
             vars_to_exclude_exposure_sum = col_exclude$summary |>
                 dplyr::filter(pct_miss > na_thresh),
@@ -95,8 +95,8 @@ filter_missing <- function(
     )
 
     # Handle omics experiments
-    all_experiments <- MultiAssayExperiment::experiments(expomicset)
-    metadata_list <- MultiAssayExperiment::metadata(expomicset)
+    all_experiments <- MultiAssayExperiment::experiments(exposomicset)
+    metadata_list <- MultiAssayExperiment::metadata(exposomicset)
 
     for (omics_name in names(all_experiments)) {
         experiment <- all_experiments[[omics_name]]
@@ -134,9 +134,9 @@ filter_missing <- function(
         )
     }
 
-    # Save modified experiments and metadata back to expomicset
-    MultiAssayExperiment::experiments(expomicset) <- all_experiments
-    MultiAssayExperiment::metadata(expomicset) <- metadata_list
+    # Save modified experiments and metadata back to exposomicset
+    MultiAssayExperiment::experiments(exposomicset) <- all_experiments
+    MultiAssayExperiment::metadata(exposomicset) <- metadata_list
 
     # Add analysis steps taken to metadata
     step_record <- list(
@@ -152,11 +152,11 @@ filter_missing <- function(
             )
     )
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-        MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps,
         step_record
     )
 
 
-    return(expomicset)
+    return(exposomicset)
 }

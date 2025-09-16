@@ -5,7 +5,7 @@
 \title{Plot Exposure Impact on Network Centrality Metrics}
 \usage{
 plot_exposure_impact(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "omics", "factors"),
   min_per_group = 5,
   facet_cols = NULL,
@@ -18,7 +18,7 @@ plot_exposure_impact(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with results
+\item{exposomicset}{A \code{MultiAssayExperiment} object with results
 from \code{run_exposure_impact()}.}
 
 \item{feature_type}{Character string specifying the feature type.

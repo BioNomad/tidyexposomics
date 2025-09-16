@@ -5,7 +5,7 @@
 #' It is useful for removing low-quality or uninformative features
 #'  before downstream analysis.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics assays.
+#' @param exposomicset A `MultiAssayExperiment` object containing omics assays.
 #' @param method Filtering method: either `"variance"` or `"expression"`.
 #' @param assays Character vector of assay names to filter.
 #' If `NULL`, all assays are filtered.
@@ -22,7 +22,7 @@
 #' @examples
 #' # Filter the proteomics assay by variance
 #' filtered_mae <- filter_omics(
-#'     expomicset = make_example_data(return_mae = TRUE),
+#'     exposomicset = make_example_data(return_mae = TRUE),
 #'     method = c("variance"),
 #'     assays = "proteomics",
 #'     assay_name = 1,
@@ -32,7 +32,7 @@
 #'
 #' @export
 filter_omics <- function(
-    expomicset,
+    exposomicset,
     method = c("variance", "expression"),
     assays = NULL,
     assay_name = 1,
@@ -41,11 +41,11 @@ filter_omics <- function(
     min_prop = 0.7,
     verbose = TRUE) {
     method <- match.arg(method)
-    if (!inherits(expomicset, "MultiAssayExperiment")) {
+    if (!inherits(exposomicset, "MultiAssayExperiment")) {
         stop("Input must be a MultiAssayExperiment object.")
     }
 
-    exp_list <- MultiAssayExperiment::experiments(expomicset)
+    exp_list <- MultiAssayExperiment::experiments(exposomicset)
     assay_names <- names(exp_list)
     if (is.null(assays)) assays <- assay_names
     assays <- intersect(assays, assay_names)
@@ -99,7 +99,7 @@ filter_omics <- function(
     }
 
     filtered_exps_list <- MultiAssayExperiment::ExperimentList(filtered_exps)
-    MultiAssayExperiment::experiments(expomicset) <- filtered_exps_list
+    MultiAssayExperiment::experiments(exposomicset) <- filtered_exps_list
 
     # Update metadata with step records
     for (assay in names(removed_features)) {
@@ -127,16 +127,16 @@ filter_omics <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
     }
 
-    return(expomicset)
+    return(exposomicset)
 }
 
-# filter_omics <- function(expomicset,
+# filter_omics <- function(exposomicset,
 #                          method = c("variance", "expression"),
 #                          assays = NULL,
 #                          assay_name = 1,
@@ -146,11 +146,11 @@ filter_omics <- function(
 #                          verbose = TRUE) {
 #   method <- match.arg(method)
 #
-#   if (!inherits(expomicset, "MultiAssayExperiment")) {
+#   if (!inherits(exposomicset, "MultiAssayExperiment")) {
 #     stop("Input must be a MultiAssayExperiment object.")
 #   }
 #
-#   exp_list <- MultiAssayExperiment::experiments(expomicset)
+#   exp_list <- MultiAssayExperiment::experiments(exposomicset)
 #   assay_names <- names(exp_list)
 #
 #   if (is.null(assays)) assays <- assay_names
@@ -198,7 +198,7 @@ filter_omics <- function(
 #   })
 #
 #   names(filtered_exps) <- assay_names
-#   MultiAssayExperiment::experiments(expomicset) <- MultiAssayExperiment::ExperimentList(filtered_exps)
+#   MultiAssayExperiment::experiments(exposomicset) <- MultiAssayExperiment::ExperimentList(filtered_exps)
 #
 #   # Add step records per assay
 #   for (assay in names(removed_features)) {
@@ -221,12 +221,12 @@ filter_omics <- function(
 #       )
 #     )
 #
-#     MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-#       MultiAssayExperiment::metadata(expomicset)$summary$steps,
+#     MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+#       MultiAssayExperiment::metadata(exposomicset)$summary$steps,
 #       step_record
 #     )
 #   }
 #
-#   return(expomicset)
+#   return(exposomicset)
 # }
 #

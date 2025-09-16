@@ -4,16 +4,16 @@
 \alias{filter_sample_outliers}
 \title{Filter Sample Outliers}
 \usage{
-filter_sample_outliers(expomicset, outliers = NULL)
+filter_sample_outliers(exposomicset, outliers = NULL)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 omics and exposure data.}
 
 \item{outliers}{An optional character vector specifying
 sample names to be removed.
 If \code{NULL}, the function uses outliers identified in
-\code{metadata(expomicset)$pca$outliers}. Default is \code{NULL}.}
+\code{metadata(exposomicset)$pca$outliers}. Default is \code{NULL}.}
 }
 \value{
 A \code{MultiAssayExperiment} object with the specified outliers removed.
@@ -24,8 +24,8 @@ based on PCA analysis.
 }
 \details{
 The function checks for the presence of PCA results in
-\code{metadata(expomicset)}. If \code{outliers} is not provided,
-it retrieves precomputed outliers from \code{metadata(expomicset)$pca$outliers}.
+\code{metadata(exposomicset)}. If \code{outliers} is not provided,
+it retrieves precomputed outliers from \code{metadata(exposomicset)$pca$outliers}.
 The identified samples are removed
 from the dataset.
 }

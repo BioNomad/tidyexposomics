@@ -5,7 +5,7 @@
 \title{Plot Summary of Factor Contributions from Multi-Omics Integration}
 \usage{
 plot_factor_summary(
-  expomicset,
+  exposomicset,
   low = "#006666",
   mid = "white",
   high = "#8E0152",
@@ -13,9 +13,9 @@ plot_factor_summary(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing integration
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing integration
 results in
-\code{metadata(expomicset)$multiomics_integration$integration_results}.}
+\code{metadata(exposomicset)$multiomics_integration$integration_results}.}
 
 \item{low}{Color for low values in the fill gradient.
 Default is \code{"#006666"}.}

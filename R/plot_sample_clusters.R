@@ -3,9 +3,9 @@
 #' Generates a heatmap of sample clustering results and
 #' summarizes sample group assignments.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing sample
+#' @param exposomicset A `MultiAssayExperiment` object containing sample
 #'  clustering results
-#' in `metadata(expomicset)$sample_clustering`.
+#' in `metadata(exposomicset)$sample_clustering`.
 #' @param exposure_cols A character vector specifying columns from `colData`
 #' to include
 #' in the summary. Default is `NULL`, which includes all available columns.
@@ -13,10 +13,10 @@
 #' @details
 #' This function:
 #' - Extracts sample cluster assignments from
-#' `metadata(expomicset)$sample_clustering`.
-#' - Merges cluster labels with `colData(expomicset)`.
+#' `metadata(exposomicset)$sample_clustering`.
+#' - Merges cluster labels with `colData(exposomicset)`.
 #' - Plots the heatmap stored in
-#' `metadata(expomicset)$sample_clustering$heatmap`.
+#' `metadata(exposomicset)$sample_clustering$heatmap`.
 #'
 #' @return A `ComplexHeatmap` plot displaying sample clustering results.
 #'
@@ -29,7 +29,7 @@
 #'
 #' # determine sample clusters
 #' mae <- run_cluster_samples(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi"),
 #'     clustering_approach = "diana"
 #' )
@@ -46,26 +46,26 @@
 #' @importFrom purrr pluck
 #' @export
 plot_sample_clusters <- function(
-    expomicset,
+    exposomicset,
     exposure_cols = NULL) {
     # check for suggested packages
     .check_suggested(pkg = "tidyHeatmap")
     .check_suggested(pkg = "circlize")
     if (!"sample_clustering" %in% names(
-        MultiAssayExperiment::metadata(expomicset)$quality_control
+        MultiAssayExperiment::metadata(exposomicset)$quality_control
     )) {
         stop("Please run `run_cluster_samples()` first")
     }
 
     if (is.null(exposure_cols)) {
-        exposure_cols <- colnames(expomicset)
+        exposure_cols <- colnames(exposomicset)
     } else {
         exposure_cols <- exposure_cols[exposure_cols %in% colnames(
-            MultiAssayExperiment::colData(expomicset)
+            MultiAssayExperiment::colData(exposomicset)
         )]
     }
 
-    df <- expomicset |>
+    df <- exposomicset |>
         MultiAssayExperiment::colData() |>
         as.data.frame() |>
         dplyr::select(exposure_cols) |>
@@ -74,7 +74,7 @@ plot_sample_clusters <- function(
         dplyr::inner_join(
             data.frame(
                 Sample = names(
-                    MultiAssayExperiment::metadata(expomicset) |>
+                    MultiAssayExperiment::metadata(exposomicset) |>
                         purrr::pluck(
                             "quality_control",
                             "sample_clustering",
@@ -84,7 +84,7 @@ plot_sample_clusters <- function(
                 sample_group = paste0(
                     "Group_",
                     as.character(
-                        MultiAssayExperiment::metadata(expomicset) |>
+                        MultiAssayExperiment::metadata(exposomicset) |>
                             purrr::pluck(
                                 "quality_control",
                                 "sample_clustering",
@@ -100,7 +100,7 @@ plot_sample_clusters <- function(
             values_to = "value"
         ) |>
         dplyr::inner_join(
-            MultiAssayExperiment::metadata(expomicset)$codebook,
+            MultiAssayExperiment::metadata(exposomicset)$codebook,
             by = "variable"
         ) |>
         dplyr::rename(Category = category)

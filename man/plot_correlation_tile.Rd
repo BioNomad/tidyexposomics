@@ -5,7 +5,7 @@
 \title{Plot Correlation Tilemap}
 \usage{
 plot_correlation_tile(
-  expomicset,
+  exposomicset,
   feature_type = c("pcs", "degs", "omics", "factors", "factor_features", "exposures"),
   pval_cutoff = 0.05,
   na_color = "grey100",
@@ -14,14 +14,14 @@ plot_correlation_tile(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing correlation
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing correlation
 results in metadata.}
 
 \item{feature_type}{Type of correlation results to plot.
 One of \code{"pcs"}, \code{"degs"}, \code{"omics"},
 \code{"factors"}, \code{"factor_features"}, or \code{"exposures"}.
 Must match the key used in
-\code{metadata(expomicset)$correlation[[feature_type]]}.}
+\code{metadata(exposomicset)$correlation[[feature_type]]}.}
 
 \item{pval_cutoff}{Numeric p-value cutoff below which
 correlations are displayed.

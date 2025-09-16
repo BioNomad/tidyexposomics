@@ -12,7 +12,7 @@ test_that("run_factor_overlap() returns expected object and annotations", {
 
     # Run differential abundance
     mae <- run_differential_abundance(
-        expomicset = mae,
+        exposomicset = mae,
         formula = ~ smoker + sex,
         abundance_col = "counts",
         method = "limma_voom",

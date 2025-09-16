@@ -15,7 +15,7 @@ test_that("transform_exposure applies boxcox_best correctly", {
 
     # Apply transformation
     transformed <- transform_exposure(
-        expomicset = mae,
+        exposomicset = mae,
         exposure_cols = exposures,
         transform_method = "boxcox_best"
     )
@@ -58,7 +58,7 @@ test_that("transform_exposure applies log2 transformation", {
 
     # Apply transformation
     transformed <- transform_exposure(
-        expomicset = mae,
+        exposomicset = mae,
         exposure_cols = exposures,
         transform_method = "log2"
     )

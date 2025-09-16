@@ -4,7 +4,7 @@
 #' normal distribution based on
 #' normality test results stored in metadata.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing
+#' @param exposomicset A `MultiAssayExperiment` object containing
 #' exposure and omics data.
 #' @param p_thresh A numeric value specifying the p-value
 #' threshold for normality. Variables with `p.value < p_thresh` are removed.
@@ -12,11 +12,11 @@
 #'
 #' @details
 #' The function identifies exposure variables that fail a normality test
-#'  using `metadata(expomicset)$transformation$norm_df`.
+#'  using `metadata(exposomicset)$transformation$norm_df`.
 #' - Exposure variables with `p.value < p_thresh` are removed from
-#' `colData(expomicset)`.
+#' `colData(exposomicset)`.
 #' - The same filtering is applied to `colData` in each experiment
-#' within `experiments(expomicset)`.
+#' within `experiments(exposomicset)`.
 #'
 #' @return A `MultiAssayExperiment` object with non-normal
 #' exposure variables removed.
@@ -39,12 +39,12 @@
 #'
 #' @export
 filter_non_normal <- function(
-    expomicset,
+    exposomicset,
     p_thresh = 0.05) {
-    if ("transformation" %in% names(expomicset |>
+    if ("transformation" %in% names(exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck("quality_control"))) {
-        norm_df <- expomicset |>
+        norm_df <- exposomicset |>
             MultiAssayExperiment::metadata() |>
             purrr::pluck(
                 "quality_control",
@@ -52,7 +52,7 @@ filter_non_normal <- function(
                 "norm_df"
             )
     } else {
-        norm_df <- expomicset |>
+        norm_df <- exposomicset |>
             MultiAssayExperiment::metadata() |>
             purrr::pluck(
                 "quality_control",
@@ -60,7 +60,7 @@ filter_non_normal <- function(
                 "norm_df"
             )
     }
-    norm_df <- expomicset |>
+    norm_df <- exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck(
             "quality_control",
@@ -84,17 +84,17 @@ filter_non_normal <- function(
     )
 
     # Filter colData in the main object
-    MultiAssayExperiment::colData(expomicset) <- MultiAssayExperiment::colData(
-        expomicset
+    MultiAssayExperiment::colData(exposomicset) <- MultiAssayExperiment::colData(
+        exposomicset
     )[
-        , !colnames(MultiAssayExperiment::colData(expomicset)) %in% non_normal_vars,
+        , !colnames(MultiAssayExperiment::colData(exposomicset)) %in% non_normal_vars,
         drop = FALSE
     ]
 
     # Filter colData in each experiment
-    for (omics_name in names(MultiAssayExperiment::experiments(expomicset))) {
+    for (omics_name in names(MultiAssayExperiment::experiments(exposomicset))) {
         current_colData <- MultiAssayExperiment::colData(
-            MultiAssayExperiment::experiments(expomicset)[[omics_name]]
+            MultiAssayExperiment::experiments(exposomicset)[[omics_name]]
         )
 
         current_colData <- current_colData[
@@ -104,7 +104,7 @@ filter_non_normal <- function(
 
         MultiAssayExperiment::colData(
             MultiAssayExperiment::experiments(
-                expomicset
+                exposomicset
             )[[omics_name]]
         ) <- current_colData
     }
@@ -124,10 +124,10 @@ filter_non_normal <- function(
         )
     )
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-        MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps,
         step_record
     )
 
-    return(expomicset)
+    return(exposomicset)
 }

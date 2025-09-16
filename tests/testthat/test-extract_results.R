@@ -9,13 +9,13 @@ test_that("extract_results correctly retrieves results from metadata", {
     )
 
     # Inject mock results into metadata
-    metadata(mae)$association$omics <- data.frame(
+    MultiAssayExperiment::metadata(mae)$association$omics <- data.frame(
         feature = "B2M",
         exposure = "age",
         p = 0.01
     )
 
-    metadata(mae)$enrichment$omics <- data.frame(
+    MultiAssayExperiment::metadata(mae)$enrichment$omics <- data.frame(
         term = "antigen presentation",
         p_value = 0.01,
         ids = "HLA-DRB1,TAP1,B2M"

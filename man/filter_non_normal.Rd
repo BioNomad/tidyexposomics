@@ -4,10 +4,10 @@
 \alias{filter_non_normal}
 \title{Filter Non-Normal Exposure Variables}
 \usage{
-filter_non_normal(expomicset, p_thresh = 0.05)
+filter_non_normal(exposomicset, p_thresh = 0.05)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 exposure and omics data.}
 
 \item{p_thresh}{A numeric value specifying the p-value
@@ -25,12 +25,12 @@ normality test results stored in metadata.
 }
 \details{
 The function identifies exposure variables that fail a normality test
-using \code{metadata(expomicset)$transformation$norm_df}.
+using \code{metadata(exposomicset)$transformation$norm_df}.
 \itemize{
 \item Exposure variables with \code{p.value < p_thresh} are removed from
-\code{colData(expomicset)}.
+\code{colData(exposomicset)}.
 \item The same filtering is applied to \code{colData} in each experiment
-within \code{experiments(expomicset)}.
+within \code{experiments(exposomicset)}.
 }
 }
 \examples{

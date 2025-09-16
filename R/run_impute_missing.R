@@ -24,7 +24,7 @@
 #'   LOD/sqrt(2), where LOD is the smallest non-zero value per variable
 #' }
 #'
-#' @param expomicset A \code{MultiAssayExperiment} object containing
+#' @param exposomicset A \code{MultiAssayExperiment} object containing
 #' exposures and omics data.
 #' @param exposure_impute_method Character. Imputation method to use for
 #' exposure variables. Defaults to \code{"median"}.
@@ -51,7 +51,7 @@
 #'
 #' # Filter features and exposures with high missingness
 #' mae <- run_impute_missing(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     exposure_impute_method = "median"
 #' )
 #'
@@ -60,7 +60,7 @@
 #' @importFrom SummarizedExperiment assays
 #' @export
 run_impute_missing <- function(
-    expomicset,
+    exposomicset,
     exposure_impute_method = "median",
     exposure_cols = NULL,
     omics_impute_method = NULL,
@@ -106,11 +106,11 @@ run_impute_missing <- function(
 
     # Impute selected exposure columns
     if ("exposure" %in% names(
-        MultiAssayExperiment::metadata(expomicset)$quality_control$na_qc
+        MultiAssayExperiment::metadata(exposomicset)$quality_control$na_qc
     )) {
         message("Imputing exposure data using method: ", exposure_impute_method)
 
-        metadata_df <- as.data.frame(MultiAssayExperiment::colData(expomicset))
+        metadata_df <- as.data.frame(MultiAssayExperiment::colData(exposomicset))
         # if (is.null(exposure_cols)) {
         #   exposure_cols <- names(metadata_df)[sapply(metadata_df, is.numeric)]
         # }
@@ -125,7 +125,7 @@ run_impute_missing <- function(
         imputed <- impute_data(data_to_impute, exposure_impute_method)
 
         metadata_df[, exposure_cols] <- imputed
-        MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(
+        MultiAssayExperiment::colData(exposomicset) <- S4Vectors::DataFrame(
             metadata_df
         )
     }
@@ -133,7 +133,7 @@ run_impute_missing <- function(
     if (!is.null(omics_to_impute)) {
         # Impute omics data
         all_omics <- setdiff(names(
-            MultiAssayExperiment::experiments(expomicset)
+            MultiAssayExperiment::experiments(exposomicset)
         ), "exposure")
         omics_to_use <- if (is.null(omics_to_impute)) {
             all_omics
@@ -148,11 +148,11 @@ run_impute_missing <- function(
                 " using method: ",
                 omics_impute_method
             )
-            experiment <- MultiAssayExperiment::experiments(expomicset)[[omics_name]]
+            experiment <- MultiAssayExperiment::experiments(exposomicset)[[omics_name]]
             assay_data <- as.data.frame(SummarizedExperiment::assays(experiment)[[1]])
             imputed_data <- impute_data(assay_data, omics_impute_method)
             SummarizedExperiment::assays(experiment)[[1]] <- as.matrix(imputed_data)
-            MultiAssayExperiment::experiments(expomicset)[[omics_name]] <- experiment
+            MultiAssayExperiment::experiments(exposomicset)[[omics_name]] <- experiment
         }
     }
 
@@ -168,10 +168,10 @@ run_impute_missing <- function(
         notes = ""
     ))
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-        MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps,
         step_record
     )
 
-    return(expomicset)
+    return(exposomicset)
 }

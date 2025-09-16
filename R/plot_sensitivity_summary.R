@@ -3,13 +3,13 @@
 #' Generates a ridge plot and bar chart summarizing feature stability
 #' scores across assays.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing sensitivity
+#' @param exposomicset A `MultiAssayExperiment` object containing sensitivity
 #'  analysis results
-#' in `metadata(expomicset)$sensitivity_analysis`.
+#' in `metadata(exposomicset)$sensitivity_analysis`.
 #' @param stability_score_thresh A numeric threshold for stability scores.
 #' Default is `NULL`,
 #' which uses the threshold stored in
-#' `metadata(expomicset)$sensitivity_analysis$score_thresh`.
+#' `metadata(exposomicset)$sensitivity_analysis$score_thresh`.
 #' @param stability_metric A character string specifying which
 #'  stability metric to plot (e.g., "stability_score",
 #'   "logp_weighted_score"). Default is "stability_score".
@@ -19,7 +19,7 @@
 #'
 #' @details
 #' This function:
-#' - Extracts feature stability scores from `metadata(expomicset)$sensitivity_analysis$feature_stability`.
+#' - Extracts feature stability scores from `metadata(exposomicset)$sensitivity_analysis$feature_stability`.
 #' - Displays a **ridge plot** of stability score distributions per assay.
 #' - Displays a **bar chart** of the number of features per assay.
 #' - Prints the number of features with stability scores above the threshold.
@@ -36,7 +36,7 @@
 #'
 #' # Run differential abundance
 #' mae <- run_differential_abundance(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
 #'     method = "limma_voom",
@@ -45,7 +45,7 @@
 #'
 #' # Run the sensitivity analysis
 #' mae <- run_sensitivity_analysis(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     base_formula = ~ smoker + sex,
 #'     methods = c("limma_voom"),
 #'     scaling_methods = c("none"),
@@ -69,7 +69,7 @@
 #' @importFrom ggpubr theme_pubr
 #' @export
 plot_sensitivity_summary <- function(
-    expomicset,
+    exposomicset,
     stability_score_thresh = NULL,
     stability_metric = "stability_score",
     title = "Distribution of Stability Scores") {
@@ -80,12 +80,12 @@ plot_sensitivity_summary <- function(
     .check_suggested(pkg = "patchwork")
 
     if (!"sensitivity_analysis" %in% names(
-        MultiAssayExperiment::metadata(expomicset)$differential_analysis
+        MultiAssayExperiment::metadata(exposomicset)$differential_analysis
     )) {
         stop("Please run `run_sensitivity_analysis()` first.")
     }
 
-    feature_stability <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$feature_stability
+    feature_stability <- MultiAssayExperiment::metadata(exposomicset)$differential_analysis$sensitivity_analysis$feature_stability
 
     if (!stability_metric %in% colnames(feature_stability)) {
         stop(sprintf(
@@ -140,7 +140,7 @@ plot_sensitivity_summary <- function(
         )
 
     if (is.null(stability_score_thresh)) {
-        stability_score_thresh <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$score_thresh
+        stability_score_thresh <- MultiAssayExperiment::metadata(exposomicset)$differential_analysis$sensitivity_analysis$score_thresh
     }
 
     sensitivity_ridgeplot <- feature_stability |>

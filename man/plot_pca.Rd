@@ -5,15 +5,15 @@
 \title{Plot PCA Results for Features and Samples}
 \usage{
 plot_pca(
-  expomicset,
+  exposomicset,
   feature_col = "#00a9b2",
   sample_col = "#8a4f77",
   sample_outlier_col = "firebrick"
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing PCA results
-in \code{metadata(expomicset)$pca}.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing PCA results
+in \code{metadata(exposomicset)$pca}.}
 
 \item{feature_col}{A character string specifying the color for the
 feature scree plot.
@@ -44,7 +44,7 @@ principal component.
 \item \strong{Sample Scree Plot}: Displays variance explained in the sample PCA.
 }
 
-Outliers are labeled based on \code{metadata(expomicset)$pca$outliers}.
+Outliers are labeled based on \code{metadata(exposomicset)$pca$outliers}.
 }
 \examples{
 # create example data

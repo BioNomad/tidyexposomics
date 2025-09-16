@@ -5,7 +5,7 @@
 \title{Run Multi-Omics Integration}
 \usage{
 run_multiomics_integration(
-  expomicset,
+  exposomicset,
   method = "MCIA",
   n_factors = 10,
   scale = TRUE,
@@ -14,7 +14,7 @@ run_multiomics_integration(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with at least two assays.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object with at least two assays.}
 
 \item{method}{Character. Integration method to use. Options are
 \code{"MOFA"}, \code{"MCIA"}, \code{"RGCCA"}, or \code{"DIABLO"}.}
@@ -34,7 +34,7 @@ Name of outcome variable in \code{colData} used for supervised integration.}
 \value{
 If \code{action = "add"}, returns a \code{MultiAssayExperiment} with
 integration results
-stored in \code{metadata(expomicset)$multiomics_integration$integration_results}.
+stored in \code{metadata(exposomicset)$multiomics_integration$integration_results}.
 If \code{action = "get"}, returns a list with integration \code{method} and \code{result}.
 }
 \description{

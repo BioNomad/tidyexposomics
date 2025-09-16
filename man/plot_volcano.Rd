@@ -5,7 +5,7 @@
 \title{Volcano Plot of Differential Abundance}
 \usage{
 plot_volcano(
-  expomicset,
+  exposomicset,
   pval_col = "adj.P.Val",
   pval_thresh = 0.05,
   logFC_col = "logFC",
@@ -21,8 +21,8 @@ plot_volcano(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing differential
-abundance results in \code{metadata(expomicset)$differential_abundance}.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing differential
+abundance results in \code{metadata(exposomicset)$differential_abundance}.}
 
 \item{pval_col}{A character string specifying the column containing p-values.
 Default is \code{"adj.P.Val"}.}
@@ -69,7 +69,7 @@ across one or more omics layers.
 The function:
 \itemize{
 \item Extracts differential abundance results from
-\code{metadata(expomicset)$differential_abundance}.
+\code{metadata(exposomicset)$differential_abundance}.
 \item Assigns each feature a direction of change:
 \strong{Upregulated}, \strong{Downregulated}, or \strong{Not-Significant}.
 \item Uses \code{logFC_thresh} and \code{pval_thresh} to define thresholds.
@@ -87,7 +87,7 @@ mae <- make_example_data(
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-    expomicset = mae,
+    exposomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
     method = "limma_voom",

@@ -1,12 +1,12 @@
 #' Cluster Samples Based on Exposure Data
 #'
 #' Performs hierarchical clustering of samples using exposure data from
-#' `colData(expomicset)`.
+#' `colData(exposomicset)`.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing omics
+#' @param exposomicset A `MultiAssayExperiment` object containing omics
 #' and exposure data.
 #' @param exposure_cols A character vector of column names in
-#' `colData(expomicset)` to use for clustering.
+#' `colData(exposomicset)` to use for clustering.
 #' @param dist_method A character string specifying the distance metric
 #' (`"euclidean"`, `"gower"`, etc.). If `NULL`, it is automatically determined.
 #' @param user_k An integer specifying the number of clusters.
@@ -22,7 +22,7 @@
 #'
 #' @details
 #' This function:
-#' - Extracts **numeric exposure data** from `colData(expomicset)`.
+#' - Extracts **numeric exposure data** from `colData(exposomicset)`.
 #' - Computes a **distance matrix** (`"gower"` for mixed data,
 #' `"euclidean"` for numeric).
 #' - Determines the **optimal number of clusters (`k`)** using the
@@ -30,10 +30,10 @@
 #' - Performs **hierarchical clustering** (`hclust`) and assigns
 #' samples to clusters.
 #' - Generates a **heatmap** of scaled exposure values.
-#' - Stores results in `metadata(expomicset)$sample_clustering`
+#' - Stores results in `metadata(exposomicset)$sample_clustering`
 #' when `action="add"`.
 #'
-#' @return If `action="add"`, returns the updated `expomicset`.
+#' @return If `action="add"`, returns the updated `exposomicset`.
 #' If `action="get"`, returns a list with:
 #' \item{sample_cluster}{A hierarchical clustering object (`hclust`).}
 #' \item{sample_groups}{A named vector of sample cluster assignments.}
@@ -47,7 +47,7 @@
 #'
 #' # determine sample clusters
 #' mae <- run_cluster_samples(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     exposure_cols = c("exposure_pm25", "exposure_no2", "age", "bmi"),
 #'     clustering_approach = "diana"
 #' )
@@ -57,7 +57,7 @@
 #' @importFrom cluster daisy diana clusGap maxSE
 #' @importFrom factoextra hcut fviz_nbclust
 #' @export
-run_cluster_samples <- function(expomicset,
+run_cluster_samples <- function(exposomicset,
                                 exposure_cols = NULL,
                                 dist_method = NULL,
                                 user_k = NULL,
@@ -76,7 +76,7 @@ run_cluster_samples <- function(expomicset,
     # Ensure selected exposure columns exist in colData
     available_variables <- intersect(
         exposure_cols,
-        colnames(MultiAssayExperiment::colData(expomicset))
+        colnames(MultiAssayExperiment::colData(exposomicset))
     )
 
     if (length(available_variables) == 0) {
@@ -84,7 +84,7 @@ run_cluster_samples <- function(expomicset,
     }
 
     # Extract numeric exposure data for clustering
-    exposure_data <- MultiAssayExperiment::colData(expomicset) |>
+    exposure_data <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame() |>
         dplyr::select(dplyr::all_of(available_variables))
 
@@ -144,7 +144,7 @@ run_cluster_samples <- function(expomicset,
     message("Optimal number of clusters for samples: ", k_samples)
 
     # add in sample groups for samples to the colData
-    col_data <- MultiAssayExperiment::colData(expomicset) |>
+    col_data <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame() |>
         (\(df){
             df$id_to_map <- rownames(df)
@@ -159,17 +159,17 @@ run_cluster_samples <- function(expomicset,
         ) |>
         tibble::column_to_rownames("id_to_map")
 
-    MultiAssayExperiment::colData(expomicset) <- col_data
+    MultiAssayExperiment::colData(exposomicset) <- col_data
 
     if (action == "add") {
         # Save clustering results in metadata
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$quality_control$sample_clustering <- list(
             sample_cluster = sample_cluster,
             sample_groups = sample_groups
         )
 
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         # Add analysis steps taken to metadata
         step_record <- list(
@@ -186,12 +186,12 @@ run_cluster_samples <- function(expomicset,
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         return(list(
             sample_cluster = sample_cluster,

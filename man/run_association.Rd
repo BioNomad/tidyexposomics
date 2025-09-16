@@ -5,7 +5,7 @@
 \title{Run Association Analysis}
 \usage{
 run_association(
-  expomicset,
+  exposomicset,
   outcome,
   source = c("omics", "exposures", "factors"),
   covariates = NULL,
@@ -21,7 +21,7 @@ run_association(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing data
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing data
 and metadata.}
 
 \item{outcome}{The outcome variable name (must be in \code{colData}).}

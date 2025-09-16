@@ -5,7 +5,7 @@
 \title{Plot a Manhattan-style ExWAS summary across omics categories}
 \usage{
 plot_manhattan(
-  expomicset,
+  exposomicset,
   pval_thresh = 0.05,
   feature_col = "term",
   alpha = 0.5,
@@ -23,7 +23,7 @@ plot_manhattan(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object that has
+\item{exposomicset}{A \code{MultiAssayExperiment} object that has
 already been processed by \code{associate_all_outcome()}.}
 
 \item{pval_thresh}{Numeric threshold for significance (default = 0.05).}

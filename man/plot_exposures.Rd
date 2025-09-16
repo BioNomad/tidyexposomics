@@ -5,7 +5,7 @@
 \title{Plot Exposure Distributions by Category or Group}
 \usage{
 plot_exposures(
-  expomicset,
+  exposomicset,
   exposure_cat = "all",
   exposure_cols = NULL,
   group_by = NULL,
@@ -22,7 +22,7 @@ plot_exposures(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure data.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing exposure data.}
 
 \item{exposure_cat}{A character string or vector specifying exposure
 category names (from \code{codebook$category}) to include.
@@ -31,7 +31,7 @@ Use \code{"all"} to include all exposures.}
 \item{exposure_cols}{Optional character vector specifying exact
 exposure variables to plot.}
 
-\item{group_by}{A string specifying the column in \code{colData(expomicset)}
+\item{group_by}{A string specifying the column in \code{colData(exposomicset)}
 used to fill the plot (e.g., \code{"sex"}). Defaults to \code{NULL}, in which case
 exposures are colored by \code{category}.}
 
@@ -73,7 +73,7 @@ or \strong{ridge plots}.
 This function:
 \itemize{
 \item Filters exposure data based on category or selected columns.
-\item Merges variable metadata from \code{metadata(expomicset)$codebook}.
+\item Merges variable metadata from \code{metadata(exposomicset)$codebook}.
 \item Supports either \strong{boxplot} (vertical distributions per variable)
 or \strong{ridgeplot} (horizontal density plots per variable).
 \item If \code{group_by} is specified, that variable defines the plot fill color;

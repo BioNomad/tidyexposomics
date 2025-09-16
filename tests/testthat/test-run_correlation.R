@@ -10,7 +10,7 @@ test_that("run_correlation computes correlations between exposures and omics", {
 
     # Run correlation
     correlated <- run_correlation(
-        expomicset = mae,
+        exposomicset = mae,
         feature_type = "omics",
         correlation_method = "spearman",
         correlation_cutoff = 0.1,
@@ -47,7 +47,7 @@ test_that("run_correlation computes correlations between exposures", {
 
     # Run correlation
     correlated <- run_correlation(
-        expomicset = mae,
+        exposomicset = mae,
         feature_type = "exposures",
         correlation_method = "spearman",
         correlation_cutoff = 0.1,

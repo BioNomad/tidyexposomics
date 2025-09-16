@@ -12,7 +12,7 @@ test_that("run_differential_abundance returns expected results and updates metad
 
     # Run differential abundance
     mae_da <- run_differential_abundance(
-        expomicset = mae,
+        exposomicset = mae,
         formula = ~ smoker + sex,
         abundance_col = "counts",
         method = "limma_voom",

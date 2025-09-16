@@ -6,7 +6,7 @@
 #' The resulting score is added to the `colData` of the
 #' `MultiAssayExperiment` object.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure
+#' @param exposomicset A `MultiAssayExperiment` object containing exposure
 #' data in its `colData`.
 #' @param score_type Character. The method used to compute the score.
 #' Options are:
@@ -25,7 +25,7 @@
 #' - `"pca"` uses the first principal component from `prcomp()`.
 #' - `"irt"` uses the `mirt` package to fit a graded response model to
 #' discretized exposures.
-#' - `"quantile"` assigns decile bins (1–10) to each variable and sums
+#' - `"quantile"` assigns decile bins (1-10) to each variable and sums
 #' them row-wise.
 #' - `"var"` computes the row-wise variance across exposures.
 #'
@@ -47,14 +47,14 @@
 #'
 #' @export
 run_exposome_score <- function(
-    expomicset,
+    exposomicset,
     score_type,
     exposure_cols = NULL,
     scale = TRUE,
     score_column_name = NULL) {
     # Extract and preprocess colData
     message("Extracting exposure data...")
-    data <- MultiAssayExperiment::colData(expomicset) |>
+    data <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame() |>
         dplyr::select_if(is.numeric)
 
@@ -170,7 +170,7 @@ run_exposome_score <- function(
     }
 
     # Add scores to the MultiAssayExperiment object
-    updated_col_data <- MultiAssayExperiment::colData(expomicset) |>
+    updated_col_data <- MultiAssayExperiment::colData(exposomicset) |>
         as.data.frame() |>
         # if name exists in df - overwrite the score column name
         dplyr::select(-dplyr::any_of(colnames(scores))) |>
@@ -183,7 +183,7 @@ run_exposome_score <- function(
         tibble::column_to_rownames("id")
 
     # Update the colData of the MultiAssayExperiment object
-    MultiAssayExperiment::colData(expomicset) <- S4Vectors::DataFrame(
+    MultiAssayExperiment::colData(exposomicset) <- S4Vectors::DataFrame(
         updated_col_data
     )
 
@@ -213,10 +213,10 @@ run_exposome_score <- function(
         )
     )
 
-    MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-        MultiAssayExperiment::metadata(expomicset)$summary$steps,
+    MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps,
         step_record
     )
 
-    return(expomicset)
+    return(exposomicset)
 }

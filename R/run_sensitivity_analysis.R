@@ -4,7 +4,7 @@
 #' scaling strategies, and model formulas (with optional bootstrap sampling) to
 #' assess the stability of differentially abundant features.
 #'
-#' @param expomicset A `MultiAssayExperiment` containing the assays to analyze.
+#' @param exposomicset A `MultiAssayExperiment` containing the assays to analyze.
 #' @param base_formula The base model formula used for differential analysis.
 #' @param abundance_col Character. Name of the column in the assays representing
 #'  abundance. Default is `"counts"`.
@@ -34,7 +34,7 @@
 #'
 #' @return If `action = "add"`, returns a `MultiAssayExperiment`
 #' with results stored in
-#'   `metadata(expomicset)$differential_analysis$sensitivity_analysis`.
+#'   `metadata(exposomicset)$differential_analysis$sensitivity_analysis`.
 #'   If `action = "get"`,
 #'   returns a list with three elements:
 #'   \describe{
@@ -56,7 +56,7 @@
 #'
 #' # Run differential abundance
 #' mae <- run_differential_abundance(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
 #'     method = "limma_voom",
@@ -65,7 +65,7 @@
 #'
 #' # Run the sensitivity analysis
 #' mae <- run_sensitivity_analysis(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     base_formula = ~ smoker + sex,
 #'     methods = c("limma_voom"),
 #'     scaling_methods = c("none"),
@@ -80,7 +80,7 @@
 #'
 #' @export
 run_sensitivity_analysis <- function(
-    expomicset,
+    exposomicset,
     base_formula,
     abundance_col = "counts",
     methods = c("limma_trend", "limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
@@ -104,7 +104,7 @@ run_sensitivity_analysis <- function(
             # message(paste("Running bootstrap iteration", b, "of", bootstrap_n))
             message(sprintf("Running bootstrap iteration %d of %d", b, bootstrap_n))
 
-            mae_b <- .resample_MAE(expomicset)
+            mae_b <- .resample_MAE(exposomicset)
 
             sensitivity_df <- .run_sensitivity_grid(
                 mae_b,
@@ -119,7 +119,7 @@ run_sensitivity_analysis <- function(
     } else {
         # Run sensitivity analysis without bootstrapping
         sensitivity_df <- .run_sensitivity_grid(
-            expomicset,
+            exposomicset,
             model_list,
             methods,
             scaling_methods,
@@ -164,13 +164,13 @@ run_sensitivity_analysis <- function(
 
     # Add results to MultiAssayExperiment metadata or return as list
     if (action == "add") {
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$differential_analysis$sensitivity_analysis <- list(
             sensitivity_df = sensitivity_df,
             feature_stability = feature_stability_df,
             score_thresh = score_thresh
         )
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         step_record <- list(
             run_sensitivity_analysis = list(
@@ -205,12 +205,12 @@ run_sensitivity_analysis <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         return(list(
             sensitivity_df = sensitivity_df,
@@ -223,7 +223,7 @@ run_sensitivity_analysis <- function(
 }
 
 .run_sensitivity_grid <- function(
-    expomicset,
+    exposomicset,
     model_list,
     methods,
     scalings,
@@ -233,7 +233,7 @@ run_sensitivity_analysis <- function(
         model_name = names(model_list),
         method = methods,
         scaling = scalings,
-        exp_name = names(MultiAssayExperiment::experiments(expomicset)),
+        exp_name = names(MultiAssayExperiment::experiments(exposomicset)),
         stringsAsFactors = FALSE
     )
 
@@ -242,7 +242,7 @@ run_sensitivity_analysis <- function(
                                               scaling,
                                               exp_name) {
         formula <- model_list[[model_name]]
-        exp <- .update_assay_colData(expomicset, exp_name)
+        exp <- .update_assay_colData(exposomicset, exp_name)
 
         if (method == "DESeq2") {
             SummarizedExperiment::assay(exp, abundance_col) <- round(

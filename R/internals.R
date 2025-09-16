@@ -47,14 +47,14 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .update_assay_colData <- function(
-    expomicset,
+    exposomicset,
     exp_name) {
     # Retrieve the assay
-    assay <- MultiAssayExperiment::experiments(expomicset)[[exp_name]]
+    assay <- MultiAssayExperiment::experiments(exposomicset)[[exp_name]]
 
     # Extract colData for the assay's samples
     assay_samples <- colnames(assay)
-    global_coldata <- as.data.frame(MultiAssayExperiment::colData(expomicset))
+    global_coldata <- as.data.frame(MultiAssayExperiment::colData(exposomicset))
     coldata <- global_coldata[
         rownames(global_coldata) %in% assay_samples, ,
         drop = FALSE
@@ -83,12 +83,12 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #'
 #' @keywords internal
 #' @noRd
-.log2_multiassay <- function(expomicset) {
+.log2_multiassay <- function(exposomicset) {
     message("Log2-Transforming each assay in MultiAssayExperiment.")
 
     # Apply log2 transformation to each assay
     log2_experiments <- lapply(
-        MultiAssayExperiment::experiments(expomicset),
+        MultiAssayExperiment::experiments(exposomicset),
         function(assay_obj) {
             if (inherits(assay_obj, "SummarizedExperiment")) {
                 assay_mat <- SummarizedExperiment::assay(assay_obj)
@@ -103,14 +103,14 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
         }
     )
 
-    log2_expomicset <- MultiAssayExperiment::MultiAssayExperiment(
+    log2_exposomicset <- MultiAssayExperiment::MultiAssayExperiment(
         experiments = log2_experiments,
-        colData = MultiAssayExperiment::colData(expomicset),
-        metadata = MultiAssayExperiment::metadata(expomicset)
+        colData = MultiAssayExperiment::colData(exposomicset),
+        metadata = MultiAssayExperiment::metadata(exposomicset)
     )
 
 
-    return(log2_expomicset)
+    return(log2_exposomicset)
 }
 # --- Scale MultiAssayExperiment Assays --------
 #' Scale Assays in a MultiAssayExperiment
@@ -121,18 +121,18 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .scale_multiassay <- function(
-    expomicset,
+    exposomicset,
     log2 = FALSE) {
     message("Scaling each assay in MultiAssayExperiment.")
 
     # Check if log2 transformation is needed
     if (log2) {
-        expomicset <- .log2_multiassay(expomicset)
+        exposomicset <- .log2_multiassay(exposomicset)
     }
 
     # Apply scaling to each assay
     scaled_experiments <- lapply(
-        MultiAssayExperiment::experiments(expomicset),
+        MultiAssayExperiment::experiments(exposomicset),
         function(assay_obj) {
             if (inherits(assay_obj, "SummarizedExperiment")) {
                 assay_mat <- SummarizedExperiment::assay(assay_obj)
@@ -148,13 +148,13 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
     )
 
     # Create a new MultiAssayExperiment with scaled data
-    scaled_expomicset <- MultiAssayExperiment::MultiAssayExperiment(
+    scaled_exposomicset <- MultiAssayExperiment::MultiAssayExperiment(
         experiments = scaled_experiments,
-        colData = MultiAssayExperiment::colData(expomicset),
-        metadata = MultiAssayExperiment::metadata(expomicset)
+        colData = MultiAssayExperiment::colData(exposomicset),
+        metadata = MultiAssayExperiment::metadata(exposomicset)
     )
 
-    return(scaled_expomicset)
+    return(scaled_exposomicset)
 }
 # --- Get Top Variant Features ---------------
 #' Get Top Variant Features
@@ -165,14 +165,14 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .top_var_multiassay <- function(
-    expomicset,
+    exposomicset,
     n = 1000,
     assay_name = NULL) {
-    # expomicset <- .log2_multiassay(expomicset)
+    # exposomicset <- .log2_multiassay(exposomicset)
 
     # Grab the top n features based on variance
     top_var_experiments <- lapply(
-        MultiAssayExperiment::experiments(expomicset),
+        MultiAssayExperiment::experiments(exposomicset),
         function(assay_obj) {
             if (inherits(assay_obj, "SummarizedExperiment")) {
                 assay_mat <- SummarizedExperiment::assay(assay_obj)
@@ -832,7 +832,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
     term_ids,
     root_level = "top",
     assign_label = TRUE) {
-    # Sanitize input: fix character → list columns
+    # Sanitize input: fix character to list columns
     fix_rel_cols <- function(x) {
         if (!is.list(x)) strsplit(x, ";\\s*") else x
     }
@@ -888,7 +888,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
                 return(NA_character_)
             }
 
-            # Find the deepest matching node ≤ root_level
+            # Find the deepest matching node less than or greater than root_level
             eligible <- anc_depths[anc_depths <= root_level]
             if (length(eligible)) {
                 return(names(eligible)[which.max(eligible)]) # closest from below

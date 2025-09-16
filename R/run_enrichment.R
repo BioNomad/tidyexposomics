@@ -1,12 +1,12 @@
-#' Perform enrichment analysis on selected features from a expomicset object
+#' Perform enrichment analysis on selected features from a exposomicset object
 #'
 #' This function performs enrichment analysis using selected features derived
 #' from differential expression, correlation analysis,
-#' or multi-omics factor features across experiments in an `expomicset`.
+#' or multi-omics factor features across experiments in an `exposomicset`.
 #' It supports multiple enrichment databases (e.g., GO, KEGG, Reactome),
 #'  applies FDR correction, and optionally clusters GO terms by Jaccard overlap.
 #'
-#' @param expomicset An `expomicset` (a `MultiAssayExperiment`
+#' @param exposomicset An `exposomicset` (a `MultiAssayExperiment`
 #' object with metadata) containing omics and metadata.
 #' @param feature_type Character string indicating the feature source.
 #' One of `"degs"`, `"degs_robust"`,
@@ -48,7 +48,7 @@
 #' @param action Either `"add"` to store results in the object's metadata
 #'  or `"get"` to return results as a data frame.
 #'
-#' @return If `action = "add"`, returns the modified `ExpOmicSet` with
+#' @return If `action = "add"`, returns the modified `exposomicset` with
 #' enrichment results added to metadata.
 #' If `action = "get"`, returns a `data.frame` of enrichment results
 #' with GO term clusters (if applicable).
@@ -73,7 +73,7 @@
 #'
 #' # perform differential abundance analysis
 #' mae <- run_differential_abundance(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
 #'     method = "limma_voom",
@@ -82,7 +82,7 @@
 #'
 #' # perform enrichment analysis
 #' mae <- run_enrichment(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     feature_type = "degs",
 #'     feature_col = "symbol",
 #'     species = "goa_human",
@@ -105,7 +105,7 @@
 #' @import fenr
 #' @export
 run_enrichment <- function(
-    expomicset,
+    exposomicset,
     feature_type = c(
         "degs",
         "degs_robust",
@@ -142,7 +142,7 @@ run_enrichment <- function(
     feature_type <- match.arg(feature_type)
 
     # Grab all feature meta data
-    fdata <- expomicset |>
+    fdata <- exposomicset |>
         pivot_feature()
 
     if (feature_type %in% c(
@@ -152,7 +152,7 @@ run_enrichment <- function(
         "factor_features"
     )) {
         enr_res <- .run_feature_enr(
-            expomicset = expomicset,
+            exposomicset = exposomicset,
             feature_type = feature_type,
             db = db,
             fdata = fdata,
@@ -180,7 +180,7 @@ run_enrichment <- function(
         "factor_features_cor"
     )) {
         enr_res <- .run_feature_cor_enr(
-            expomicset = expomicset,
+            exposomicset = exposomicset,
             feature_type = feature_type,
             db = db,
             fdata = fdata,
@@ -213,9 +213,9 @@ run_enrichment <- function(
 
     # --- Store or return ---
     if (action == "add") {
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$enrichment[[feature_type]] <- enr_res
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         step_record <- list(
             run_enrichment = list(
@@ -248,12 +248,12 @@ run_enrichment <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
 
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         return(enr_res)
     } else {
@@ -380,7 +380,7 @@ run_enrichment <- function(
 #'
 #' This internal helper performs enrichment analysis for a given
 #' \code{feature_type}
-#' across all assays/experiments in an \code{expomicset}
+#' across all assays/experiments in an \code{exposomicset}
 #' (a \code{MultiAssayExperiment}).
 #' It selects features per experiment according to \code{feature_type},
 #' computes the gene universe from \code{rowData()}, runs \code{.run_fenr()},
@@ -397,7 +397,7 @@ run_enrichment <- function(
 #'   \item \code{"omics"} - select features using a \code{variable_map}
 #' }
 #'
-#' @param expomicset A \code{MultiAssayExperiment} with experiments and
+#' @param exposomicset A \code{MultiAssayExperiment} with experiments and
 #'  metadata.
 #' @param feature_type Character; one of \code{"degs"}, \code{"degs_robust"},
 #'   \code{"factor_features"}, \code{"omics"}.
@@ -451,7 +451,7 @@ run_enrichment <- function(
 #' @importFrom stats p.adjust
 #' @import fenr
 .run_feature_enr <- function(
-    expomicset,
+    exposomicset,
     feature_type,
     db,
     fdata,
@@ -471,7 +471,7 @@ run_enrichment <- function(
     min_set,
     max_set) {
     # Get unique experiments
-    exps <- names(MultiAssayExperiment::experiments(expomicset))
+    exps <- names(MultiAssayExperiment::experiments(exposomicset))
 
     # Set variable for enrichment results
     enr_res <- list()
@@ -484,14 +484,14 @@ run_enrichment <- function(
 
         # Subset universe from rowData of experiment
         universe_genes <- SummarizedExperiment::rowData(
-            expomicset[[exp]]
+            exposomicset[[exp]]
         )[[feature_col]] |>
             unique()
 
         # Select features per method
         selected_genes <- switch(feature_type,
             "degs" = {
-                expomicset@metadata |>
+                exposomicset@metadata |>
                     purrr::pluck("differential_analysis") |>
                     purrr::pluck("differential_abundance") |>
                     dplyr::filter(exp_name == exp) |>
@@ -503,7 +503,7 @@ run_enrichment <- function(
                     unique()
             },
             "degs_robust" = {
-                sens <- expomicset@metadata |>
+                sens <- exposomicset@metadata |>
                     purrr::pluck("differential_analysis") |>
                     purrr::pluck("sensitivity_analysis")
 
@@ -527,7 +527,7 @@ run_enrichment <- function(
                     unique()
             },
             "factor_features" = {
-                expomicset@metadata |>
+                exposomicset@metadata |>
                     purrr::pluck("differential_analysis") |>
                     purrr::pluck("multiomics_integration") |>
                     purrr::pluck(factor_type) |>
@@ -643,7 +643,7 @@ run_enrichment <- function(
 #' @importFrom stats p.adjust
 #' @import fenr
 .run_feature_cor_enr <- function(
-    expomicset,
+    exposomicset,
     feature_type,
     db,
     fdata,
@@ -663,7 +663,7 @@ run_enrichment <- function(
     min_set,
     max_set) {
     # Set the categories and experiment names to loop through
-    cor_table <- expomicset@metadata |>
+    cor_table <- exposomicset@metadata |>
         purrr::pluck("correlation") |>
         purrr::pluck(gsub("_.*", "", feature_type))
 
@@ -681,14 +681,14 @@ run_enrichment <- function(
             )
             # Subset universe from rowData of experiment
             universe_genes <- SummarizedExperiment::rowData(
-                expomicset[[exp]]
+                exposomicset[[exp]]
             )[[feature_col]] |>
                 unique()
 
             # Select features per feature type
             selected_genes <- switch(feature_type,
                 "degs_cor" = {
-                    expomicset@metadata |>
+                    exposomicset@metadata |>
                         purrr::pluck("correlation") |>
                         purrr::pluck("degs") |>
                         dplyr::filter(
@@ -707,7 +707,7 @@ run_enrichment <- function(
                         unique()
                 },
                 "omics_cor" = {
-                    expomicset@metadata |>
+                    exposomicset@metadata |>
                         purrr::pluck("correlation") |>
                         purrr::pluck("omics") |>
                         dplyr::filter(
@@ -726,7 +726,7 @@ run_enrichment <- function(
                         unique()
                 },
                 "factor_features_cor" = {
-                    expomicset@metadata |>
+                    exposomicset@metadata |>
                         purrr::pluck("correlation") |>
                         purrr::pluck("factor_features") |>
                         dplyr::filter(

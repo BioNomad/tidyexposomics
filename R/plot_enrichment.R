@@ -1,10 +1,10 @@
-#' Plot Enrichment Results from ExpOmicSet
+#' Plot Enrichment Results from exposomicset
 #'
 #' Visualize enrichment results stored in a `MultiAssayExperiment` object.
 #' Supports dotplots, heatmaps, cnetplots, networks,
 #' and multi-panel summary plots.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with enrichment results
+#' @param exposomicset A `MultiAssayExperiment` object with enrichment results
 #' added via `run_enrichment()`.
 #' @param feature_type Character; one of `"degs"`, `"degs_robust"`,
 #' `"omics"`, `"factor_features"`,
@@ -95,7 +95,7 @@
 #'
 #' # perform differential abundance analysis
 #' mae <- run_differential_abundance(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
 #'     method = "limma_voom",
@@ -104,7 +104,7 @@
 #'
 #' # perform enrichment analysis
 #' mae <- run_enrichment(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     feature_type = "degs",
 #'     feature_col = "symbol",
 #'     species = "goa_human",
@@ -116,14 +116,14 @@
 #'
 #' # create an enrichment plot
 #' enr_plot <- plot_enrichment(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     feature_type = "degs",
 #'     plot_type = "network"
 #' )
 #'
 #' @export
 plot_enrichment <- function(
-    expomicset,
+    exposomicset,
     feature_type = c(
         "degs",
         "degs_robust",
@@ -172,7 +172,7 @@ plot_enrichment <- function(
     feature_col = "feature",
     logfc_col = "logFC") {
     # Check that the user ran the enrichment analysis
-    if (!"enrichment" %in% names(MultiAssayExperiment::metadata(expomicset))) {
+    if (!"enrichment" %in% names(MultiAssayExperiment::metadata(exposomicset))) {
         stop("Please run `run_enrichment` first.")
     }
 
@@ -180,7 +180,7 @@ plot_enrichment <- function(
     feature_type <- match.arg(feature_type)
     plot_type <- match.arg(plot_type)
 
-    enr_res <- expomicset@metadata |>
+    enr_res <- exposomicset@metadata |>
         purrr::pluck("enrichment") |>
         purrr::pluck(feature_type)
 
@@ -198,7 +198,7 @@ plot_enrichment <- function(
         "cnet" = {
             .plot_cnet_enrichment(
                 enr_res,
-                expomicset = expomicset,
+                exposomicset = exposomicset,
                 feature_type = feature_type,
                 layout_algo = layout_algo,
                 go_groups = go_groups,
@@ -215,7 +215,7 @@ plot_enrichment <- function(
         "heatmap" = {
             .plot_heatmap_enrichment(
                 enr_res = enr_res,
-                expomicset = expomicset,
+                exposomicset = exposomicset,
                 feature_type = feature_type,
                 score_metric = score_metric,
                 score_thresh = score_thresh,
@@ -444,7 +444,7 @@ plot_enrichment <- function(
 #'  optionally colored by log2 fold change.
 #'
 #' @param enr_res Enrichment results with exploded gene-term relationships.
-#' @param expomicset The original `MultiAssayExperiment` object.
+#' @param exposomicset The original `MultiAssayExperiment` object.
 #' @param feature_type Feature source (e.g., "degs", "degs_robust").
 #' @param score_metric Column name for stability filtering (for `degs_robust`).
 #' @param score_thresh Numeric threshold for stability score filtering.
@@ -467,7 +467,7 @@ plot_enrichment <- function(
 #' @keywords internal
 .plot_heatmap_enrichment <- function(
     enr_res = enr_res,
-    expomicset = expomicset,
+    exposomicset = exposomicset,
     feature_type = feature_type,
     score_metric = score_metric,
     score_thresh = score_thresh,
@@ -502,7 +502,7 @@ plot_enrichment <- function(
     if (heatmap_fill) {
         if (feature_type == "degs_robust") {
             if (is.null(score_thresh)) {
-                score_thresh <- expomicset@metadata |>
+                score_thresh <- exposomicset@metadata |>
                     purrr::pluck("differential_analysis") |>
                     purrr::pluck("sensitivity_analysis") |>
                     purrr::pluck("score_thresh")
@@ -511,7 +511,7 @@ plot_enrichment <- function(
             }
 
             # grab feature information from sensitivity analysis
-            f_stable_df <- expomicset@metadata |>
+            f_stable_df <- exposomicset@metadata |>
                 purrr::pluck("differential_analysis") |>
                 purrr::pluck("sensitivity_analysis") |>
                 purrr::pluck("feature_stability") |>
@@ -520,7 +520,7 @@ plot_enrichment <- function(
 
             enr_res <- enr_res |>
                 inner_join(
-                    expomicset@metadata |>
+                    exposomicset@metadata |>
                         purrr::pluck("differential_analysis") |>
                         purrr::pluck("differential_abundance") |>
                         dplyr::select(c(
@@ -545,7 +545,7 @@ plot_enrichment <- function(
         } else if (feature_type == "degs") {
             enr_res <- enr_res |>
                 inner_join(
-                    expomicset@metadata |>
+                    exposomicset@metadata |>
                         purrr::pluck("differential_analysis") |>
                         purrr::pluck("differential_abundance") |>
                         dplyr::filter(
@@ -567,7 +567,7 @@ plot_enrichment <- function(
         } else {
             enr_res <- enr_res |>
                 inner_join(
-                    expomicset@metadata |>
+                    exposomicset@metadata |>
                         purrr::pluck("differential_analysis") |>
                         purrr::pluck("differential_abundance") |>
                         dplyr::select(c(
@@ -909,7 +909,7 @@ plot_enrichment <- function(
 #' with logFC values for genes and pie slices for multi-omic terms.
 #'
 #' @param enr_res Enrichment results.
-#' @param expomicset A `MultiAssayExperiment` object.
+#' @param exposomicset A `MultiAssayExperiment` object.
 #' @param feature_type Source of features ("degs", "omics", etc.).
 #' @param layout_algo Graph layout algorithm. Default is `"fr"`.
 #' @param go_groups Optional subset of GO groups.
@@ -935,7 +935,7 @@ plot_enrichment <- function(
 #' @keywords internal
 .plot_cnet_enrichment <- function(
     enr_res,
-    expomicset,
+    exposomicset,
     feature_type,
     layout_algo = "fr",
     go_groups = NULL,
@@ -980,7 +980,7 @@ plot_enrichment <- function(
     }
 
     # Join logFC from DA results
-    da_df <- expomicset@metadata |>
+    da_df <- exposomicset@metadata |>
         purrr::pluck(
             "differential_analysis",
             "differential_abundance"

@@ -5,7 +5,7 @@
 \title{Extract Top Contributing Features for Factors}
 \usage{
 extract_top_factor_features(
-  expomicset,
+  exposomicset,
   factors = NULL,
   pval_col = "p_adjust",
   pval_thresh = 0.05,
@@ -16,7 +16,7 @@ extract_top_factor_features(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 integration results.}
 
 \item{factors}{A character vector specifying the factors of interest.
@@ -45,7 +45,7 @@ for feature selection when \code{method = "threshold"}. Default is \code{0.3}.}
 (\code{"get"}) or add them to metadata (\code{"add"}). Default is \code{"add"}.}
 }
 \value{
-If \code{action = "add"}, returns the modified \code{expomicset} with
+If \code{action = "add"}, returns the modified \code{exposomicset} with
 selected features stored in metadata.
 If \code{action = "get"}, returns a data frame containing:
 \item{feature}{The selected feature contributing to the factor.}
@@ -60,13 +60,13 @@ Features are selected based on either a percentile cutoff
 or an absolute loading threshold.
 }
 \details{
-The function extracts factor loadings from \code{metadata(expomicset)},
+The function extracts factor loadings from \code{metadata(exposomicset)},
 applies filtering based on
 the selected method, and identifies top contributing features for
 each specified factor.
 
 If \code{factors} is not provided, the function will automatically select
-statistically significant factors from \code{metadata(expomicset)$association$assoc_factors$results_df}
+statistically significant factors from \code{metadata(exposomicset)$association$assoc_factors$results_df}
 using the specified \code{pval_col} and \code{pval_thresh} as criteria.
 
 Features can be selected using:

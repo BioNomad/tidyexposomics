@@ -1,8 +1,3 @@
-# Load Libraries
-library(testthat)
-library(MultiAssayExperiment)
-library(S4Vectors)
-
 test_that("create_exposomicset returns a valid MultiAssayExperiment", {
     dummy <- make_example_data(n_samples = 10, n_proteins = 50)
 

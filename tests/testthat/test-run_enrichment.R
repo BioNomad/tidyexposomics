@@ -11,7 +11,7 @@ test_that("run_enrichment identifies GO terms for DEGs and updates metadata", {
 
     # Run differential abundance to generate DEGs
     mae <- run_differential_abundance(
-        expomicset = mae,
+        exposomicset = mae,
         formula = ~ smoker + sex,
         abundance_col = "counts",
         method = "limma_voom",
@@ -20,7 +20,7 @@ test_that("run_enrichment identifies GO terms for DEGs and updates metadata", {
 
     # Run enrichment on DEGs using GO
     enriched <- run_enrichment(
-        expomicset = mae,
+        exposomicset = mae,
         feature_type = "degs",
         feature_col = "symbol",
         deg_pval_col = "P.Value",

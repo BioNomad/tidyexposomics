@@ -5,7 +5,7 @@
 \title{Plot Top Features by Factor from Integration Results}
 \usage{
 plot_top_factor_features(
-  expomicset,
+  exposomicset,
   feature_col = "feature",
   factors = NULL,
   top_n = 5,
@@ -15,7 +15,7 @@ plot_top_factor_features(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 integration results in the \code{metadata} slot (must include \code{integration_results}).}
 
 \item{feature_col}{A character string indicating the column name to use

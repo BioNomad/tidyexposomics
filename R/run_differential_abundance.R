@@ -6,7 +6,7 @@
 #' corresponding `colData`, fits the model using the provided formula,
 #' and combines the results into a unified table.
 #'
-#' @param expomicset A `MultiAssayExperiment` containing assays to test.
+#' @param exposomicset A `MultiAssayExperiment` containing assays to test.
 #' @param formula A model formula for the differential analysis
 #' (e.g., ~ group + batch).
 #' @param abundance_col Character. The name of the assay matrix to use
@@ -17,7 +17,7 @@
 #'  Default is `NULL` (uses default group comparisons).
 #' @param scaling_method Character. Scaling method to apply before modeling.
 #' Options include `"none"` (default), `"zscore"`, etc.
-#' @param action Character. Whether to `"add"` results to `expomicset`
+#' @param action Character. Whether to `"add"` results to `exposomicset`
 #'  metadata or `"get"` the results as a data frame. Default is `"add"`.
 #'
 #' @return Either the updated `MultiAssayExperiment` (if `action = "add"`)
@@ -32,7 +32,7 @@
 #'
 #' # perform differential abundance analysis
 #' mae <- run_differential_abundance(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     formula = ~ smoker + sex,
 #'     abundance_col = "counts",
 #'     method = "limma_trend",
@@ -44,7 +44,7 @@
 #' @importFrom rlang .data
 #' @export
 run_differential_abundance <- function(
-    expomicset,
+    exposomicset,
     formula,
     abundance_col = "counts",
     method = "limma_trend",
@@ -58,12 +58,12 @@ run_differential_abundance <- function(
     # Initialize a data frame to store results
     da_results_df <- list()
 
-    # Iterate through assays in expomicset
-    for (exp_name in names(MultiAssayExperiment::experiments(expomicset))) {
+    # Iterate through assays in exposomicset
+    for (exp_name in names(MultiAssayExperiment::experiments(exposomicset))) {
         message("Processing assay: ", exp_name)
 
         # Update assay with colData
-        exp <- .update_assay_colData(expomicset, exp_name)
+        exp <- .update_assay_colData(exposomicset, exp_name)
 
         # Run differential analysis using `.run_se_differential_abundance`
         res <- .run_se_differential_abundance(
@@ -93,9 +93,9 @@ run_differential_abundance <- function(
     message("Differential abundance testing completed.")
 
     if (action == "add") {
-        all_metadata <- MultiAssayExperiment::metadata(expomicset)
+        all_metadata <- MultiAssayExperiment::metadata(exposomicset)
         all_metadata$differential_analysis$differential_abundance <- final_results
-        MultiAssayExperiment::metadata(expomicset) <- all_metadata
+        MultiAssayExperiment::metadata(exposomicset) <- all_metadata
 
         # Add step record to metadata
         step_record <- list(
@@ -112,17 +112,17 @@ run_differential_abundance <- function(
             )
         )
 
-        MultiAssayExperiment::metadata(expomicset)$summary$steps <- c(
-            MultiAssayExperiment::metadata(expomicset)$summary$steps,
+        MultiAssayExperiment::metadata(exposomicset)$summary$steps <- c(
+            MultiAssayExperiment::metadata(exposomicset)$summary$steps,
             step_record
         )
-        return(expomicset)
+        return(exposomicset)
     } else if (action == "get") {
         return(final_results)
     } else {
         stop("Invalid action specified. Use 'add' or 'get'.")
     }
-    return(expomicset)
+    return(exposomicset)
 }
 
 

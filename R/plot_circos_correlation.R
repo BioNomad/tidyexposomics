@@ -4,7 +4,7 @@
 #' exposures, either based on correlation ("exposures") or
 #' shared features ("degs", "factors").
 #'
-#' @param expomicset A MultiAssayExperiment object.
+#' @param exposomicset A MultiAssayExperiment object.
 #' @param feature_type One of "exposures", "degs", or "factors".
 #' @param exposure_cols Character vector of exposures to include
 #' (only for "exposures").
@@ -47,7 +47,7 @@
 #'
 #' @export
 plot_circos_correlation <- function(
-    expomicset,
+    exposomicset,
     feature_type = c(
         "degs",
         "omics",
@@ -67,12 +67,13 @@ plot_circos_correlation <- function(
     # require(ggraph)
     # require(igraph)
     .check_suggested(pkg = "ggraph")
+    .check_suggested(pkg = "scales")
 
     feature_type <- match.arg(feature_type)
 
     # Load correlation or shared feature data
     if (feature_type == "exposures") {
-        correlation_df <- MultiAssayExperiment::metadata(expomicset) |>
+        correlation_df <- MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck("correlation", "exposures")
 
         if (is.null(correlation_df)) {
@@ -108,7 +109,7 @@ plot_circos_correlation <- function(
             "omics_exposure_factor_correlation"
         }
 
-        correlation_list <- MultiAssayExperiment::metadata(expomicset)$correlation
+        correlation_list <- MultiAssayExperiment::metadata(exposomicset)$correlation
         correlation_df <- correlation_list[[feature_type]]
 
         # if (is.null(correlation_df)){
@@ -152,7 +153,7 @@ plot_circos_correlation <- function(
     }
 
     # Get node metadata
-    codebook <- MultiAssayExperiment::metadata(expomicset)$codebook
+    codebook <- MultiAssayExperiment::metadata(exposomicset)$codebook
     node_vars <- unique(c(correlation_df$source, correlation_df$target))
     vertex_df <- dplyr::filter(codebook, variable %in% node_vars)
 
@@ -187,7 +188,7 @@ plot_circos_correlation <- function(
     ) +
         ggraph::geom_edge_arc(aes(
             color = edge_weight,
-            width = edge_weight
+            width = scales::rescale(edge_weight, to = c(1, 5))
         )) +
         ggraph::geom_node_point(aes(fill = category),
             shape = 21,

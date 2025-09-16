@@ -5,7 +5,7 @@
 #'  Each exposure is scored by four centrality metrics,
 #' scaled within metric, and grouped by exposure category.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with results
+#' @param exposomicset A `MultiAssayExperiment` object with results
 #' from `run_exposure_impact()`.
 #' @param feature_type Character string specifying the feature type.
 #'  One of `"degs"`, `"omics"`, or `"factors"`.
@@ -105,7 +105,7 @@
 #' @importFrom purrr pluck
 #' @export
 plot_exposure_impact <- function(
-    expomicset,
+    exposomicset,
     feature_type = c("degs", "omics", "factors"),
     min_per_group = 5,
     facet_cols = NULL,
@@ -121,13 +121,13 @@ plot_exposure_impact <- function(
 
     # Check that exposure impact analysis has been run
     if (!("exposure_impact" %in% names(
-        MultiAssayExperiment::metadata(expomicset)$network
+        MultiAssayExperiment::metadata(exposomicset)$network
     ))) {
         stop("Please run `run_exposure_impact()` first.")
     }
 
     exposure_impact_degree <-
-        expomicset |>
+        exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck("network") |>
         purrr::pluck("exposure_impact") |>
@@ -159,7 +159,7 @@ plot_exposure_impact <- function(
             k = length(
                 unique(
                     exposure_impact_degree |>
-                        dplyr::pull(exp_name)
+                        dplyr::pull(category)
                 )
             )
         )

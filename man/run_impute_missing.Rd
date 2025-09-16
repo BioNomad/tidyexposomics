@@ -5,7 +5,7 @@
 \title{Impute Missing Exposure and Omics Data in a MultiAssayExperiment}
 \usage{
 run_impute_missing(
-  expomicset,
+  exposomicset,
   exposure_impute_method = "median",
   exposure_cols = NULL,
   omics_impute_method = NULL,
@@ -13,7 +13,7 @@ run_impute_missing(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 exposures and omics data.}
 
 \item{exposure_impute_method}{Character. Imputation method to use for
@@ -70,7 +70,7 @@ MultiAssayExperiment::colData(mae)$exposure_pm25[sample(1:20, 5)] <- NA
 
 # Filter features and exposures with high missingness
 mae <- run_impute_missing(
-    expomicset = mae,
+    exposomicset = mae,
     exposure_impute_method = "median"
 )
 

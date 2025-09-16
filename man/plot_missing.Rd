@@ -5,17 +5,17 @@
 \title{Plot Missing Data Across Exposure and Omic Layers}
 \usage{
 plot_missing(
-  expomicset,
+  exposomicset,
   threshold = 5,
   plot_type = c("summary", "lollipop"),
   layers = NULL
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing exposure
 and omics assays. Missing data is inferred directly from the assays.}
 
-\item{threshold}{Numeric. The percentage threshold (0–100) above which
+\item{threshold}{Numeric. The percentage threshold (0-100) above which
 features are counted as missing in the summary plot. Default is \code{5}.}
 
 \item{plot_type}{Character. Type of plot to generate. Either \code{"summary"}

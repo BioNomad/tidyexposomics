@@ -21,7 +21,7 @@ test_that("run_cluster_samples performs clustering and records output", {
 
     # Run clustering
     clustered <- run_cluster_samples(
-        expomicset = mae,
+        exposomicset = mae,
         exposure_cols = selected_exposures,
         dist_method = "euclidean",
         clustering_approach = "diana",

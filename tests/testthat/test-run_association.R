@@ -14,7 +14,7 @@ test_that("run_association works with exposures as source and guassian", {
 
     # Run association analysis
     assoc_mae <- run_association(
-        expomicset = mae,
+        exposomicset = mae,
         outcome = "exposure_pm25",
         source = "exposures",
         covariates = "sex",
@@ -52,7 +52,7 @@ test_that("run_association works with exposures as source and binomial", {
 
     # Run association analysis
     assoc_mae <- run_association(
-        expomicset = mae,
+        exposomicset = mae,
         outcome = "smoker",
         source = "exposures",
         covariates = "sex",

@@ -5,7 +5,7 @@
 \title{Compute Composite Exposome Scores}
 \usage{
 run_exposome_score(
-  expomicset,
+  exposomicset,
   score_type,
   exposure_cols = NULL,
   scale = TRUE,
@@ -13,7 +13,7 @@ run_exposome_score(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing exposure
 data in its \code{colData}.}
 
 \item{score_type}{Character. The method used to compute the score.
@@ -45,7 +45,7 @@ The resulting score is added to the \code{colData} of the
 \item \code{"pca"} uses the first principal component from \code{prcomp()}.
 \item \code{"irt"} uses the \code{mirt} package to fit a graded response model to
 discretized exposures.
-\item \code{"quantile"} assigns decile bins (1–10) to each variable and sums
+\item \code{"quantile"} assigns decile bins (1-10) to each variable and sums
 them row-wise.
 \item \code{"var"} computes the row-wise variance across exposures.
 }

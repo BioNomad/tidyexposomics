@@ -5,18 +5,18 @@
 \title{Transform Exposure Variables for Normality}
 \usage{
 transform_exposure(
-  expomicset,
+  exposomicset,
   exposure_cols = NULL,
   transform_method = "boxcox_best"
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing exposure
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing exposure
 variables in \code{colData}.}
 
 \item{exposure_cols}{Optional character vector of exposure variable
 names to transform.
-If \code{NULL}, uses exposures found in \code{metadata(expomicset)$quality_control$normality$norm_df$exposure}.}
+If \code{NULL}, uses exposures found in \code{metadata(exposomicset)$quality_control$normality$norm_df$exposure}.}
 
 \item{transform_method}{Character. Transformation method to apply. Options:
 \itemize{
@@ -32,13 +32,13 @@ heuristic labeling
 A \code{MultiAssayExperiment} object with transformed exposures
 in \code{colData}, and transformation details stored in:
 \itemize{
-\item \code{metadata(expomicset)$quality_control$transformation$norm_df}:
+\item \code{metadata(exposomicset)$quality_control$transformation$norm_df}:
 Shapiro-Wilk test results
-\item \code{metadata(expomicset)$quality_control$transformation$norm_summary}:
+\item \code{metadata(exposomicset)$quality_control$transformation$norm_summary}:
 Summary of normality
-\item \code{metadata(expomicset)$codebook}: Updated with transformation info
+\item \code{metadata(exposomicset)$codebook}: Updated with transformation info
 per variable
-\item \code{metadata(expomicset)$summary$steps}: Updated with step record
+\item \code{metadata(exposomicset)$summary$steps}: Updated with step record
 }
 }
 \description{

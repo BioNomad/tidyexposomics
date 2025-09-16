@@ -5,7 +5,7 @@
 \title{Run Correlation Analysis}
 \usage{
 run_correlation(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "omics", "factors", "factor_features", "exposures", "pcs"),
   exposure_cols = NULL,
   variable_map = NULL,
@@ -27,7 +27,7 @@ run_correlation(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object.}
+\item{exposomicset}{A \code{MultiAssayExperiment} object.}
 
 \item{feature_type}{Type of features to correlate. One of \code{"degs"},
 \code{"omics"}, \code{"factors"}, \code{"factor_features"}, \code{"exposures"}, or \code{"pcs"}.}
@@ -81,7 +81,7 @@ If \code{action = "get"}, returns a tidy \code{data.frame} of correlations.
 Computes correlations between exposures and feature types including DEGs,
 omics, latent factors,
 top factor features, or principal components (PCs). Optionally computes
-feature–feature correlations
+feature-feature correlations
 to support network analysis.
 }
 \examples{

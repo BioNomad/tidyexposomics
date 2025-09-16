@@ -4,10 +4,10 @@
 \alias{extract_omics_exposure_df}
 \title{Extract Merged Omics and Exposure Data Frame}
 \usage{
-extract_omics_exposure_df(expomicset, variable_map = NULL, log2_trans = TRUE)
+extract_omics_exposure_df(exposomicset, variable_map = NULL, log2_trans = TRUE)
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object containing
+\item{exposomicset}{A \code{MultiAssayExperiment} object containing
 omics and exposure data.}
 
 \item{variable_map}{A data frame with columns \code{"variable"} and \code{"exp_name"},

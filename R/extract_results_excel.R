@@ -6,7 +6,7 @@
 #' Users can select which result types to include,
 #' and optionally add placeholder sheets for missing data.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with results stored
+#' @param exposomicset A `MultiAssayExperiment` object with results stored
 #' in `@metadata`, typically created by the `tidyexposomics` pipeline.
 #' @param file Character. Path to the output Excel file.
 #' @param result_types Character vector specifying which result categories
@@ -49,7 +49,7 @@
 #'
 #' # extract the correlation results
 #' extract_results_excel(
-#'     expomicset = mae,
+#'     exposomicset = mae,
 #'     result_types = "correlation",
 #'     file = tmp
 #' )
@@ -58,7 +58,7 @@
 #' @importFrom tibble enframe
 #' @export
 extract_results_excel <- function(
-    expomicset,
+    exposomicset,
     file = "tidyexposomics_results.xlsx",
     result_types = c(
         "correlation",
@@ -72,7 +72,7 @@ extract_results_excel <- function(
     ),
     include_empty_tabs = FALSE) {
     .check_suggested(pkg = "openxlsx")
-    stopifnot("MultiAssayExperiment" %in% class(expomicset))
+    stopifnot("MultiAssayExperiment" %in% class(exposomicset))
 
     # Handle "all"
     all_types <- c(
@@ -123,7 +123,7 @@ extract_results_excel <- function(
     # --- Adding Correlation Results ---------
     if ("correlation" %in% result_types) {
         message("Writing Correlation Results.")
-        enr <- MultiAssayExperiment::metadata(expomicset)$correlation
+        enr <- MultiAssayExperiment::metadata(exposomicset)$correlation
         if (!is.null(enr) && is.list(enr)) {
             purrr::iwalk(enr, function(obj, groupname) {
                 df <- obj
@@ -136,7 +136,7 @@ extract_results_excel <- function(
 
     if ("association" %in% result_types) {
         message("Writing Association Results.")
-        enr <- MultiAssayExperiment::metadata(expomicset)$association
+        enr <- MultiAssayExperiment::metadata(exposomicset)$association
         if (!is.null(enr) && is.list(enr)) {
             purrr::iwalk(enr, function(obj, groupname) {
                 df <- obj
@@ -148,16 +148,16 @@ extract_results_excel <- function(
     # --- Adding Differential Abundance Results --------
     if ("differential_analysis" %in% result_types) {
         message("Writing Differential Abundance Results.")
-        da <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$differential_abundance
+        da <- MultiAssayExperiment::metadata(exposomicset)$differential_analysis$differential_abundance
         if (!is.null(da)) {
             safe_add_sheet("Differential Abundance", da)
         }
 
         if ("sensitivity_analysis" %in% names(
-            MultiAssayExperiment::metadata(expomicset)$differential_analysis
+            MultiAssayExperiment::metadata(exposomicset)$differential_analysis
         )) {
             message("Writing Sensitivity Analysis Results.")
-            sens <- MultiAssayExperiment::metadata(expomicset)$differential_analysis$sensitivity_analysis$feature_stability
+            sens <- MultiAssayExperiment::metadata(exposomicset)$differential_analysis$sensitivity_analysis$feature_stability
             if (!is.null(sens)) {
                 safe_add_sheet("Sensitivity Analysis", sens)
             }
@@ -167,7 +167,7 @@ extract_results_excel <- function(
     # --- Adding Multiomics Integration Results ----------
     if ("multiomics_integration" %in% result_types) {
         message("Writing Multiomics Integration Results.")
-        factors <- MultiAssayExperiment::metadata(expomicset)$multiomics_integration$common_top_factors
+        factors <- MultiAssayExperiment::metadata(exposomicset)$multiomics_integration$common_top_factors
         if (!is.null(factors)) {
             safe_add_sheet("Common Factor Features", factors)
         }
@@ -176,7 +176,7 @@ extract_results_excel <- function(
     # --- Adding Network Results --------------
     if ("network" %in% result_types) {
         message("Writing Network Impact Results.")
-        exposure_impact <- MultiAssayExperiment::metadata(expomicset) |>
+        exposure_impact <- MultiAssayExperiment::metadata(exposomicset) |>
             purrr::pluck(
                 "network",
                 "exposure_impact"
@@ -192,7 +192,7 @@ extract_results_excel <- function(
     # --- Adding Enrichment Results -------------
     if ("enrichment" %in% result_types) {
         message("Writing Enrichment Results.")
-        enr <- MultiAssayExperiment::metadata(expomicset)$enrichment
+        enr <- MultiAssayExperiment::metadata(exposomicset)$enrichment
         if (!is.null(enr) && is.list(enr)) {
             purrr::iwalk(enr, function(obj, groupname) {
                 df <- obj
@@ -204,7 +204,7 @@ extract_results_excel <- function(
     # --- Adding Pipeline summary -------
     if ("pipeline" %in% result_types) {
         message("Writing Pipeline Summary.")
-        pipeline_info <- MultiAssayExperiment::metadata(expomicset)$summary$steps
+        pipeline_info <- MultiAssayExperiment::metadata(exposomicset)$summary$steps
         if (is.list(pipeline_info)) {
             steps_df <- tibble::enframe(pipeline_info,
                 name = "Step",
@@ -221,7 +221,7 @@ extract_results_excel <- function(
             "Exposure_Summary",
             tryCatch(
                 {
-                    run_summarize_exposures(expomicset, action = "get")
+                    run_summarize_exposures(exposomicset, action = "get")
                 },
                 error = function(e) NULL
             )

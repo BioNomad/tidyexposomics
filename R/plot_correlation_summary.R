@@ -3,7 +3,7 @@
 #' Generates a bar plot summary of exposure-feature correlations
 #' using customizable modes.
 #'
-#' @param expomicset A `MultiAssayExperiment` object with
+#' @param exposomicset A `MultiAssayExperiment` object with
 #' correlation results in metadata.
 #' @param feature_type One of `"degs"`, `"factors"`,
 #' `"omics"`, or `"exposures"`.
@@ -50,7 +50,7 @@
 #' @importFrom ggplot2 ggplot aes geom_bar geom_segment labs theme element_text
 #' @export
 plot_correlation_summary <- function(
-    expomicset,
+    exposomicset,
     feature_type = c(
         "degs",
         "omics",
@@ -75,7 +75,7 @@ plot_correlation_summary <- function(
     mode <- match.arg(mode)
 
     # Select correlation data
-    cor_list <- MultiAssayExperiment::metadata(expomicset)$correlation
+    cor_list <- MultiAssayExperiment::metadata(exposomicset)$correlation
     cor_data <- cor_list[[feature_type]]
     if (is.null(cor_data)) {
         stop("No correlation results found for type: ", feature_type)

@@ -5,7 +5,7 @@
 \title{Export tidyexposomics Results to Excel}
 \usage{
 extract_results_excel(
-  expomicset,
+  exposomicset,
   file = "tidyexposomics_results.xlsx",
   result_types = c("correlation", "association", "differential_analysis",
     "multiomics_integration", "network", "enrichment", "exposure_summary", "pipeline"),
@@ -13,7 +13,7 @@ extract_results_excel(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with results stored
+\item{exposomicset}{A \code{MultiAssayExperiment} object with results stored
 in \verb{@metadata}, typically created by the \code{tidyexposomics} pipeline.}
 
 \item{file}{Character. Path to the output Excel file.}
@@ -67,7 +67,7 @@ tmp <- tempfile(fileext = ".xlsx")
 
 # extract the correlation results
 extract_results_excel(
-    expomicset = mae,
+    exposomicset = mae,
     result_types = "correlation",
     file = tmp
 )

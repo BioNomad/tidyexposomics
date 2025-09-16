@@ -3,13 +3,13 @@
 #' Visualizes exposure variable distributions using **boxplots**
 #' or **ridge plots**.
 #'
-#' @param expomicset A `MultiAssayExperiment` object containing exposure data.
+#' @param exposomicset A `MultiAssayExperiment` object containing exposure data.
 #' @param exposure_cat A character string or vector specifying exposure
 #' category names (from `codebook$category`) to include.
 #' Use `"all"` to include all exposures.
 #' @param exposure_cols Optional character vector specifying exact
 #' exposure variables to plot.
-#' @param group_by A string specifying the column in `colData(expomicset)`
+#' @param group_by A string specifying the column in `colData(exposomicset)`
 #' used to fill the plot (e.g., `"sex"`). Defaults to `NULL`, in which case
 #' exposures are colored by `category`.
 #' @param plot_type Type of plot: `"boxplot"` (default) or `"ridge"`.
@@ -32,7 +32,7 @@
 #' @details
 #' This function:
 #' - Filters exposure data based on category or selected columns.
-#' - Merges variable metadata from `metadata(expomicset)$codebook`.
+#' - Merges variable metadata from `metadata(exposomicset)$codebook`.
 #' - Supports either **boxplot** (vertical distributions per variable)
 #' or **ridgeplot** (horizontal density plots per variable).
 #' - If `group_by` is specified, that variable defines the plot fill color;
@@ -69,7 +69,7 @@
 #'
 #' @export
 plot_exposures <- function(
-    expomicset,
+    exposomicset,
     exposure_cat = "all",
     exposure_cols = NULL,
     group_by = NULL,
@@ -88,11 +88,11 @@ plot_exposures <- function(
     .check_suggested(pkg = "ggridges")
 
     # Extract exposure data
-    exposure_data <- expomicset |>
+    exposure_data <- exposomicset |>
         pivot_sample()
 
     # Extract variable description file
-    des <- MultiAssayExperiment::metadata(expomicset) |>
+    des <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck("codebook")
 
     # Filter by exposure category if specified

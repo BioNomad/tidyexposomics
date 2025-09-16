@@ -2,10 +2,10 @@
 % Please edit documentation in R/plot_enrichment.R
 \name{plot_enrichment}
 \alias{plot_enrichment}
-\title{Plot Enrichment Results from ExpOmicSet}
+\title{Plot Enrichment Results from exposomicset}
 \usage{
 plot_enrichment(
-  expomicset,
+  exposomicset,
   feature_type = c("degs", "degs_robust", "omics", "factor_features", "degs_cor",
     "omics_cor", "factor_features_cor"),
   plot_type = c("dotplot", "cnet", "network", "heatmap", "summary"),
@@ -38,7 +38,7 @@ plot_enrichment(
 )
 }
 \arguments{
-\item{expomicset}{A \code{MultiAssayExperiment} object with enrichment results
+\item{exposomicset}{A \code{MultiAssayExperiment} object with enrichment results
 added via \code{run_enrichment()}.}
 
 \item{feature_type}{Character; one of \code{"degs"}, \code{"degs_robust"},
@@ -158,7 +158,7 @@ mae <- make_example_data(
 
 # perform differential abundance analysis
 mae <- run_differential_abundance(
-    expomicset = mae,
+    exposomicset = mae,
     formula = ~ smoker + sex,
     abundance_col = "counts",
     method = "limma_voom",
@@ -167,7 +167,7 @@ mae <- run_differential_abundance(
 
 # perform enrichment analysis
 mae <- run_enrichment(
-    expomicset = mae,
+    exposomicset = mae,
     feature_type = "degs",
     feature_col = "symbol",
     species = "goa_human",
@@ -179,7 +179,7 @@ mae <- run_enrichment(
 
 # create an enrichment plot
 enr_plot <- plot_enrichment(
-    expomicset = mae,
+    exposomicset = mae,
     feature_type = "degs",
     plot_type = "network"
 )
