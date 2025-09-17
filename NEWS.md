@@ -1,3 +1,7 @@
+# tidyexposomics 0.99.2
+
+* Updated namespace issues.
+
 # tidyexposomics 0.99.1
 
 * Updated variable language for consistency.

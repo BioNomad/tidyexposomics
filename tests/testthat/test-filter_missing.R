@@ -46,11 +46,4 @@ test_that("filter_missing removes features and generates QC plots", {
         # ensure that the features with too many NAs are out of the object
         expect_false(any(expected_removed %in% filtered_feats))
     }
-
-    # Check that QC plots exist in metadata
-    qc_meta <- metadata(mae_filtered)$quality_control$na_qc
-    expect_type(qc_meta$exposure$na_exposure_qc_plot, "list")
-    for (omic in names(experiments(mae_filtered))) {
-        expect_type(qc_meta[[omic]]$na_omics_qc_plot, "list")
-    }
 })

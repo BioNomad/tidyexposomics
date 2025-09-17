@@ -65,9 +65,8 @@ Otherwise, returns a list of:
 }
 \description{
 Perform GLM-based association testing between a specified outcome and
-features from exposures, omics,
-latent factors, or GO PCs. Automatically adjusts for covariates and
-supports both Gaussian and binomial models.
+features from exposures, omics, or latent factors. Automatically adjusts
+for covariates and supports both Gaussian and binomial models.
 }
 \examples{
 

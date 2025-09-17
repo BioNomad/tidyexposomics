@@ -1,9 +1,8 @@
 #' Run Association Analysis
 #'
 #' Perform GLM-based association testing between a specified outcome and
-#' features from exposures, omics,
-#' latent factors, or GO PCs. Automatically adjusts for covariates and
-#' supports both Gaussian and binomial models.
+#' features from exposures, omics, or latent factors. Automatically adjusts
+#' for covariates and supports both Gaussian and binomial models.
 #'
 #' @param exposomicset A `MultiAssayExperiment` object containing data
 #' and metadata.
@@ -415,82 +414,6 @@ run_association <- function(
     tibble::rownames_to_column(mat, "id")
 }
 
-
-# --- Extract GO Principal Components Function -------
-#' Extract GO Principal Components
-#'
-#' For each GO group in the enrichment results, compute
-#' the first PC of the associated genes.
-#'
-# .extract_go_pcs <- function(
-#     exposomicset, geneset,
-#     covariates,
-#     min_genes = 10,
-#     feature_col = NULL,
-#     mirna_assays = NULL) {
-#     enrich_res <- exposomicset |>
-#         MultiAssayExperiment::metadata() |>
-#         purrr::pluck("enrichment") |>
-#         purrr::pluck(geneset)
-#
-#     if (!is.null(mirna_assays)) {
-#         enrich_res <- enrich_res |>
-#             dplyr::filter(!exp_name %in% mirna_assays)
-#     }
-#
-#     pc_dfs <- purrr::pmap_dfr(
-#         enrich_res |>
-#             dplyr::distinct(
-#                 exp_name,
-#                 Cluster,
-#                 go_group
-#             ),
-#         function(exp_name,
-#                  Cluster,
-#                  go_group) {
-#             df <- enrich_res |>
-#                 dplyr::filter(
-#                     exp_name == !!exp_name,
-#                     Cluster == !!Cluster,
-#                     go_group == !!go_group
-#                 )
-#
-#             genes <- unique(unlist(stringr::str_split(df$geneID, "/")))
-#
-#             if (length(genes) < min_genes) {
-#                 return(NULL)
-#             }
-#
-#             exp <- .update_assay_colData(exposomicset, exp_name)
-#
-#             if (!is.null(feature_col)) {
-#                 genes <- exp |>
-#                     tidybulk::pivot_transcript() |>
-#                     dplyr::filter(!!rlang::sym(feature_col) %in% genes) |>
-#                     dplyr::pull(.feature)
-#             }
-#
-#             assay <- SummarizedExperiment::assay(exp)
-#
-#             assay <- assay[rownames(assay) %in% genes, , drop = FALSE]
-#
-#             if (nrow(assay) < 2 || all(apply(assay, 1, var) == 0)) {
-#                 return(NULL)
-#             }
-#
-#             pc1 <- prcomp(t(log2(assay + 1)), scale. = TRUE)$x[, 1]
-#
-#             id <- rownames(pc1)
-#
-#             tibble::tibble(
-#                 id = id,
-#                 !!paste("PC", exp_name, Cluster, go_group, sep = "/") := pc1
-#             )
-#         }
-#     )
-#
-#     return(pc_dfs)
-# }
 
 # --- R2 Function ---------
 #' Calculate R-squared and adjusted R-squared from a GLM

@@ -17,6 +17,7 @@
 #' @return A tibble with feature metadata from all assays,
 #' with an added `.exp_name` column.
 #'
+#'
 #' @examples
 #'
 #' #' # create example data

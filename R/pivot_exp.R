@@ -16,7 +16,6 @@
 #'  including all metadata and a new column \code{exp_name}
 #'  indicating the assay source.
 #'
-#' @importFrom tidybulk tidybulk
 #' @importFrom dplyr mutate
 #'
 #' @examples
