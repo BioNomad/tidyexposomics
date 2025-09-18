@@ -1,6 +1,6 @@
-# tidyexposomics 0.99.2/0.99.3
+# tidyexposomics 0.99.2/0.99.3/0.99.4
 
-* Updated namespace issues.
+* Updated namespace issues with tidybulk.
 
 # tidyexposomics 0.99.1
 

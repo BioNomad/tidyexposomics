@@ -4,22 +4,23 @@
 \alias{pivot_exp}
 \title{Pivot a selected omics dataset from a MultiAssayExperiment into tidybulk format}
 \usage{
-pivot_exp(exposomicset, omics_name, features = NULL)
+pivot_exp(exposomicset, exp_name, features = NULL)
 }
 \arguments{
 \item{exposomicset}{A \code{MultiAssayExperiment} object containing
-omics assays.}
+one or more omics assays.}
 
-\item{omics_name}{A character string. The name of the omics dataset
+\item{exp_name}{A character string. The name of the omics dataset
 to extract (e.g., "Proteomics").}
 
 \item{features}{Optional character vector of row (feature) names to retain.
 If \code{NULL}, all features are included.}
 }
 \value{
-A tibble in tidybulk format with one row per feature/sample pair,
+A tibble in tidy format with one row per feature/sample pair,
 including all metadata and a new column \code{exp_name}
-indicating the assay source.
+indicating the assay source. Assay values are provided in separate columns
+named after the assay slot(s).
 }
 \description{
 Extracts a specified omics dataset from a \code{MultiAssayExperiment},
@@ -28,7 +29,6 @@ and returns a tidy tibble. The output includes assay values along with
 sample metadata and feature metadata.
 }
 \examples{
-
 # create example data
 mae <- make_example_data(
     n_samples = 10,
@@ -36,9 +36,10 @@ mae <- make_example_data(
 )
 
 # pivot experiment
-exp_data <- mae |>
-    pivot_exp(
-        omics_name = "mRNA",
-        features = "feat_42"
-    )
+exp_data <- pivot_exp(
+    exposomicset = mae,
+    exp_name = "mRNA",
+    features = c("feat_42")
+)
+
 }

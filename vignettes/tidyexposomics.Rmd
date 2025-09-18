@@ -1327,7 +1327,7 @@ Now if we want to grab assay data from a particular experiment, we can do that w
 # Pivot experiment data to a tibble
 expom_1 |>
     pivot_exp(
-        omics_name = "Methylation",
+        exp_name = "Methylation",
         features = "cg25330361"
     ) |>
     head()
@@ -1339,7 +1339,7 @@ We can use this functionality to create custom plots or analyses based on the ex
 # Plot the distribution of a specific feature across samples
 expom_1 |>
     pivot_exp(
-        omics_name = "Methylation",
+        exp_name = "Methylation",
         features = "cg25330361"
     ) |>
     ggplot(aes(
