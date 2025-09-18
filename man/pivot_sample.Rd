@@ -9,8 +9,8 @@ pivot_sample(x, ...)
 \arguments{
 \item{x}{A \code{MultiAssayExperiment} or \code{SummarizedExperiment} object.}
 
-\item{...}{Additional arguments passed to \code{tidybulk::pivot_sample()} for
-\code{SummarizedExperiment} objects.}
+\item{...}{Additional arguments passed to \code{pivot_sample()} from \code{tidybulk}
+for \code{SummarizedExperiment} objects.}
 }
 \value{
 A tibble containing sample metadata with an added \code{.sample} column.
@@ -24,7 +24,7 @@ This function:
 \itemize{
 \item Extracts \strong{sample metadata} from \code{MultiAssayExperiment} using \code{colData()},
 converting it to a tibble.
-\item Calls \code{tidybulk::pivot_sample()} when applied to a
+\item Calls \code{pivot_sample()} from \code{tidybulk} when applied to a
 \code{SummarizedExperiment} object.
 \item \strong{Error Handling}: Returns an error if \code{x} is not a
 \code{MultiAssayExperiment} or \code{SummarizedExperiment}.

@@ -17,6 +17,7 @@
 #'  indicating the assay source.
 #'
 #' @importFrom dplyr mutate
+#' @importMethodsFrom tidybulk tidybulk
 #'
 #' @examples
 #'
@@ -32,7 +33,6 @@
 #'         omics_name = "mRNA",
 #'         features = "feat_42"
 #'     )
-#'
 #' @export
 pivot_exp <- function(
     exposomicset,
@@ -50,6 +50,6 @@ pivot_exp <- function(
     }
 
     # Apply tidybulk (uses assay, colData, rowData internally)
-    tidybulk::tidybulk(se) |>
+    tidybulk(se) |>
         mutate(exp_name = omics_name, .before = .feature)
 }

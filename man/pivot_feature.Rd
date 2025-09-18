@@ -23,7 +23,7 @@ This function:
 \item Iterates over all assays in the \code{MultiAssayExperiment}.
 \item Updates each assay's sample metadata (\code{colData}) using
 \code{.update_assay_colData()}.
-\item Extracts feature-level metadata using \code{tidybulk::pivot_transcript()}.
+\item Extracts feature-level metadata using \code{pivot_transcript()} from \code{tidybulk}.
 \item Combines results across assays into a single tibble,
 adding a \code{.exp_name} column.
 }
@@ -39,5 +39,4 @@ mae <- make_example_data(
 # pivot experiment
 feature_data <- mae |>
     pivot_feature()
-
 }

@@ -137,6 +137,7 @@ run_differential_abundance <- function(
 #' @importFrom stats binomial
 #' @importFrom rlang .data
 #' @importFrom limma lmFit eBayes topTable makeContrasts contrasts.fit
+#' @importMethodsFrom tidybulk pivot_transcript
 #' @keywords internal
 #' @noRd
 .run_limma_trend <- function(
@@ -201,7 +202,7 @@ run_differential_abundance <- function(
         ) |>
         dplyr::left_join(
             se |>
-                tidybulk::pivot_transcript(),
+                pivot_transcript(),
             by = c("feature" = ".feature")
         ) |>
         dplyr::filter(grepl(all.vars(formula)[1], contrast)) |>

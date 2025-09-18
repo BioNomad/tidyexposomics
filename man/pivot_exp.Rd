@@ -41,5 +41,4 @@ exp_data <- mae |>
         omics_name = "mRNA",
         features = "feat_42"
     )
-
 }

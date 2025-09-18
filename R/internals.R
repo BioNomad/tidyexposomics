@@ -203,6 +203,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' Performs differential abundance analysis using `tidybulk`,
 #'  with optional contrast testing.
 #'
+#' @importMethodsFrom tidybulk test_differential_abundance identify_abundant
 #' @keywords internal
 #' @noRd
 .run_se_differential_abundance <- function(
@@ -236,11 +237,11 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
         res_list <- list()
         for (contrast in contrasts) {
             contrast_results <- se |>
-                tidybulk::identify_abundant(
+                identify_abundant(
                     minimum_counts = 0,
                     minimum_proportion = 0
                 ) |>
-                tidybulk::test_differential_abundance(
+                test_differential_abundance(
                     formula,
                     .abundance = !!sym(abundance_col),
                     method = method,
@@ -262,11 +263,11 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
         return(dplyr::bind_rows(res_list))
     } else {
         contrast_results <- se |>
-            tidybulk::identify_abundant(
+            identify_abundant(
                 minimum_counts = 0,
                 minimum_proportion = 0
             ) |>
-            tidybulk::test_differential_abundance(
+            test_differential_abundance(
                 formula,
                 .abundance = !!sym(abundance_col),
                 method = method,

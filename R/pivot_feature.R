@@ -10,7 +10,7 @@
 #' - Iterates over all assays in the `MultiAssayExperiment`.
 #' - Updates each assay's sample metadata (`colData`) using
 #' `.update_assay_colData()`.
-#' - Extracts feature-level metadata using `tidybulk::pivot_transcript()`.
+#' - Extracts feature-level metadata using `pivot_transcript()` from `tidybulk`.
 #' - Combines results across assays into a single tibble,
 #' adding a `.exp_name` column.
 #'
@@ -29,13 +29,14 @@
 #' # pivot experiment
 #' feature_data <- mae |>
 #'     pivot_feature()
+#' @importMethodsFrom tidybulk pivot_transcript
 #'
 #' @export
 pivot_feature <- function(exposomicset) {
     res <- lapply(
         names(MultiAssayExperiment::experiments(exposomicset)), function(exp_name) {
             exp <- .update_assay_colData(exposomicset, exp_name) |>
-                tidybulk::pivot_transcript()
+                pivot_transcript()
         }
     )
 
