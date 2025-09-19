@@ -1,3 +1,10 @@
+# tidyexposomics 0.99.5
+
+* Removed .Rproj tracking.
+* Updated testing strategy.
+* Modified dependency to 4.5.0.
+* Added vignette chunk labels.
+
 # tidyexposomics 0.99.2/0.99.3/0.99.4
 
 * Updated namespace issues with tidybulk.

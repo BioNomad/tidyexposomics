@@ -12,3 +12,6 @@
 ^Meta$
 ^\.github$
 ^supplemental_results\.xlsx$
+^\.git$
+^\.gitattributes$
+^\.gitignore$

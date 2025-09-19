@@ -1,4 +1,6 @@
 test_that("run_multiomics_integration works with MOFA", {
+    # skipping on Bioconductor because of basilisk issues
+    skip_on_bioc()
     # MOFA2 has an issue running on Mac-arm64
     skip_on_os("mac")
     skip_if(grepl("arm64", R.version$platform) &&
