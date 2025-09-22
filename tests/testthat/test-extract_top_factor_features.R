@@ -1,5 +1,7 @@
 test_that("extract_top_factor_features works for MOFA", {
     # MOFA2 has an issue running on Mac-arm64
+    # skipping on Bioconductor because of basilisk issues
+    skip_on_bioc()
     skip_on_os("mac")
     skip_if(grepl("arm64", R.version$platform) &&
         Sys.info()[["sysname"]] == "Darwin")

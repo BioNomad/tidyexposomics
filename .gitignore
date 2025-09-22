@@ -1,8 +1,13 @@
-.Rproj.user
+# RStudio project files
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-.Rproj.user/
+*.Rproj
+
+# Logs
 omnipathr-log/*.log
+
+# Build artifacts
 /doc/
 /Meta/

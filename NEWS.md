@@ -1,4 +1,4 @@
-# tidyexposomics 0.99.5
+# tidyexposomics 0.99.5/0.99.6
 
 * Removed .Rproj tracking.
 * Updated testing strategy.
