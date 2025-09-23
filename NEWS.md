@@ -1,6 +1,6 @@
-# tidyexposomics 0.99.5/0.99.6
+# tidyexposomics 0.99.5/0.99.6/0.99.7
 
-* Removed .Rproj tracking.
+* Removed .Rproj tracking, .gitignore lines.
 * Updated testing strategy.
 * Modified dependency to 4.5.0.
 * Added vignette chunk labels.
