@@ -69,10 +69,11 @@
 #' @importFrom ggpubr theme_pubr
 #' @export
 plot_sensitivity_summary <- function(
-    exposomicset,
-    stability_score_thresh = NULL,
-    stability_metric = "stability_score",
-    title = "Distribution of Stability Scores") {
+  exposomicset,
+  stability_score_thresh = NULL,
+  stability_metric = "stability_score",
+  title = "Distribution of Stability Scores"
+) {
     # require(ggplot2)
     # require(patchwork)
     .check_suggested(pkg = "forcats")

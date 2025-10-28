@@ -58,19 +58,20 @@
 #' @importFrom tibble enframe
 #' @export
 extract_results_excel <- function(
-    exposomicset,
-    file = "tidyexposomics_results.xlsx",
-    result_types = c(
-        "correlation",
-        "association",
-        "differential_analysis",
-        "multiomics_integration",
-        "network",
-        "enrichment",
-        "exposure_summary",
-        "pipeline"
-    ),
-    include_empty_tabs = FALSE) {
+  exposomicset,
+  file = "tidyexposomics_results.xlsx",
+  result_types = c(
+      "correlation",
+      "association",
+      "differential_analysis",
+      "multiomics_integration",
+      "network",
+      "enrichment",
+      "exposure_summary",
+      "pipeline"
+  ),
+  include_empty_tabs = FALSE
+) {
     .check_suggested(pkg = "openxlsx")
     stopifnot("MultiAssayExperiment" %in% class(exposomicset))
 

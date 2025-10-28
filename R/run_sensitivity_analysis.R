@@ -80,22 +80,23 @@
 #'
 #' @export
 run_sensitivity_analysis <- function(
-    exposomicset,
-    base_formula,
-    abundance_col = "counts",
-    methods = c("limma_trend", "limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
-    scaling_methods = c("none", "TMM", "quantile"),
-    contrasts = NULL,
-    covariates_to_remove = NULL,
-    pval_col = "adj.P.Val",
-    logfc_col = "logFC",
-    pval_threshold = 0.05,
-    logFC_threshold = log2(1),
-    score_thresh = NULL,
-    score_quantile = 0.9,
-    stability_metric = "stability_score",
-    action = "add",
-    bootstrap_n = 1) {
+  exposomicset,
+  base_formula,
+  abundance_col = "counts",
+  methods = c("limma_trend", "limma_voom", "DESeq2", "edgeR_quasi_likelihood"),
+  scaling_methods = c("none", "TMM", "quantile"),
+  contrasts = NULL,
+  covariates_to_remove = NULL,
+  pval_col = "adj.P.Val",
+  logfc_col = "logFC",
+  pval_threshold = 0.05,
+  logFC_threshold = log2(1),
+  score_thresh = NULL,
+  score_quantile = 0.9,
+  stability_metric = "stability_score",
+  action = "add",
+  bootstrap_n = 1
+) {
     model_list <- .build_model_list(base_formula, covariates_to_remove)
 
     if (bootstrap_n > 0) {
@@ -137,9 +138,6 @@ run_sensitivity_analysis <- function(
     )
 
     # Check if stability_metric is valid
-    # if (!stability_metric %in% colnames(feature_stability_df)) {
-    #   stop(paste0("Invalid stability_metric: '", stability_metric, "'."))
-    # }
     if (!stability_metric %in% colnames(feature_stability_df)) {
         stop(sprintf("Invalid stability_metric: '%s'.", stability_metric))
     }
@@ -223,12 +221,13 @@ run_sensitivity_analysis <- function(
 }
 
 .run_sensitivity_grid <- function(
-    exposomicset,
-    model_list,
-    methods,
-    scalings,
-    abundance_col,
-    contrasts) {
+  exposomicset,
+  model_list,
+  methods,
+  scalings,
+  abundance_col,
+  contrasts
+) {
     grid <- expand.grid(
         model_name = names(model_list),
         method = methods,
@@ -249,16 +248,6 @@ run_sensitivity_analysis <- function(
                 SummarizedExperiment::assay(exp, abundance_col), 0
             )
         }
-
-        # # Use the quiet run function to suppress messages and warnings
-        # res <- .quiet_run_da_pipeline(
-        #       exp,
-        #       formula,
-        #       method,
-        #       scaling,
-        #       abundance_col,
-        #       contrasts
-        #     )
 
         res <- .run_da_pipeline(
             exp,
@@ -284,12 +273,13 @@ run_sensitivity_analysis <- function(
 }
 
 .run_da_pipeline <- function(
-    se,
-    formula,
-    method,
-    scaling,
-    abundance_col,
-    contrasts) {
+  se,
+  formula,
+  method,
+  scaling,
+  abundance_col,
+  contrasts
+) {
     invisible(.run_se_differential_abundance(
         se = se,
         formula = formula,
@@ -301,9 +291,10 @@ run_sensitivity_analysis <- function(
 }
 
 .summarize_stable_features <- function(
-    feature_stability_df,
-    score_thresh,
-    stability_metric) {
+  feature_stability_df,
+  score_thresh,
+  stability_metric
+) {
     sum <- feature_stability_df |>
         dplyr::group_by(exp_name) |>
         dplyr::reframe(
@@ -338,8 +329,9 @@ run_sensitivity_analysis <- function(
 
 # build list of model formulas by removing covariates from base model
 .build_model_list <- function(
-    base_formula,
-    covariates_to_remove) {
+  base_formula,
+  covariates_to_remove
+) {
     base_terms <- all.vars(base_formula)
     model_list <- list("full model" = base_formula)
     if (!is.null(covariates_to_remove)) {

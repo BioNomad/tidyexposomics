@@ -66,15 +66,16 @@
 #'
 #' @export
 run_factor_overlap <- function(
-    exposomicset,
-    robust = TRUE,
-    stability_score = NULL,
-    score_col = "stability_score",
-    pval_thresh = 0.05,
-    logfc_thresh = log2(1.5),
-    pval_col = "padj",
-    logfc_col = "logFC",
-    action = "add") {
+  exposomicset,
+  robust = TRUE,
+  stability_score = NULL,
+  score_col = "stability_score",
+  pval_thresh = 0.05,
+  logfc_thresh = log2(1.5),
+  pval_col = "padj",
+  logfc_col = "logFC",
+  action = "add"
+) {
     # Ensure top features exist
     if (!"top_factor_features" %in% names(MultiAssayExperiment::metadata(
         exposomicset

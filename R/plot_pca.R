@@ -51,10 +51,11 @@
 #'
 #' @export
 plot_pca <- function(
-    exposomicset,
-    feature_col = "#00a9b2",
-    sample_col = "#8a4f77",
-    sample_outlier_col = "firebrick") {
+  exposomicset,
+  feature_col = "#00a9b2",
+  sample_col = "#8a4f77",
+  sample_outlier_col = "firebrick"
+) {
     .check_suggested(pkg = "patchwork")
 
     # Check if the required metadata is present

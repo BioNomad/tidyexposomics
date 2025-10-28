@@ -46,8 +46,9 @@
 #' @importFrom purrr pluck
 #' @export
 plot_sample_clusters <- function(
-    exposomicset,
-    exposure_cols = NULL) {
+  exposomicset,
+  exposure_cols = NULL
+) {
     # check for suggested packages
     .check_suggested(pkg = "tidyHeatmap")
     .check_suggested(pkg = "circlize")

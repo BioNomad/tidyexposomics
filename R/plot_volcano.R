@@ -70,19 +70,20 @@
 #' @importFrom ggpubr theme_pubr
 #' @export
 plot_volcano <- function(
-    exposomicset,
-    pval_col = "adj.P.Val",
-    pval_thresh = 0.05,
-    logFC_col = "logFC",
-    logFC_thresh = log2(1.5),
-    plot_n_sig = TRUE,
-    top_n_label = NULL,
-    features_to_label = NULL,
-    feature_col = "feature",
-    xlab = expression(Log[2] * "FC"),
-    ylab = expression(-Log[10] * "P"),
-    title = "Volcano Plot of Differential Abundance",
-    nrow = 2) {
+  exposomicset,
+  pval_col = "adj.P.Val",
+  pval_thresh = 0.05,
+  logFC_col = "logFC",
+  logFC_thresh = log2(1.5),
+  plot_n_sig = TRUE,
+  top_n_label = NULL,
+  features_to_label = NULL,
+  feature_col = "feature",
+  xlab = expression(Log[2] * "FC"),
+  ylab = expression(-Log[10] * "P"),
+  title = "Volcano Plot of Differential Abundance",
+  nrow = 2
+) {
     # require(ggplot2)
 
     # Check to see if Differential Abundance Results are available

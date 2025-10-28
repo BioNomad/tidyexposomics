@@ -32,14 +32,15 @@
 #'
 #' @export
 filter_omics <- function(
-    exposomicset,
-    method = c("variance", "expression"),
-    assays = NULL,
-    assay_name = 1,
-    min_var = 1e-5,
-    min_value = 5,
-    min_prop = 0.7,
-    verbose = TRUE) {
+  exposomicset,
+  method = c("variance", "expression"),
+  assays = NULL,
+  assay_name = 1,
+  min_var = 1e-5,
+  min_value = 5,
+  min_prop = 0.7,
+  verbose = TRUE
+) {
     method <- match.arg(method)
     if (!inherits(exposomicset, "MultiAssayExperiment")) {
         stop("Input must be a MultiAssayExperiment object.")

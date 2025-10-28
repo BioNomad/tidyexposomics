@@ -105,37 +105,38 @@
 #' @import fenr
 #' @export
 run_enrichment <- function(
-    exposomicset,
-    feature_type = c(
-        "degs",
-        "degs_robust",
-        "omics",
-        "factor_features",
-        "degs_cor",
-        "omics_cor",
-        "factor_features_cor"
-    ),
-    score_col = "stability_score",
-    score_threshold = NULL,
-    variable_map = NULL,
-    factor_type = c(
-        "common_top_factor_features",
-        "top_factor_features"
-    ),
-    feature_col = "feature",
-    deg_pval_col = "adj.P.Val",
-    deg_pval_threshold = 0.05,
-    deg_logfc_col = "logFC",
-    deg_logfc_threshold = log2(1.5),
-    db = c("GO", "KEGG", "Reactome"),
-    species = NULL,
-    fenr_col = "gene_symbol",
-    padj_method = "fdr",
-    pval_thresh = 0.1,
-    min_set = 3,
-    max_set = 800,
-    clustering_approach = "diana",
-    action = "add") {
+  exposomicset,
+  feature_type = c(
+      "degs",
+      "degs_robust",
+      "omics",
+      "factor_features",
+      "degs_cor",
+      "omics_cor",
+      "factor_features_cor"
+  ),
+  score_col = "stability_score",
+  score_threshold = NULL,
+  variable_map = NULL,
+  factor_type = c(
+      "common_top_factor_features",
+      "top_factor_features"
+  ),
+  feature_col = "feature",
+  deg_pval_col = "adj.P.Val",
+  deg_pval_threshold = 0.05,
+  deg_logfc_col = "logFC",
+  deg_logfc_threshold = log2(1.5),
+  db = c("GO", "KEGG", "Reactome"),
+  species = NULL,
+  fenr_col = "gene_symbol",
+  padj_method = "fdr",
+  pval_thresh = 0.1,
+  min_set = 3,
+  max_set = 800,
+  clustering_approach = "diana",
+  action = "add"
+) {
     # require(fenr)
     db <- match.arg(db)
     factor_type <- match.arg(factor_type)
@@ -297,11 +298,12 @@ run_enrichment <- function(
 #' @import fenr
 #' @keywords internal
 .run_fenr <- function(
-    selected_genes,
-    universe_genes,
-    db = c("GO", "KEGG", "Reactome"),
-    species = NULL,
-    fenr_col = "gene_symbol") {
+  selected_genes,
+  universe_genes,
+  db = c("GO", "KEGG", "Reactome"),
+  species = NULL,
+  fenr_col = "gene_symbol"
+) {
     # require(fenr)
 
     db <- match.arg(db)
@@ -451,25 +453,26 @@ run_enrichment <- function(
 #' @importFrom stats p.adjust
 #' @import fenr
 .run_feature_enr <- function(
-    exposomicset,
-    feature_type,
-    db,
-    fdata,
-    species,
-    fenr_col,
-    feature_col,
-    deg_pval_col,
-    deg_pval_threshold,
-    deg_logfc_col,
-    deg_logfc_threshold,
-    score_col,
-    score_threshold,
-    factor_type,
-    variable_map,
-    padj_method,
-    pval_thresh,
-    min_set,
-    max_set) {
+  exposomicset,
+  feature_type,
+  db,
+  fdata,
+  species,
+  fenr_col,
+  feature_col,
+  deg_pval_col,
+  deg_pval_threshold,
+  deg_logfc_col,
+  deg_logfc_threshold,
+  score_col,
+  score_threshold,
+  factor_type,
+  variable_map,
+  padj_method,
+  pval_thresh,
+  min_set,
+  max_set
+) {
     # Get unique experiments
     exps <- names(MultiAssayExperiment::experiments(exposomicset))
 
@@ -643,25 +646,26 @@ run_enrichment <- function(
 #' @importFrom stats p.adjust
 #' @import fenr
 .run_feature_cor_enr <- function(
-    exposomicset,
-    feature_type,
-    db,
-    fdata,
-    species,
-    fenr_col,
-    feature_col,
-    deg_pval_col,
-    deg_pval_threshold,
-    deg_logfc_col,
-    deg_logfc_threshold,
-    score_col,
-    score_threshold,
-    factor_type,
-    variable_map,
-    padj_method,
-    pval_thresh,
-    min_set,
-    max_set) {
+  exposomicset,
+  feature_type,
+  db,
+  fdata,
+  species,
+  fenr_col,
+  feature_col,
+  deg_pval_col,
+  deg_pval_threshold,
+  deg_logfc_col,
+  deg_logfc_threshold,
+  score_col,
+  score_threshold,
+  factor_type,
+  variable_map,
+  padj_method,
+  pval_thresh,
+  min_set,
+  max_set
+) {
     # Set the categories and experiment names to loop through
     cor_table <- exposomicset@metadata |>
         purrr::pluck("correlation") |>
@@ -845,7 +849,7 @@ run_enrichment <- function(
         .cluster_mat(clustering_approach = clustering_approach) |>
         (\(x) data.frame(
             term_name = names(x),
-            go_group = paste0("Group_", as.numeric(x))
+            go_group = paste0("Group ", as.numeric(x))
         ))()
 
     if (is.null(go_groups) || nrow(go_groups) == 0) {

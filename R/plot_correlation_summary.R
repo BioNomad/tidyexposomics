@@ -50,23 +50,24 @@
 #' @importFrom ggplot2 ggplot aes geom_bar geom_segment labs theme element_text
 #' @export
 plot_correlation_summary <- function(
-    exposomicset,
-    feature_type = c(
-        "degs",
-        "omics",
-        "factors",
-        "factor_features",
-        "exposures",
-        "pcs"
-    ),
-    mode = c(
-        "top_exposures",
-        "top_features",
-        "exposure_category",
-        "assay",
-        "summary"
-    ),
-    top_n = 15) {
+  exposomicset,
+  feature_type = c(
+      "degs",
+      "omics",
+      "factors",
+      "factor_features",
+      "exposures",
+      "pcs"
+  ),
+  mode = c(
+      "top_exposures",
+      "top_features",
+      "exposure_category",
+      "assay",
+      "summary"
+  ),
+  top_n = 15
+) {
     .check_suggested(pkg = "janitor")
     .check_suggested(pkg = "forcats")
     .check_suggested(pkg = "patchwork")

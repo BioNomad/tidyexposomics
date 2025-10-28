@@ -19,8 +19,7 @@
 #' @param correction_method Method for p-value adjustment (default: `"fdr"`).
 #' @param action If `"add"` (default), saves results to metadata;
 #' else returns results as list.
-#' @param min_genes Minimum number of genes required to compute GO PCs.
-#' @param feature_col If using GO PCs, the column in `rowData`
+#' @param feature_col The column in `rowData`
 #' for matching gene symbols or IDs.
 #' @param mirna_assays Optional character vector of assays to exclude
 #' when extracting GO terms.
@@ -53,19 +52,19 @@
 #' @importFrom rlang .data
 #' @export
 run_association <- function(
-    exposomicset,
-    outcome,
-    source = c("omics", "exposures", "factors"),
-    covariates = NULL,
-    feature_set = NULL,
-    log_trans = TRUE,
-    top_n = NULL,
-    family = "gaussian",
-    correction_method = "fdr",
-    action = "add",
-    min_genes = 10,
-    feature_col = NULL,
-    mirna_assays = NULL) {
+  exposomicset,
+  outcome,
+  source = c("omics", "exposures", "factors"),
+  covariates = NULL,
+  feature_set = NULL,
+  log_trans = TRUE,
+  top_n = NULL,
+  family = "gaussian",
+  correction_method = "fdr",
+  action = "add",
+  feature_col = NULL,
+  mirna_assays = NULL
+) {
     # Validate inputs
     source <- match.arg(source)
 
@@ -87,13 +86,6 @@ run_association <- function(
             feature_set
         ),
         factors = .extract_latent_factors(exposomicset)
-        # go_pcs = .extract_go_pcs(exposomicset,
-        #     geneset = feature_set,
-        #     covariates,
-        #     min_genes = min_genes,
-        #     feature_col = feature_col,
-        #     mirna_assays = mirna_assays
-        # )
     )
 
     # create the model data
@@ -175,9 +167,7 @@ run_association <- function(
         }
 
 
-        if (source %in% c("exposures", "factors")) {
-
-        }
+        if (source %in% c("exposures", "factors")) {}
         # Compute R^2
         model_filtered$r2 <- .calc_r2(
             model,
@@ -185,12 +175,16 @@ run_association <- function(
             family = family,
             outcome = outcome
         )$r2
-        model_filtered$adj_r2 <- .calc_r2(
-            model,
-            model_data,
-            family = family,
-            outcome = outcome
-        )$adj_r2
+
+        if (!is.null(covariates)) {
+            model_filtered$adj_r2 <- .calc_r2(
+                model,
+                model_data,
+                family = family,
+                outcome = outcome
+            )$adj_r2
+        }
+
         return(model_filtered)
     }) |>
         dplyr::mutate(
@@ -253,7 +247,6 @@ run_association <- function(
                     top_n = top_n,
                     family = family,
                     correction_method = correction_method,
-                    min_genes = min_genes,
                     feature_col = feature_col,
                     mirna_assays = mirna_assays
                 ),
@@ -438,10 +431,11 @@ run_association <- function(
 #' @keywords internal
 #' @noRd
 .calc_r2 <- function(
-    model,
-    model_data,
-    family = NULL,
-    outcome = NULL) {
+  model,
+  model_data,
+  family = NULL,
+  outcome = NULL
+) {
     fam <- if (is.null(family)) stats::family(model)$family else family
     n <- nrow(model_data)
     p <- length(stats::coef(model)) # includes intercept
@@ -471,23 +465,6 @@ run_association <- function(
     list(r2 = NA_real_, adj_r2 = NA_real_)
 }
 
-# .calc_r2 <- function(
-#     model,
-#     model_data) {
-#     # Compute R-squared and adjusted R-squared
-#     n <- nrow(model_data)
-#     # includes intercept
-#     p <- length(coef(model))
-#
-#     # calculate the r2 and adj r2
-#     r2 <- 1 - model$deviance / model$null.deviance
-#     adj_r2 <- 1 - ((n - 1) / (n - p)) * (1 - r2)
-#
-#     return(list(
-#         r2 = r2,
-#         adj_r2 = adj_r2
-#     ))
-# }
 
 # --- Annotate the Model Results By Model Source ---------
 #' Annotate association results based on feature source
@@ -530,9 +507,10 @@ run_association <- function(
 #' @importFrom MultiAssayExperiment experiments metadata
 #' @importFrom SummarizedExperiment rowData
 .annotate_results_by_source <- function(
-    results,
-    source,
-    exposomicset) {
+  results,
+  source,
+  exposomicset
+) {
     if (source %in% c("omics", "factors")) {
         exp_names <- names(MultiAssayExperiment::experiments(exposomicset)) |>
             (\(chr) gsub(" ", "_", chr))()

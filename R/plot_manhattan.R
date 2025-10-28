@@ -76,21 +76,22 @@
 #'
 #' @export
 plot_manhattan <- function(
-    exposomicset,
-    pval_thresh = 0.05,
-    feature_col = "term",
-    alpha = 0.5,
-    min_per_cat = 1,
-    vars_to_label = NULL,
-    sig_color = "magenta2",
-    non_sig_cols = c("grey25", "grey75"),
-    pval_thresh_line_col = "grey25",
-    panel_sizes = c(1, 1, 1, 1, 1),
-    linetype = "dashed",
-    facet_cols = NULL,
-    label_size = 3.5,
-    facet_angle = 90,
-    facet_text_face = "bold.italic") {
+  exposomicset,
+  pval_thresh = 0.05,
+  feature_col = "term",
+  alpha = 0.5,
+  min_per_cat = 1,
+  vars_to_label = NULL,
+  sig_color = "magenta2",
+  non_sig_cols = c("grey25", "grey75"),
+  pval_thresh_line_col = "grey25",
+  panel_sizes = c(1, 1, 1, 1, 1),
+  linetype = "dashed",
+  facet_cols = NULL,
+  label_size = 3.5,
+  facet_angle = 90,
+  facet_text_face = "bold.italic"
+) {
     # require(ggplot2)
     .check_suggested(pkg = "forcats")
     .check_suggested(pkg = "ggh4x")

@@ -63,17 +63,18 @@
 #'
 #' @export
 plot_association <- function(
-    exposomicset,
-    source = c("omics", "exposures", "factors", "go_pcs"),
-    terms = NULL,
-    filter_col = "p.value",
-    filter_thresh = 0.05,
-    direction_filter = "all",
-    add_r2_tile = TRUE,
-    r2_col = "adj_r2",
-    facet = FALSE,
-    nrow = 1,
-    subtitle = NULL) {
+  exposomicset,
+  source = c("omics", "exposures", "factors", "go_pcs"),
+  terms = NULL,
+  filter_col = "p.value",
+  filter_thresh = 0.05,
+  direction_filter = "all",
+  add_r2_tile = TRUE,
+  r2_col = "adj_r2",
+  facet = FALSE,
+  nrow = 1,
+  subtitle = NULL
+) {
     requireNamespace("ggplot2")
     requireNamespace("dplyr")
     requireNamespace("tidyr")

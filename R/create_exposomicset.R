@@ -37,10 +37,11 @@
 #'
 #' @export
 create_exposomicset <- function(
-    codebook,
-    exposure,
-    omics,
-    row_data = NULL) {
+  codebook,
+  exposure,
+  omics,
+  row_data = NULL
+) {
     # Validate inputs
     if (!is.data.frame(exposure)) {
         stop("The 'exposure' argument must be a data frame.")

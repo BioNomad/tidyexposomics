@@ -44,11 +44,12 @@
 #'
 #' @export
 run_pipeline_summary <- function(
-    exposomicset,
-    show_index = TRUE,
-    console_print = TRUE,
-    diagram_print = FALSE,
-    include_notes = TRUE) {
+  exposomicset,
+  show_index = TRUE,
+  console_print = TRUE,
+  diagram_print = FALSE,
+  include_notes = TRUE
+) {
     # Validate metadata
     summary_md <- MultiAssayExperiment::metadata(exposomicset)$summary
     if (!("steps" %in% names(summary_md))) {
@@ -77,7 +78,7 @@ run_pipeline_summary <- function(
 
     # Optional console output
     if (console_print) {
-        message(labeled_steps, sep = "\n")
+        message(paste(labeled_steps, collapse = "\n"))
     }
 
     if (diagram_print) {

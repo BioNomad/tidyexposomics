@@ -44,13 +44,14 @@
 #' @importFrom rlang .data
 #' @export
 run_differential_abundance <- function(
-    exposomicset,
-    formula,
-    abundance_col = "counts",
-    method = "limma_trend",
-    contrasts = NULL,
-    scaling_method = "none",
-    action = "add") {
+  exposomicset,
+  formula,
+  abundance_col = "counts",
+  method = "limma_trend",
+  contrasts = NULL,
+  scaling_method = "none",
+  action = "add"
+) {
     message("Running differential abundance testing.")
     .check_suggested(pkg = "edgeR")
     .check_suggested(pkg = "limma")
@@ -141,12 +142,13 @@ run_differential_abundance <- function(
 #' @keywords internal
 #' @noRd
 .run_limma_trend <- function(
-    se,
-    formula,
-    abundance_col,
-    contrasts = NULL,
-    scaling_method = "none",
-    robust = TRUE) {
+  se,
+  formula,
+  abundance_col,
+  contrasts = NULL,
+  scaling_method = "none",
+  robust = TRUE
+) {
     .check_suggested("limma")
 
     mat <- SummarizedExperiment::assay(se, abundance_col)

@@ -30,10 +30,11 @@
 #'
 #' @export
 make_example_data <- function(
-    n_samples = 12,
-    n_proteins = 80,
-    use_batch = FALSE,
-    return_mae = FALSE) {
+  n_samples = 12,
+  n_proteins = 80,
+  use_batch = FALSE,
+  return_mae = FALSE
+) {
     sample_ids <- paste0("S", seq_len(n_samples))
 
     # Gene sets with some known function

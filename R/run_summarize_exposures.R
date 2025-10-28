@@ -52,9 +52,10 @@
 #' @importFrom purrr pluck
 #' @export
 run_summarize_exposures <- function(
-    exposomicset,
-    exposure_cols = NULL,
-    action = "add") {
+  exposomicset,
+  exposure_cols = NULL,
+  action = "add"
+) {
     # library(dplyr)
     # library(tidyr)
 

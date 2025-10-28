@@ -65,15 +65,16 @@
 #'
 #' @export
 run_exposure_impact <- function(
-    exposomicset,
-    feature_type = c(
-        "degs",
-        "omics",
-        "factor_features"
-    ),
-    pval_col = "adj.P.Val",
-    pval_thresh = 0.1,
-    action = c("add", "get")) {
+  exposomicset,
+  feature_type = c(
+      "degs",
+      "omics",
+      "factor_features"
+  ),
+  pval_col = "adj.P.Val",
+  pval_thresh = 0.1,
+  action = c("add", "get")
+) {
     .check_suggested(pkg = "tidygraph")
 
     feature_type <- match.arg(feature_type)

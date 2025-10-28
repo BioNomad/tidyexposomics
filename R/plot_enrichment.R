@@ -123,54 +123,55 @@
 #'
 #' @export
 plot_enrichment <- function(
-    exposomicset,
-    feature_type = c(
-        "degs",
-        "degs_robust",
-        "omics",
-        "factor_features",
-        "degs_cor",
-        "omics_cor",
-        "factor_features_cor"
-    ),
-    plot_type = c(
-        "dotplot",
-        "cnet",
-        "network",
-        "heatmap",
-        "summary"
-    ),
-    # Dotplot arguments
-    top_n = 5,
-    n_per_group = 5,
-    add_top_genes = TRUE,
-    top_n_genes = 5,
-    # Heatmap arguments
-    heatmap_fill = TRUE,
-    logfc_thresh = log2(1),
-    pval_col = "P.Value",
-    pval_thresh = 0.05,
-    score_metric = "stability_score",
-    score_thresh = NULL,
-    # Network arguments
-    overlap_thresh = 0.2,
-    node_radius = 0.2,
-    pie_colors = NULL,
-    label_top_n = NULL,
-    label_colour = "black",
-    net_facet_by = NULL,
-    # Cnet arguments
-    max_terms = 30,
-    node_size = 1,
-    term_node_correction = 0.2,
-    gene_node_correction = 3,
-    # Shared arguments
-    go_groups = NULL,
-    layout_algo = "fr",
-    edge_alpha = 0.3,
-    label_size = 3,
-    feature_col = "feature",
-    logfc_col = "logFC") {
+  exposomicset,
+  feature_type = c(
+      "degs",
+      "degs_robust",
+      "omics",
+      "factor_features",
+      "degs_cor",
+      "omics_cor",
+      "factor_features_cor"
+  ),
+  plot_type = c(
+      "dotplot",
+      "cnet",
+      "network",
+      "heatmap",
+      "summary"
+  ),
+  # Dotplot arguments
+  top_n = 5,
+  n_per_group = 5,
+  add_top_genes = TRUE,
+  top_n_genes = 5,
+  # Heatmap arguments
+  heatmap_fill = TRUE,
+  logfc_thresh = log2(1),
+  pval_col = "P.Value",
+  pval_thresh = 0.05,
+  score_metric = "stability_score",
+  score_thresh = NULL,
+  # Network arguments
+  overlap_thresh = 0.2,
+  node_radius = 0.2,
+  pie_colors = NULL,
+  label_top_n = NULL,
+  label_colour = "black",
+  net_facet_by = NULL,
+  # Cnet arguments
+  max_terms = 30,
+  node_size = 1,
+  term_node_correction = 0.2,
+  gene_node_correction = 3,
+  # Shared arguments
+  go_groups = NULL,
+  layout_algo = "fr",
+  edge_alpha = 0.3,
+  label_size = 3,
+  feature_col = "feature",
+  logfc_col = "logFC"
+) {
     # Check that the user ran the enrichment analysis
     if (!"enrichment" %in% names(MultiAssayExperiment::metadata(exposomicset))) {
         stop("Please run `run_enrichment` first.")
@@ -276,19 +277,20 @@ plot_enrichment <- function(
 #' @importFrom ggplot2 ggplot aes geom_point labs scale_color_gradient
 #' facet_grid theme element_text
 #' @importFrom dplyr filter group_by mutate reframe arrange slice_head
-#' ungroup inner_join pull
+#' ungroup inner_join pull bind_cols
 #' @importFrom tibble rownames_to_column
 #' @importFrom purrr map
 #' @importFrom ggpubr theme_pubr rotate_x_text
 #'
 #' @keywords internal
 .plot_dotplot_enrichment <- function(
-    enr_res,
-    top_n,
-    n_per_group,
-    add_top_genes,
-    top_n_genes,
-    go_groups) {
+  enr_res,
+  top_n,
+  n_per_group,
+  add_top_genes,
+  top_n_genes,
+  go_groups
+) {
     # require(ggplot2)
     .check_suggested(pkg = "forcats")
 
@@ -334,7 +336,7 @@ plot_enrichment <- function(
                     collapse = "\n"
                 )
             })()) |>
-        as.data.frame() |>
+        bind_cols() |>
         t() |>
         as.data.frame() |>
         setNames("gene_col") |>
@@ -466,18 +468,19 @@ plot_enrichment <- function(
 #'
 #' @keywords internal
 .plot_heatmap_enrichment <- function(
-    enr_res = enr_res,
-    exposomicset = exposomicset,
-    feature_type = feature_type,
-    score_metric = score_metric,
-    score_thresh = score_thresh,
-    go_groups = go_groups,
-    heatmap_fill = heatmap_fill,
-    feature_col = feature_col,
-    logfc_col = logfc_col,
-    logfc_thresh = logfc_thresh,
-    pval_col = pval_col,
-    pval_thresh = pval_thresh) {
+  enr_res = enr_res,
+  exposomicset = exposomicset,
+  feature_type = feature_type,
+  score_metric = score_metric,
+  score_thresh = score_thresh,
+  go_groups = go_groups,
+  heatmap_fill = heatmap_fill,
+  feature_col = feature_col,
+  logfc_col = logfc_col,
+  logfc_thresh = logfc_thresh,
+  pval_col = pval_col,
+  pval_thresh = pval_thresh
+) {
     .check_suggested("forcats")
     if (nrow(enr_res) < 1) {
         return(NULL)
@@ -704,18 +707,19 @@ plot_enrichment <- function(
 #'
 #' @keywords internal
 .plot_network_enrichment <- function(
-    enr_res = enr_res,
-    feature_type = feature_type,
-    go_groups = go_groups,
-    overlap_thresh = overlap_thresh,
-    layout_algo = layout_algo,
-    node_radius = node_radius,
-    edge_alpha = edge_alpha,
-    pie_colors = pie_colors,
-    label_top_n = label_top_n,
-    label_size = label_size,
-    label_colour = label_colour,
-    net_facet_by = net_facet_by) {
+  enr_res = enr_res,
+  feature_type = feature_type,
+  go_groups = go_groups,
+  overlap_thresh = overlap_thresh,
+  layout_algo = layout_algo,
+  node_radius = node_radius,
+  edge_alpha = edge_alpha,
+  pie_colors = pie_colors,
+  label_top_n = label_top_n,
+  label_size = label_size,
+  label_colour = label_colour,
+  net_facet_by = net_facet_by
+) {
     # require(igraph)
     # require(tidygraph)
     # require(ggraph)
@@ -934,19 +938,20 @@ plot_enrichment <- function(
 #'
 #' @keywords internal
 .plot_cnet_enrichment <- function(
-    enr_res,
-    exposomicset,
-    feature_type,
-    layout_algo = "fr",
-    go_groups = NULL,
-    max_terms = 30,
-    edge_alpha = 0.5,
-    node_size = 1,
-    label_size = 3,
-    term_node_correction = 0.2,
-    gene_node_correction = 3,
-    feature_col = "feature_clean",
-    logfc_col = "logFC") {
+  enr_res,
+  exposomicset,
+  feature_type,
+  layout_algo = "fr",
+  go_groups = NULL,
+  max_terms = 30,
+  edge_alpha = 0.5,
+  node_size = 1,
+  label_size = 3,
+  term_node_correction = 0.2,
+  gene_node_correction = 3,
+  feature_col = "feature_clean",
+  logfc_col = "logFC"
+) {
     if (nrow(enr_res) < 1) {
         return(NULL)
     }
@@ -1178,7 +1183,8 @@ plot_enrichment <- function(
 #'
 #' @keywords internal
 .plot_summary_enrichment <- function(
-    enr_res) {
+  enr_res
+) {
     if (nrow(enr_res) < 1) {
         return(NULL)
     }
@@ -1348,8 +1354,6 @@ plot_enrichment <- function(
                 patchwork::plot_layout(widths = c(1, 3.5, 2), guides = "collect")
         }
     }
-
-
 
 
     # --- Venn diagram of term overlap

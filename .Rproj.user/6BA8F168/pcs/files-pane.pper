@@ -2,7 +2,7 @@
     "sortOrder": [
         {
             "columnIndex": 4,
-            "ascending": false
+            "ascending": true
         },
         {
             "columnIndex": 2,

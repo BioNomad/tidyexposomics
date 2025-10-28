@@ -1,6 +1,6 @@
 Package: tidyexposomics
 Title: Integrated Exposure-Omics Analysis Powered by Tidy Principles
-Version: 0.99.7
+Version: 0.99.8
 Authors@R: 
     c(
     person(given = "Jason",
@@ -53,6 +53,7 @@ biocViews:
     Visualization, 
     WorkflowStep
 Imports:
+    BiocFileCache,
     broom,
     cluster,
     dplyr,
@@ -70,7 +71,6 @@ Imports:
     MASS,
     methods,
     mixOmics,
-    MultiAssayExperiment,
     naniar,
     nipalsMCIA,
     purrr,
@@ -88,7 +88,8 @@ Imports:
     tidyr,
     utils
 Depends:
-    R (>= 4.5.0)
+    R (>= 4.5.0),
+    MultiAssayExperiment
 Suggests: 
     BiocStyle,
     circlize,

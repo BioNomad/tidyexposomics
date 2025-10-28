@@ -47,8 +47,9 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .update_assay_colData <- function(
-    exposomicset,
-    exp_name) {
+  exposomicset,
+  exp_name
+) {
     # Retrieve the assay
     assay <- MultiAssayExperiment::experiments(exposomicset)[[exp_name]]
 
@@ -121,8 +122,9 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .scale_multiassay <- function(
-    exposomicset,
-    log2 = FALSE) {
+  exposomicset,
+  log2 = FALSE
+) {
     message("Scaling each assay in MultiAssayExperiment.")
 
     # Check if log2 transformation is needed
@@ -165,9 +167,10 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .top_var_multiassay <- function(
-    exposomicset,
-    n = 1000,
-    assay_name = NULL) {
+  exposomicset,
+  n = 1000,
+  assay_name = NULL
+) {
     # exposomicset <- .log2_multiassay(exposomicset)
 
     # Grab the top n features based on variance
@@ -207,12 +210,13 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .run_se_differential_abundance <- function(
-    se,
-    formula,
-    abundance_col = "counts",
-    method = "limma_trend",
-    scaling_method = "none",
-    contrasts = NULL) {
+  se,
+  formula,
+  abundance_col = "counts",
+  method = "limma_trend",
+  scaling_method = "none",
+  contrasts = NULL
+) {
     # Confirm there are no negative values
     if (min(SummarizedExperiment::assay(se, abundance_col)) < 0) {
         message("Negative values detected. Adding pseudocount to all values..")
@@ -296,10 +300,11 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .calculate_feature_stability <- function(
-    sensitivity_df,
-    pval_col = "adj.P.Val",
-    logfc_col = "logFC",
-    pval_threshold = 0.05) {
+  sensitivity_df,
+  pval_col = "adj.P.Val",
+  logfc_col = "logFC",
+  pval_threshold = 0.05
+) {
     # Extract sensitivity analysis results
     sensitivity_df <- sensitivity_df
 
@@ -436,13 +441,14 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .cluster_mat <- function(
-    data_matrix,
-    dist_method = NULL,
-    cluster_method = "ward.D",
-    clustering_approach = "gap",
-    gap_stat_k_max = 20,
-    gap_stat_B = 50,
-    density_quantile = 0.90) {
+  data_matrix,
+  dist_method = NULL,
+  cluster_method = "ward.D",
+  clustering_approach = "gap",
+  gap_stat_k_max = 20,
+  gap_stat_B = 50,
+  density_quantile = 0.90
+) {
     # # Determine appropriate distance metric
     # if (is.null(dist_method)) {
     #   if (all(sapply(data_matrix, is.numeric))) {
@@ -555,7 +561,8 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .check_suggested <- function(
-    pkg, reason = NULL, call_stop = TRUE) {
+  pkg, reason = NULL, call_stop = TRUE
+) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
         msg <- paste0(
             "Please install '", pkg, "'",
@@ -645,17 +652,18 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @importFrom scales alpha
 #' @noRd
 .build_ggraph_plot <- function(
-    g,
-    node_color_var,
-    node_colors,
-    label,
-    facet_var,
-    include_stats,
-    fg_text_colour,
-    foreground,
-    alpha,
-    size_lab,
-    color_lab) {
+  g,
+  node_color_var,
+  node_colors,
+  label,
+  facet_var,
+  include_stats,
+  fg_text_colour,
+  foreground,
+  alpha,
+  size_lab,
+  color_lab
+) {
     # require(ggplot2)
     # require(tidygraph)
     .check_suggested(pkg = "ggh4x")
@@ -744,10 +752,11 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
 #' @keywords internal
 #' @noRd
 .collapse_ont_terms <- function(
-    ontology_df,
-    term_ids,
-    root_level = "top",
-    assign_label = TRUE) {
+  ontology_df,
+  term_ids,
+  root_level = "top",
+  assign_label = TRUE
+) {
     # Sanitize input: fix character to list columns
     fix_rel_cols <- function(x) {
         if (!is.list(x)) strsplit(x, ";\\s*") else x

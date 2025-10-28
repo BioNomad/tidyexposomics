@@ -43,10 +43,11 @@
 #'
 #' @export
 run_pca <- function(
-    exposomicset,
-    log_trans_exp = FALSE,
-    log_trans_omics = TRUE,
-    action = "add") {
+  exposomicset,
+  log_trans_exp = FALSE,
+  log_trans_omics = TRUE,
+  action = "add"
+) {
     # Identify common samples across all data
     message("Identifying common samples.")
 
@@ -71,15 +72,18 @@ run_pca <- function(
         exposomicset
     )[common_samples, ] |>
         as.data.frame() |>
-        dplyr::select(where(is.numeric)) |>
+        dplyr::select_if(is.numeric) |>
         t() |>
         as.data.frame()
     exposure_data <- transform(exposure_data, category = "exposure")
 
+    # Remove exposures with any NA values
+    exposure_data <- exposure_data[rowSums(is.na(exposure_data)) == 0, , drop = FALSE]
+
     if (log_trans_exp) {
         exposure_data <- exposure_data |>
             dplyr::mutate(
-                dplyr::across(dplyr::where(is.numeric), ~ log2(. + abs(min(.)) + 1))
+                dplyr::across(dplyr::where(is.numeric), ~ .safe_log2(. + abs(min(.)) + 1))
             )
     }
 
@@ -104,7 +108,7 @@ run_pca <- function(
     if (log_trans_omics) {
         omics_data <- omics_data |>
             dplyr::mutate(
-                dplyr::across(dplyr::where(is.numeric), ~ log2(. + abs(min(.)) + 1))
+                dplyr::across(dplyr::where(is.numeric), ~ .safe_log2(. + abs(min(.)) + 1))
             )
     }
 
@@ -219,4 +223,24 @@ run_pca <- function(
     } else {
         stop("Invalid action. Use 'add' or 'get'.")
     }
+}
+
+
+#' Safe Log2 Transformation
+#'
+#' This helper function ensures that negative, infinite, or `NaN` values
+#' do not cause errors during log transformation. It converts all
+#' negative values to zero, replaces `Inf`/`NaN` with `NA`, and performs
+#' `log2(x + 1)` on the adjusted input.
+#'
+#' @param x A numeric vector to be log2-transformed.
+#' @return A numeric vector of the same length as `x`, with safely
+#' log2-transformed values.
+#'
+#' @noRd
+#' @keywords internal
+.safe_log2 <- function(x) {
+    x <- as.numeric(x)
+    x <- ifelse(is.infinite(x) | is.nan(x), NA, x)
+    log2(pmax(x, 0) + 1)
 }

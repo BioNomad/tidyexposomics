@@ -2,35 +2,23 @@
 % Please edit documentation in R/data_loading.R
 \name{download_dataset}
 \alias{download_dataset}
-\title{Download and load a zipped .RData file from the tidyexposomics GitHub release}
+\title{Download and cache a tidyexposomics dataset}
 \usage{
 download_dataset(
   name = c("omics_list", "fdata", "meta", "annotated_cb", "expom_1", "chebi", "ecto",
     "hpo"),
-  dest_dir = tempdir(),
   verbose = TRUE
 )
 }
 \arguments{
-\item{name}{The name of the dataset (without .zip or .RData extension).
-Valid options include: "omics_list", "fdata", "meta", "annotated_cb",
-"expom_1", "chebi", "ecto", "hpo".}
+\item{name}{Dataset name: one of "omics_list", "fdata", "meta",
+"annotated_cb", "expom_1", "chebi", "ecto", "hpo".}
 
-\item{dest_dir}{Destination directory to save
-and extract the file (default: tempdir()).}
-
-\item{verbose}{Print messages? (default: TRUE)}
+\item{verbose}{Logical; print messages.}
 }
 \value{
-Invisibly returns the loaded object.
+A list or object loaded from the cached .RData.
 }
 \description{
-Download and load a zipped .RData file from the tidyexposomics GitHub release
-}
-\examples{
-# load the example meta data
-download_dataset(
-    name = "meta"
-)
-
+Download and cache a tidyexposomics dataset
 }

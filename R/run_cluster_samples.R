@@ -222,9 +222,10 @@ run_cluster_samples <- function(exposomicset,
 #' @importFrom factoextra hcut fviz_nbclust
 #' @noRd
 .determine_k <- function(
-    dist_matrix,
-    cluster_method,
-    clustering_approach) {
+  dist_matrix,
+  cluster_method,
+  clustering_approach
+) {
     if (clustering_approach == "diana") {
         # Determine optimal k using the height difference method
         sample_cluster <- cluster::diana(as.dist(dist_matrix))

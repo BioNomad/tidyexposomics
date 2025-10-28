@@ -70,13 +70,14 @@
 #' @importFrom scales alpha
 #' @export
 plot_top_factor_features <- function(
-    exposomicset,
-    feature_col = "feature",
-    factors = NULL,
-    top_n = 5,
-    facet_cols = NULL,
-    exp_name_cols = NULL,
-    alpha = 0.5) {
+  exposomicset,
+  feature_col = "feature",
+  factors = NULL,
+  top_n = 5,
+  facet_cols = NULL,
+  exp_name_cols = NULL,
+  alpha = 0.5
+) {
     # require(ggplot2)
     .check_suggested(pkg = "ggh4x")
 

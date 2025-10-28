@@ -105,16 +105,17 @@
 #' @importFrom purrr pluck
 #' @export
 plot_exposure_impact <- function(
-    exposomicset,
-    feature_type = c("degs", "omics", "factors"),
-    min_per_group = 5,
-    facet_cols = NULL,
-    bar_cols = NULL,
-    alpha = 0.3,
-    ncol = 2,
-    nrow = 1,
-    heights = c(1, 1),
-    widths = c(2, 1)) {
+  exposomicset,
+  feature_type = c("degs", "omics", "factors"),
+  min_per_group = 5,
+  facet_cols = NULL,
+  bar_cols = NULL,
+  alpha = 0.3,
+  ncol = 2,
+  nrow = 1,
+  heights = c(1, 1),
+  widths = c(2, 1)
+) {
     # require(ggplot2)
     # require(patchwork)
     .check_suggested(pkg = "patchwork")
@@ -126,6 +127,7 @@ plot_exposure_impact <- function(
         stop("Please run `run_exposure_impact()` first.")
     }
 
+    # Extract exposure impact degree df
     exposure_impact_degree <-
         exposomicset |>
         MultiAssayExperiment::metadata() |>
@@ -165,6 +167,7 @@ plot_exposure_impact <- function(
         )
     }
 
+    # Scale centrality metrics
     centrality_heatmap_df <- exposure_impact_degree |>
         dplyr::select(
             exposure,
@@ -184,7 +187,7 @@ plot_exposure_impact <- function(
         dplyr::mutate(scaled_value = scale(value)[, 1]) |>
         dplyr::ungroup()
 
-    # create exposure order based on centrality_heatmap_df
+    # Create exposure order based on centrality_heatmap_df
     exposure_order <- centrality_heatmap_df |>
         dplyr::group_by(exposure) |>
         dplyr::summarise(avg = mean(scaled_value, na.rm = TRUE)) |>
@@ -195,6 +198,7 @@ plot_exposure_impact <- function(
     centrality_heatmap_df <- centrality_heatmap_df |>
         dplyr::mutate(exposure = factor(exposure, levels = exposure_order))
 
+    # Create the bar plot on the side
     category_bar <- centrality_heatmap_df |>
         dplyr::select(exposure, category) |>
         dplyr::distinct() |>
@@ -207,6 +211,7 @@ plot_exposure_impact <- function(
             axis.text.y = element_text(size = 10)
         )
 
+    # Create the main heatmap
     heatmap_plot <- centrality_heatmap_df |>
         mutate(metric = dplyr::case_when(
             metric == "mean_degree" ~ "Mean Degree",

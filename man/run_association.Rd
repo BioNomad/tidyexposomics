@@ -15,7 +15,6 @@ run_association(
   family = "gaussian",
   correction_method = "fdr",
   action = "add",
-  min_genes = 10,
   feature_col = NULL,
   mirna_assays = NULL
 )
@@ -46,9 +45,7 @@ most variable features.}
 \item{action}{If \code{"add"} (default), saves results to metadata;
 else returns results as list.}
 
-\item{min_genes}{Minimum number of genes required to compute GO PCs.}
-
-\item{feature_col}{If using GO PCs, the column in \code{rowData}
+\item{feature_col}{The column in \code{rowData}
 for matching gene symbols or IDs.}
 
 \item{mirna_assays}{Optional character vector of assays to exclude

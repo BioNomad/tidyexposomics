@@ -54,32 +54,33 @@
 #'
 #' @export
 run_correlation <- function(
-    exposomicset,
-    feature_type = c(
-        "degs",
-        "omics",
-        "factors",
-        "factor_features",
-        "exposures",
-        "pcs"
-    ),
-    exposure_cols = NULL,
-    variable_map = NULL,
-    n_pcs = NULL,
-    feature_cors = FALSE,
-    robust = FALSE,
-    score_col = "stability_score",
-    score_thresh = NULL,
-    correlation_method = "spearman",
-    correlation_cutoff = 0.3,
-    cor_pval_column = "p.value",
-    pval_cutoff = 0.05,
-    deg_pval_col = "adj.P.Val",
-    deg_logfc_col = "logFC",
-    deg_pval_thresh = 0.05,
-    deg_logfc_thresh = log2(1.5),
-    batch_size = 1500,
-    action = c("add", "get")) {
+  exposomicset,
+  feature_type = c(
+      "degs",
+      "omics",
+      "factors",
+      "factor_features",
+      "exposures",
+      "pcs"
+  ),
+  exposure_cols = NULL,
+  variable_map = NULL,
+  n_pcs = NULL,
+  feature_cors = FALSE,
+  robust = FALSE,
+  score_col = "stability_score",
+  score_thresh = NULL,
+  correlation_method = "spearman",
+  correlation_cutoff = 0.3,
+  cor_pval_column = "p.value",
+  pval_cutoff = 0.05,
+  deg_pval_col = "adj.P.Val",
+  deg_logfc_col = "logFC",
+  deg_pval_thresh = 0.05,
+  deg_logfc_thresh = log2(1.5),
+  batch_size = 1500,
+  action = c("add", "get")
+) {
     feature_type <- match.arg(feature_type)
     action <- match.arg(action)
 
@@ -261,14 +262,15 @@ run_correlation <- function(
 #' @importFrom rlang sym
 #' @importFrom stats p.adjust
 .run_correlation_batches <- function(
-    merged_data,
-    exposure_vars,
-    feature_vars,
-    correlation_method,
-    correlation_cutoff,
-    cor_pval_column,
-    pval_cutoff,
-    batch_size) {
+  merged_data,
+  exposure_vars,
+  feature_vars,
+  correlation_method,
+  correlation_cutoff,
+  cor_pval_column,
+  pval_cutoff,
+  batch_size
+) {
     correlation_results <- list()
     batches <- split(feature_vars, ceiling(seq_along(feature_vars) / batch_size))
 
@@ -356,13 +358,14 @@ run_correlation <- function(
 #' @importFrom rlang sym
 #' @importFrom stats p.adjust
 .run_correlation_omics_batches <- function(
-    feature_data,
-    feature_vars,
-    correlation_method,
-    correlation_cutoff,
-    cor_pval_column,
-    pval_cutoff,
-    batch_size) {
+  feature_data,
+  feature_vars,
+  correlation_method,
+  correlation_cutoff,
+  cor_pval_column,
+  pval_cutoff,
+  batch_size
+) {
     correlation_results <- list()
     batches <- split(feature_vars, ceiling(seq_along(feature_vars) / batch_size))
 
@@ -441,17 +444,18 @@ run_correlation <- function(
 #' @importFrom dplyr left_join mutate
 #' @importFrom stringr str_extract str_remove str_replace_all
 .run_and_clean_correlation <- function(
-    exposomicset,
-    merged_data,
-    feature_vars,
-    exposure_vars,
-    feature_type,
-    feature_cors,
-    correlation_method,
-    correlation_cutoff,
-    cor_pval_column,
-    pval_cutoff,
-    batch_size) {
+  exposomicset,
+  merged_data,
+  feature_vars,
+  exposure_vars,
+  feature_type,
+  feature_cors,
+  correlation_method,
+  correlation_cutoff,
+  cor_pval_column,
+  pval_cutoff,
+  batch_size
+) {
     if (feature_cors && feature_type %in% c(
         "degs",
         "omics",
@@ -604,14 +608,15 @@ run_correlation <- function(
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr full_join
 .extract_deg_matrix <- function(
-    exposomicset,
-    robust,
-    score_col,
-    score_thresh,
-    deg_pval_col,
-    deg_logfc_col,
-    deg_pval_thresh,
-    deg_logfc_thresh) {
+  exposomicset,
+  robust,
+  score_col,
+  score_thresh,
+  deg_pval_col,
+  deg_logfc_col,
+  deg_pval_thresh,
+  deg_logfc_thresh
+) {
     da <- MultiAssayExperiment::metadata(exposomicset) |>
         purrr::pluck(
             "differential_analysis",

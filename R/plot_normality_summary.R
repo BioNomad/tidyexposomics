@@ -45,8 +45,9 @@
 #' @importFrom purrr pluck
 #' @export
 plot_normality_summary <- function(
-    exposomicset,
-    transformed = FALSE) {
+  exposomicset,
+  transformed = FALSE
+) {
     # require(ggplot2)
 
     # Check if "normality" is a name in metadata
@@ -129,8 +130,6 @@ plot_normality_summary <- function(
             ggpubr::theme_pubr(legend = "right") +
             scale_fill_tidy_exp() +
             scale_color_tidy_exp(guide = "none") +
-            # ggsci::scale_fill_lancet() +
-            # ggsci::scale_color_lancet(guide = FALSE) +
             theme(
                 plot.title = element_text(face = "bold.italic"),
                 plot.subtitle = element_text(face = "italic")

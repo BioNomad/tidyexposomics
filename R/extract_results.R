@@ -28,17 +28,18 @@
 #'
 #' @export
 extract_results <- function(
-    exposomicset,
-    result = c(
-        "codebook",
-        "quality_control",
-        "correlation",
-        "association",
-        "differential_analysis",
-        "multiomics_integration",
-        "network",
-        "enrichment"
-    )) {
+  exposomicset,
+  result = c(
+      "codebook",
+      "quality_control",
+      "correlation",
+      "association",
+      "differential_analysis",
+      "multiomics_integration",
+      "network",
+      "enrichment"
+  )
+) {
     result <- exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck(result)

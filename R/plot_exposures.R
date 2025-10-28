@@ -69,20 +69,21 @@
 #'
 #' @export
 plot_exposures <- function(
-    exposomicset,
-    exposure_cat = "all",
-    exposure_cols = NULL,
-    group_by = NULL,
-    plot_type = "boxplot",
-    alpha = 0.3,
-    panel_sizes = rep(1, 100),
-    title = "Exposure Levels by Category",
-    xlab = "",
-    ylab = "",
-    facet_cols = NULL,
-    group_cols = NULL,
-    box_width = 0.1,
-    fill_lab = "") {
+  exposomicset,
+  exposure_cat = "all",
+  exposure_cols = NULL,
+  group_by = NULL,
+  plot_type = "boxplot",
+  alpha = 0.3,
+  panel_sizes = rep(1, 100),
+  title = "Exposure Levels by Category",
+  xlab = "",
+  ylab = "",
+  facet_cols = NULL,
+  group_cols = NULL,
+  box_width = 0.1,
+  fill_lab = ""
+) {
     # require(ggplot2)
     .check_suggested(pkg = "ggh4x")
     .check_suggested(pkg = "ggridges")

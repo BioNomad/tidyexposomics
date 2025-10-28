@@ -87,33 +87,34 @@
 #' @importFrom igraph gorder
 #' @export
 plot_network <- function(
-    exposomicset,
-    network = c(
-        "degs",
-        "omics",
-        "factors",
-        "factor_features",
-        "exposures",
-        "degs_feature_cor",
-        "omics_feature_cor",
-        "factor_features_feature_cor"
-    ),
-    include_stats = TRUE,
-    nodes_to_include = NULL,
-    centrality_thresh = NULL,
-    top_n_nodes = NULL,
-    cor_thresh = NULL,
-    label = FALSE,
-    label_top_n = 5,
-    nodes_to_label = NULL,
-    facet_var = NULL,
-    foreground = "steelblue",
-    fg_text_colour = "grey25",
-    node_colors = NULL,
-    node_color_var = NULL,
-    alpha = 0.5,
-    size_lab = "Centrality",
-    color_lab = "Group") {
+  exposomicset,
+  network = c(
+      "degs",
+      "omics",
+      "factors",
+      "factor_features",
+      "exposures",
+      "degs_feature_cor",
+      "omics_feature_cor",
+      "factor_features_feature_cor"
+  ),
+  include_stats = TRUE,
+  nodes_to_include = NULL,
+  centrality_thresh = NULL,
+  top_n_nodes = NULL,
+  cor_thresh = NULL,
+  label = FALSE,
+  label_top_n = 5,
+  nodes_to_label = NULL,
+  facet_var = NULL,
+  foreground = "steelblue",
+  fg_text_colour = "grey25",
+  node_colors = NULL,
+  node_color_var = NULL,
+  alpha = 0.5,
+  size_lab = "Centrality",
+  color_lab = "Group"
+) {
     # require(ggraph)
     # require(tidygraph)
     .check_suggested(pkg = "tidygraph")

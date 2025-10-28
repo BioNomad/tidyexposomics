@@ -36,9 +36,10 @@
 #'
 #' @export
 extract_omics_exposure_df <- function(
-    exposomicset,
-    variable_map = NULL,
-    log2_trans = TRUE) {
+  exposomicset,
+  variable_map = NULL,
+  log2_trans = TRUE
+) {
     # Validate variable_map
     if (!is.null(variable_map)) {
         stopifnot(all(c("variable", "exp_name") %in% colnames(variable_map)))
@@ -97,9 +98,8 @@ extract_omics_exposure_df <- function(
                 return(NULL)
             }
 
-            ###
             # Filter features based on selected features
-            feats <- intersect(feats, rownames(se)) # ensure features exist in assay
+            feats <- intersect(feats, rownames(se))
 
             # If no features are selected or found, return NULL
             if (length(feats) == 0) {

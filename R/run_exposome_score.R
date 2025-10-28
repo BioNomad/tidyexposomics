@@ -47,11 +47,12 @@
 #'
 #' @export
 run_exposome_score <- function(
-    exposomicset,
-    score_type,
-    exposure_cols = NULL,
-    scale = TRUE,
-    score_column_name = NULL) {
+  exposomicset,
+  score_type,
+  exposure_cols = NULL,
+  scale = TRUE,
+  score_column_name = NULL
+) {
     # Extract and preprocess colData
     message("Extracting exposure data...")
     data <- MultiAssayExperiment::colData(exposomicset) |>

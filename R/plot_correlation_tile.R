@@ -56,19 +56,20 @@
 #'
 #' @export
 plot_correlation_tile <- function(
-    exposomicset,
-    feature_type = c(
-        "pcs",
-        "degs",
-        "omics",
-        "factors",
-        "factor_features",
-        "exposures"
-    ),
-    pval_cutoff = 0.05,
-    na_color = "grey100",
-    fill_limits = c(-1, 1),
-    midpoint = 0) {
+  exposomicset,
+  feature_type = c(
+      "pcs",
+      "degs",
+      "omics",
+      "factors",
+      "factor_features",
+      "exposures"
+  ),
+  pval_cutoff = 0.05,
+  na_color = "grey100",
+  fill_limits = c(-1, 1),
+  midpoint = 0
+) {
     .check_suggested(pkg = "patchwork")
     feature_type <- match.arg(feature_type)
 
@@ -213,7 +214,7 @@ plot_correlation_tile <- function(
         )) +
             ggplot2::geom_tile() +
             ggplot2::scale_fill_gradient2(
-                low = "blue", high = "red", mid = "white",
+                low = "blue4", high = "red4", mid = "white",
                 midpoint = midpoint, limits = fill_limits,
                 na.value = na_color, name = "Correlation"
             ) +

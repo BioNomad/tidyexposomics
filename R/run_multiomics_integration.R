@@ -48,12 +48,13 @@
 #'
 #' @export
 run_multiomics_integration <- function(
-    exposomicset,
-    method = "MCIA",
-    n_factors = 10,
-    scale = TRUE,
-    outcome = NULL,
-    action = "add") {
+  exposomicset,
+  method = "MCIA",
+  n_factors = 10,
+  scale = TRUE,
+  outcome = NULL,
+  action = "add"
+) {
     if (length(MultiAssayExperiment::experiments(exposomicset)) < 2) {
         stop("Multi-Omics Integration requires at least two assays.")
     }
@@ -218,35 +219,7 @@ run_multiomics_integration <- function(
     # Reload trained model
     MOFA2::load_model(outfile)
 }
-# .run_mofa2 <- function(
-#     exposomicset_mo,
-#     n_factors) {
-#     message("Applying MOFA+ integration.")
-#     .check_mofa_safe()
-#
-#     # Create MOFA object from the MultiAssayExperiment
-#     mofa <- MOFA2::create_mofa(exposomicset_mo)
-#
-#     # Set MOFA options
-#     model_opts <- MOFA2::get_default_model_options(mofa)
-#     model_opts$num_factors <- n_factors
-#     data_opts <- MOFA2::get_default_data_options(mofa)
-#     train_opts <- MOFA2::get_default_training_options(mofa)
-#
-#     # Prepare & train MOFA model
-#     mofa <- MOFA2::prepare_mofa(
-#         object = mofa,
-#         data_options = data_opts,
-#         model_options = model_opts,
-#         training_options = train_opts
-#     )
-#
-#     outfile <- file.path(tempdir(), "mofa_model.hdf5")
-#     mofa_trained <- MOFA2::run_mofa(mofa, outfile, use_basilisk = TRUE)
-#
-#     # Load trained MOFA model
-#     result <- MOFA2::load_model(outfile)
-# }
+
 # --- MCIA Integration Function ----------------
 #' @title Run MCIA Integration
 #' @description Applies MCIA using `nipalsMCIA` on a
@@ -260,8 +233,9 @@ run_multiomics_integration <- function(
 #' @noRd
 #' @importFrom nipalsMCIA nipals_multiblock
 .run_mcia <- function(
-    exposomicset_mo,
-    n_factors) {
+  exposomicset_mo,
+  n_factors
+) {
     message("Applying MCIA with `nipalsMCIA`")
 
     # Run NIPALS MCIA on the MultiAssayExperiment
@@ -289,8 +263,9 @@ run_multiomics_integration <- function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom MultiAssayExperiment experiments
 .run_rgcca <- function(
-    exposomicset_mo,
-    n_factors) {
+  exposomicset_mo,
+  n_factors
+) {
     message("Applying RGCCA integration.")
 
     # Prepare data: list of assays (samples x features)
@@ -331,9 +306,10 @@ run_multiomics_integration <- function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom MultiAssayExperiment experiments colData
 .run_diablo <- function(
-    exposomicset_mo,
-    n_factors,
-    outcome) {
+  exposomicset_mo,
+  n_factors,
+  outcome
+) {
     message("Applying DIABLO supervised integration.")
 
     if (is.null(outcome)) {
@@ -375,50 +351,3 @@ run_multiomics_integration <- function(
         design = design
     )
 }
-
-# else if (method == "MCCA") {
-#   # MCCA integration using PMA package
-#   x <- purrr::map(
-#     .x = MultiAssayExperiment::experiments(exposomicset_mo),
-#     .f = ~ SummarizedExperiment::assay(.x)
-#   )
-#   # Ensure all assays have the same columns
-#   x <- purrr::map(
-#     .x = x,
-#     .f = ~ t(.x[, Reduce(intersect,lapply(x, colnames))])
-#   )
-#
-#   # Run MultiCCA
-#   y <- PMA::MultiCCA(
-#     xlist = x,
-#     ncomponents = n_factors)
-#
-#   # Extract results
-#   y_ws <- y$ws
-#
-#   # Match the names of the results to the original assays
-#   names(y_ws) <- names(x)
-#
-#   # Match rownames
-#   y_ws <- purrr::imap(
-#     .x = y_ws,
-#     .f = ~ {
-#       rownames(.x) <- colnames(x[[.y]])
-#       .x
-#     }
-#   )
-#
-#   # Grab sample level scores
-#   sample_scores <- purrr::map2(
-#     .x = x,         # data: samples x features
-#     .y = y$ws,      # weights: features x components
-#     .f = ~ .x %*% .y   # scores: samples x components
-#   )
-#
-#   # return result
-#   result <- list(
-#     weights = y_ws,
-#     sample_scores = sample_scores
-#   )
-#
-# }

@@ -6,13 +6,13 @@
 \usage{
 load_annotation_data(
   to_load = c("all", "chebi", "ecto", "hpo"),
-  dest_dir = tempdir()
+  verbose = TRUE
 )
 }
 \arguments{
 \item{to_load}{Character vector indicating which ontology to load.}
 
-\item{dest_dir}{Destination directory to store temporary data files.}
+\item{verbose}{Logical; print messages.}
 }
 \value{
 Invisibly returns \code{TRUE} after the ontology data is loaded into the global environment.

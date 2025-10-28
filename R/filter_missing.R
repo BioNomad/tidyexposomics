@@ -44,9 +44,10 @@
 #'
 #' @export
 filter_missing <- function(
-    exposomicset,
-    na_thresh = 20,
-    na_plot_thresh = 5) {
+  exposomicset,
+  na_thresh = 20,
+  na_plot_thresh = 5
+) {
     # Helper function to identify variables/features to exclude
     get_vars_to_exclude <- function(data, thresh) {
         miss_summary <- naniar::miss_var_summary(data)

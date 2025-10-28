@@ -77,21 +77,22 @@
 #' @importFrom igraph graph_from_data_frame
 #' @export
 run_create_network <- function(
-    exposomicset,
-    feature_type = c(
-        "degs",
-        "omics",
-        "factors",
-        "factor_features",
-        "exposures",
-        "degs_feature_cor",
-        "omics_feature_cor",
-        "factor_features_feature_cor"
-    ),
-    action = c(
-        "add",
-        "get"
-    )) {
+  exposomicset,
+  feature_type = c(
+      "degs",
+      "omics",
+      "factors",
+      "factor_features",
+      "exposures",
+      "degs_feature_cor",
+      "omics_feature_cor",
+      "factor_features_feature_cor"
+  ),
+  action = c(
+      "add",
+      "get"
+  )
+) {
     feature_type <- match.arg(feature_type)
     action <- match.arg(action)
 

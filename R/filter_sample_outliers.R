@@ -37,8 +37,9 @@
 #'
 #' @export
 filter_sample_outliers <- function(
-    exposomicset,
-    outliers = NULL) {
+  exposomicset,
+  outliers = NULL
+) {
     # Check if the input is a MultiAssayExperiment object
     if (!"pca" %in% names(
         MultiAssayExperiment::metadata(exposomicset)$quality_control

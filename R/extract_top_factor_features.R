@@ -74,14 +74,15 @@
 #'
 #' @export
 extract_top_factor_features <- function(
-    exposomicset,
-    factors = NULL,
-    pval_col = "p_adjust",
-    pval_thresh = 0.05,
-    method = "percentile",
-    percentile = 0.9,
-    threshold = 0.3,
-    action = "add") {
+  exposomicset,
+  factors = NULL,
+  pval_col = "p_adjust",
+  pval_thresh = 0.05,
+  method = "percentile",
+  percentile = 0.9,
+  threshold = 0.3,
+  action = "add"
+) {
     message("Extracting top contributing features for specified factors.")
 
     # Get integration results

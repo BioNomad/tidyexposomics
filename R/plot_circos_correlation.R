@@ -47,22 +47,23 @@
 #'
 #' @export
 plot_circos_correlation <- function(
-    exposomicset,
-    feature_type = c(
-        "degs",
-        "omics",
-        "factors",
-        "factor_features",
-        "exposures", "pcs"
-    ),
-    exposure_cols = NULL,
-    corr_threshold = NULL,
-    shared_cutoff = 10,
-    annotation_colors = NULL,
-    low = "#006666",
-    mid = "white",
-    high = "#8E0152",
-    midpoint = NULL) {
+  exposomicset,
+  feature_type = c(
+      "degs",
+      "omics",
+      "factors",
+      "factor_features",
+      "exposures", "pcs"
+  ),
+  exposure_cols = NULL,
+  corr_threshold = NULL,
+  shared_cutoff = 10,
+  annotation_colors = NULL,
+  low = "#006666",
+  mid = "white",
+  high = "#8E0152",
+  midpoint = NULL
+) {
     # require(ggplot2)
     # require(ggraph)
     # require(igraph)

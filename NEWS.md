@@ -1,3 +1,11 @@
+# tidyexposomics 0.99.8
+
+* Added BiocFileCache-based caching and removed globalenv assignments.
+* Swithced to small example data for vignette and added figure captions.
+* Added MultiAssayExperiment to Depends.
+* Standardized MIT license file.
+* Updated pipeline summary output.
+
 # tidyexposomics 0.99.5/0.99.6/0.99.7
 
 * Removed .Rproj tracking, .gitignore lines.

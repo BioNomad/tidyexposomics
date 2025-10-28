@@ -39,8 +39,9 @@
 #'
 #' @export
 filter_non_normal <- function(
-    exposomicset,
-    p_thresh = 0.05) {
+  exposomicset,
+  p_thresh = 0.05
+) {
     if ("transformation" %in% names(exposomicset |>
         MultiAssayExperiment::metadata() |>
         purrr::pluck("quality_control"))) {

@@ -43,7 +43,7 @@ The `tidyexposomics` package depends on R (>= 4.4.0) and can be installed using 
 
 ```R
 # Install and Load Packages
-remotes::install_github("BioNomad/tidyexposomics")
+BiocManager("tidyexposomics")
 library(tidyexposomics)
 library(tidyverse)
 ```
@@ -53,30 +53,36 @@ library(tidyverse)
 We provide example data based off the [ISGlobal Exposome data challenge 2021](https://www.sciencedirect.com/science/article/pii/S016041202200349X?via%3Dihub). Here, we will examine how exposures and omics features relate to asthma status.
 
 ```R
-# Load the example data
-load_example_data()
+# Load Libraries
+library(tidyverse)
+library(tidyexposomics)
 
-# Create ExpOmicSet
-expom <- create_expomicset(
-  codebook = annotated_cb,
-  exposure = meta,
-  omics = omics_list,
-  row_data = fdata
+# Load example data
+data("tidyexposomics_example")
+
+# Create exposomic set object
+expom <- create_exposomicset(
+    codebook = tidyexposomics_example$annotated_cb,
+    exposure = tidyexposomics_example$meta,
+    omics = list(
+        "Gene Expression" = tidyexposomics_example$exp_filt,
+        "Methylation" = tidyexposomics_example$methyl_filt
+    ),
+    row_data = list(
+        "Gene Expression" = tidyexposomics_example$exp_fdata,
+        "Methylation" = tidyexposomics_example$methyl_fdata
+    )
 )
 
 # Grab exposure variables
-exp_vars <- annotated_cb |> 
-  filter(category %in% c(
-    "exposure to oxygen molecular entity",
-    "aerosol",
-    "environmental zone",
-    "main group molecular entity",
-    "transition element molecular entity",
-    "exposure to environmental process",
-    "polyatomic entity" 
-  )) |> 
-  pull(variable) |> 
-  as.character()
+exp_vars <- tidyexposomics_example$annotated_cb |>
+    filter(category %in% c(
+        "aerosol",
+        "main group molecular entity",
+        "polyatomic entity"
+    )) |>
+    pull(variable) |>
+    as.character()
 ```
 
 ## Quality Control
@@ -84,45 +90,43 @@ exp_vars <- annotated_cb |>
 We provide several quality control functions including those that handle filtering missing data, imputation, variable normality checks, and variable transformation.
 
 ```R
-# Filter samples and exposures
-expom <- expom[, !is.na(expom$hs_asthma)]
-expom <- expom[, expom$FAS_cat_None == "Low"]
-
 # Filter & impute exposures
 expom <- expom |>
   filter_missing(na_thresh = 5) |>
   run_impute_missing(exposure_impute_method = "missforest")
 
-# Filter omics
-expom <- expom |> 
-  filter_omics(
+# filter omics layers by variance and expression
+# Methylation filtering
+expom <- filter_omics(
+    exposomicset = expom,
     method = "variance",
     assays = "Methylation",
     assay_name = 1,
     min_var = 0.05
-  ) |> 
-  filter_omics(
-    method = "variance",
-    assays = "Metabolomics",
-    assay_name = 1,
-    min_var = 0.1
-  ) |>
-  filter_omics(
+)
+
+# Gene expression filtering
+expom <- filter_omics(
+    exposomicset = expom,
     method = "expression",
     assays = "Gene Expression",
     assay_name = 1,
     min_value = 1,
     min_prop = 0.3
-  )
+)
 
-# Check variable normality & transform variables
-expom <- expom |> 
-  # Check variable normality
-  run_normality_check(action = "add") |> 
-  
-  # Transform variables 
-  transform_exposure(transform_method = "boxcox_best",
-                     exposure_cols = exp_vars) 
+# Check variable normality
+expom <- run_normality_check(
+    exposomicset = expom,
+    action = "add"
+)
+
+# Transform variables
+expom <- transform_exposure(
+    exposomicset = expom,
+    transform_method = "boxcox_best",
+    exposure_cols = exp_vars
+)
 ```
 
 ## ExWAS 
@@ -131,29 +135,25 @@ Here we model the association between exposures and asthma status and adjust our
 
 ```R
 # Perform ExWAS Analysis
-expom <- expom |> 
-  run_association(
+# Perform ExWAS Analysis
+expom <- run_association(
+    exposomicset = expom,
     source = "exposures",
     outcome = "hs_asthma",
     feature_set = exp_vars,
-    covariates = c("hs_child_age_None",
-                   "e3_sex_None",
-                   "h_cohort"),
     action = "add",
-    family = "binomial")
+    family = "binomial"
+)
 
 # Visualize associations
-expom |> 
-  plot_association(
-    subtitle = paste("Covariates:",
-                     "Age,",
-                     "Biological Sex, ",
-                     "Cohort"),
+plot_association(
+    exposomicset = expom,
     source = "exposures",
     terms = exp_vars,
-    filter_thresh = 0.15,
+    filter_thresh = 0.05,
     filter_col = "p.value",
-    r2_col = "adj_r2")
+    r2_col = "r2"
+)
 ```
 
 ![](vignettes/exwas_assoc.png)
@@ -164,23 +164,25 @@ Differentially abundance analysis is supported in `tidyexposomics`. Here we use 
 
 ```R
 # Run differential abundance analysis
-expom <- expom |> 
-  run_differential_abundance(
-    formula = ~ hs_asthma + hs_child_age_None + e3_sex_None + h_cohort,
+expom <- run_differential_abundance(
+    exposomicset = expom,
+    formula = ~hs_asthma,
     method = "limma_trend",
     scaling_method = "none",
-    action = "add")
+    action = "add"
+)
     
 # Plot Differential Abundance Results
-expom |> 
-  plot_volcano(
+plot_volcano(
+    exposomicset = expom,
     top_n_label = 3,
     feature_col = "feature_clean",
     logFC_thresh = log2(1),
     pval_thresh = 0.05,
     pval_col = "P.Value",
     logFC_col = "logFC",
-    nrow = 1)
+    nrow = 1
+)
 ```
 
 ![](vignettes/volcano.png)
@@ -190,37 +192,34 @@ expom |>
 Multi-omics integration is supported to derive insights across omics layers. Here we use the `DIABLO` method and set the outcome variable of interest to asthma status.
 
 ```R
-# Perform Multi-Omics Integration
-expom <- expom |> 
-  run_multiomics_integration(method = "DIABLO",
-                             n_factors = 5,
-                             outcome = "hs_asthma",
-                             action = "add")
+# Perform multi-omics integration
+expom <- run_multiomics_integration(
+    exposomicset = expom,
+    method = "DIABLO",
+    n_factors = 5,
+    outcome = "hs_asthma",
+    action = "add"
+)
                              
-# Identify factors that correlate with the outcome
-expom <- expom |> 
-  run_association(
+# Identify factors that are associated with the outcome
+expom <- run_association(
+    exposomicset = expom,
     source = "factors",
     outcome = "hs_asthma",
     feature_set = exp_vars,
-    covariates = c(
-      "hs_child_age_None",
-      "e3_sex_None",
-      "h_cohort"),
     action = "add",
-    family = "binomial")
+    family = "binomial"
+)
     
 # Extract top features that contribute to a factor
-expom <- expom |> 
-  extract_top_factor_features(method = "percentile",
-                              pval_col = "p_adjust",
-                              pval_thresh = 0.05, 
-                              percentile = 0.95,
-                              action = "add") 
-                              
-# Determine which features drive multiple factors
-expom <- expom |> 
-  run_factor_overlap()
+expom <- extract_top_factor_features(
+    exposomicset = expom,
+    method = "percentile",
+    pval_col = "p_adjust",
+    pval_thresh = 0.05,
+    percentile = 0.7,
+    action = "add"
+)
 ```
 
 
@@ -229,33 +228,38 @@ expom <- expom |>
 Now that we have our multi-omics features associated with asthma status, we can correlate these with our exposures. This helps identify how exposure classes may affect asthma biology.
 
 ```R
-# Grab top common factor features and ensure 
+# Grab top common factor features and ensure
 # feature is renamed to variable for the variable_map
-top_factor_features <- expom |> 
-  extract_results(result = "multiomics_integration") |> 
-  pluck("common_top_factor_features") |> 
-  dplyr::select(variable=feature,
-                      exp_name)
+top_factor_features <- expom |>
+    extract_results(result = "multiomics_integration") |>
+    pluck("top_factor_features") |>
+    dplyr::select(variable = feature, exp_name)
 
 # Correlate top factor features with exposures
-expom  <- expom |> 
-  # Perform correlation analysis between factor features 
-  # and exposures
-  run_correlation(feature_type = "omics",
-                  variable_map = top_factor_features,
-                  exposure_cols = exp_vars,
-                  action = "add",
-                  correlation_cutoff = 0.2,
-                  pval_cutoff = 0.05,
-                  cor_pval_column = "p.value") |> 
-  # Perform correlation analysis between factor features
-  run_correlation(feature_type = "omics",
-                  variable_map = top_factor_features,
-                  feature_cors = TRUE,
-                  action = "add",
-                  correlation_cutoff = 0.2,
-                  pval_cutoff = 0.05,
-                  cor_pval_column = "p.value")
+# Perform correlation analysis between factor features and exposures
+expom <- run_correlation(
+    exposomicset = expom,
+    feature_type = "omics",
+    variable_map = top_factor_features,
+    exposure_cols = exp_vars,
+    action = "add",
+    correlation_cutoff = 0.3,
+    pval_cutoff = 0.05,
+    cor_pval_column = "p.value"
+)
+
+# Perform correlation analysis between factor features
+expom <- run_correlation(
+    exposomicset = expom,
+    feature_type = "omics",
+    variable_map = top_factor_features,
+    exposure_cols = exp_vars,
+    feature_cors = TRUE,
+    action = "add",
+    correlation_cutoff = 0.3,
+    pval_cutoff = 0.05,
+    cor_pval_column = "p.value"
+)
 ```
 
 
@@ -265,30 +269,28 @@ After identifying features associated with asthma and exposures, we can perform 
 
 ```R
 # Run enrichment analysis on factor features correlated with exposures
-expom  <- expom  |> 
-  run_enrichment(
+expom <- run_enrichment(
+    exposomicset = expom,
     feature_type = c("omics_cor"),
     feature_col = "feature_clean",
-
-    db = c("GO"), 
-    species = "goa_human", 
+    db = c("GO"),
+    species = "goa_human",
     fenr_col = "gene_symbol",
     padj_method = "none",
     pval_thresh = 0.1,
     min_set = 1,
     max_set = 800,
-
     clustering_approach = "diana",
     action = "add"
-  )
+)
 
 # Plot enrichment term network plot
-expom    |> 
-  plot_enrichment(
+plot_enrichment(
+    exposomicset = expom,
     feature_type = "omics_cor",
     plot_type = "network",
-    label_top_n = 2
-  )
+    label_top_n = 1
+)
 ```
 
 ![](vignettes/enr_network.png)

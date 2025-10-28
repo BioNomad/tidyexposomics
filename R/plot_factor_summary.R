@@ -56,11 +56,12 @@
 #' @importFrom purrr discard imap map
 #' @export
 plot_factor_summary <- function(
-    exposomicset,
-    low = "#006666",
-    mid = "white",
-    high = "#8E0152",
-    midpoint = 0.5) {
+  exposomicset,
+  low = "#006666",
+  mid = "white",
+  high = "#8E0152",
+  midpoint = 0.5
+) {
     # require("ggplot2")
     # require("ggpubr")
 

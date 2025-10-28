@@ -60,11 +60,12 @@
 #' @importFrom SummarizedExperiment assays
 #' @export
 run_impute_missing <- function(
-    exposomicset,
-    exposure_impute_method = "median",
-    exposure_cols = NULL,
-    omics_impute_method = NULL,
-    omics_to_impute = NULL) {
+  exposomicset,
+  exposure_impute_method = "median",
+  exposure_cols = NULL,
+  omics_impute_method = NULL,
+  omics_to_impute = NULL
+) {
     # Helper for LOD/sqrt(2) imputation
     impute_lod_sqrt2 <- function(data) {
         data[] <- lapply(data, function(col) {

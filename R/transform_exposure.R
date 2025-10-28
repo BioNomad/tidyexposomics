@@ -58,9 +58,10 @@
 #'
 #' @export
 transform_exposure <- function(
-    exposomicset,
-    exposure_cols = NULL,
-    transform_method = "boxcox_best") {
+  exposomicset,
+  exposure_cols = NULL,
+  transform_method = "boxcox_best"
+) {
     col_data <- as.data.frame(MultiAssayExperiment::colData(exposomicset))
     # numeric_cols <- names(col_data)[sapply(col_data, is.numeric)]
     numeric_cols <- names(col_data)[

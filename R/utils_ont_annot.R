@@ -4,25 +4,16 @@
 #' @param use_demo Logical; if TRUE, load packaged demo objects \code{hpo}, \code{ecto}, \code{chebi}.
 #' @param ... Optional named overrides: \code{hpo}, \code{ecto}, \code{chebi}.
 #' @return A list with elements \code{hpo}, \code{ecto}, \code{chebi}.
-#' @importFrom utils data
+#' @importFrom utils data modifyList
 .load_ontologies <- function(use_demo = TRUE, ...) {
     dots <- list(...)
-    has <- function(nm) !is.null(dots[[nm]])
-
-    if (use_demo) {
-        if (exists("load_annotation_data", mode = "function")) {
-            tidyexposomics::load_annotation_data()
-        } else {
-            utils::data(list = c("hpo", "ecto", "chebi"), package = "tidyexposomics", envir = environment())
-        }
+    if (use_demo && !all(c("hpo", "ecto", "chebi") %in% names(dots))) {
+        annot <- tidyexposomics::load_annotation_data()
+        dots <- modifyList(annot, dots)
     }
-
-    list(
-        hpo   = if (has("hpo")) dots$hpo else get("hpo", inherits = TRUE),
-        ecto  = if (has("ecto")) dots$ecto else get("ecto", inherits = TRUE),
-        chebi = if (has("chebi")) dots$chebi else get("chebi", inherits = TRUE)
-    )
+    dots[c("hpo", "ecto", "chebi")]
 }
+
 
 #' Internal - categorizes to ontology roots / depth
 #'

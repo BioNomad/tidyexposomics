@@ -68,10 +68,11 @@
 #'
 #' @export
 plot_missing <- function(
-    exposomicset,
-    threshold = 5,
-    plot_type = c("summary", "lollipop"),
-    layers = NULL) {
+  exposomicset,
+  threshold = 5,
+  plot_type = c("summary", "lollipop"),
+  layers = NULL
+) {
     # require(ggplot2)
     # require(patchwork)
     .check_suggested(pkg = "forcats")
@@ -138,7 +139,8 @@ plot_missing <- function(
                 y = NULL,
                 x = "No. of Features"
             ) +
-            ggpubr::theme_pubr(legend = "none")
+            ggpubr::theme_pubr(legend = "none") +
+            theme(plot.title = element_text(face = "bold.italic"))
     } else if (plot_type == "lollipop") {
         na_df_filtered <- na_df |>
             dplyr::filter(pct_miss > 0) |>
