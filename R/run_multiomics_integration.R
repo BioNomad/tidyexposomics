@@ -14,6 +14,10 @@
 #'  Default is `TRUE`.
 #' @param outcome Character. Required if `method = "DIABLO"`.
 #' Name of outcome variable in `colData` used for supervised integration.
+#' @param max.iter numeric. Option to increase the number of iterations for
+#'  `mixOmics::block.splsda` the default is 500.
+#' @param near.zero.var Logical. Option to remove variables with near zero
+#'  variance for `mixOmics::block.splsda`, default is `TRUE` .
 #' @param action Character. Whether to `"add"` results to the metadata or
 #' `"get"` them as a list. Default is `"add"`.
 #'
@@ -53,6 +57,8 @@ run_multiomics_integration <- function(
   n_factors = 10,
   scale = TRUE,
   outcome = NULL,
+  max.iter = 500,
+  near.zero.var = TRUE,
   action = "add"
 ) {
     if (length(MultiAssayExperiment::experiments(exposomicset)) < 2) {
@@ -83,7 +89,9 @@ run_multiomics_integration <- function(
         "DIABLO" = .run_diablo(
             exposomicset_mo = exposomicset_mo,
             n_factors = n_factors,
-            outcome = outcome
+            outcome = outcome,
+            max.iter = max.iter,
+            near.zero.var = near.zero.var
         )
     )
 
@@ -308,7 +316,9 @@ run_multiomics_integration <- function(
 .run_diablo <- function(
   exposomicset_mo,
   n_factors,
-  outcome
+  outcome,
+  max.iter,
+  near.zero.var
 ) {
     message("Applying DIABLO supervised integration.")
 
@@ -348,6 +358,8 @@ run_multiomics_integration <- function(
         X = blocks,
         Y = y,
         ncomp = n_factors,
-        design = design
+        design = design,
+        max.iter = max.iter,
+        near.zero.var = near.zero.var
     )
 }

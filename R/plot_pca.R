@@ -174,7 +174,8 @@ plot_pca <- function(
                 y = PC2,
                 label = label
             ),
-            color = sample_outlier_col
+            color = sample_outlier_col,
+            na.rm = TRUE
         ) +
         ggpubr::theme_pubr() +
         labs(

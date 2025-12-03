@@ -18,13 +18,16 @@
 #' - Performs **PCA on features** (transformed and standardized).
 #' - Performs **PCA on samples** and computes Mahalanobis distance to
 #' detect outliers.
-#' - **Output Handling**:
-#'   - `"add"`: Stores results in `metadata(exposomicset)$pca` and
-#'   updates `colData` with PCs.
-#'   - `"get"`: Returns a list containing the PCA results.
 #'
-#' @return A `MultiAssayExperiment` object with PCA results added to
-#' metadata (if `action = "add"`) or a list with:
+#' @return
+#' If `action = "add"`, the function returns the input
+#' `MultiAssayExperiment` with:
+#'
+#' - **PC scores** added as columns in `colData(exposomicset)`, and
+#' - **PCA objects** stored under
+#'   `metadata(exposomicset)$quality_control$pca`.
+#'
+#' If `action = "get"`, the function returns a list containing:
 #' \item{pca_df}{A tibble of the transformed input data.}
 #' \item{pca_feature}{A `prcomp` object containing PCA results for features.}
 #' \item{pca_sample}{A `prcomp` object containing PCA results for samples.}

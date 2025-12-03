@@ -10,6 +10,8 @@ run_multiomics_integration(
   n_factors = 10,
   scale = TRUE,
   outcome = NULL,
+  max.iter = 500,
+  near.zero.var = TRUE,
   action = "add"
 )
 }
@@ -27,6 +29,12 @@ Default is \code{TRUE}.}
 
 \item{outcome}{Character. Required if \code{method = "DIABLO"}.
 Name of outcome variable in \code{colData} used for supervised integration.}
+
+\item{max.iter}{numeric. Option to increase the number of iterations for
+\code{mixOmics::block.splsda} the default is 500.}
+
+\item{near.zero.var}{Logical. Option to remove variables with near zero
+variance for \code{mixOmics::block.splsda}, default is \code{TRUE} .}
 
 \item{action}{Character. Whether to \code{"add"} results to the metadata or
 \code{"get"} them as a list. Default is \code{"add"}.}

@@ -675,7 +675,10 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
             ggraph::ggraph(layout = "kk") +
             ggraph::geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
             ggraph::geom_node_point(aes(size = centrality, color = !!sym(node_color_var))) +
-            ggraph::theme_graph(fg_text_colour = fg_text_colour) +
+            ggraph::theme_graph(
+                fg_text_colour = fg_text_colour,
+                base_family = "sans"
+            ) +
             labs(
                 size = size_lab,
                 color = color_lab
@@ -686,7 +689,10 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
             ggraph::ggraph(layout = "kk") +
             ggraph::geom_edge_fan(aes(alpha = after_stat(index)), show.legend = FALSE) +
             ggraph::geom_node_point(aes(size = centrality)) +
-            ggraph::theme_graph(fg_text_colour = fg_text_colour) +
+            ggraph::theme_graph(
+                fg_text_colour = fg_text_colour,
+                base_family = "sans"
+            ) +
             labs(size = size_lab)
     }
 
@@ -721,7 +727,8 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
         p <- p +
             ggraph::geom_node_label(aes(label = label),
                 fontface = "italic",
-                repel = TRUE
+                repel = TRUE,
+                na.rm = TRUE
             )
     }
 

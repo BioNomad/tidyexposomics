@@ -25,8 +25,15 @@ transform the omics data}
 (\code{"add"}) or return (\code{"get"}) the results. Default is \code{"add"}.}
 }
 \value{
-A \code{MultiAssayExperiment} object with PCA results added to
-metadata (if \code{action = "add"}) or a list with:
+If \code{action = "add"}, the function returns the input
+\code{MultiAssayExperiment} with:
+\itemize{
+\item \strong{PC scores} added as columns in \code{colData(exposomicset)}, and
+\item \strong{PCA objects} stored under
+\code{metadata(exposomicset)$quality_control$pca}.
+}
+
+If \code{action = "get"}, the function returns a list containing:
 \item{pca_df}{A tibble of the transformed input data.}
 \item{pca_feature}{A \code{prcomp} object containing PCA results for features.}
 \item{pca_sample}{A \code{prcomp} object containing PCA results for samples.}
@@ -43,12 +50,6 @@ This function:
 \item Performs \strong{PCA on features} (transformed and standardized).
 \item Performs \strong{PCA on samples} and computes Mahalanobis distance to
 detect outliers.
-\item \strong{Output Handling}:
-\itemize{
-\item \code{"add"}: Stores results in \code{metadata(exposomicset)$pca} and
-updates \code{colData} with PCs.
-\item \code{"get"}: Returns a list containing the PCA results.
-}
 }
 }
 \examples{

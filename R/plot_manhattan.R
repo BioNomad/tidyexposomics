@@ -212,7 +212,8 @@ plot_manhattan <- function(
             min.segment.length = .5,
             box.padding = 0.6,
             point.padding = 0.2,
-            color = "black"
+            color = "black",
+            na.rm = TRUE
         ) +
         ggh4x::facet_grid2(
             category ~ .,

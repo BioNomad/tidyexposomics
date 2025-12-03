@@ -39,7 +39,7 @@ The following code is an example of a basic tidyexposomics workflow. It includes
 
 ## Installation
 
-The `tidyexposomics` package depends on R (>= 4.4.0) and can be installed using the following code:
+The `tidyexposomics` package depends on R (>= 4.5.0) and can be installed using the following code:
 
 ```R
 # Install and Load Packages

@@ -207,7 +207,7 @@ plot_circos_correlation <- function(
             fontface = "bold.italic",
             check_overlap = TRUE
         ) +
-        ggraph::theme_graph() +
+        ggraph::theme_graph(base_family = "sans") +
         ggplot2::scale_fill_manual(values = cat_colors) +
         ggraph::scale_edge_color_gradient2(
             low = low,

@@ -182,10 +182,18 @@ plot_association <- function(
     )) +
         ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
         ggplot2::geom_errorbarh(
-            ggplot2::aes(xmin = estimate - std.error, xmax = estimate + std.error),
-            color = "grey55", height = 0.2
+            ggplot2::aes(
+                xmin = estimate - std.error,
+                xmax = estimate + std.error
+            ),
+            color = "grey55",
+            width = 0.2
         ) +
-        ggplot2::geom_point(shape = 18, size = 5, alpha = 0.5) +
+        ggplot2::geom_point(
+            shape = 18,
+            size = 5,
+            alpha = 0.5
+        ) +
         ggplot2::scale_color_manual(values = c(
             up = "#8E0152",
             down = "#006666",
@@ -194,8 +202,12 @@ plot_association <- function(
         ggplot2::theme_bw() +
         ggplot2::theme(
             legend.position = "none",
-            plot.subtitle = ggplot2::element_text(face = "italic"),
-            plot.title = ggplot2::element_text(face = "bold.italic"),
+            plot.subtitle = ggplot2::element_text(
+                face = "italic"
+            ),
+            plot.title = ggplot2::element_text(
+                face = "bold.italic"
+            ),
         ) +
         ggplot2::labs(
             x = "Effect size",

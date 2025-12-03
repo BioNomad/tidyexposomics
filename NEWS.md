@@ -1,3 +1,8 @@
+# tidyexposomics 0.99.9
+
+* Added `set.seed()` to make network plots consistent.
+* Updated vignette formatting and PCA documentation.
+
 # tidyexposomics 0.99.8
 
 * Added BiocFileCache-based caching and removed globalenv assignments.

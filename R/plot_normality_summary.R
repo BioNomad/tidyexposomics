@@ -92,7 +92,7 @@ plot_normality_summary <- function(
             scale_color_manual(
                 values = ggpubr::get_palette("uchicago", k = 2)[c(2, 1)]
             ) +
-            guides(color = FALSE) +
+            guides(color = "none") +
             theme(
                 plot.title = element_text(face = "bold.italic"),
                 plot.subtitle = element_text(face = "italic")

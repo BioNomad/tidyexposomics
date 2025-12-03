@@ -321,6 +321,12 @@ run_enrichment <- function(
         Reactome = fenr::fetch_reactome
     )
 
+    # Fix for fenr given it is trying to assert a dead link exists
+    if (db == "GO") {
+        url <- paste0("http://current.geneontology.org/annotations/", species, ".gaf.gz")
+        options(GO_ANNOTATION_URL = url)
+    }
+
     # Handle species if required
     if (db == "GO" && is.null(species)) {
         stop("Please specify a species designation for GO.")
