@@ -1,3 +1,9 @@
+# tidyexposomics 0.99.10
+
+* Fixed `set.seed()` to make network plots consistent within vignette.
+* Fixed issue with impute exposure logic.
+* Updated naming conventions for variable maps.
+
 # tidyexposomics 0.99.9
 
 * Added `set.seed()` to make network plots consistent.

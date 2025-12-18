@@ -17,7 +17,7 @@
 #' @param score_threshold Optional numeric threshold for filtering
 #' stability scores. If `NULL`, the default
 #'   threshold stored in the metadata will be used.
-#' @param variable_map A data frame with `exp_name` and `feature` columns,
+#' @param variable_map A data frame with `exp_name` and `variable` columns,
 #'  used when `feature_type = "omics"`.
 #' @param factor_type Character string for selecting factor features:
 #'  `"common_top_factor_features"` or
@@ -433,7 +433,7 @@ run_enrichment <- function(
 #' or \code{"top_factor_features"}
 #'   (for \code{"factor_features"}).
 #' @param variable_map A data.frame with columns \code{exp_name} and
-#' \code{feature} used when \code{feature_type = "omics"} to select
+#' \code{variable} used when \code{feature_type = "omics"} to select
 #'  features per experiment.
 #' @param padj_method Multiple-testing correction method passed to
 #' \code{stats::p.adjust} (default \code{"fdr"}).
@@ -559,7 +559,7 @@ run_enrichment <- function(
                         fdata |>
                             dplyr::filter(.exp_name == exp),
                         by = c(
-                            "feature" = ".feature",
+                            "variable" = ".feature",
                             "exp_name" = ".exp_name"
                         )
                     ) |>

@@ -44,7 +44,7 @@ or \code{"factor_features_cor"}.}
 stability scores. If \code{NULL}, the default
 threshold stored in the metadata will be used.}
 
-\item{variable_map}{A data frame with \code{exp_name} and \code{feature} columns,
+\item{variable_map}{A data frame with \code{exp_name} and \code{variable} columns,
 used when \code{feature_type = "omics"}.}
 
 \item{factor_type}{Character string for selecting factor features:

@@ -730,9 +730,6 @@ plot_enrichment <- function(
         return(NULL)
     }
 
-    # set random seed
-    set.seed(42)
-
     # Get enrichment table
     enr <- enr_res
 
@@ -961,9 +958,6 @@ plot_enrichment <- function(
     .check_suggested(pkg = "ggnewscale")
     .check_suggested(pkg = "ggraph")
     .check_suggested(pkg = "tidygraph")
-
-    # set random seed
-    set.seed(42)
 
     # Explode to gene by term by exp rows
     long_enr <- enr_res |>

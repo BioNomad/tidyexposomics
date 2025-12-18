@@ -1154,6 +1154,9 @@ To plot the network we can use the `plot_network` function. The network argument
 #| fig-cap: "Bipartite network of exposures and correlated omics features where node labels reflect most central nodes."
 
 # Plot the exposure-omics network
+# Setting the seed so that the graph layout is consistent 
+# given that layouts can have random starting points
+set.seed(42)
 plot_network(
     exposomicset = expom,
     network = "omics",
@@ -1345,6 +1348,8 @@ We can set the `plot_type` to `network` to understand how our enrichment terms a
 #| fig.height: 5
 
 # Plot the term network plot
+# Setting a seed so that the plot layout is consistent
+set.seed(42)
 plot_enrichment(
     exposomicset = expom,
     feature_type = "omics_cor",
@@ -1391,6 +1396,8 @@ Another way to visualize this information is with the `cnet` plot, where the enr
 #| fig-cap: "Cnet plot linking enriched terms to contributing genes (Group 1)."
 
 # Plot the gene-term network
+# Setting a seed so that the plot layout is consistent
+set.seed(42)
 plot_enrichment(
     exposomicset = expom,
     feature_type = "omics_cor",

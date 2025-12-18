@@ -106,9 +106,7 @@ run_impute_missing <- function(
     }
 
     # Impute selected exposure columns
-    if ("exposure" %in% names(
-        MultiAssayExperiment::metadata(exposomicset)$quality_control$na_qc
-    )) {
+    if (!is.null(exposure_impute_method)) {
         message("Imputing exposure data using method: ", exposure_impute_method)
 
         metadata_df <- as.data.frame(MultiAssayExperiment::colData(exposomicset))

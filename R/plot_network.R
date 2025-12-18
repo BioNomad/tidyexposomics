@@ -122,10 +122,6 @@ plot_network <- function(
     # tidygraph as_tbl_graph activate filter mutate centrality_degree
     # arrange slice_head select as_tibble
     network <- match.arg(network)
-
-    # set random seed
-    set.seed(42)
-
     net_key <- paste0("network_", network)
     net_obj <- MultiAssayExperiment::metadata(exposomicset)$network[[net_key]]
 
