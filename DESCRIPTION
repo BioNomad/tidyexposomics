@@ -1,6 +1,6 @@
 Package: tidyexposomics
 Title: Integrated Exposure-Omics Analysis Powered by Tidy Principles
-Version: 0.99.10
+Version: 0.99.11
 Authors@R: 
     c(
     person(given = "Jason",
@@ -72,7 +72,6 @@ Imports:
     methods,
     mixOmics,
     naniar,
-    nipalsMCIA,
     purrr,
     readr,
     RGCCA,
@@ -115,6 +114,7 @@ Suggests:
     mirt,
     missForest,
     MOFA2,
+    nipalsMCIA,
     openxlsx,
     patchwork,
     reticulate,

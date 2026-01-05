@@ -21,7 +21,8 @@ test_that("run_factor_overlap() returns expected object and annotations", {
 
     # Perform multi-omics integration and extract top features
     mae <- run_multiomics_integration(mae,
-        method = "MCIA",
+        method = "DIABLO",
+        outcome = "smoker",
         n_factors = 3
     )
 

@@ -46,7 +46,8 @@
 #' # perform multiomics integration
 #' mae <- run_multiomics_integration(
 #'     mae,
-#'     method = "MCIA",
+#'     method = "DIABLO",
+#'     outcome = "smoker",
 #'     n_factors = 3
 #' )
 #'
@@ -239,7 +240,6 @@ run_multiomics_integration <- function(
 #' @return An MCIA result object from `nipalsMCIA::nipals_multiblock()`.
 #' @keywords internal
 #' @noRd
-#' @importFrom nipalsMCIA nipals_multiblock
 .run_mcia <- function(
   exposomicset_mo,
   n_factors
@@ -247,7 +247,7 @@ run_multiomics_integration <- function(
     message("Applying MCIA with `nipalsMCIA`")
 
     # Run NIPALS MCIA on the MultiAssayExperiment
-
+    .check_suggested("nipalsMCIA")
     result <- nipalsMCIA::nipals_multiblock(
         exposomicset_mo,
         col_preproc_method = "colprofile",

@@ -60,7 +60,8 @@
 #' # perform multiomics integration
 #' mae <- run_multiomics_integration(
 #'     mae,
-#'     method = "MCIA",
+#'     method = "DIABLO",
+#'     outcome = "smoker",
 #'     n_factors = 3
 #' )
 #'
@@ -108,6 +109,7 @@ extract_top_factor_features <- function(
             MOFA2::get_weights(integration_results$result)
         },
         "MCIA" = {
+            .check_suggested("nipalsMCIA")
             message("Using MCIA block loadings.")
             integration_results$result@block_loadings
         },

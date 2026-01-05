@@ -1,3 +1,7 @@
+# tidyexposomics 0.99.11
+
+* Setting `nipalsMCIA` to suggests due to `nipalsMCIA` RMD check failures.
+
 # tidyexposomics 0.99.10
 
 * Fixed `set.seed()` to make network plots consistent within vignette.

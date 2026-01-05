@@ -60,7 +60,8 @@ mae <- make_example_data(
 
 mae <- run_multiomics_integration(
     mae,
-    method = "MCIA",
+    method = "DIABLO",
+    outcome = "smoker",
     n_factors = 3
 )
 
