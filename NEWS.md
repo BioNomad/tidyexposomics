@@ -1,3 +1,7 @@
+# tidyexposomics 0.99.12
+
+* Removing `.Rproj.user` directory.
+
 # tidyexposomics 0.99.11
 
 * Setting `nipalsMCIA` to suggests due to `nipalsMCIA` RMD check failures.
