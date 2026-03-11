@@ -72,7 +72,12 @@ run_association <- function(
     data <- exposomicset |>
         MultiAssayExperiment::colData() |>
         as.data.frame() |>
-        dplyr::mutate_if(is.numeric, ~ as.numeric(scale(.)))
+        dplyr::mutate(dplyr::across(
+            where(is.numeric) &
+                !all_of(outcome),
+            ~ as.numeric(scale(.))
+        ))
+    # dplyr::mutate_if(is.numeric, ~ as.numeric(scale(.)))
 
     # switch based on input
     features_df <- switch(source,
@@ -100,7 +105,7 @@ run_association <- function(
         ) |>
             tibble::column_to_rownames("id")
 
-        feature_cols <- setdiff(colnames(features_df), "id")
+        # feature_cols <- setdiff(colnames(features_df), "id")
     }
 
 
@@ -350,7 +355,11 @@ run_association <- function(
             .check_suggested("MOFA2")
             MOFA2::get_factors(result$result)[[1]]
         },
-        "MCIA" = result$result@global_scores,
+        "MCIA" = {
+            scores <- result$result@global_scores
+            colnames(scores) <- paste0("Factor", seq_len(ncol(scores)))
+            scores
+        },
         "MCCA" = {
             result$result$sample_scores |>
                 purrr::map(~ .x |>
@@ -511,15 +520,50 @@ run_association <- function(
   source,
   exposomicset
 ) {
-    if (source %in% c("omics", "factors")) {
+    if (source == "factors") {
+        method <- MultiAssayExperiment::metadata(exposomicset) |>
+            purrr::pluck("multiomics_integration", "integration_results", "method")
+
+        if (method %in% c("DIABLO", "RGCCA")) {
+            # These have assay prefixes in term names
+            exp_names <- names(MultiAssayExperiment::experiments(exposomicset)) |>
+                (\(chr) gsub(" ", "_", chr))()
+            matched <- data.frame(
+                exp_name = exp_names,
+                exp_name_clean = names(MultiAssayExperiment::experiments(exposomicset))
+            )
+            results <- results |>
+                dplyr::mutate(
+                    exp_name = stringr::str_extract(
+                        term, paste0("^(", paste(exp_names, collapse = "|"), ")")
+                    ),
+                    term = dplyr::case_when(
+                        grepl(paste(exp_names, collapse = "|"), term) ~
+                            gsub(paste0("(", paste0(exp_names, "_", collapse = "|"), ")"), "", term),
+                        .default = term
+                    )
+                ) |>
+                dplyr::inner_join(matched, by = "exp_name") |>
+                dplyr::select(-exp_name) |>
+                dplyr::rename(category = exp_name_clean)
+
+            results <- dplyr::mutate(results, term = paste(category, term, sep = " "))
+        } else {
+            # MOFA, MCIA, MCCA,  no assay prefix
+            # so leaving out exp_name/category
+            results <- results
+        }
+
+        return(results)
+    }
+
+    if (source == "omics") {
         exp_names <- names(MultiAssayExperiment::experiments(exposomicset)) |>
             (\(chr) gsub(" ", "_", chr))()
-
         matched <- data.frame(
             exp_name = exp_names,
             exp_name_clean = names(MultiAssayExperiment::experiments(exposomicset))
         )
-
         results <- results |>
             dplyr::mutate(
                 exp_name = stringr::str_extract(
@@ -527,42 +571,16 @@ run_association <- function(
                 ),
                 term = dplyr::case_when(
                     grepl(paste(exp_names, collapse = "|"), term) ~
-                        gsub(paste0(
-                            "(", paste0(exp_names, "_", collapse = "|"), ")"
-                        ), "", term),
+                        gsub(paste0("(", paste0(exp_names, "_", collapse = "|"), ")"), "", term),
                     .default = term
                 )
             ) |>
             dplyr::inner_join(matched, by = "exp_name") |>
             dplyr::select(-exp_name) |>
-            dplyr::rename(category = exp_name_clean)
+            dplyr::rename(category = exp_name_clean) |>
+            dplyr::mutate(category = gsub("_", " ", category))
 
-        if (source == "factors") {
-            method <- MultiAssayExperiment::metadata(exposomicset) |>
-                purrr::pluck(
-                    "multiomics_integration",
-                    "integration_results",
-                    "method"
-                )
-
-            if (method %in% c("DIABLO", "RGCCA")) {
-                results <- dplyr::mutate(
-                    results,
-                    term = paste(category, term, sep = " ")
-                )
-            }
-        }
-    }
-
-    if (source == "exposures") {
-        results <- results |>
-            dplyr::left_join(
-                MultiAssayExperiment::metadata(exposomicset)$codebook,
-                by = c("term" = "variable")
-            )
-    }
-
-    if (source == "omics") {
+        # Add feature metadata
         feature_df <- lapply(
             names(MultiAssayExperiment::experiments(exposomicset)),
             function(name) {
@@ -577,12 +595,101 @@ run_association <- function(
             dplyr::bind_rows()
 
         results <- results |>
-            dplyr::mutate(category = gsub("_", " ", category)) |>
-            dplyr::left_join(
-                feature_df,
-                by = c("term" = ".feature", "category" = "exp_name")
-            )
+            dplyr::left_join(feature_df, by = c("term" = ".feature", "category" = "exp_name"))
+
+        return(results)
     }
 
-    return(results)
+    if (source == "exposures") {
+        results <- results |>
+            dplyr::left_join(
+                MultiAssayExperiment::metadata(exposomicset)$codebook,
+                by = c("term" = "variable")
+            )
+        return(results)
+    }
+
+    results
 }
+
+# .annotate_results_by_source <- function(
+#   results,
+#   source,
+#   exposomicset
+# ) {
+#     if (source %in% c("omics", "factors")) {
+#         exp_names <- names(MultiAssayExperiment::experiments(exposomicset)) |>
+#             (\(chr) gsub(" ", "_", chr))()
+#
+#         matched <- data.frame(
+#             exp_name = exp_names,
+#             exp_name_clean = names(MultiAssayExperiment::experiments(exposomicset))
+#         )
+#
+#         results <- results |>
+#             dplyr::mutate(
+#                 exp_name = stringr::str_extract(
+#                     term, paste0("^(", paste(exp_names, collapse = "|"), ")")
+#                 ),
+#                 term = dplyr::case_when(
+#                     grepl(paste(exp_names, collapse = "|"), term) ~
+#                         gsub(paste0(
+#                             "(", paste0(exp_names, "_", collapse = "|"), ")"
+#                         ), "", term),
+#                     .default = term
+#                 )
+#             ) |>
+#             dplyr::inner_join(matched, by = "exp_name") |>
+#             dplyr::select(-exp_name) |>
+#             dplyr::rename(category = exp_name_clean)
+#
+#         if (source == "factors") {
+#             method <- MultiAssayExperiment::metadata(exposomicset) |>
+#                 purrr::pluck(
+#                     "multiomics_integration",
+#                     "integration_results",
+#                     "method"
+#                 )
+#
+#             if (method %in% c("DIABLO", "RGCCA")) {
+#                 results <- dplyr::mutate(
+#                     results,
+#                     term = paste(category, term, sep = " ")
+#                 )
+#             }
+#         }
+#     }
+#
+#     if (source == "exposures") {
+#         results <- results |>
+#             dplyr::left_join(
+#                 MultiAssayExperiment::metadata(exposomicset)$codebook,
+#                 by = c("term" = "variable")
+#             )
+#     }
+#
+#     if (source == "omics") {
+#         feature_df <- lapply(
+#             names(MultiAssayExperiment::experiments(exposomicset)),
+#             function(name) {
+#                 SummarizedExperiment::rowData(
+#                     MultiAssayExperiment::experiments(exposomicset)[[name]]
+#                 ) |>
+#                     as.data.frame() |>
+#                     tibble::rownames_to_column(".feature") |>
+#                     dplyr::mutate(exp_name = name)
+#             }
+#         ) |>
+#             dplyr::bind_rows()
+#
+#         results <- results |>
+#             dplyr::mutate(category = gsub("_", " ", category)) |>
+#             dplyr::left_join(
+#                 feature_df,
+#                 by = c("term" = ".feature",
+#                        "category" = "exp_name")
+#             )
+#     }
+#
+#     return(results)
+# }
