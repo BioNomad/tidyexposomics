@@ -11,16 +11,19 @@ template:
     bg: primary
     type: dark
     structure:
-      left:  [get-started,articles,reference]
+      left:  [get-started,exwas,omics,reference]
       right: [search, github, lightswitch]
     components:
       home: ~
       get-started:
         text: "Get Started"
         href: tidyexposomics.html
-      faq:
-        text: "FAQ"
-        href: faq.html
+      exwas:
+        text: "ExWAS"
+        href: exwas.html
+      omics:
+        text: "Omics Integration"
+        href: omics_integration.html
 
 reference:
 - title: Correlation/Association
@@ -53,7 +56,7 @@ reference:
   - starts_with("download")
   - starts_with("load")
   - starts_with("make")
-
+  - starts_with("tidyexposomics")
 
 
 
