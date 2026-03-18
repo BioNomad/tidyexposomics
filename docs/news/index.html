@@ -5,7 +5,7 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Changelog"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Changelog"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,6 +23,10 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/exwas.html">Epidemiology-Only Workflow</a></li>
+  </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -46,6 +50,61 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.14" id="tidyexposomics-09914">tidyexposomics 0.99.14<a class="anchor" aria-label="anchor" href="#tidyexposomics-09914"></a></h2>
+<ul><li>Fixed extract top factor features MCIA factor mapping.</li>
+<li>Updated Zenodo download to incorporate a checksums validation.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.13" id="tidyexposomics-09913">tidyexposomics 0.99.13<a class="anchor" aria-label="anchor" href="#tidyexposomics-09913"></a></h2>
+<ul><li>Fixed run_association function to take factors from MCIA.</li>
+<li>Added function to perform pairwise exposure-omics association testing.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.12" id="tidyexposomics-09912">tidyexposomics 0.99.12<a class="anchor" aria-label="anchor" href="#tidyexposomics-09912"></a></h2>
+<ul><li>Removing <code>.Rproj.user</code> directory.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.11" id="tidyexposomics-09911">tidyexposomics 0.99.11<a class="anchor" aria-label="anchor" href="#tidyexposomics-09911"></a></h2>
+<ul><li>Setting <code>nipalsMCIA</code> to suggests due to <code>nipalsMCIA</code> RMD check failures.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.10" id="tidyexposomics-09910">tidyexposomics 0.99.10<a class="anchor" aria-label="anchor" href="#tidyexposomics-09910"></a></h2>
+<ul><li>Fixed <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> to make network plots consistent within vignette.</li>
+<li>Fixed issue with impute exposure logic.</li>
+<li>Updated naming conventions for variable maps.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.9" id="tidyexposomics-0999">tidyexposomics 0.99.9<a class="anchor" aria-label="anchor" href="#tidyexposomics-0999"></a></h2>
+<ul><li>Added <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> to make network plots consistent.</li>
+<li>Updated vignette formatting and PCA documentation.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.8" id="tidyexposomics-0998">tidyexposomics 0.99.8<a class="anchor" aria-label="anchor" href="#tidyexposomics-0998"></a></h2>
+<ul><li>Added BiocFileCache-based caching and removed globalenv assignments.</li>
+<li>Swithced to small example data for vignette and added figure captions.</li>
+<li>Added MultiAssayExperiment to Depends.</li>
+<li>Standardized MIT license file.</li>
+<li>Updated pipeline summary output.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.5" id="tidyexposomics-099509960997">tidyexposomics 0.99.5/0.99.6/0.99.7<a class="anchor" aria-label="anchor" href="#tidyexposomics-099509960997"></a></h2>
+<ul><li>Removed .Rproj tracking, .gitignore lines.</li>
+<li>Updated testing strategy.</li>
+<li>Modified dependency to 4.5.0.</li>
+<li>Added vignette chunk labels.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.2" id="tidyexposomics-099209930994">tidyexposomics 0.99.2/0.99.3/0.99.4<a class="anchor" aria-label="anchor" href="#tidyexposomics-099209930994"></a></h2>
+<ul><li>Updated namespace issues with tidybulk.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.1" id="tidyexposomics-0991">tidyexposomics 0.99.1<a class="anchor" aria-label="anchor" href="#tidyexposomics-0991"></a></h2>
+<ul><li>Updated variable language for consistency.</li>
+<li>Pre-build objects for vignette run time.</li>
+<li>Updated circos plot visuals.</li>
+<li>Updated network functions to create unique node names.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.0" id="tidyexposomics-0990">tidyexposomics 0.99.0<a class="anchor" aria-label="anchor" href="#tidyexposomics-0990"></a></h2>
 <ul><li>Initial Bioconductor submission.</li>
 <li>Implements a full exposome-omics pipeline including:
@@ -57,7 +116,8 @@
 <li>Vizualization</li>
 </ul></li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
@@ -65,7 +125,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
