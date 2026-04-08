@@ -7,8 +7,8 @@
 #' @param result A character string indicating which result to
 #' extract from metadata. Must be one of:
 #' `"codebook"`, `"quality_control"`, `"correlation"`, `"association"`,
-#' `"differential_analysis"`, `"multiomics_integration"`, `"network"`,
-#'  or `"enrichment"`.
+#' `"mixture_analysis"`, `"differential_analysis"`, `"multiomics_integration"`,
+#'  `"network"`, `"enrichment"`.
 #'
 #' @return The corresponding result object stored in `metadata(exposomicset)`,
 #'  or `NULL` if not present.

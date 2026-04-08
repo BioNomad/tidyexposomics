@@ -111,7 +111,15 @@ extract_top_factor_features <- function(
         "MCIA" = {
             .check_suggested("nipalsMCIA")
             message("Using MCIA block loadings.")
-            integration_results$result@block_loadings
+            # integration_results$result@block_loadings
+
+            loadings <- integration_results$result@block_loadings
+            # Rename columns within each blocks loading matrix
+            loadings <- purrr::map(loadings, function(mat) {
+                colnames(mat) <- paste0("Factor", seq_len(ncol(mat)))
+                mat
+            })
+            loadings
         },
         "DIABLO" = {
             message("Using DIABLO loadings.")

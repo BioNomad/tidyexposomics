@@ -323,7 +323,8 @@ run_enrichment <- function(
 
     # Fix for fenr given it is trying to assert a dead link exists
     if (db == "GO") {
-        url <- paste0("http://current.geneontology.org/annotations/", species, ".gaf.gz")
+        # url <- paste0("http://current.geneontology.org/annotations/", species, ".gaf.gz")
+        url <- "http://current.geneontology.org/annotations"
         options(GO_ANNOTATION_URL = url)
     }
 

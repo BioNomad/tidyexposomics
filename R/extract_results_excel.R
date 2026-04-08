@@ -13,6 +13,7 @@
 #'  to export. Options include:
 #'   - `"correlation"`: Correlation results.
 #'   - `"association"`: Association results.
+#'   - `"mixture_analysis"`: Mixture Analysis results.
 #'   - `"differential_analysis"`: Differential abundance results,
 #'    including sensitivity analysis if available.
 #'   - `"multiomics_integration"`: Common top features contributing to
@@ -63,6 +64,7 @@ extract_results_excel <- function(
   result_types = c(
       "correlation",
       "association",
+      "mixture_analysis",
       "differential_analysis",
       "multiomics_integration",
       "network",
@@ -79,6 +81,7 @@ extract_results_excel <- function(
     all_types <- c(
         "correlation",
         "association",
+        "mixture_analysis",
         "differential_analysis",
         "multiomics_integration",
         "network",
@@ -142,6 +145,66 @@ extract_results_excel <- function(
             purrr::iwalk(enr, function(obj, groupname) {
                 df <- obj
                 safe_add_sheet(paste0("association_", groupname), df)
+            })
+        }
+    }
+
+    # --- Adding Mixture Analysis Results ---------
+    if ("mixture_analysis" %in% result_types) {
+        message("Writing Mixture Analysis Results.")
+        mix <- MultiAssayExperiment::metadata(exposomicset)$mixture_analysis
+
+        if (!is.null(mix) && is.list(mix)) {
+            purrr::iwalk(mix, function(res, method_name) {
+                # Weights (all methods have this)
+                if (!is.null(res$weights)) {
+                    safe_add_sheet(
+                        paste0("Mixture_Weights_", method_name),
+                        res$weights
+                    )
+                }
+
+                # Mixture effect (all methods have this)
+                if (!is.null(res$mixture_effect)) {
+                    safe_add_sheet(
+                        paste0("Mixture_Effect_", method_name),
+                        res$mixture_effect
+                    )
+                }
+
+                # Method-specific outputs
+                # qgcomp: partial_effects
+                if (!is.null(res$partial_effects)) {
+                    safe_add_sheet(
+                        paste0("Mixture_Partial_", method_name),
+                        res$partial_effects
+                    )
+                }
+
+                # wqs: model_summary
+                if (!is.null(res$model_summary)) {
+                    safe_add_sheet(
+                        paste0("Mixture_Model_", method_name),
+                        res$model_summary
+                    )
+                }
+
+                # Metadata summary sheet
+                meta_df <- tibble::tibble(
+                    field = c("method", "outcome", "family", "n_samples", "exposures", "covariates"),
+                    value = c(
+                        res$method %||% NA_character_,
+                        res$outcome %||% NA_character_,
+                        res$family %||% NA_character_,
+                        as.character(res$n_samples %||% NA),
+                        paste(res$exposures, collapse = ", "),
+                        paste(res$covariates %||% "none", collapse = ", ")
+                    )
+                )
+                safe_add_sheet(
+                    paste0("Mixture_Info_", method_name),
+                    meta_df
+                )
             })
         }
     }

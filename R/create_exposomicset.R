@@ -1,33 +1,52 @@
 #' Create an Exposomicset Object
 #'
-#' Constructs a `MultiAssayExperiment` object from exposure data and omics datasets,
-#' ensuring proper formatting and alignment of samples and features.
+#' Constructs a `MultiAssayExperiment` object from exposure data and optionally
+#' omics datasets, ensuring proper formatting and alignment of samples and
+#' features. For epidemiology-only workflows, omics data can be omitted.
 #'
 #' @param codebook A data frame containing variable information metadata.
 #' @param exposure A data frame containing exposure data,
 #' with rows as samples and columns as variables.
-#' @param omics A list of matrices or a single matrix representing omics data.
-#'  Each matrix should have samples as columns and features as rows.
+#' @param omics An optional list of matrices or a single matrix representing
+#' omics data. Each matrix should have samples as columns and features as rows.
+#' If `NULL`, creates an exposure-only exposomicset. Default is `NULL`.
 #' @param row_data An optional list of `DataFrame` objects providing
 #' feature metadata for each omics dataset. If `NULL`,
 #' row metadata is generated automatically. Default is `NULL`.
 #'
 #' @details
-#' The function validates inputs, converts `omics` into a list if necessary,
-#' ensures all datasets are matrices with column names,
-#' and creates `SummarizedExperiment` objects for each omics dataset.
-#' It then constructs a `MultiAssayExperiment` object
-#' with exposure data in `colData` and variable information stored in metadata.
+#' The function validates inputs and creates a `MultiAssayExperiment` object.
+#' If omics data is provided, it converts matrices into `SummarizedExperiment`
+#' objects with proper sample alignment. If omics is `NULL`, the function
+#' creates an exposure-only object suitable for epidemiological analyses
+#' using `run_association()` with `source = "exposures"`.
 #'
 #' @return A `MultiAssayExperiment` object containing the formatted exposure
-#' and omics datasets.
+#' and optionally omics datasets.
 #'
 #' @examples
+#' # Epi user workflow
+#' # so no omics data
+#' epi_data <- data.frame(
+#'     pm25 = rnorm(10),
+#'     outcome = rbinom(10, 1, 0.5),
+#'     age = rnorm(10, 45, 10),
+#'     row.names = paste0("subj_", 1:10)
+#' )
 #'
-#' # make the example data
+#' codebook <- data.frame(
+#'     variable = c("pm25", "outcome", "age"),
+#'     category = c("exposure", "outcome", "covariate")
+#' )
+#'
+#' mae <- create_exposomicset(
+#'     codebook = codebook,
+#'     exposure = epi_data
+#' )
+#'
+#' # Multi-omics workflow
 #' tmp <- make_example_data(n_samples = 10)
 #'
-#' # create the MultiAssayExperiment Object
 #' mae <- create_exposomicset(
 #'     codebook = tmp$codebook,
 #'     exposure = tmp$exposure,
@@ -39,13 +58,44 @@
 create_exposomicset <- function(
   codebook,
   exposure,
-  omics,
+  omics = NULL,
   row_data = NULL
 ) {
-    # Validate inputs
+    # Validate exposure input
     if (!is.data.frame(exposure)) {
         stop("The 'exposure' argument must be a data frame.")
     }
+    if (is.null(rownames(exposure))) {
+        stop("Exposure data must have rownames.")
+    }
+
+   col_data <- S4Vectors::DataFrame(exposure, row.names = rownames(exposure))
+
+    # Handle epi-only case (no omics)
+   if (is.null(omics)) {
+     message("No omics data provided. Creating exposure-only exposomicset.")
+
+     # Create a minimal placeholder experiment with 0 features
+     placeholder <- SummarizedExperiment::SummarizedExperiment(
+       assays = S4Vectors::SimpleList(
+         placeholder = matrix(
+           nrow = 0,
+           ncol = nrow(exposure),
+           dimnames = list(NULL, rownames(exposure))
+         )
+       )
+     )
+
+     mae <- MultiAssayExperiment::MultiAssayExperiment(
+       experiments = list(.exposures = placeholder),
+       colData = col_data,
+       metadata = list(codebook = codebook)
+     )
+     message("MultiAssayExperiment created successfully.")
+     return(mae)
+   }
+
+    # Validate omics-related inputs
     if (!is.null(row_data) && !is.list(row_data)) {
         stop("The 'row_data' argument must be a list if provided.")
     }
@@ -89,8 +139,8 @@ create_exposomicset <- function(
     message("Creating SummarizedExperiment objects.")
     experiments <- mapply(
         function(data, row_meta) {
-            sample_order <- sort(colnames(data)) # Enforce ordered sample names
-            data <- data[, sample_order, drop = FALSE] # Reorder columns
+            sample_order <- sort(colnames(data))
+            data <- data[, sample_order, drop = FALSE]
             SummarizedExperiment::SummarizedExperiment(
                 assays = S4Vectors::SimpleList(counts = data),
                 rowData = row_meta
@@ -101,16 +151,11 @@ create_exposomicset <- function(
         SIMPLIFY = FALSE
     )
 
-    col_data <- S4Vectors::DataFrame(exposure)
-    if (is.null(rownames(col_data))) {
-        stop("Exposure data must have rownames.")
-    }
-
-    # Create MultiAssayExperiment without enforcing sample consistency
+    # Create MultiAssayExperiment
     message("Creating MultiAssayExperiment object.")
     mae <- MultiAssayExperiment::MultiAssayExperiment(
         experiments = experiments,
-        colData = col_data, # Keep all exposure samples without filtering
+        colData = col_data,
         metadata = list(codebook = codebook)
     )
 

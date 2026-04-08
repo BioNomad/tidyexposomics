@@ -99,8 +99,6 @@ run_exposure_omics_association <- function(
             exposomicset |>
                 .update_assay_colData(assay_name) |>
                 .filter_top_features(
-                    se,
-                    top_n = top_n,
                     top_pct = top_pct,
                     filter_by = filter_by
                 ) |>
@@ -205,7 +203,7 @@ run_exposure_omics_association <- function(
                     estimate = logFC,
                     t_statistic = t,
                     p.value = P.Value,
-                    p_adjust_within = adj.P.Val
+                    p_adjust = adj.P.Val
                 )
         }) |>
         dplyr::bind_rows()
