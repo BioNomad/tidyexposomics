@@ -1,3 +1,17 @@
+# tidyexposomics 1.0.0
+
+* Bump version for Bioconductor release. 
+
+# tidyexposomics 0.99.14
+
+* Fixed extract top factor features MCIA factor mapping.
+* Updated Zenodo download to incorporate a checksums validation.
+
+# tidyexposomics 0.99.13
+
+* Fixed run_association function to take factors from MCIA.
+* Added function to perform pairwise exposure-omics association testing.
+
 # tidyexposomics 0.99.12
 
 * Removing `.Rproj.user` directory.
