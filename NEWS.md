@@ -1,4 +1,4 @@
-# tidyexposomics 1.0.0
+# tidyexposomics 0.99.15
 
 * Bump version for Bioconductor release. 
 
