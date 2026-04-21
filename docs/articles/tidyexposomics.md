@@ -1,20 +1,5 @@
 # Introduction to tidyexposomics
 
-Exposure to environmental factors is a major determinant of health and
-disease. The exposome is a term that represents the totality of
-environmental exposures (or in practical terms, the integrated
-compilation of all physical, chemical, biological, and (psycho)social
-influences that impact biology) from conception to death, that drive
-disease and overall health (Miller & Banbury Exposomics Consortium,
-2025; Wild, 2005). Characterizing the relationship between a
-multiplicity of exposures and disease outcomes can be a daunting task.
-Epidemiological studies have moved towards exposure-wide association
-studies (ExWAS) where sets of exposures are associated with an outcome
-(Chung et al., 2024). The advent of high-throughput technologies has
-enabled profiling of several layers of biological information. These
-layers can also be integrated to better understand the relationship
-between exposures and disease outcomes.
-
 The `tidyexposomics` package is designed to facilitate the integration
 of exposure and omics data to identify exposure-omics associations and
 their relevance to health outcomes.`tidyexposomics` extends the
@@ -64,111 +49,6 @@ storing the omics/exposure data or to return results directly using
 are tracked and can be output to the R console, plotted as a workflow
 diagram, or exported to an Excel worksheet.
 
-## Exposure Metadata and Ontology Annotation
-
-------------------------------------------------------------------------
-
-### Codebook Setup
-
-Before starting an exposomics data analysis we recommend having a
-codebook, with information on your exposure variables. Some suggestions:
-
-- **Variable Name**: The name of the variable in the data set.
-
-- **Variable Description**: A concise description of what the variable
-  measures, including units (e.g., “urinary bisphenol A (ng/mL)”).
-
-- **Variable Type**: The type of variable, such as continuous,
-  categorical, or binary.
-
-- **Variable Period**: The period of time over which the variable was
-  measured, such as “lifetime”, “year”, “month”, or “day”.
-
-- **Variable Location**: The location where the variable was measured,
-  such as “home”, “work”, “school”, or “geospatial code”.
-
-- **Variable Ontology**: The ontology term associated with the variable.
-
-### Ontology Choices
-
-Variables captured in the codebook should be annotated with ontology
-terms to provide a standardized vocabulary for the variables. We
-recommend using the following ontologies for exposure and outcome
-variables:
-
-- [Environment Exposure
-  Ontology](https://www.ebi.ac.uk/ols4/ontologies/ecto) to annotate your
-  exposure variables.
-
-- [Human Phenotype Ontology](https://www.ebi.ac.uk/ols4/ontologies/hp)
-  to annotate your outcome variables and phenotypic data.
-
-- [Chemical Entities of Biological
-  Interest](https://www.ebi.ac.uk/ols4/ontologies/chebi) to annotate
-  your chemical exposure variables.
-
-**Why annotate with ontologies?**
-
-- **Interpretability**: Ontology labels clarify ambiguous or
-  inconsistently named variables.
-
-- **Harmonization**: You can compare and combine variables across
-  datasets when they map to the same term.
-
-- **Grouping**: Ontologies allow you to collapse fine-grained exposures
-  into broader categories.
-
-- **Integration**: Many public tools, knowledge graphs, and repositories
-  are ontology-aware. This can make your results more interoperable and
-  reusable.
-
-### Ontology Annotation App
-
-To help annotate exposure variables, we provide a lightweight shiny app:
-
-``` r
-# Launch the shiny app to annotate exposure variables
-shiny::runApp(build_ont_annot_app())
-```
-
-**To use the app:**
-
-- Click **Browse** to select your exposure metadata file.
-
-- Then you can click the variable you’d like to link to an annotation
-  term and search in the **Choose Ontology Term** dropdown.
-
-- After you select a term, you will see a short description of the term.
-
-- After you are done, click **Apply Annotate** to save the annotation.
-
-- Now you can group exposures into larger categories by selecting each
-  line and then choose your ontology and root depth level (where a lower
-  number means a more general term).
-
-- Then you can click **Apply Categorization** to apply the selected
-  categorization to the selected rows.
-
-- If the ontology has nothing to do with your variable, you may manually
-  enter a category in the **Category** column. This will change the
-  **Category Source** to manual and will not be linked to the ontology.
-
-- Once you have annotated all your variables click **Download Annotated
-  CSV** to save the annotated metadata file.
-
-![Screenshot of the ontology annotation app. The sidebar has an upload
-button to load your exposure metadata file. The main panel displays the
-uploaded exposure metadata where users can select variables to annotate
-and categorize. The sidebar also contains buttons to apply
-annotations/categorizations and download the annotated
-file.](ont_annot.png)
-
-Screenshot of the ontology annotation app. The sidebar has an upload
-button to load your exposure metadata file. The main panel displays the
-uploaded exposure metadata where users can select variables to annotate
-and categorize. The sidebar also contains buttons to apply
-annotations/categorizations and download the annotated file.
-
 ## Loading Data
 
 ------------------------------------------------------------------------
@@ -192,8 +72,9 @@ data. The create_expomicset function has several arguments:
   variables in the exposure metadata. The column names must contain
   variable where the values are the column names of the exposure data
   frame, and category which contains general categories for the variable
-  names. This is the data frame you created with the ontology annotation
-  app!
+  names. This is the data frame you created with the [ontology
+  annotation
+  app](https://BioNomad.github.io/tidyexposomics/articles/exposure_annotation.md)!
 
 - `exposure`: is a data frame that contains the exposure and other
   metadata.
@@ -851,141 +732,6 @@ status.](tidyexposomics_files/figure-html/plot-manhattan-1.png)
 
 Manhattan plot of omics-wide associations with asthma status.
 
-### Exposome Scores
-
-------------------------------------------------------------------------
-
-We can also calculate exposome scores, which are a summary measure of
-exposure. The `run_exposome_score` function is used to calculate the
-exposome score. The `exposure_cols` argument is used to set the columns
-to use for the exposome score. The `score_type` argument is used to set
-the type of score to calculate. Here we could use:
-
-- `median`: Calculates the median of the exposure variables.
-
-- `mean`: Calculates the mean of the exposure variables.
-
-- `sum`: Calculates the sum of the exposure variables.
-
-- `pca`: Calculates the first principal component of the exposure
-  variables.
-
-- `irt`: Uses Item Response Theory to calculate the exposome score.
-
-- `quantile`: Calculates the quantile of the exposure variables.
-
-- `var`: Calculates the variance of the exposure variables.
-
-The `score_column_name` argument is used to set the name of the column
-to store the exposome score in. Here we will define a score for aerosols
-using a variety of different methods and demonstrate their use in
-association with asthma status.
-
-``` r
-# determine which aerosol variables to use
-aerosols <- c("h_pm25_ratio_preg_None", "h_pm10_ratio_preg_None")
-
-# Create exposome scores
-expom <- expom |>
-    run_exposome_score(
-        exposure_cols = aerosols,
-        score_type = "median",
-        score_column_name = "exposome_median_score"
-    ) |>
-    run_exposome_score(
-        exposure_cols = aerosols,
-        score_type = "pca",
-        score_column_name = "exposome_pca_score"
-    ) |>
-    run_exposome_score(
-        exposure_cols = aerosols,
-        score_type = "irt",
-        score_column_name = "exposome_irt_score"
-    ) |>
-    run_exposome_score(
-        exposure_cols = aerosols,
-        score_type = "quantile",
-        score_column_name = "exposome_quantile_score"
-    ) |>
-    run_exposome_score(
-        exposure_cols = aerosols,
-        score_type = "var",
-        score_column_name = "exposome_var_score"
-    )
-```
-
-    ## Extracting exposure data...
-    ## Extracting exposure data...
-    ## Extracting exposure data...
-    ## Extracting exposure data...
-    ## Extracting exposure data...
-
-    ## Calculating median exposure scores...
-
-    ## Calculating PCA exposure scores...
-
-    ## Calculating IRT exposure scores...
-
-    ## Registered S3 method overwritten by 'vegan':
-    ##   method     from      
-    ##   rev.hclust dendextend
-
-    ## Warning: EM cycles terminated after 500 iterations.
-
-    ## Calculating quantile exposure scores...
-
-    ## Calculating variance exposure scores...
-
-We can then associate these exposome scores with asthma status using the
-`run_association` function, just like we did before. However, this time
-we specify our `feature_set` to be the exposome scores we just
-calculated.
-
-``` r
-# Associate exposome scores with outcome
-expom <- run_association(
-    exposomicset = expom,
-    outcome = "hs_asthma",
-    source = "exposures",
-    feature_set = c(
-        "exposome_median_score",
-        "exposome_pca_score",
-        "exposome_irt_score",
-        "exposome_quantile_score",
-        "exposome_var_score"
-    ),
-    action = "add",
-    family = "binomial"
-)
-```
-
-    ## Running GLMs.
-
-``` r
-# Plot the association forest plot
-plot_association(
-    exposomicset = expom,
-    source = "exposures",
-    terms = c(
-        "exposome_median_score",
-        "exposome_pca_score",
-        "exposome_irt_score",
-        "exposome_quantile_score",
-        "exposome_var_score"
-    ),
-    filter_col = "p.value",
-    filter_thresh = 0.05,
-    r2_col = "r2"
-)
-```
-
-![Associations of aerosol exposome scores with asthma status. The
-variance-based score has the strongest association with asthma
-status.](tidyexposomics_files/figure-html/plot-exposome-scores-1.png)
-
-Associations of aerosol exposome scores with asthma status. The
-variance-based score has the strongest association with asthma status.
-
 ## Differential Abundance
 
 ------------------------------------------------------------------------
@@ -1050,598 +796,52 @@ layers.](tidyexposomics_files/figure-html/volcano-plot-1.png)
 
 Volcano plot of differentially abundant features across omics layers.
 
-### Sensitivity Analysis
-
-Depending on pre-processing steps, the results of the differential
-abundance analysis may vary. The `sensitivity_analysis` function is used
-to perform a sensitivity analysis to determine the robustness of the
-results. Here we determine if a feature is still differentially abundant
-if different minimum values, proportions, scaling methods are used, the
-inclusion of covariates, and after bootstrapping. We then define a
-stability score based on the number of times a feature is found to be
-differentially abundant under different conditions as well as the
-consistency of the effect size:
-
-Where:
-
-\\ Stability\\ Score = \frac{\sum_i{(p_i \< \alpha)}}{N} \* \frac{1}{1 +
-\frac{\sigma\_{\beta}}{\mu\_{\|\beta\|}}}\\
-
-Where:
-
-- \\p_i\\ is the p-value for the \\i^{th}\\ test
-
-- \\\alpha\\ is the significance threshold
-
-- \\\beta\\ is the log fold change
-
-- \\N\\ is the number of tests
-
-- \\\sigma\_{\beta}\\ is the standard deviation of the effect size
-  estimates
-
-- \\\mu\_{\|\beta\|}\\ is the mean of the absolute value of the effect
-  size estimates.
-
-The first term captures the proportion of tests that are significant,
-while the second term captures the consistency of the effect size
-estimates. The stability score ranges from 0 to 1.
-
-A stability score of 1 indicates that the feature is always found to be
-differentially abundant, while a stability score of 0 indicates that the
-feature is never found to be differentially abundant. Besides these, we
-provide other score metrics as well:
-
-- `presence_rate`: Proportion of runs in which the feature’s p-value is
-  below the specified threshold (selection frequency).
-
-- `effect_consistency`: Inverse of the coefficient of variation of log
-  fold-changes; measures effect size stability across runs.
-
-- `stability_score`: Hybrid score combining presence_rate and
-  effect_consistency, capturing reproducibility and signal strength.
-
-- `mean_log_p`: Average of negative log-transformed p-values; represents
-  overall statistical signal strength.
-
-- `logp_weighted_score`: Product of `mean_log_p` and effect_consistency;
-  highlights consistently strong features.
-
-- `sd_logFC`: Standard deviation of log fold-change estimates;
-  quantifies variability of effect sizes.
-
-- `iqr_logFC`: Interquartile range of log fold-changes; provides a
-  robust measure of effect size spread.
-
-- `cv_logFC`: Coefficient of variation of log fold-changes; reflects
-  relative variability of effect size.
-
-- `sign_flip_freq`: Proportion of runs where the sign of the effect size
-  differs from the overall average direction.
-
-- `sd_log_p`: Standard deviation of log-transformed p-values; indicates
-  variability in statistical signal.
-
-``` r
-# Perform Sensitivity Analysis
-expom <- run_sensitivity_analysis(
-    exposomicset = expom,
-    base_formula = ~hs_asthma,
-    methods = c("limma_trend"),
-    scaling_methods = c("none"),
-    pval_col = "P.Value",
-    logfc_col = "logFC",
-    logFC_threshold = log2(1),
-    pval_threshold = 0.05,
-    stability_metric = "stability_score",
-    bootstrap_n = 10,
-    action = "add"
-)
-```
-
-    ## Running bootstrap iteration 1 of 10
-
-    ## Running bootstrap iteration 2 of 10
-
-    ## Running bootstrap iteration 3 of 10
-
-    ## Running bootstrap iteration 4 of 10
-
-    ## Running bootstrap iteration 5 of 10
-
-    ## Running bootstrap iteration 6 of 10
-
-    ## Running bootstrap iteration 7 of 10
-
-    ## Running bootstrap iteration 8 of 10
-
-    ## Running bootstrap iteration 9 of 10
-
-    ## Running bootstrap iteration 10 of 10
-
-    ## Computing feature stability across sensitivity conditions.
-
-    ## Feature stability analysis completed.
-
-    ## Number Of Features Above Threshold Of 0.32:
-
-    ## ----------------------------------------
-
-    ## Gene Expression: 11/471
-
-    ## Methylation: 5/277
-
-Now we can plot the distribution of stability scores and visualize how
-many features have scores greater than a threshold of 0.34.
-
-``` r
-# Plot distriubtion of stability scores
-plot_sensitivity_summary(
-    exposomicset = expom,
-    stability_score_thresh = 0.34,
-    stability_metric = "stability_score"
-)
-```
-
-    ## Number of Features with stability_score > 0.34:
-
-    ## Gene Expression: 9 / 471
-
-    ## Methylation: 4 / 277
-
-    ## Picking joint bandwidth of 0.024
-
-![Sensitivity summary highlighting robust features by stability
-score.](tidyexposomics_files/figure-html/plot-stability-score-1.png)
-
-Sensitivity summary highlighting robust features by stability score.
-
-## Multi-Omics Integration
-
-------------------------------------------------------------------------
-
-While differential abundance analysis per omics layer can deliver
-insights into how each omic is associated with a particular outcome, we
-may want to leverage methods which integrate multiple omics layers. The
-`run_multiomics_integration` function is used to integrate multiple
-omics layers. Here we use either `MCIA`, `RGCCA`, `MOFA`, or the
-`DIABLO` method to integrate omics layers:
-
-- `MCIA`: Multiple Co-inertia Analysis, a method that uses canonical
-  correlation analysis to integrate multiple omics layers. We use the
-  nipalsMCIA algorithm to compute the co-inertia scores from the
-  [`nipalsMCIA`
-  package](https://www.bioconductor.org/packages/release/bioc/html/nipalsMCIA.html)
-  (nipalsMCIA).
-
-- `RGCCA` : Generalized canonical correlation for flexible multi-block
-  integration implemented using the [`RGCCA`
-  package](https://rgcca-factory.github.io/RGCCA/) (Regularized and
-  Sparse Generalized Ca…).
-
-- `MOFA`: Multi-Omics Factor Analysis, a method that uses factor
-  analysis to integrate multiple omics layers. MOFA is implemented using
-  the [`MOFA2`
-  package](https://www.bioconductor.org/packages/release/bioc/html/MOFA2.html)
-  (MOFA2).
-
-- `DIABLO`: Supervised multi-block PLS for outcome-aligned latent
-  factors implemented using the [`mixOmics`
-  package](https://www.bioconductor.org/packages/devel/bioc/html/mixOmics.html)
-  (mixOmics).
-
-Here we are interested in integrating our omics layers with the end goal
-of identifying multi-omics features that are associated with asthma
-status. So, we will use the `DIABLO` method.
-
-``` r
-# Perform multi-omics integration
-expom <- run_multiomics_integration(
-    exposomicset = expom,
-    method = "DIABLO",
-    n_factors = 5,
-    outcome = "hs_asthma",
-    action = "add"
-)
-```
-
-    ## Scaling each assay in MultiAssayExperiment.
-
-    ## Running multi-omics integration using DIABLO...
-
-    ## Applying DIABLO supervised integration.
-
-    ## Design matrix has changed to include Y; each block will be
-    ##             linked to Y.
-
-We can then use `plot_factor_summary` to visualize which omics
-contribute most to which factors.
-
-``` r
-# Plot factor summary
-plot_factor_summary(
-    exposomicset = expom,
-    midpoint = 2.5
-)
-```
-
-![Contribution of each omics layer to DIABLO latent
-factors.](tidyexposomics_files/figure-html/factor-summary-1.png)
-
-Contribution of each omics layer to DIABLO latent factors.
-
-Here we see that these factors are largely driven by features in the
-gene expression data.
-
-### Factor Analysis
-
-These methods are designed to identify factors that we can then
-associate with an outcome variable. Here we will use the
-`run_association` function to identify factors that are associated with
-asthma status.
-
-``` r
-# Identify factors that are associated with the outcome
-expom <- run_association(
-    exposomicset = expom,
-    source = "factors",
-    outcome = "hs_asthma",
-    feature_set = exp_vars,
-    action = "add",
-    family = "binomial"
-)
-```
-
-    ## Running GLMs.
-
-Now let’s see if any of our factors are associated with asthma status.
-
-``` r
-# Plot the forest plot
-plot_association(
-    exposomicset = expom,
-    source = "factors",
-    filter_col = "p_adjust",
-    filter_thresh = 0.05,
-    r2_col = "r2"
-)
-```
-
-![Associations of latent factors with asthma after covariate
-adjustment.](tidyexposomics_files/figure-html/plot-associate-factors-1.png)
-
-Associations of latent factors with asthma after covariate adjustment.
-
-We see that several factors are associated with our outcome. Factors
-have loading scores which indicate the strength of the association
-between the factor and the features. Here we can extract the top
-features, those in the 70th percentile, per omic, associated with our
-factors of interest. We set the `pval_col` and `pval_thresh` to filter
-our association results to grab the factors that pass our thresholds.
-However, we could specify specific factors with the `factors` argument
-too.
-
-``` r
-# Extract top features that contribute to a factor
-expom <- extract_top_factor_features(
-    exposomicset = expom,
-    method = "percentile",
-    pval_col = "p_adjust",
-    pval_thresh = 0.05,
-    percentile = 0.7,
-    action = "add"
-)
-```
-
-    ## Extracting top contributing features for specified factors.
-
-    ## Using DIABLO loadings.
-
-    ## Applying percentile-based filtering (>70%).
-
-    ## Selected 589 features contributing to specified factors.
-
-We can visualize the top features associated with each factor using the
-`plot_top_factor_features` function. The `top_n` argument is used to set
-the number of top features to plot. The factors argument is used to set
-the factors to plot.
-
-``` r
-# Plot the top factor features
-plot_top_factor_features(
-    exposomicset = expom,
-    top_n = 5,
-    feature_col = "feature_clean"
-)
-```
-
-![Top-loading features per factor and omics
-layer.](tidyexposomics_files/figure-html/plot-top-features-1.png)
-
-Top-loading features per factor and omics layer.
-
 ## Exposure-Omics Association
 
 ------------------------------------------------------------------------
 
 ### Exposure-Omics Association
 
-Now we have the option to correlate either the top factor features,
-differentially abundant features, or user-specified omics features (by
-using a variable map, a data frame with two columns, `exp_name` for the
-name of the omics assay, and `variable` for the name of the molecular
-feature) with exposures.
-
-Here we will correlate features driving multiple latent factors with
-exposures. To grab these features, we will grab them from the metadata
-in our `MultiAssayExperiment` object. The `correlation_cutoff` is used
-to set the minimum correlation score, while the `pval_cutoff` is used to
-set the maximum p-value for the association.
+Above we saw that there are not too many omics features associated with
+asthma. Which may be due to the subsampling in this example or because
+exposures are driving different biology. Let’s examine what omics
+features exposures are associated with.
 
 ``` r
-# Grab top common factor features and ensure
-# feature is renamed to variable for the variable_map
-top_factor_features <- expom |>
-    extract_results(result = "multiomics_integration") |>
-    pluck("top_factor_features") |>
-    dplyr::select(variable = feature, exp_name)
-
-# Correlate top factor features with exposures
-# Perform correlation analysis between
-# factor features and exposures
-expom <- run_correlation(
+# Run association testing between every exposure and omics feature
+expom <- run_exposure_omics_association(
     exposomicset = expom,
-    feature_type = "omics",
-    variable_map = top_factor_features,
-    exposure_cols = exp_vars,
-    action = "add",
-    correlation_cutoff = 0.3,
-    pval_cutoff = 0.05,
-    cor_pval_column = "p.value"
-)
-```
-
-    ## Log2-Transforming each assay in MultiAssayExperiment.
-
-``` r
-# Perform correlation analysis between factor features
-expom <- run_correlation(
-    exposomicset = expom,
-    feature_type = "omics",
-    variable_map = top_factor_features,
-    exposure_cols = exp_vars,
-    feature_cors = TRUE,
-    action = "add",
-    correlation_cutoff = 0.3,
-    pval_cutoff = 0.05,
-    cor_pval_column = "p.value"
-)
-```
-
-    ## Log2-Transforming each assay in MultiAssayExperiment.
-
-We can plot the results of the exposure-omics association analysis using
-the `plot_correlation_summary` function. Here we set the mode to
-`summary`, which will plot the number of associations per exposure and
-feature type. The `feature_type` argument is used to set the type of
-features to plot. Here we use `omics`, which are the top factor
-features.
-
-``` r
-# Plot correlation summary
-plot_correlation_summary(
-    exposomicset = expom,
-    mode = "summary",
-    feature_type = "omics"
-)
-```
-
-![Summary of exposure-omics and feature-feature
-associations.](tidyexposomics_files/figure-html/exp-omic-corr-summary-1.png)
-
-Summary of exposure-omics and feature-feature associations.
-
-Here we note that gene expression features have a greater number of
-associations with exposures. Among exposures, we see that aerosols have
-the greatest number of associations with features, which may reflect the
-larger number of aerosol variables.
-
-It may also be useful to identify which exposures are correlated with
-similar molecular features. We can do this with the
-`plot_circos_correlation` function. This function will plot a circos
-plot of the exposures and their shared features. The `feature_type`
-argument is used to set the correlation results to use for the analysis.
-Here we use the `omics` feature set, which plots the feature-exposure
-correlation information. The cutoff argument is used to set the minimum
-number of shared features to plot. Here we set the `shared_cutoff` to 1,
-which means that only exposures that share at least one feature will be
-plotted.
-
-``` r
-# Plot the circos plot of shared correlated features
-plot_circos_correlation(
-    exposomicset = expom,
-    feature_type = "omics",
-    shared_cutoff = 1,
-    midpoint = 1.5
-)
-```
-
-![Circos of exposures sharing correlated molecular
-features.](tidyexposomics_files/figure-html/exposure-shared-corr-1.png)
-
-Circos of exposures sharing correlated molecular features.
-
-Here we see that particulate matter exposures are correlated with many
-of the same features.
-
-### Network Analysis
-
-The `run_create_network` function is used to create a network of
-exposures and omics features. The correlation results are used to create
-the network. The `feature_type` argument is used to set the type of
-features to use for the network. We could choose any of the following:
-
-- `degs`: Differentially abundant features correlated with exposures.
-
-- `factors`: Factor features correlated with exposures.
-
-- `omics`: User specified omics features correlated with exposures.
-
-Here we create networks based on two correlation tables generated above:
-
-- `omics`: Correlations between omics and exposure variables.
-
-- `omics_feature_cor`: Correlation just between the omics features.
-
-This allows us to quantify a bipartite graph between exposures and omics
-features and a graph just between the omics features.
-
-``` r
-# Create omics within feature correlation network
-expom <- run_create_network(
-    exposomicset = expom,
-    feature_type = "omics_feature_cor",
+    exposures = exp_vars,
     action = "add"
 )
 ```
 
-    ## Creating network from correlation results.
+    ## Testing 9 exposures across 2 assays
 
-    ## Network added to metadata as: network_omics_feature_cor
+    ## Processing assay: Gene Expression
 
-``` r
-# Create omics-exposure correlation network
-expom <- run_create_network(
-    exposomicset = expom,
-    feature_type = "omics",
-    action = "add"
-)
-```
+    ## Processing assay: Methylation
 
-    ## Creating network from correlation results.
-
-    ## Network added to metadata as: network_omics
-
-To plot the network we can use the `plot_network` function. The network
-argument is used to set the type of network to plot. The `top_n_nodes`
-argument is used to set the number of nodes to plot. The
-`node_color_var` argument is used to set the variable to color the nodes
-by. The `label` argument is used to set whether or not to label the
-nodes. We can label the top n nodes, where the default is 5 nodes based
-on centrality. Additionally, we can choose to label certain nodes using
-the `nodes_to_label` argument. We can also include the network
-statistics using the `include_stats` argument.
+Now let’s see how many omics features each exposure is associated with
+using the `plot_exposure_omics_association` function where we can either
+plot by the individual exposure or exposure category:
 
 ``` r
-# Plot the exposure-omics network
-# Setting the seed so that the graph layout is consistent 
-# given that layouts can have random starting points
-set.seed(42)
-plot_network(
-    exposomicset = expom,
-    network = "omics",
-    top_n_nodes = 50,
-    include_stats = TRUE,
-    cor_thresh = 0.2,
-    node_color_var = "group",
-    label = TRUE,
-    label_top_n = 5
-)
+# Plot the number of exposure-omics associations
+plot_exposure_omics_association(
+  exposomicset = expom,
+  plot_type = "category",
+  pval_col = "p.value",
+  pval_thresh = 0.05)
 ```
 
-    ## Extracting graph.
+![Barplot of the number of omics features associated with
+exposures.](tidyexposomics_files/figure-html/plot-exp-omics-assoc-1.png)
 
-![Bipartite network of exposures and correlated omics features where
-node labels reflect most central
-nodes.](tidyexposomics_files/figure-html/plot-network-1.png)
+Barplot of the number of omics features associated with exposures.
 
-Bipartite network of exposures and correlated omics features where node
-labels reflect most central nodes.
-
-Here we note that the network is highly connected, with particulate
-matter and methyl paraben exposures having the most connections to omics
-features. To briefly explain the metrics mentioned:
-
-- **Nodes**: Number of nodes included in the graph.
-
-- **Edges**: Number of connections between nodes in the graph.
-
-- **Components**: Number of disconnected subgraphs.
-
-- **Diameter**: The longest shortest path between any two nodes.
-
-- **Mean Distance**: The average shortest path between any two nodes.
-
-- **Modularity**: A measure of the division in the graph, where higher
-  modularity indicates that nodes within the same community are more
-  densely connected compared to nodes in different communities.
-
-### Exposure-Omics Impact Network Analysis
-
-The bipartite graph above describes how exposures are associated with
-omics features. However, this does not describe if exposures are
-associated with features that are more central in the feature-only graph
-(i.e. are exposures associated with features that are more central or
-peripheral to the graph?). To answer this question, we can use the
-`run_exposure_impact` function to calculate centrality metrics for the
-omics features associated with a given exposure. Centrality is computed
-on the feature-only graph. Centrality metrics are used to identify
-features that are more central to the network and may be more important
-in the context of the exposure-omics relationships. The centrality
-metrics included are:
-
-- **Mean Betweenness Centrality**: Measures how often a node lies on the
-  shortest path between other nodes where high values indicate potential
-  intermediates.
-
-- **Mean Closeness Centrality**: Measures how close a node is to all
-  others in the network where high values indicate faster access to all
-  nodes.
-
-- **Mean Degree**: The average number of direct connections or edges a
-  node has.
-
-- **Mean Eigenvector Centrality**: Measures how well-connected a node is
-  and how well-connected its neighbors are, where high values suggest
-  influence in a well-connected cluster.
-
-``` r
-# Run exposure-omics impact analysis
-expom <- run_exposure_impact(
-    exposomicset = expom,
-    feature_type = "omics"
-)
-```
-
-To plot the results of the exposure-omics impact analysis, we can use
-the `plot_exposure_impact` function. We set `feature_type` to `omics`,
-which means that we are plotting the network metrics of the omics
-features correlated with exposures. The `min_per_group` argument is used
-to set the minimum number of features per group to plot. This is useful
-for filtering out exposures that do not have enough associated features.
-
-``` r
-# Plot the exposure impact summary
-plot_exposure_impact(
-    exposomicset = expom,
-    feature_type = "omics",
-    min_per_group = 10
-)
-```
-
-![Network centrality metrics of omics features associated with each
-exposure.](tidyexposomics_files/figure-html/plot-exposure-impact-1.png)
-
-Network centrality metrics of omics features associated with each
-exposure.
-
-Here we see that child PFNA (`hs_pfna_c_Log2`) exposure is associated
-with omics features that are central to our network, despite not having
-the greatest number of features associated with it. This suggests that
-childhood PFNA exposure may have a significant impact on the omics
-features, even if it is not associated with as many features as some of
-the other exposures.
+Here we can see that there are omics features associated with exposures,
+while there are fewer that are associated with asthma directly.
 
 ## Enrichment Analysis
 
@@ -1674,10 +874,34 @@ following feature types:
 - `factor_features_cor`: Multi-omics factor features correlated with a
   set of exposures.
 
-Here we will run enrichment analysis on factor features correlated with
-exposures. We specify `feature_col` to represent the column in our
-feature metadata with IDs that can be mapped (i.e. gene names). We will
-be performing Gene ontology enrichment powered by the [`fenr`
+Here we will run enrichment analysis on omics features associated with
+exposures. Specifically, we will grab omics features assoicated with
+aerosols using the `extract_results` function. This function allows us
+to pull any of the results we have been generating so far. We will then
+filter these association results to significant associations (p-value \<
+0.05) and those with the `category` “aerosol”.
+
+``` r
+# Extract omics features associated with aerosols
+var_map <- extract_results(
+  exposomicset = expom,
+  result = "association"
+) |> 
+  pluck("exposure_omics",
+        "results_df") |> 
+  filter(p.value<0.05) |>
+  filter(category == "aerosol") |> 
+  dplyr::select(
+    exp_name = exp_name,
+    variable = feature
+    
+  )
+```
+
+Now we will perform enrichment analysis and specify `feature_col` to
+represent the column in our feature metadata with IDs that can be mapped
+(i.e. gene names). We will be performing Gene ontology enrichment
+powered by the [`fenr`
 package](https://www.bioconductor.org/packages/release/bioc/html/fenr.html)
 (Fenr, 2025). Note that we specify a `clustering_approach.` This will
 cluster our enrichment terms by the molecular feature overlap.
@@ -1686,7 +910,8 @@ cluster our enrichment terms by the molecular feature overlap.
 # Run enrichment analysis on factor features correlated with exposures
 expom <- run_enrichment(
     exposomicset = expom,
-    feature_type = c("omics_cor"),
+    variable_map = var_map,
+    feature_type = "omics",
     feature_col = "feature_clean",
     db = c("GO"),
     species = "goa_human",
@@ -1702,7 +927,7 @@ expom <- run_enrichment(
 
     ## Determining Number of GO Term Clusters...
 
-    ## Optimal number of clusters for samples: 6
+    ## Optimal number of clusters for samples: 17
 
 ### Enrichment Visualizations
 
@@ -1746,12 +971,12 @@ a summary of the enrichment results, showing:
 # Plot the summary diagram
 plot_enrichment(
     exposomicset = expom,
-    feature_type = "omics_cor",
+    feature_type = "omics",
     plot_type = "summary"
 )
 ```
 
-    ## Picking joint bandwidth of 0.303
+    ## Picking joint bandwidth of 0.25
 
 ![Summary of enriched GO terms grouped by overlap and exposure
 category.](tidyexposomics_files/figure-html/enrichment-summary-1.png)
@@ -1766,15 +991,15 @@ results.
 #### DotPlot
 
 By setting the `plot_type` to dotplot we can create a dotplot to show
-which omics and which exposure categories are associated with which
-terms. By specifying the `top_n_genes` we can add the most frequent
-features in that particular enrichment term group.
+which omics are associated with which terms. By specifying the
+`top_n_genes` we can add the most frequent features in that particular
+enrichment term group.
 
 ``` r
 # Plot a dotplot of terms
 plot_enrichment(
     exposomicset = expom,
-    feature_type = "omics_cor",
+    feature_type = "omics",
     plot_type = "dotplot",
     top_n = 15,
     add_top_genes = TRUE,
@@ -1798,9 +1023,9 @@ terms are individually connected.
 set.seed(42)
 plot_enrichment(
     exposomicset = expom,
-    feature_type = "omics_cor",
+    feature_type = "omics",
     plot_type = "network",
-    label_top_n = 1
+    label_top_n = 3
 )
 ```
 
@@ -1810,42 +1035,36 @@ genes.](tidyexposomics_files/figure-html/enrichment-term-network-1.png)
 Network of enriched GO terms connected by shared genes.
 
 At the individual term level, we see that they differ by omics layer,
-with the gene expression driving terms related to protein binding and
-the methylation data driving terms related to DNA binding and
-transcription.
+with the gene expression driving terms related to vesicle traficking and
+the methylation data driving terms related to G protein-coupled receptor
+signaling.
 
 #### Heatmap
 
 Setting the `plot_type` to `heatmap` can help us understand which genes
 are driving the enrichment terms. We have the additional benefit of
 being able to color our tiles by the Log_2_Fold Change from our
-differential abundance testing. Here we will examine group 1, given it
+differential abundance testing. Here we will examine group 2, given it
 seems to be driven by the most terms and multiple omics layers.
 
 ``` r
 # Plot a heatmap of genes and corresponding GO terms
 plot_enrichment(
     exposomicset = expom,
-    feature_type = "omics_cor",
-    go_groups = "Group 1",
+    feature_type = "omics",
+    go_groups = "Group 2",
     plot_type = "heatmap",
     heatmap_fill = TRUE,
     feature_col = "feature_clean"
 )
 ```
 
-![Heatmap of genes driving enriched GO terms (Group 1) with log2
+![Heatmap of genes driving enriched GO terms (Group 2) with log2
 fold-change
 overlay.](tidyexposomics_files/figure-html/enrichment-heatmap-1.png)
 
-Heatmap of genes driving enriched GO terms (Group 1) with log2
+Heatmap of genes driving enriched GO terms (Group 2) with log2
 fold-change overlay.
-
-Here we see that methylation features have the strongest fold change
-with respect to asthma status. Interestingly, we see that gene
-expression of *GZMH*, a potent immune effector molecule, is upregulated
-in asthma and correlated with exposures in the polyatomic entity
-category.
 
 #### Cnet Plot
 
@@ -1858,8 +1077,8 @@ the enrichment terms are connected to the genes driving them.
 set.seed(42)
 plot_enrichment(
     exposomicset = expom,
-    feature_type = "omics_cor",
-    go_groups = "Group 1",
+    feature_type = "omics",
+    go_groups = "Group 2",
     plot_type = "cnet",
     feature_col = "feature_clean"
 )
@@ -1869,190 +1088,6 @@ plot_enrichment(
 1).](tidyexposomics_files/figure-html/enrichment-cnetplot-1.png)
 
 Cnet plot linking enriched terms to contributing genes (Group 1).
-
-## Custom Analysis
-
-We provide functionality to access the underlying data in the
-MultiAssayExperiment object and to construct tibbles for your own
-analysis:
-
-- `pivot_sample`: Pivot the sample data to a tibble with samples as rows
-  and exposures as columns.
-
-- `pivot_feature`: Pivot the feature metadata to a tibble with features
-  as rows and feature metadata as columns.
-
-- `pivot_exp`: Pivot the sample and experiment assay data to a tibble
-  with samples as rows and sample metadata as columns. Additionally,
-  there will be a column for values for specified features in specified
-  assays.
-
-### Pivot Sample
-
-Let’s check out the `pivot_sample` function. This function pivots the
-sample data to a tibble with samples as rows and exposures as columns.
-
-``` r
-# Pivot sample data to a tibble
-expom |>
-    pivot_sample() |>
-    head()
-```
-
-    ## # A tibble: 6 × 73
-    ##   .sample e3_sex_None hs_child_age_None h_age_None h_mbmi_None e3_gac_None
-    ##   <chr>   <fct>                   <dbl>      <dbl>       <dbl>       <dbl>
-    ## 1 s812    female                   6.84       35          33.2        41.4
-    ## 2 s296    female                   6.75       32.8        25.1        39.1
-    ## 3 s242    female                   6.97       33          24.6        40.4
-    ## 4 s376    male                     6.35       27.1        28.3        37  
-    ## 5 s1183   female                   6.74       32.7        33.3        38.1
-    ## 6 s98     female                   6.93       23          31.2        39  
-    ## # ℹ 67 more variables: h_native_None <fct>, h_parity_None <fct>,
-    ## #   hs_asthma <dbl>, hs_zbmi_who <dbl>, h_pm10_ratio_preg_None <dbl>,
-    ## #   h_pm25_ratio_preg_None <dbl>, hs_pm10_yr_hs_h_None <dbl>,
-    ## #   hs_pm25_yr_hs_h_None <dbl>, hs_pb_c_Log2 <dbl>, hs_pfhxs_m_Log2 <dbl>,
-    ## #   hs_pfna_c_Log2 <dbl>, hs_bpa_madj_Log2 <dbl>, hs_mibp_cadj_Log2 <dbl>,
-    ## #   PC1 <dbl>, PC2 <dbl>, PC3 <dbl>, PC4 <dbl>, PC5 <dbl>, PC6 <dbl>,
-    ## #   PC7 <dbl>, PC8 <dbl>, PC9 <dbl>, PC10 <dbl>, PC11 <dbl>, PC12 <dbl>, …
-
-We could use this functionality to count the number of asthmatics per
-sex:
-
-``` r
-# Count the number of asthma cases by sex status
-expom |>
-    pivot_sample() |>
-    group_by(hs_asthma, e3_sex_None) |>
-    reframe(n = n())
-```
-
-    ## # A tibble: 4 × 3
-    ##   hs_asthma e3_sex_None     n
-    ##       <dbl> <fct>       <int>
-    ## 1         0 female         23
-    ## 2         0 male           15
-    ## 3         1 female          5
-    ## 4         1 male            4
-
-### Pivot Feature
-
-The `pivot_feature` function pivots the feature metadata to a tibble
-with features as rows and feature metadata as columns. This can be
-useful for exploring the feature metadata in a more flexible way.
-
-``` r
-# Pivot feature data to a tibble
-expom |>
-    pivot_feature() |>
-    head()
-```
-
-    ## # A tibble: 6 × 42
-    ##   .exp_name     .feature transcript_cluster_id probeset_id seqname strand  start
-    ##   <chr>         <chr>    <chr>                 <chr>       <chr>   <chr>   <int>
-    ## 1 Gene Express… TC02004… TC02004973.hg.1       TC02004973… chr2    +      8.99e7
-    ## 2 Gene Express… TC02004… TC02004949.hg.1       TC02004949… chr2    -      8.96e7
-    ## 3 Gene Express… TC14002… TC14002235.hg.1       TC14002235… chr14   -      1.06e8
-    ## 4 Gene Express… TC15000… TC15000863.hg.1       TC15000863… chr15   +      9.09e7
-    ## 5 Gene Express… TC19001… TC19001585.hg.1       TC19001585… chr19   -      4.39e7
-    ## 6 Gene Express… TC17000… TC17000226.hg.1       TC17000226… chr17   +      1.90e7
-    ## # ℹ 35 more variables: stop <int>, total_probes <int>, gene_assignment <chr>,
-    ## #   mrna_assignment <chr>, notes <chr>, phase <chr>, TC_size <dbl>,
-    ## #   TSS_Affy <int>, EntrezeGeneID_Affy <chr>, GeneSymbol_Affy <chr>,
-    ## #   GeneSymbolDB <chr>, GeneSymbolDB2 <chr>, mrna_ID <chr>, mrna_DB <chr>,
-    ## #   mrna_N <int>, notesYN <chr>, geneYN <chr>, genes_N <dbl>, CallRate <dbl>,
-    ## #   fil1 <chr>, feature_clean <chr>, Forward_Sequence <chr>, SourceSeq <chr>,
-    ## #   Random_Loci <chr>, Methyl27_Loci <chr>, UCSC_RefGene_Name <chr>, …
-
-We could use this functionality to count the number of features per
-omics layer, or to filter features based on their metadata. For example,
-we can count the number of features per omics layer:
-
-``` r
-# Count the number of features per omic layer
-expom |>
-    pivot_feature() |>
-    group_by(.exp_name) |>
-    summarise(n = n())
-```
-
-    ## # A tibble: 2 × 2
-    ##   .exp_name           n
-    ##   <chr>           <int>
-    ## 1 Gene Expression   471
-    ## 2 Methylation       277
-
-### Pivot Experiment
-
-Now if we want to grab assay data from a particular experiment, we can
-do that with the `pivot_exp.` Let’s try grabbing assay values for the
-`TC01004453.hg.1` probe (probe for *IL23R*) in the `Gene Expression`
-experiment:
-
-``` r
-# Pivot experiment data to a tibble
-expom |>
-    pivot_exp(
-        exp_name = "Gene Expression",
-        features = "TC01004453.hg.1"
-    ) |>
-    head()
-```
-
-    ## # A tibble: 6 × 102
-    ##   exp_name     .feature .sample counts transcript_cluster_id probeset_id seqname
-    ##   <chr>        <chr>    <chr>    <dbl> <chr>                 <chr>       <chr>  
-    ## 1 Gene Expres… TC01004… s812     1.09  TC01004453.hg.1       TC01004453… chr1   
-    ## 2 Gene Expres… TC01004… s296     1.71  TC01004453.hg.1       TC01004453… chr1   
-    ## 3 Gene Expres… TC01004… s242     1.19  TC01004453.hg.1       TC01004453… chr1   
-    ## 4 Gene Expres… TC01004… s376     1.21  TC01004453.hg.1       TC01004453… chr1   
-    ## 5 Gene Expres… TC01004… s1183    0.803 TC01004453.hg.1       TC01004453… chr1   
-    ## 6 Gene Expres… TC01004… s98      0.835 TC01004453.hg.1       TC01004453… chr1   
-    ## # ℹ 95 more variables: strand <chr>, start <int>, stop <int>,
-    ## #   total_probes <int>, gene_assignment <chr>, mrna_assignment <chr>,
-    ## #   notes <chr>, phase <chr>, TC_size <dbl>, TSS_Affy <int>,
-    ## #   EntrezeGeneID_Affy <chr>, GeneSymbol_Affy <chr>, GeneSymbolDB <chr>,
-    ## #   GeneSymbolDB2 <chr>, mrna_ID <chr>, mrna_DB <chr>, mrna_N <int>,
-    ## #   notesYN <chr>, geneYN <chr>, genes_N <dbl>, CallRate <dbl>, fil1 <chr>,
-    ## #   feature_clean <chr>, e3_sex_None <fct>, hs_child_age_None <dbl>, …
-
-We can use this functionality to create custom plots or analyses based
-on the exposure and feature data. For example, we can plot the
-expression levels of *IL23R* by asthma status:
-
-``` r
-# Plot expression of IL23R
-expom |>
-    pivot_exp(
-        exp_name = "Gene Expression",
-        features = "TC01004453.hg.1"
-    ) |>
-    ggplot(aes(
-        x = as.character(hs_asthma),
-        y = log2(counts + 1),
-        color = as.character(hs_asthma),
-        fill = as.character(hs_asthma)
-    )) +
-    geom_boxplot(alpha = 0.5) +
-    geom_jitter(alpha = 0.1) +
-    ggpubr::geom_pwc(label = "{p.adj.format}{p.adj.signif}") +
-    theme_minimal() +
-    ggpubr::rotate_x_text(angle = 45) +
-    ggsci::scale_color_cosmic() +
-    ggsci::scale_fill_cosmic() +
-    labs(
-        x = "",
-        y = expression(Log[2] * "Abd."),
-        fill = "Asthma Status",
-        color = "Asthma Status"
-    )
-```
-
-![IL23R gene expression levels (probe TC01004453.hg.1) by asthma
-status.](tidyexposomics_files/figure-html/pivot-exp-example-1.png)
-
-IL23R gene expression levels (probe TC01004453.hg.1) by asthma status.
 
 ## Pipeline Summary
 
@@ -2082,23 +1117,9 @@ expom |>
     ## 10. run_correlation_exposures - Correlated exposures features with exposures.
     ## 11. run_association - Performed association analysis using source: exposures
     ## 12. run_association - Performed association analysis using source: exposures
-    ## 13. run_exposome_score_exposome_median_score - Exposome score computed using method: 'median'
-    ## 14. run_exposome_score_exposome_pca_score - Exposome score computed using method: 'pca'
-    ## 15. run_exposome_score_exposome_irt_score - Exposome score computed using method: 'irt'
-    ## 16. run_exposome_score_exposome_quantile_score - Exposome score computed using method: 'quantile'
-    ## 17. run_exposome_score_exposome_var_score - Exposome score computed using method: 'var'
-    ## 18. run_association - Performed association analysis using source: exposures
-    ## 19. run_differential_abundance - Performed differential abundance analysis across all assays.
-    ## 20. run_sensitivity_analysis - Ran sensitivity analysis across 10 bootstrap iterations and 1 methods and 1 scaling strategies. No covariates were removed from the base model.
-    ## 21. run_multiomics_integration - Performed multi-omics integration using DIABLO with 5 latent factors. Scaling was enabled.
-    ## 22. run_association - Performed association analysis using source: exposures
-    ## 23. extract_top_factor_features - Selected 589 features contributing to specified factors.
-    ## 24. run_correlation_omics - Correlated omics features with exposures.
-    ## 25. run_correlation_omics - Correlated omics features with exposures.
-    ## 26. run_create_network - Created undirected network from correlation results for 'omics_feature_cor'.
-    ## 27. run_create_network - Created undirected network from correlation results for 'omics_feature_cor'.
-    ## 28. run_exposure_impact - Computed exposure impact using omics correlation network.
-    ## 29. run_enrichment - Performed GO enrichment on omics_cor features.
+    ## 13. run_differential_abundance - Performed differential abundance analysis across all assays.
+    ## 14. run_exposure_omics_association - Tested 9 exposures against 2 assays using limma-trend
+    ## 15. run_enrichment - Performed GO enrichment on omics features.
 
 ### Saving Results
 
@@ -2124,8 +1145,6 @@ extract_results_excel(
 
     ## Writing Differential Abundance Results.
 
-    ## Writing Sensitivity Analysis Results.
-
     ## Writing Multiomics Integration Results.
 
     ## Writing Network Impact Results.
@@ -2136,130 +1155,117 @@ extract_results_excel(
 
     ## Writing Exposure Summary Results.
 
-    ## Results written to: C:\Users\Jason\AppData\Local\Temp\RtmpawvHtg\file5d90418c5f06
+    ## Results written to: C:\Users\Jason\AppData\Local\Temp\Rtmpm4HeXO\file379028202b42
 
 ### Session Info
 
+See Session Info
+
 ``` r
+
 sessionInfo()
+## R version 4.5.1 (2025-06-13 ucrt)
+## Platform: x86_64-w64-mingw32/x64
+## Running under: Windows 11 x64 (build 26200)
+## 
+## Matrix products: default
+##   LAPACK version 3.12.1
+## 
+## locale:
+## [1] LC_COLLATE=English_United States.utf8 
+## [2] LC_CTYPE=English_United States.utf8   
+## [3] LC_MONETARY=English_United States.utf8
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.utf8    
+## 
+## time zone: America/New_York
+## tzcode source: internal
+## 
+## attached base packages:
+## [1] stats4    stats     graphics  grDevices utils     datasets  methods  
+## [8] base     
+## 
+## other attached packages:
+##  [1] tidyexposomics_0.99.16      MultiAssayExperiment_1.36.1
+##  [3] SummarizedExperiment_1.40.0 Biobase_2.70.0             
+##  [5] GenomicRanges_1.62.1        Seqinfo_1.0.0              
+##  [7] IRanges_2.44.0              S4Vectors_0.48.0           
+##  [9] BiocGenerics_0.56.0         generics_0.1.4             
+## [11] MatrixGenerics_1.22.0       matrixStats_1.5.0          
+## [13] lubridate_1.9.5             forcats_1.0.1              
+## [15] stringr_1.6.0               dplyr_1.1.4                
+## [17] purrr_1.2.0                 readr_2.2.0                
+## [19] tidyr_1.3.2                 tibble_3.3.0               
+## [21] ggplot2_4.0.2               tidyverse_2.0.0            
+## [23] BiocStyle_2.38.0           
+## 
+## loaded via a namespace (and not attached):
+##   [1] fs_2.1.0              naniar_1.1.0          httr_1.4.8           
+##   [4] RColorBrewer_1.1-3    doParallel_1.0.17     ggsci_4.2.0          
+##   [7] dynamicTreeCut_1.63-1 tools_4.5.1           doRNG_1.8.6.3        
+##  [10] backports_1.5.0       utf8_1.2.6            R6_2.6.1             
+##  [13] DT_0.34.0             GetoptLong_1.1.0      withr_3.0.2          
+##  [16] gridExtra_2.3         cli_3.6.5             textshaping_1.0.4    
+##  [19] factoextra_2.0.0      Cairo_1.7-0           RGCCA_3.0.3          
+##  [22] labeling_0.4.3        sass_0.4.10           S7_0.2.1             
+##  [25] randomForest_4.7-1.2  ggridges_0.5.7        pkgdown_2.2.0        
+##  [28] systemfonts_1.3.2     foreign_0.8-90        parallelly_1.46.1    
+##  [31] itertools_0.1-3       limma_3.66.0          rstudioapi_0.18.0    
+##  [34] RSQLite_2.4.6         FNN_1.1.4.1           shape_1.4.6.1        
+##  [37] vroom_1.7.0           zip_2.3.3             dendextend_1.19.1    
+##  [40] car_3.1-5             Matrix_1.7-4          abind_1.4-8          
+##  [43] lifecycle_1.0.5       edgeR_4.8.2           yaml_2.3.12          
+##  [46] carData_3.0-6         recipes_1.3.1         SparseArray_1.10.8   
+##  [49] BiocFileCache_3.0.0   Rtsne_0.17            grid_4.5.1           
+##  [52] blob_1.3.0            promises_1.5.0        crayon_1.5.3         
+##  [55] lattice_0.22-7        magick_2.9.1          pillar_1.11.1        
+##  [58] knitr_1.51            ComplexHeatmap_2.26.1 rjson_0.2.23         
+##  [61] corpcor_1.6.10        future.apply_1.20.2   mixOmics_6.34.0      
+##  [64] codetools_0.2-20      glue_1.8.0            ggvenn_0.1.19        
+##  [67] data.table_1.18.2.1   vctrs_0.6.5           png_0.1-8            
+##  [70] Rdpack_2.6.6          gtable_0.3.6          assertthat_0.2.1     
+##  [73] cachem_1.1.0          openxlsx_4.2.8.1      gower_1.0.2          
+##  [76] xfun_0.54             rbibutils_2.4.1       S4Arrays_1.10.1      
+##  [79] mime_0.13             prodlim_2025.04.28    tidygraph_1.3.1      
+##  [82] survival_3.8-3        timeDate_4052.112     iterators_1.0.14     
+##  [85] hardhat_1.4.2         lava_1.8.2            statmod_1.5.1        
+##  [88] ipred_0.9-15          nlme_3.1-168          fenr_1.8.1           
+##  [91] bit64_4.6.0-1         filelock_1.0.3        bslib_0.10.0         
+##  [94] Deriv_4.2.0           otel_0.2.0            rpart_4.1.24         
+##  [97] colorspace_2.1-2      DBI_1.3.0             Hmisc_5.2-5          
+## [100] nnet_7.3-20           tidyselect_1.2.1      bit_4.6.0            
+## [103] compiler_4.5.1        curl_7.0.0            tidyHeatmap_1.13.1   
+## [106] rvest_1.0.5           httr2_1.2.2           htmlTable_2.4.3      
+## [109] xml2_1.5.2            desc_1.4.3            DelayedArray_0.36.0  
+## [112] bookdown_0.46         checkmate_2.3.4       scales_1.4.0         
+## [115] rappdirs_0.3.4        digest_0.6.39         rmarkdown_2.30       
+## [118] XVector_0.50.0        htmltools_0.5.9       pkgconfig_2.0.3      
+## [121] base64enc_0.1-6       dbplyr_2.5.2          fastmap_1.2.0        
+## [124] rlang_1.1.7           GlobalOptions_0.1.3   htmlwidgets_1.6.4    
+## [127] shiny_1.13.0          ggh4x_0.3.1           farver_2.1.2         
+## [130] jquerylib_0.1.4       jsonlite_2.0.0        BiocParallel_1.44.0  
+## [133] ModelMetrics_1.2.2.2  magrittr_2.0.4        Formula_1.2-5        
+## [136] patchwork_1.3.2       Rcpp_1.1.1            ggnewscale_0.5.2     
+## [139] viridis_0.6.5         visdat_0.6.0          stringi_1.8.7        
+## [142] pROC_1.19.0.1         ggraph_2.2.2          MASS_7.3-65          
+## [145] plyr_1.8.9            parallel_4.5.1        listenv_0.10.1       
+## [148] ggrepel_0.9.7         graphlayouts_1.2.3    splines_4.5.1        
+## [151] hms_1.1.4             circlize_0.4.17       locfit_1.5-9.12      
+## [154] igraph_2.2.2          ggpubr_0.6.3          ranger_0.18.0        
+## [157] ggsignif_0.6.4        rngtools_1.5.2        reshape2_1.4.5       
+## [160] tidybulk_2.0.1        evaluate_1.0.5        BiocManager_1.30.27  
+## [163] tweenr_2.0.3          tzdb_0.5.0            foreach_1.5.2        
+## [166] missForest_1.6.1      httpuv_1.6.16         polyclip_1.10-7      
+## [169] clue_0.3-67           future_1.70.0         ggforce_0.5.0        
+## [172] BiocBaseUtils_1.12.0  broom_1.0.12          xtable_1.8-8         
+## [175] RSpectra_0.16-2       rstatix_0.7.3         later_1.4.8          
+## [178] viridisLite_0.4.3     class_7.3-23          ragg_1.5.0           
+## [181] rARPACK_0.11-0        memoise_2.0.1         ellipse_0.5.0        
+## [184] densityClust_0.3.3    cluster_2.1.8.2       timechange_0.4.0     
+## [187] globals_0.19.1        caret_7.0-1
 ```
 
-    ## R version 4.5.1 (2025-06-13 ucrt)
-    ## Platform: x86_64-w64-mingw32/x64
-    ## Running under: Windows 11 x64 (build 26200)
-    ## 
-    ## Matrix products: default
-    ##   LAPACK version 3.12.1
-    ## 
-    ## locale:
-    ## [1] LC_COLLATE=English_United States.utf8 
-    ## [2] LC_CTYPE=English_United States.utf8   
-    ## [3] LC_MONETARY=English_United States.utf8
-    ## [4] LC_NUMERIC=C                          
-    ## [5] LC_TIME=English_United States.utf8    
-    ## 
-    ## time zone: America/New_York
-    ## tzcode source: internal
-    ## 
-    ## attached base packages:
-    ## [1] stats4    stats     graphics  grDevices utils     datasets  methods  
-    ## [8] base     
-    ## 
-    ## other attached packages:
-    ##  [1] tidyexposomics_0.99.14      MultiAssayExperiment_1.36.1
-    ##  [3] SummarizedExperiment_1.40.0 Biobase_2.70.0             
-    ##  [5] GenomicRanges_1.62.1        Seqinfo_1.0.0              
-    ##  [7] IRanges_2.44.0              S4Vectors_0.48.0           
-    ##  [9] BiocGenerics_0.56.0         generics_0.1.4             
-    ## [11] MatrixGenerics_1.22.0       matrixStats_1.5.0          
-    ## [13] lubridate_1.9.5             forcats_1.0.1              
-    ## [15] stringr_1.6.0               dplyr_1.1.4                
-    ## [17] purrr_1.2.0                 readr_2.2.0                
-    ## [19] tidyr_1.3.2                 tibble_3.3.0               
-    ## [21] ggplot2_4.0.2               tidyverse_2.0.0            
-    ## [23] BiocStyle_2.38.0           
-    ## 
-    ## loaded via a namespace (and not attached):
-    ##   [1] R.methodsS3_1.8.2     vroom_1.7.0           rARPACK_0.11-0       
-    ##   [4] tidybulk_2.0.1        nnet_7.3-20           DT_0.34.0            
-    ##   [7] vctrs_0.6.5           digest_0.6.39         png_0.1-8            
-    ##  [10] corpcor_1.6.10        shape_1.4.6.1         proxy_0.4-29         
-    ##  [13] BiocBaseUtils_1.12.0  ggrepel_0.9.7         parallelly_1.46.1    
-    ##  [16] permute_0.9-10        magick_2.9.1          MASS_7.3-65          
-    ##  [19] pkgdown_2.2.0         reshape2_1.4.5        httpuv_1.6.16        
-    ##  [22] foreach_1.5.2         withr_3.0.2           xfun_0.54            
-    ##  [25] ggpubr_0.6.3          survival_3.8-3        doRNG_1.8.6.3        
-    ##  [28] memoise_2.0.1         fenr_1.8.1            janitor_2.2.1        
-    ##  [31] SimDesign_2.24        tidyHeatmap_1.13.1    ggsci_4.2.0          
-    ##  [34] systemfonts_1.3.2     ragg_1.5.0            GlobalOptions_0.1.3  
-    ##  [37] pbapply_1.7-4         R.oo_1.27.1           Formula_1.2-5        
-    ##  [40] ellipse_0.5.0         promises_1.5.0        otel_0.2.0           
-    ##  [43] httr_1.4.8            beepr_2.0             rstatix_0.7.3        
-    ##  [46] globals_0.19.0        rstudioapi_0.18.0     missForest_1.6.1     
-    ##  [49] base64enc_0.1-6       curl_7.0.0            ggraph_2.2.2         
-    ##  [52] polyclip_1.10-7       randomForest_4.7-1.2  SparseArray_1.10.8   
-    ##  [55] xtable_1.8-8          desc_1.4.3            doParallel_1.0.17    
-    ##  [58] evaluate_1.0.5        S4Arrays_1.10.1       BiocFileCache_3.0.0  
-    ##  [61] hms_1.1.4             bookdown_0.46         colorspace_2.1-2     
-    ##  [64] filelock_1.0.3        magrittr_2.0.4        snakecase_0.11.1     
-    ##  [67] later_1.4.8           viridis_0.6.5         lattice_0.22-7       
-    ##  [70] future.apply_1.20.2   class_7.3-23          Hmisc_5.2-5          
-    ##  [73] pillar_1.11.1         nlme_3.1-168          iterators_1.0.14     
-    ##  [76] compiler_4.5.1        RSpectra_0.16-2       stringi_1.8.7        
-    ##  [79] gower_1.0.2           dendextend_1.19.1     plyr_1.8.9           
-    ##  [82] crayon_1.5.3          abind_1.4-8           naniar_1.1.0         
-    ##  [85] mixOmics_6.34.0       locfit_1.5-9.12       graphlayouts_1.2.3   
-    ##  [88] bit_4.6.0             codetools_0.2-20      textshaping_1.0.4    
-    ##  [91] recipes_1.3.1         bslib_0.10.0          e1071_1.7-17         
-    ##  [94] GetoptLong_1.1.0      mime_0.13             splines_4.5.1        
-    ##  [97] circlize_0.4.17       Rcpp_1.1.1            dbplyr_2.5.2         
-    ## [100] knitr_1.51            blob_1.3.0            utf8_1.2.6           
-    ## [103] clue_0.3-67           itertools_0.1-3       fs_1.6.6             
-    ## [106] listenv_0.10.0        checkmate_2.3.4       Rdpack_2.6.6         
-    ## [109] densityClust_0.3.3    openxlsx_4.2.8.1      ggsignif_0.6.4       
-    ## [112] Matrix_1.7-4          statmod_1.5.1         tzdb_0.5.0           
-    ## [115] visdat_0.6.0          tweenr_2.0.3          pkgconfig_2.0.3      
-    ## [118] tools_4.5.1           cachem_1.1.0          rbibutils_2.4.1      
-    ## [121] RSQLite_2.4.6         viridisLite_0.4.3     rvest_1.0.5          
-    ## [124] DBI_1.3.0             fastmap_1.2.0         rmarkdown_2.30       
-    ## [127] scales_1.4.0          grid_4.5.1            audio_0.1-12         
-    ## [130] broom_1.0.12          sass_0.4.10           patchwork_1.3.2      
-    ## [133] FNN_1.1.4.1           BiocManager_1.30.27   carData_3.0-6        
-    ## [136] rpart_4.1.24          farver_2.1.2          tidygraph_1.3.1      
-    ## [139] mgcv_1.9-3            yaml_2.3.12           foreign_0.8-90       
-    ## [142] cli_3.6.5             lifecycle_1.0.5       caret_7.0-1          
-    ## [145] lava_1.8.2            sessioninfo_1.2.3     backports_1.5.0      
-    ## [148] BiocParallel_1.44.0   timechange_0.4.0      gtable_0.3.6         
-    ## [151] rjson_0.2.23          ggridges_0.5.7        progressr_0.18.0     
-    ## [154] parallel_4.5.1        pROC_1.19.0.1         testthat_3.3.2       
-    ## [157] limma_3.66.0          jsonlite_2.0.0        edgeR_4.8.2          
-    ## [160] bit64_4.6.0-1         assertthat_0.2.1      brio_1.1.5           
-    ## [163] Rtsne_0.17            vegan_2.7-3           zip_2.3.3            
-    ## [166] ranger_0.18.0         GPArotation_2025.3-1  jquerylib_0.1.4      
-    ## [169] R.utils_2.13.0        timeDate_4052.112     dcurver_0.9.3        
-    ## [172] shiny_1.13.0          dynamicTreeCut_1.63-1 htmltools_0.5.9      
-    ## [175] rappdirs_0.3.4        RGCCA_3.0.3           glue_1.8.0           
-    ## [178] factoextra_2.0.0      ggvenn_0.1.19         httr2_1.2.2          
-    ## [181] XVector_0.50.0        mirt_1.45.1           gridExtra_2.3        
-    ## [184] igraph_2.2.2          R6_2.6.1              Deriv_4.2.0          
-    ## [187] labeling_0.4.3        ggh4x_0.3.1           cluster_2.1.8.2      
-    ## [190] rngtools_1.5.2        clipr_0.8.0           ipred_0.9-15         
-    ## [193] DelayedArray_0.36.0   tidyselect_1.2.1      htmlTable_2.4.3      
-    ## [196] ggforce_0.5.0         xml2_1.5.2            car_3.1-5            
-    ## [199] future_1.69.0         ModelMetrics_1.2.2.2  S7_0.2.1             
-    ## [202] data.table_1.18.2.1   htmlwidgets_1.6.4     ComplexHeatmap_2.26.1
-    ## [205] RColorBrewer_1.1-3    rlang_1.1.7           ggnewscale_0.5.2     
-    ## [208] Cairo_1.7-0           hardhat_1.4.2         prodlim_2025.04.28
-
 ### References
-
-Chung, M. K., House, J. S., Akhtari, F. S., Makris, K. C., Langston, M.
-A., Islam, K. T., Holmes, P., Chadeau-Hyam, M., Smirnov, A. I., Du, X.,
-Thessen, A. E., Cui, Y., Zhang, K., Manrai, A. K., Motsinger-Reif, A.,
-Patel, C. J., & Members of the Exposomics Consortium. (2024). Decoding
-the exposome: data science methodologies and implications in
-exposome-wide association studies (ExWASs). *Exposome, 4*(1), osae001.
-<https://doi.org/10.1093/exposome/osae001>
 
 fenr. (n.d.). Bioconductor. Retrieved August 18, 2025, from
 <https://www.bioconductor.org/packages/release/bioc/html/fenr.html>
@@ -2270,10 +1276,6 @@ Exposome Data Challenge Participant Consortium. (2022). State-of-the-art
 methods for exposure-health studies: Results from the exposome data
 challenge event. *Environment International, 168*(107422), 107422.
 <https://doi.org/10.1016/j.envint.2022.107422>
-
-Miller, G. W., & Banbury Exposomics Consortium. (2025). Integrating
-exposomics into biomedicine. *Science, 388*(6745), 356–358.
-<https://doi.org/10.1126/science.adr0544>
 
 mixOmics. (n.d.). Bioconductor. Retrieved August 18, 2025, from
 <https://www.bioconductor.org/packages/devel/bioc/html/mixOmics.html>
@@ -2291,8 +1293,3 @@ nipalsMCIA. (n.d.). Bioconductor. Retrieved August 18, 2025, from
 Regularized and Sparse Generalized Canonical Correlation Analysis for
 Multiblock Data. (n.d.). Retrieved August 18, 2025, from
 <https://rgcca-factory.github.io/RGCCA/>
-
-Wild, C. P. (2005). Complementing the genome with an “exposome”: the
-outstanding challenge of environmental exposure measurement in molecular
-epidemiology. *Cancer Epidemiology, Biomarkers & Prevention, 14*(8),
-1847–1850. <https://doi.org/10.1158/1055-9965.EPI-05-0456>
