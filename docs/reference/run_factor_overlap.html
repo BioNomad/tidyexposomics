@@ -5,11 +5,11 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Identify and Annotate Shared Top Features Across Integration Factors — run_factor_overlap"><meta name="description" content="Identifies top features shared across factors based on integration method.
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Identify and Annotate Shared Top Features Across Integration Factors — run_factor_overlap"><meta name="description" content="Identifies top features shared across factors based on integration method.
 For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA,
-takes features recurring in ≥2 block-specific components."><meta property="og:description" content="Identifies top features shared across factors based on integration method.
+takes features recurring in more than 2 block-specific components."><meta property="og:description" content="Identifies top features shared across factors based on integration method.
 For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA,
-takes features recurring in ≥2 block-specific components."></head><body>
+takes features recurring in more than 2 block-specific components."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -17,7 +17,7 @@ takes features recurring in ≥2 block-specific components."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.16</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,12 @@ takes features recurring in ≥2 block-specific components."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tidyexposomics.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/custom_analysis.html">Custom Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/exposome_scores.html">Exposome Scores</a></li>
+    <li><a class="dropdown-item" href="../articles/exposure_annotation.html">Exposure Annotation</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -53,13 +59,13 @@ takes features recurring in ≥2 block-specific components."></head><body>
     <div class="ref-description section level2">
     <p>Identifies top features shared across factors based on integration method.
 For MOFA/MCIA, takes intersection across factors. For DIABLO/RGCCA,
-takes features recurring in ≥2 block-specific components.</p>
+takes features recurring in more than 2 block-specific components.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_factor_overlap</span><span class="op">(</span></span>
-<span>  <span class="va">expomicset</span>,</span>
+<span>  <span class="va">exposomicset</span>,</span>
 <span>  robust <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  stability_score <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  score_col <span class="op">=</span> <span class="st">"stability_score"</span>,</span>
@@ -75,7 +81,7 @@ takes features recurring in ≥2 block-specific components.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-expomicset">expomicset<a class="anchor" aria-label="anchor" href="#arg-expomicset"></a></dt>
+<dl><dt id="arg-exposomicset">exposomicset<a class="anchor" aria-label="anchor" href="#arg-exposomicset"></a></dt>
 <dd><p>A <code>MultiAssayExperiment</code> with integration results
 and top factor features.</p></dd>
 
@@ -139,19 +145,15 @@ shared top features.</p>
 <span class="r-in"><span><span class="co"># perform multiomics integration</span></span></span>
 <span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_multiomics_integration.html">run_multiomics_integration</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">mae</span>,</span></span>
-<span class="r-in"><span>    method <span class="op">=</span> <span class="st">"MCIA"</span>,</span></span>
+<span class="r-in"><span>    method <span class="op">=</span> <span class="st">"DIABLO"</span>,</span></span>
+<span class="r-in"><span>    outcome <span class="op">=</span> <span class="st">"smoker"</span>,</span></span>
 <span class="r-in"><span>    n_factors <span class="op">=</span> <span class="fl">3</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scaling each assay in MultiAssayExperiment.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Running multi-omics integration using MCIA...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying MCIA with `nipalsMCIA`</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing column-level pre-processing...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Column pre-processing completed.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing block-level preprocessing...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Block pre-processing completed.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Computing order 1 scores</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Computing order 2 scores</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Computing order 3 scores</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running multi-omics integration using DIABLO...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying DIABLO supervised integration.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Design matrix has changed to include Y; each block will be</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>             linked to Y.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># identify the features that contribute most to the factors</span></span></span>
@@ -163,13 +165,13 @@ shared top features.</p>
 <span class="r-in"><span>    action <span class="op">=</span> <span class="st">"add"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extracting top contributing features for specified factors.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using MCIA block loadings.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using DIABLO loadings.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Applying percentile-based filtering (&gt;50%).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Selected 312 features contributing to specified factors.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selected 0 features contributing to specified factors.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># perform differential abundance analysis</span></span></span>
 <span class="r-in"><span><span class="va">mae</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_differential_abundance.html">run_differential_abundance</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    expomicset <span class="op">=</span> <span class="va">mae</span>,</span></span>
+<span class="r-in"><span>    exposomicset <span class="op">=</span> <span class="va">mae</span>,</span></span>
 <span class="r-in"><span>    formula <span class="op">=</span> <span class="op">~</span> <span class="va">smoker</span> <span class="op">+</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>    abundance_col <span class="op">=</span> <span class="st">"counts"</span>,</span></span>
 <span class="r-in"><span>    method <span class="op">=</span> <span class="st">"limma_voom"</span>,</span></span>
@@ -177,13 +179,15 @@ shared top features.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running differential abundance testing.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Processing assay: mRNA</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No group or design set. Assuming all samples belong to one group.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>All samples appear to belong to the same group.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: The design column names are "(Intercept), smokeryes, sexM"</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: to access the raw results (fitted GLM) do `attr(..., "internals")$limma_voom`</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: to access the DE object do `metadata(.)$tidybulk$limma_voom_object`</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: to access the raw results (fitted GLM) do `metadata(.)$tidybulk$limma_voom_fit`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Processing assay: proteomics</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No group or design set. Assuming all samples belong to one group.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>All samples appear to belong to the same group.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: The design column names are "(Intercept), smokeryes, sexM"</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: to access the raw results (fitted GLM) do `attr(..., "internals")$limma_voom`</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: to access the DE object do `metadata(.)$tidybulk$limma_voom_object`</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> tidybulk says: to access the raw results (fitted GLM) do `metadata(.)$tidybulk$limma_voom_fit`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Differential abundance testing completed.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># determine the overlap in features</span></span></span>
@@ -204,7 +208,7 @@ shared top features.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
