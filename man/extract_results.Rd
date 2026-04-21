@@ -16,8 +16,8 @@ extract_results(
 \item{result}{A character string indicating which result to
 extract from metadata. Must be one of:
 \code{"codebook"}, \code{"quality_control"}, \code{"correlation"}, \code{"association"},
-\code{"differential_analysis"}, \code{"multiomics_integration"}, \code{"network"},
-or \code{"enrichment"}.}
+\code{"mixture_analysis"}, \code{"differential_analysis"}, \code{"multiomics_integration"},
+\code{"network"}, \code{"enrichment"}.}
 }
 \value{
 The corresponding result object stored in \code{metadata(exposomicset)},

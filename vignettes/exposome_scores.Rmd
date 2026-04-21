@@ -1,0 +1,196 @@
+---
+title: "Exposome Scores"
+author: "Jason Laird"
+header-includes:
+   - \usepackage{amsmath}
+   - \usepackage{amsfonts}
+output:
+  BiocStyle::html_document:
+    toc_float: true
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{tidyexposomics: Exposure Scores}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Data and Libraries
+
+```{r load-libraries,message=FALSE,warning=FALSE}
+# Load Libraries
+library(tidyverse)
+library(tidyexposomics)
+```
+
+We will start off with our example dataset pulled from the [ISGlobal Exposome Data Challenge 2021](https://doi.org/10.1016/j.envint.2022.107422) (Maitre et al., 2022). 
+
+```{r load-data}
+# Load example data
+data("tidyexposomics_example")
+
+# Create exposomic set object
+expom <- create_exposomicset(
+    codebook = tidyexposomics_example$annotated_cb,
+    exposure = tidyexposomics_example$meta,
+    omics = list(
+        "Gene Expression" = tidyexposomics_example$exp_filt,
+        "Methylation" = tidyexposomics_example$methyl_filt
+    ),
+    row_data = list(
+        "Gene Expression" = tidyexposomics_example$exp_fdata,
+        "Methylation" = tidyexposomics_example$methyl_fdata
+    )
+)
+```
+
+We will focus on a few exposure variable categories.
+
+```{r exp-vars}
+# Grab exposure variables
+exp_vars <- tidyexposomics_example$annotated_cb |>
+    filter(category %in% c(
+        "aerosol",
+        "main group molecular entity",
+        "polyatomic entity"
+    )) |>
+    pull(variable) |>
+    as.character()
+```
+
+# Quality Control
+<hr>
+
+As in the main vignette, we will impute exposure data using `missforest`.
+
+```{r impute-missing}
+
+# Impute missing values
+expom <- run_impute_missing(
+    exposomicset = expom,
+    exposure_impute_method = "missforest",
+    exposure_cols = exp_vars
+)
+```
+
+
+And we will transform our exposure data to ensure it is more normally distributed using the `boxcox_best` method.
+
+```{r trasform-vars}
+
+# Transform variables
+expom <- transform_exposure(
+    exposomicset = expom,
+    transform_method = "boxcox_best",
+    exposure_cols = exp_vars
+)
+```
+
+## Exposome Scores
+<hr>
+
+We can calculate exposome scores, which are a summary measure of exposure. The `run_exposome_score` function is used to calculate the exposome score. The `exposure_cols` argument is used to set the columns to use for the exposome score. The `score_type` argument is used to set the type of score to calculate. Here we could use:
+
+- `median`: Calculates the median of the exposure variables.
+
+- `mean`: Calculates the mean of the exposure variables.
+
+- `sum`: Calculates the sum of the exposure variables.
+
+- `pca`: Calculates the first principal component of the exposure variables.
+
+- `irt`: Uses Item Response Theory to calculate the exposome score.
+
+- `quantile`: Calculates the quantile of the exposure variables.
+
+- `var`: Calculates the variance of the exposure variables.
+
+The `score_column_name` argument is used to set the name of the column to store the exposome score in. Here we will define a score for aerosols using a variety of different methods and demonstrate their use in association with asthma status.
+
+```{r calc-exposome, results='hide'}
+
+# determine which aerosol variables to use
+aerosols <- c("h_pm25_ratio_preg_None", "h_pm10_ratio_preg_None")
+
+# Create exposome scores
+expom <- expom |>
+    run_exposome_score(
+        exposure_cols = aerosols,
+        score_type = "median",
+        score_column_name = "exposome_median_score"
+    ) |>
+    run_exposome_score(
+        exposure_cols = aerosols,
+        score_type = "pca",
+        score_column_name = "exposome_pca_score"
+    ) |>
+    run_exposome_score(
+        exposure_cols = aerosols,
+        score_type = "irt",
+        score_column_name = "exposome_irt_score"
+    ) |>
+    run_exposome_score(
+        exposure_cols = aerosols,
+        score_type = "quantile",
+        score_column_name = "exposome_quantile_score"
+    ) |>
+    run_exposome_score(
+        exposure_cols = aerosols,
+        score_type = "var",
+        score_column_name = "exposome_var_score"
+    )
+```
+
+
+We can then associate these exposome scores with asthma status using the `run_association` function, just like we did before. However, this time we specify our `feature_set` to be the exposome scores we just calculated.
+
+```{r associate-exposome-score}
+
+# Associate exposome scores with outcome
+expom <- run_association(
+    exposomicset = expom,
+    outcome = "hs_asthma",
+    source = "exposures",
+    feature_set = c(
+        "exposome_median_score",
+        "exposome_pca_score",
+        "exposome_irt_score",
+        "exposome_quantile_score",
+        "exposome_var_score"
+    ),
+    action = "add",
+    family = "binomial"
+)
+```
+
+```{r plot-exposome-scores, fig.height=2.5, fig.width=5,fig.cap="Associations of aerosol exposome scores with asthma status. The variance-based score has the strongest association with asthma status."}
+
+# Plot the association forest plot
+plot_association(
+    exposomicset = expom,
+    source = "exposures",
+    terms = c(
+        "exposome_median_score",
+        "exposome_pca_score",
+        "exposome_irt_score",
+        "exposome_quantile_score",
+        "exposome_var_score"
+    ),
+    filter_col = "p.value",
+    filter_thresh = 0.05,
+    r2_col = "r2"
+)
+```
+
+## Session Info
+
+```{r session_info}
+
+sessionInfo()
+```
+

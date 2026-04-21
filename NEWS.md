@@ -1,3 +1,7 @@
+# tidyexposomics 0.99.16
+
+* Fixed multi-omics latent factor naming. 
+
 # tidyexposomics 0.99.15
 
 * Bump version for Bioconductor release. 

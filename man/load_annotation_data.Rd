@@ -6,24 +6,30 @@
 \usage{
 load_annotation_data(
   to_load = c("all", "chebi", "ecto", "hpo"),
-  verbose = TRUE
+  verbose = TRUE,
+  validate = TRUE
 )
 }
 \arguments{
 \item{to_load}{Character vector indicating which ontology to load.}
 
 \item{verbose}{Logical; print messages.}
+
+\item{validate}{Logical; validate MD5 checksum.}
 }
 \value{
-Invisibly returns \code{TRUE} after the ontology data is loaded into the global environment.
+A named list of ontology objects.
 }
 \description{
-Downloads and loads \code{chebi}, \code{ecto}, and \code{hpo} into the global environment.
+Downloads and loads \code{chebi}, \code{ecto}, and \code{hpo}.
 }
 \examples{
-# load ontology
-load_annotation_data(
-    to_load = "ecto"
-)
+\dontrun{
+# load single ontology
+onts <- load_annotation_data(to_load = "ecto")
+
+# load all ontologies
+onts <- load_annotation_data(to_load = "all")
+}
 
 }

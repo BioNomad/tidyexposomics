@@ -7,7 +7,8 @@
 download_dataset(
   name = c("omics_list", "fdata", "meta", "annotated_cb", "expom_1", "chebi", "ecto",
     "hpo"),
-  verbose = TRUE
+  verbose = TRUE,
+  validate = TRUE
 )
 }
 \arguments{
@@ -15,6 +16,8 @@ download_dataset(
 "annotated_cb", "expom_1", "chebi", "ecto", "hpo".}
 
 \item{verbose}{Logical; print messages.}
+
+\item{validate}{Logical; validate MD5 checksum.}
 }
 \value{
 A list or object loaded from the cached .RData.

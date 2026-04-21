@@ -7,7 +7,7 @@
 #'   and omics data.
 #' @param exposures Character vector of exposure variable names to test.
 #'   If `NULL`, uses all variables from the codebook.
-#' @param omics_assay Name(s) of the omics assay(s) to test against. If `NULL`,
+#' @param exp_name Name(s) of the omics assay(s) to test against. If `NULL`,
 #'   uses all assays.
 #' @param covariates Optional character vector of covariate names to include
 #'   in the model.
@@ -52,7 +52,7 @@
 run_exposure_omics_association <- function(
   exposomicset,
   exposures = NULL,
-  omics_assay = NULL,
+  exp_name = NULL,
   covariates = NULL,
   scaling_method = "none",
   correction_method = "fdr",
@@ -82,17 +82,17 @@ run_exposure_omics_association <- function(
     exposures <- setdiff(exposures, covariates)
 
     # Get assay names
-    if (is.null(omics_assay)) {
-        omics_assay <- names(MultiAssayExperiment::experiments(exposomicset))
+    if (is.null(exp_name)) {
+        exp_name <- names(MultiAssayExperiment::experiments(exposomicset))
     }
 
     message(sprintf(
         "Testing %d exposures across %d assays",
-        length(exposures), length(omics_assay)
+        length(exposures), length(exp_name)
     ))
 
     # Run analysis across all assays
-    results <- omics_assay |>
+    results <- exp_name |>
         lapply(function(assay_name) {
             message("Processing assay: ", assay_name)
 
@@ -108,8 +108,8 @@ run_exposure_omics_association <- function(
                     scaling_method = scaling_method
                 )
         }) |>
-        stats::setNames(omics_assay) |>
-        dplyr::bind_rows(.id = "omics_assay") |>
+        stats::setNames(exp_name) |>
+        dplyr::bind_rows(.id = "exp_name") |>
         dplyr::filter(contrast == ".exposure") |>
         dplyr::mutate(p_adjust = stats::p.adjust(p.value, method = correction_method)) |>
         dplyr::select(-contrast) |>
@@ -122,17 +122,12 @@ run_exposure_omics_association <- function(
             dplyr::left_join(codebook, by = c("exposure" = "variable"))
     }
 
-    message(sprintf(
-        "Completed: %d significant associations (p_adjust < 0.05)",
-        sum(results$p_adjust < 0.05, na.rm = TRUE)
-    ))
-
     if (action == "add") {
         MultiAssayExperiment::metadata(exposomicset)$association$exposure_omics <- list(
             results_df = results,
             covariates = covariates,
             exposures = exposures,
-            omics_assay = omics_assay,
+            exp_name = exp_name,
             method = "limma_trend"
         )
 
@@ -141,14 +136,14 @@ run_exposure_omics_association <- function(
                 timestamp = Sys.time(),
                 params = list(
                     exposures = exposures,
-                    omics_assay = omics_assay,
+                    exp_name = exp_name,
                     covariates = covariates,
                     scaling_method = scaling_method,
                     correction_method = correction_method
                 ),
                 notes = sprintf(
                     "Tested %d exposures against %d assays using limma-trend",
-                    length(exposures), length(omics_assay)
+                    length(exposures), length(exp_name)
                 )
             )
         )
@@ -199,7 +194,7 @@ run_exposure_omics_association <- function(
             ) |>
                 dplyr::mutate(exposure = exp_var) |>
                 dplyr::rename(
-                    omics_feature = feature,
+                    feature = feature,
                     estimate = logFC,
                     t_statistic = t,
                     p.value = P.Value,

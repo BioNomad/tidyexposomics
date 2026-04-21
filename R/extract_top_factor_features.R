@@ -116,7 +116,7 @@ extract_top_factor_features <- function(
             loadings <- integration_results$result@block_loadings
             # Rename columns within each blocks loading matrix
             loadings <- purrr::map(loadings, function(mat) {
-                colnames(mat) <- paste0("Factor", seq_len(ncol(mat)))
+                colnames(mat) <- paste0("Factor ", seq_len(ncol(mat)))
                 mat
             })
             loadings

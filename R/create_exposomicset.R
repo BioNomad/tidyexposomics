@@ -69,31 +69,31 @@ create_exposomicset <- function(
         stop("Exposure data must have rownames.")
     }
 
-   col_data <- S4Vectors::DataFrame(exposure, row.names = rownames(exposure))
+    col_data <- S4Vectors::DataFrame(exposure, row.names = rownames(exposure))
 
     # Handle epi-only case (no omics)
-   if (is.null(omics)) {
-     message("No omics data provided. Creating exposure-only exposomicset.")
+    if (is.null(omics)) {
+        message("No omics data provided. Creating exposure-only exposomicset.")
 
-     # Create a minimal placeholder experiment with 0 features
-     placeholder <- SummarizedExperiment::SummarizedExperiment(
-       assays = S4Vectors::SimpleList(
-         placeholder = matrix(
-           nrow = 0,
-           ncol = nrow(exposure),
-           dimnames = list(NULL, rownames(exposure))
-         )
-       )
-     )
+        # Create a minimal placeholder experiment with 0 features
+        placeholder <- SummarizedExperiment::SummarizedExperiment(
+            assays = S4Vectors::SimpleList(
+                placeholder = matrix(
+                    nrow = 0,
+                    ncol = nrow(exposure),
+                    dimnames = list(NULL, rownames(exposure))
+                )
+            )
+        )
 
-     mae <- MultiAssayExperiment::MultiAssayExperiment(
-       experiments = list(.exposures = placeholder),
-       colData = col_data,
-       metadata = list(codebook = codebook)
-     )
-     message("MultiAssayExperiment created successfully.")
-     return(mae)
-   }
+        mae <- MultiAssayExperiment::MultiAssayExperiment(
+            experiments = list(.exposures = placeholder),
+            colData = col_data,
+            metadata = list(codebook = codebook)
+        )
+        message("MultiAssayExperiment created successfully.")
+        return(mae)
+    }
 
     # Validate omics-related inputs
     if (!is.null(row_data) && !is.list(row_data)) {

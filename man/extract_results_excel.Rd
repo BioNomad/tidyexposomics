@@ -7,8 +7,9 @@
 extract_results_excel(
   exposomicset,
   file = "tidyexposomics_results.xlsx",
-  result_types = c("correlation", "association", "differential_analysis",
-    "multiomics_integration", "network", "enrichment", "exposure_summary", "pipeline"),
+  result_types = c("correlation", "association", "mixture_analysis",
+    "differential_analysis", "multiomics_integration", "network", "enrichment",
+    "exposure_summary", "pipeline"),
   include_empty_tabs = FALSE
 )
 }
@@ -23,6 +24,7 @@ to export. Options include:
 \itemize{
 \item \code{"correlation"}: Correlation results.
 \item \code{"association"}: Association results.
+\item \code{"mixture_analysis"}: Mixture Analysis results.
 \item \code{"differential_analysis"}: Differential abundance results,
 including sensitivity analysis if available.
 \item \code{"multiomics_integration"}: Common top features contributing to

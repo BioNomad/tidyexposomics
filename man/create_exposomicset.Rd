@@ -4,7 +4,7 @@
 \alias{create_exposomicset}
 \title{Create an Exposomicset Object}
 \usage{
-create_exposomicset(codebook, exposure, omics, row_data = NULL)
+create_exposomicset(codebook, exposure, omics = NULL, row_data = NULL)
 }
 \arguments{
 \item{codebook}{A data frame containing variable information metadata.}
@@ -12,8 +12,9 @@ create_exposomicset(codebook, exposure, omics, row_data = NULL)
 \item{exposure}{A data frame containing exposure data,
 with rows as samples and columns as variables.}
 
-\item{omics}{A list of matrices or a single matrix representing omics data.
-Each matrix should have samples as columns and features as rows.}
+\item{omics}{An optional list of matrices or a single matrix representing
+omics data. Each matrix should have samples as columns and features as rows.
+If \code{NULL}, creates an exposure-only exposomicset. Default is \code{NULL}.}
 
 \item{row_data}{An optional list of \code{DataFrame} objects providing
 feature metadata for each omics dataset. If \code{NULL},
@@ -21,25 +22,43 @@ row metadata is generated automatically. Default is \code{NULL}.}
 }
 \value{
 A \code{MultiAssayExperiment} object containing the formatted exposure
-and omics datasets.
+and optionally omics datasets.
 }
 \description{
-Constructs a \code{MultiAssayExperiment} object from exposure data and omics datasets,
-ensuring proper formatting and alignment of samples and features.
+Constructs a \code{MultiAssayExperiment} object from exposure data and optionally
+omics datasets, ensuring proper formatting and alignment of samples and
+features. For epidemiology-only workflows, omics data can be omitted.
 }
 \details{
-The function validates inputs, converts \code{omics} into a list if necessary,
-ensures all datasets are matrices with column names,
-and creates \code{SummarizedExperiment} objects for each omics dataset.
-It then constructs a \code{MultiAssayExperiment} object
-with exposure data in \code{colData} and variable information stored in metadata.
+The function validates inputs and creates a \code{MultiAssayExperiment} object.
+If omics data is provided, it converts matrices into \code{SummarizedExperiment}
+objects with proper sample alignment. If omics is \code{NULL}, the function
+creates an exposure-only object suitable for epidemiological analyses
+using \code{run_association()} with \code{source = "exposures"}.
 }
 \examples{
+# Epi user workflow
+# so no omics data
+epi_data <- data.frame(
+    pm25 = rnorm(10),
+    outcome = rbinom(10, 1, 0.5),
+    age = rnorm(10, 45, 10),
+    row.names = paste0("subj_", 1:10)
+)
 
-# make the example data
+codebook <- data.frame(
+    variable = c("pm25", "outcome", "age"),
+    category = c("exposure", "outcome", "covariate")
+)
+
+mae <- create_exposomicset(
+    codebook = codebook,
+    exposure = epi_data
+)
+
+# Multi-omics workflow
 tmp <- make_example_data(n_samples = 10)
 
-# create the MultiAssayExperiment Object
 mae <- create_exposomicset(
     codebook = tmp$codebook,
     exposure = tmp$exposure,

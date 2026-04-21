@@ -1,0 +1,160 @@
+---
+title: "Custom Analysis"
+author: "Jason Laird"
+header-includes:
+   - \usepackage{amsmath}
+   - \usepackage{amsfonts}
+output:
+  BiocStyle::html_document:
+    toc_float: true
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{tidyexposomics: Custom Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Data and Libraries
+
+```{r load-libraries,message=FALSE,warning=FALSE}
+# Load Libraries
+library(tidyverse)
+library(tidyexposomics)
+```
+
+We will start off with our example dataset pulled from the [ISGlobal Exposome Data Challenge 2021](https://doi.org/10.1016/j.envint.2022.107422) (Maitre et al., 2022). 
+
+```{r load-data}
+# Load example data
+data("tidyexposomics_example")
+
+# Create exposomic set object
+expom <- create_exposomicset(
+    codebook = tidyexposomics_example$annotated_cb,
+    exposure = tidyexposomics_example$meta,
+    omics = list(
+        "Gene Expression" = tidyexposomics_example$exp_filt,
+        "Methylation" = tidyexposomics_example$methyl_filt
+    ),
+    row_data = list(
+        "Gene Expression" = tidyexposomics_example$exp_fdata,
+        "Methylation" = tidyexposomics_example$methyl_fdata
+    )
+)
+```
+
+# Custom Analysis
+
+We provide functionality to access the underlying data in the MultiAssayExperiment object and to construct tibbles for your own analysis:
+
+- `pivot_sample`: Pivot the sample data to a tibble with samples as rows and exposures as columns.
+
+- `pivot_feature`: Pivot the feature metadata to a tibble with features as rows and feature metadata as columns.
+
+- `pivot_exp`: Pivot the sample and experiment assay data to a tibble with samples as rows and sample metadata as columns. Additionally, there will be a column for values for specified features in specified assays.
+
+## Pivot Sample
+
+Let’s check out the `pivot_sample` function. This function pivots the sample data to a tibble with samples as rows and exposures as columns.
+
+```{r pivot-sample}
+
+# Pivot sample data to a tibble
+expom |>
+    pivot_sample() |>
+    head()
+```
+
+We could use this functionality to count the number of asthmatics per sex:
+
+```{r pivot-sample-example}
+
+# Count the number of asthma cases by sex status
+expom |>
+    pivot_sample() |>
+    group_by(hs_asthma, e3_sex_None) |>
+    reframe(n = n())
+```
+
+## Pivot Feature
+
+The `pivot_feature` function pivots the feature metadata to a tibble with features as rows and feature metadata as columns. This can be useful for exploring the feature metadata in a more flexible way.
+
+```{r pivot-feature}
+
+# Pivot feature data to a tibble
+expom |>
+    pivot_feature() |>
+    head()
+```
+
+We could use this functionality to count the number of features per omics layer, or to filter features based on their metadata. For example, we can count the number of features per omics layer:
+
+
+```{r pivot-feature-example}
+
+# Count the number of features per omic layer
+expom |>
+    pivot_feature() |>
+    group_by(.exp_name) |>
+    summarise(n = n())
+```
+
+## Pivot Experiment
+
+Now if we want to grab assay data from a particular experiment, we can do that with the `pivot_exp.` Let’s try grabbing assay values for the `TC01004453.hg.1` probe (probe for *IL23R*) in the `Gene Expression` experiment:
+
+```{r pivot-exp}
+
+# Pivot experiment data to a tibble
+expom |>
+    pivot_exp(
+        exp_name = "Gene Expression",
+        features = "TC01004453.hg.1"
+    ) |>
+    head()
+```
+
+We can use this functionality to create custom plots or analyses based on the exposure and feature data. For example, we can plot the expression levels of *IL23R* by asthma status:
+
+```{r pivot-exp-example, fig.height=4, fig.width=4, fig.align='center',fig.cap="IL23R gene expression levels (probe TC01004453.hg.1) by asthma status."}
+
+# Plot expression of IL23R
+expom |>
+    pivot_exp(
+        exp_name = "Gene Expression",
+        features = "TC01004453.hg.1"
+    ) |>
+    ggplot(aes(
+        x = as.character(hs_asthma),
+        y = log2(counts + 1),
+        color = as.character(hs_asthma),
+        fill = as.character(hs_asthma)
+    )) +
+    geom_boxplot(alpha = 0.5) +
+    geom_jitter(alpha = 0.1) +
+    ggpubr::geom_pwc(label = "{p.adj.format}{p.adj.signif}") +
+    theme_minimal() +
+    ggpubr::rotate_x_text(angle = 45) +
+    ggsci::scale_color_cosmic() +
+    ggsci::scale_fill_cosmic() +
+    labs(
+        x = "",
+        y = expression(Log[2] * "Abd."),
+        fill = "Asthma Status",
+        color = "Asthma Status"
+    )
+```
+
+## Session Info
+
+```{r session_info}
+
+sessionInfo()
+```
