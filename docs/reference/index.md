@@ -1,0 +1,141 @@
+# Package index
+
+## Correlation/Association
+
+## Run Pipelines
+
+- [`run_association()`](https://BioNomad.github.io/tidyexposomics/reference/run_association.md)
+  : Run Association Analysis
+- [`run_cluster_samples()`](https://BioNomad.github.io/tidyexposomics/reference/run_cluster_samples.md)
+  : Cluster Samples Based on Exposure Data
+- [`run_correlation()`](https://BioNomad.github.io/tidyexposomics/reference/run_correlation.md)
+  : Run Correlation Analysis
+- [`run_create_network()`](https://BioNomad.github.io/tidyexposomics/reference/run_create_network.md)
+  : Create Correlation Network from Feature Data
+- [`run_differential_abundance()`](https://BioNomad.github.io/tidyexposomics/reference/run_differential_abundance.md)
+  : Run Differential Abundance Analysis
+- [`run_enrichment()`](https://BioNomad.github.io/tidyexposomics/reference/run_enrichment.md)
+  : Perform enrichment analysis on selected features from a exposomicset
+  object
+- [`run_exposome_score()`](https://BioNomad.github.io/tidyexposomics/reference/run_exposome_score.md)
+  : Compute Composite Exposome Scores
+- [`run_exposure_impact()`](https://BioNomad.github.io/tidyexposomics/reference/run_exposure_impact.md)
+  : Calculate Exposure Impact from Feature-Exposure Correlation Networks
+- [`run_exposure_omics_association()`](https://BioNomad.github.io/tidyexposomics/reference/run_exposure_omics_association.md)
+  : Run Exposure-Omics Association
+- [`run_factor_overlap()`](https://BioNomad.github.io/tidyexposomics/reference/run_factor_overlap.md)
+  : Identify and Annotate Shared Top Features Across Integration Factors
+- [`run_impute_missing()`](https://BioNomad.github.io/tidyexposomics/reference/run_impute_missing.md)
+  : Impute Missing Exposure and Omics Data in a MultiAssayExperiment
+- [`run_multiomics_integration()`](https://BioNomad.github.io/tidyexposomics/reference/run_multiomics_integration.md)
+  : Run Multi-Omics Integration
+- [`run_normality_check()`](https://BioNomad.github.io/tidyexposomics/reference/run_normality_check.md)
+  : Assess Normality of Exposure Variables
+- [`run_pca()`](https://BioNomad.github.io/tidyexposomics/reference/run_pca.md)
+  : Perform Principal Component Analysis (PCA)
+- [`run_pipeline_summary()`](https://BioNomad.github.io/tidyexposomics/reference/run_pipeline_summary.md)
+  : Summarize and Visualize Analysis Pipeline Steps
+- [`run_sensitivity_analysis()`](https://BioNomad.github.io/tidyexposomics/reference/run_sensitivity_analysis.md)
+  : Run Sensitivity Analysis for Differential Abundance
+- [`run_summarize_exposures()`](https://BioNomad.github.io/tidyexposomics/reference/run_summarize_exposures.md)
+  : Summarize Exposure Variables
+
+## Data Processing
+
+- [`create_exposomicset()`](https://BioNomad.github.io/tidyexposomics/reference/create_exposomicset.md)
+  : Create an Exposomicset Object
+
+- [`filter_missing()`](https://BioNomad.github.io/tidyexposomics/reference/filter_missing.md)
+  : Filter Features and Variables with High Missingness
+
+- [`filter_non_normal()`](https://BioNomad.github.io/tidyexposomics/reference/filter_non_normal.md)
+  : Filter Non-Normal Exposure Variables
+
+- [`filter_omics()`](https://BioNomad.github.io/tidyexposomics/reference/filter_omics.md)
+  : Filter low-quality features in omics assays
+
+- [`filter_sample_outliers()`](https://BioNomad.github.io/tidyexposomics/reference/filter_sample_outliers.md)
+  : Filter Sample Outliers
+
+- [`extract_omics_exposure_df()`](https://BioNomad.github.io/tidyexposomics/reference/extract_omics_exposure_df.md)
+  : Extract Merged Omics and Exposure Data Frame
+
+- [`extract_results()`](https://BioNomad.github.io/tidyexposomics/reference/extract_results.md)
+  :
+
+  Extract Results from `MultiAssayExperiment` Metadata
+
+- [`extract_results_excel()`](https://BioNomad.github.io/tidyexposomics/reference/extract_results_excel.md)
+  : Export tidyexposomics Results to Excel
+
+- [`extract_top_factor_features()`](https://BioNomad.github.io/tidyexposomics/reference/extract_top_factor_features.md)
+  : Extract Top Contributing Features for Factors
+
+- [`transform_exposure()`](https://BioNomad.github.io/tidyexposomics/reference/transform_exposure.md)
+  : Transform Exposure Variables for Normality
+
+- [`pivot_exp()`](https://BioNomad.github.io/tidyexposomics/reference/pivot_exp.md)
+  : Pivot a selected omics dataset from a MultiAssayExperiment into
+  tidybulk format
+
+- [`pivot_feature()`](https://BioNomad.github.io/tidyexposomics/reference/pivot_feature.md)
+  : Extract Feature Metadata from a MultiAssayExperiment
+
+- [`pivot_sample()`](https://BioNomad.github.io/tidyexposomics/reference/pivot_sample.md)
+  : Extract Sample Metadata from MultiAssayExperiment or
+  SummarizedExperiment
+
+## Data Visualization
+
+- [`plot_association()`](https://BioNomad.github.io/tidyexposomics/reference/plot_association.md)
+  : Plot Association Results (Unified Forest Plot)
+- [`plot_circos_correlation()`](https://BioNomad.github.io/tidyexposomics/reference/plot_circos_correlation.md)
+  : Plot Circular Network of Exposure Relationships
+- [`plot_correlation_summary()`](https://BioNomad.github.io/tidyexposomics/reference/plot_correlation_summary.md)
+  : Plot Correlation Summary from Exposure-Feature Correlations
+- [`plot_correlation_tile()`](https://BioNomad.github.io/tidyexposomics/reference/plot_correlation_tile.md)
+  : Plot Correlation Tilemap
+- [`plot_enrichment()`](https://BioNomad.github.io/tidyexposomics/reference/plot_enrichment.md)
+  : Plot Enrichment Results from exposomicset
+- [`plot_exposures()`](https://BioNomad.github.io/tidyexposomics/reference/plot_exposures.md)
+  : Plot Exposure Distributions by Category or Group
+- [`plot_exposure_impact()`](https://BioNomad.github.io/tidyexposomics/reference/plot_exposure_impact.md)
+  : Plot Exposure Impact on Network Centrality Metrics
+- [`plot_exposure_omics_association()`](https://BioNomad.github.io/tidyexposomics/reference/plot_exposure_omics_association.md)
+  : Plot Exposure-Omics Associations
+- [`plot_factor_summary()`](https://BioNomad.github.io/tidyexposomics/reference/plot_factor_summary.md)
+  : Plot Summary of Factor Contributions from Multi-Omics Integration
+- [`plot_manhattan()`](https://BioNomad.github.io/tidyexposomics/reference/plot_manhattan.md)
+  : Plot a Manhattan-style ExWAS summary across omics categories
+- [`plot_missing()`](https://BioNomad.github.io/tidyexposomics/reference/plot_missing.md)
+  : Plot Missing Data Across Exposure and Omic Layers
+- [`plot_network()`](https://BioNomad.github.io/tidyexposomics/reference/plot_network.md)
+  : Plot Network Graph of Features or Exposures
+- [`plot_normality_summary()`](https://BioNomad.github.io/tidyexposomics/reference/plot_normality_summary.md)
+  : Plot Normality Summary of Exposure Variables
+- [`plot_pca()`](https://BioNomad.github.io/tidyexposomics/reference/plot_pca.md)
+  : Plot PCA Results for Features and Samples
+- [`plot_sample_clusters()`](https://BioNomad.github.io/tidyexposomics/reference/plot_sample_clusters.md)
+  : Plot Sample Clusters
+- [`plot_sensitivity_summary()`](https://BioNomad.github.io/tidyexposomics/reference/plot_sensitivity_summary.md)
+  : Plot Sensitivity Analysis Summary
+- [`plot_top_factor_features()`](https://BioNomad.github.io/tidyexposomics/reference/plot_top_factor_features.md)
+  : Plot Top Features by Factor from Integration Results
+- [`plot_volcano()`](https://BioNomad.github.io/tidyexposomics/reference/plot_volcano.md)
+  : Volcano Plot of Differential Abundance
+
+## Ontology Annotation App
+
+- [`build_ont_annot_app()`](https://BioNomad.github.io/tidyexposomics/reference/build_ont_annot_app.md)
+  : Build the Ontology Annotation Shiny app
+
+## Example Data
+
+- [`download_dataset()`](https://BioNomad.github.io/tidyexposomics/reference/download_dataset.md)
+  : Download and cache a tidyexposomics dataset
+- [`load_annotation_data()`](https://BioNomad.github.io/tidyexposomics/reference/load_annotation_data.md)
+  : Load Ontology Data
+- [`make_example_data()`](https://BioNomad.github.io/tidyexposomics/reference/make_example_data.md)
+  : Generate Example Data for Testing
+- [`tidyexposomics_example`](https://BioNomad.github.io/tidyexposomics/reference/tidyexposomics_example.md)
+  : Example exposome multi-omics dataset
