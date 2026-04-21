@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">tidyexposomics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.16</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,9 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/exwas.html">Epidemiology-Only Workflow</a></li>
+<li><a class="dropdown-item" href="articles/custom_analysis.html">Custom Analysis</a></li>
+    <li><a class="dropdown-item" href="articles/exposome_scores.html">Exposome Scores</a></li>
+    <li><a class="dropdown-item" href="articles/exposure_annotation.html">Exposure Annotation</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -70,28 +72,23 @@
 <div class="row">
   <main id="main" class="col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="tidyexposomics-">tidyexposomics <a href="#"><img src="./articles/logo.png" align="right" height="200"></a>
+<div class="page-header"><h1 id="tidyexposomics-">tidyexposomics <a href="#"><img src="articles/logo.png" align="right" width="30%"></a>
 <a class="anchor" aria-label="anchor" href="#tidyexposomics-"></a>
 </h1></div>
 <p><br><br><br><br></p>
-<ul>
-<li>
-<strong>Website:</strong> <a href="https://bionomad.github.io/tidyexposomics/index.html" class="external-link uri">https://bionomad.github.io/tidyexposomics/index.html</a>
-</li>
-</ul>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>The <code>tidyexposomics</code> package is designed to facilitate the integration of exposure and omics data to identify exposure-omics associations. Functions follow the tidyverse framework, where commands are designed to be simplified and intuitive. The tidyexposomics package provides functionality to perform quality control, sample and exposure association analysis, differential abundance analysis, multi-omics integration, and functional enrichment analysis.</p>
 <p align="center" width="100%">
-<img width="80%" src="articles/overview.png"></p>
+<img width="120%" src="articles/overview.png"></p>
 </div>
 <div class="section level2">
 <h2 id="command-structure">Command Structure<a class="anchor" aria-label="anchor" href="#command-structure"></a>
 </h2>
 <p>To make the package more user-friendly, we have named our functions to be more intuitive. For example, we use the following naming conventions:</p>
 <p align="center" width="100%">
-<img width="80%" src="articles/command_str.png"></p>
+<img width="60%" src="articles/command_str.png"></p>
 <p>Results can be added to the <code>MultiAssayExperiment</code> object or returned directly with <code>action = 'get'</code>. We suggest adding results, given that pipeline steps are tracked and can be output to the R console, plotted as a workflow diagram, or exported to an excel worksheet.</p>
 </div>
 <div class="section level2">
@@ -103,13 +100,13 @@
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"tidyexposomics"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Install using devtools</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"bionomad/tidyexposomics"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"bionomad/tidyexposomics"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
 <ul>
-<li><a href="vignettes/tidyexposomics.Rmd">Getting Started</a></li>
+<li><a href="articles/tidyexposomics.html">Getting Started</a></li>
 </ul>
 </div>
 </div>

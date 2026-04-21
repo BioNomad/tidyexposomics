@@ -1,11 +1,9 @@
-# tidyexposomics [![](./articles/logo.png)](#)
+# tidyexposomics [![](articles/logo.png)](#)
 
   
   
   
   
-
-- **Website:** <https://bionomad.github.io/tidyexposomics/index.html>
 
 ## Overview
 
@@ -47,4 +45,4 @@ devtools::install_github("bionomad/tidyexposomics")
 ## Getting Started
 
 - [Getting
-  Started](https://BioNomad.github.io/tidyexposomics/vignettes/tidyexposomics.Rmd)
+  Started](https://BioNomad.github.io/tidyexposomics/articles/tidyexposomics.md)

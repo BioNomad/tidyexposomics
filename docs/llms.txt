@@ -1,11 +1,9 @@
-# tidyexposomics [![](./articles/logo.png)](#)
+# tidyexposomics [![](articles/logo.png)](#)
 
   
   
   
   
-
-- **Website:** <https://bionomad.github.io/tidyexposomics/index.html>
 
 ## Overview
 
@@ -47,7 +45,7 @@ devtools::install_github("bionomad/tidyexposomics")
 ## Getting Started
 
 - [Getting
-  Started](https://BioNomad.github.io/tidyexposomics/vignettes/tidyexposomics.Rmd)
+  Started](https://BioNomad.github.io/tidyexposomics/articles/tidyexposomics.md)
 
 # Package index
 
@@ -78,8 +76,6 @@ devtools::install_github("bionomad/tidyexposomics")
   : Identify and Annotate Shared Top Features Across Integration Factors
 - [`run_impute_missing()`](https://BioNomad.github.io/tidyexposomics/reference/run_impute_missing.md)
   : Impute Missing Exposure and Omics Data in a MultiAssayExperiment
-- [`run_mixture_analysis()`](https://BioNomad.github.io/tidyexposomics/reference/run_mixture_analysis.md)
-  : Run Mixture Analysis
 - [`run_multiomics_integration()`](https://BioNomad.github.io/tidyexposomics/reference/run_multiomics_integration.md)
   : Run Multi-Omics Integration
 - [`run_normality_check()`](https://BioNomad.github.io/tidyexposomics/reference/run_normality_check.md)
@@ -154,14 +150,14 @@ devtools::install_github("bionomad/tidyexposomics")
   : Plot Exposure Distributions by Category or Group
 - [`plot_exposure_impact()`](https://BioNomad.github.io/tidyexposomics/reference/plot_exposure_impact.md)
   : Plot Exposure Impact on Network Centrality Metrics
+- [`plot_exposure_omics_association()`](https://BioNomad.github.io/tidyexposomics/reference/plot_exposure_omics_association.md)
+  : Plot Exposure-Omics Associations
 - [`plot_factor_summary()`](https://BioNomad.github.io/tidyexposomics/reference/plot_factor_summary.md)
   : Plot Summary of Factor Contributions from Multi-Omics Integration
 - [`plot_manhattan()`](https://BioNomad.github.io/tidyexposomics/reference/plot_manhattan.md)
   : Plot a Manhattan-style ExWAS summary across omics categories
 - [`plot_missing()`](https://BioNomad.github.io/tidyexposomics/reference/plot_missing.md)
   : Plot Missing Data Across Exposure and Omic Layers
-- [`plot_mixture()`](https://BioNomad.github.io/tidyexposomics/reference/plot_mixture.md)
-  : Plot Mixture Analysis Results
 - [`plot_network()`](https://BioNomad.github.io/tidyexposomics/reference/plot_network.md)
   : Plot Network Graph of Features or Exposures
 - [`plot_normality_summary()`](https://BioNomad.github.io/tidyexposomics/reference/plot_normality_summary.md)
@@ -197,7 +193,11 @@ devtools::install_github("bionomad/tidyexposomics")
 
 ### All vignettes
 
-- [Epidemiology-Only
-  Workflow](https://BioNomad.github.io/tidyexposomics/articles/exwas.md):
+- [Custom
+  Analysis](https://BioNomad.github.io/tidyexposomics/articles/custom_analysis.md):
+- [Exposome
+  Scores](https://BioNomad.github.io/tidyexposomics/articles/exposome_scores.md):
+- [Exposure
+  Annotation](https://BioNomad.github.io/tidyexposomics/articles/exposure_annotation.md):
 - [Introduction to
   tidyexposomics](https://BioNomad.github.io/tidyexposomics/articles/tidyexposomics.md):

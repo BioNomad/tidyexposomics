@@ -22,13 +22,13 @@ Source:
 [`DESCRIPTION`](https://github.com/BioNomad/tidyexposomics/blob/HEAD/DESCRIPTION)
 
 Laird J (2026). *tidyexposomics: Integrated Exposure-Omics Analysis
-Powered by Tidy Principles*. R package version 0.99.14,
+Powered by Tidy Principles*. R package version 0.99.16,
 <https://bionomad.github.io/tidyexposomics/>.
 
     @Manual{,
       title = {tidyexposomics: Integrated Exposure-Omics Analysis Powered by Tidy Principles},
       author = {Jason Laird},
       year = {2026},
-      note = {R package version 0.99.14},
+      note = {R package version 0.99.16},
       url = {https://bionomad.github.io/tidyexposomics/},
     }
