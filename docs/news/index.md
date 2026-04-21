@@ -1,5 +1,13 @@
 # Changelog
 
+## tidyexposomics 0.99.16
+
+- Fixed multi-omics latent factor naming.
+
+## tidyexposomics 0.99.15
+
+- Bump version for Bioconductor release.
+
 ## tidyexposomics 0.99.14
 
 - Fixed extract top factor features MCIA factor mapping.
