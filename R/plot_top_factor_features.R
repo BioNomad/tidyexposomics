@@ -64,10 +64,8 @@
 #' @importFrom purrr map2
 #' @importFrom tibble rownames_to_column
 #' @importFrom tidyr pivot_longer
-#' @importFrom dplyr mutate filter group_by arrange desc slice_head
-#' bind_rows inner_join sym
-#' @importFrom ggplot2 ggplot aes geom_point geom_segment theme_bw
-#' theme labs scale_color_manual element_text
+#' @importFrom dplyr mutate filter group_by arrange desc slice_head bind_rows inner_join sym
+#' @importFrom ggplot2 ggplot aes geom_point geom_segment theme_bw theme labs scale_color_manual element_text
 #' @importFrom scales alpha
 #' @export
 plot_top_factor_features <- function(

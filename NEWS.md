@@ -1,3 +1,7 @@
+# tidyexposomics 1.1.1
+
+* added `transform_sce_to_exposomicset()` function to allow SingleCellExperiment input.
+
 # tidyexposomics 0.99.16
 
 * Fixed multi-omics latent factor naming. 

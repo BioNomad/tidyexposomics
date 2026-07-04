@@ -508,8 +508,7 @@ run_association <- function(
 #' @keywords internal
 #' @noRd
 #'
-#' @importFrom dplyr mutate case_when select rename inner_join left_join
-#' bind_rows
+#' @importFrom dplyr mutate case_when select rename inner_join left_join bind_rows
 #' @importFrom stringr str_extract
 #' @importFrom purrr pluck
 #' @importFrom tibble rownames_to_column

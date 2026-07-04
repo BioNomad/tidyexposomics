@@ -48,8 +48,7 @@
 #' factor_sum_plot <- mae |>
 #'     plot_factor_summary()
 #'
-#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 labs
-#'  theme_minimal element_text
+#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 labs theme_minimal element_text
 #' @importFrom ggpubr theme_pubr rotate_x_text
 #' @importFrom tidyr pivot_longer
 #' @importFrom tibble rownames_to_column

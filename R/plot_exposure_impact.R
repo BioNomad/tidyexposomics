@@ -95,11 +95,8 @@
 #'         feature_type = "omics"
 #'     )
 #'
-#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_manual
-#' scale_fill_gradient2 labs theme_minimal theme element_text
-#' element_blank margin
-#' @importFrom dplyr select distinct pull group_by summarise mutate
-#' arrange ungroup case_when
+#' @importFrom ggplot2 ggplot aes geom_tile scale_fill_manual scale_fill_gradient2 labs theme_minimal theme element_text element_blank margin
+#' @importFrom dplyr select distinct pull group_by summarise mutate arrange ungroup case_when
 #' @importFrom ggpubr get_palette
 #' @importFrom tidyr pivot_longer
 #' @importFrom purrr pluck

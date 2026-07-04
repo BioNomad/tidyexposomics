@@ -59,9 +59,7 @@
 #'         box_width = 0.2
 #'     )
 #'
-#' @importFrom ggplot2 ggplot aes geom_boxplot geom_jitter
-#' geom_tile scale_color_manual scale_fill_manual scale_y_log10
-#' scale_x_log10 labs theme_minimal theme element_text guides guide_legend
+#' @importFrom ggplot2 ggplot aes geom_boxplot geom_jitter geom_tile scale_color_manual scale_fill_manual scale_y_log10 scale_x_log10 labs theme_minimal theme element_text guides guide_legend
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr filter select pull inner_join all_of where distinct mutate
 #' @importFrom purrr pluck

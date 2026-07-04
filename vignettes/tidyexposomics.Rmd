@@ -43,7 +43,7 @@ library(tidyexposomics)
 
 To make the package more user-friendly, we have named our functions to be more intuitive. For example, we use the following naming conventions:
 
-```{r command-str, echo=FALSE,fig.align='center',fig.cap= "Command naming conventions used throughout `tidyexposomics`. More complex pipelines begin with the `run_` prefix, visualizations with `plot_`, and data processing with `filter_`, `transform_`, `pivot_`, or `extract_` prefixes.",out.width="80%"}
+```{r command-str, echo=FALSE,fig.align='center',fig.cap= "Command naming conventions used throughout `tidyexposomics`. More complex pipelines begin with the `run_` prefix, visualizations with `plot_`, and data processing with `filter_`, `transform_`, `pivot_`, or `extract_` prefixes.",out.width="60%"}
 
 knitr::include_graphics("./command_str.png")
 ```
@@ -56,13 +56,13 @@ We provide functionality to either add results to the existing object storing th
 To get started we need to load the data. The `create_exposomicset` function is used to create a `MultiAssayExperiment` object that contains exposure and omics data. As a quick introduction, a `MultiAssayExperiment` object is a container for storing multiple assays (e.g., omics data) and their associated metadata:
 
 
-```{r mae-overview,echo=FALSE,fig.align='center',fig.cap="Overview of the MultiAssayExperiment structure linking samples, assays, and metadata."}
+```{r mae-overview,echo=FALSE,fig.align='center',fig.cap="Overview of the MultiAssayExperiment structure linking samples, assays, and metadata.",out.width="150%"}
 knitr::include_graphics("./mae_rep.png")
 ```
 
 We use the MultiAssayExperiment object to store the exposure and omics data. The create_expomicset function has several arguments:
 
-- `codebook`: is a data frame that contains information about the variables in the exposure metadata. The column names must contain variable where the values are the column names of the exposure data frame, and category which contains general categories for the variable names. This is the data frame you created with the [ontology annotation app](./exposure_annotation.Rmd)!
+- `codebook`: is a data frame that contains information about the variables in the exposure metadata. The column names must contain variable where the values are the column names of the exposure data frame, and category which contains general categories for the variable names. This is the data frame you created with the [ontology annotation app](./exposure_annotation.html)!
 
 - `exposure`: is a data frame that contains the exposure and other metadata.
 
@@ -779,10 +779,15 @@ extract_results_excel(
 
 ## Session Info
 
-```{r session_info}
+<details>
+  <summary>See Session Info</summary>
+  
+```{r session_info,collapse = TRUE}
 
 sessionInfo()
 ```
+
+</details>
 
 ## References
 

@@ -56,12 +56,10 @@
 #'     plot_type = "lollipop"
 #' )
 #'
-#' @importFrom ggplot2 ggplot aes geom_bar geom_segment geom_point geom_tile
-#'   labs theme_bw theme element_text theme_void
+#' @importFrom ggplot2 ggplot aes geom_bar geom_segment geom_point geom_tile labs theme_bw theme element_text theme_void
 #' @importFrom MultiAssayExperiment colData experiments
 #' @importFrom SummarizedExperiment assay
-#' @importFrom dplyr bind_rows filter group_by reframe mutate arrange
-#'   reframe select ungroup
+#' @importFrom dplyr bind_rows filter group_by reframe mutate arrange reframe select ungroup
 #' @importFrom purrr map
 #' @importFrom naniar miss_var_summary
 #' @importFrom ggpubr theme_pubr

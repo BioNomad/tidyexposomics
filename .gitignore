@@ -11,3 +11,6 @@ omnipathr-log/*.log
 # Build artifacts
 /doc/
 /Meta/
+
+# pkgdown output
+docs/

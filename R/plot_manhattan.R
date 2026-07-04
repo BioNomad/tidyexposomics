@@ -66,8 +66,7 @@
 #' manhattan_p <- mae |>
 #'     plot_manhattan(feature_col = "term")
 #'
-#' @importFrom ggplot2 ggplot aes geom_point geom_vline
-#'   scale_color_identity labs theme element_text element_rect
+#' @importFrom ggplot2 ggplot aes geom_point geom_vline scale_color_identity labs theme element_text element_rect
 #' @importFrom dplyr filter mutate group_by ungroup n bind_rows pull
 #' @importFrom purrr pluck
 #' @importFrom ggrepel geom_label_repel

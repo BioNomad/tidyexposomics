@@ -31,7 +31,7 @@ utils::globalVariables(c(
     "term_name", "term_node", "thresh_met", "to", "total",
     "total_significant", "type", "value", "var", "var1", "var1_type", "var2",
     "var2_type", "var_exp", "var_label", "var_max", "var_min", "var_pc",
-    "variable", "weight", "x", "y", "vertex_id","logFC", "P.Value", "adj.P.Val"
+    "variable", "weight", "x", "y", "vertex_id", "logFC", "P.Value", "adj.P.Val", "celltype"
 ))
 
 #' Internal - onLoad hook to register www assets

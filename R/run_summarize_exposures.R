@@ -46,8 +46,7 @@
 #'     )
 #'
 #' @importFrom MultiAssayExperiment metadata
-#' @importFrom dplyr select all_of where group_by summarise ungroup
-#' inner_join mutate_if everything
+#' @importFrom dplyr select all_of where group_by summarise ungroup inner_join mutate_if everything
 #' @importFrom tidyr pivot_longer
 #' @importFrom purrr pluck
 #' @export

@@ -1,6 +1,6 @@
 Package: tidyexposomics
 Title: Integrated Exposure-Omics Analysis Powered by Tidy Principles
-Version: 0.99.16
+Version: 1.1.1
 Authors@R: 
     c(
     person(given = "Jason",
@@ -35,7 +35,6 @@ URL: https://bionomad.github.io/tidyexposomics/
 BugReports: https://github.com/BioNomad/tidyexposomics/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 biocViews: 
     Software, 
@@ -109,6 +108,7 @@ Suggests:
     impute,
     janitor,
     knitr,
+    Matrix,
     matrixStats,
     mice,
     mirt,
@@ -125,3 +125,4 @@ Suggests:
     tidytext,
     tidyverse
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0

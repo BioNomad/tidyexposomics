@@ -274,10 +274,8 @@ plot_enrichment <- function(
 #'
 #' @return A `ggplot` dotplot object.
 #'
-#' @importFrom ggplot2 ggplot aes geom_point labs scale_color_gradient
-#' facet_grid theme element_text
-#' @importFrom dplyr filter group_by mutate reframe arrange slice_head
-#' ungroup inner_join pull bind_cols
+#' @importFrom ggplot2 ggplot aes geom_point labs scale_color_gradient facet_grid theme element_text
+#' @importFrom dplyr filter group_by mutate reframe arrange slice_head ungroup inner_join pull bind_cols
 #' @importFrom tibble rownames_to_column
 #' @importFrom purrr map
 #' @importFrom ggpubr theme_pubr rotate_x_text
@@ -460,8 +458,7 @@ plot_enrichment <- function(
 #'
 #' @return A `ggplot` heatmap object.
 #'
-#' @importFrom ggplot2 ggplot aes theme_bw facet_grid theme
-#' element_text labs geom_tile scale_fill_gradient2
+#' @importFrom ggplot2 ggplot aes theme_bw facet_grid theme element_text labs geom_tile scale_fill_gradient2
 #' @importFrom dplyr filter distinct count mutate left_join inner_join select
 #' @importFrom purrr pluck
 #' @importFrom tidyr separate_rows
@@ -695,11 +692,9 @@ plot_enrichment <- function(
 #' @return A `ggraph` object.
 #'
 #' @importFrom igraph graph_from_data_frame cluster_louvain
-#' @importFrom ggplot2 facet_wrap theme element_text labs scale_fill_manual
-#'  theme_void
+#' @importFrom ggplot2 facet_wrap theme element_text labs scale_fill_manual theme_void
 #' @importFrom ggrepel geom_label_repel
-#' @importFrom dplyr filter mutate select distinct group_by ungroup
-#' left_join top_n pull
+#' @importFrom dplyr filter mutate select distinct group_by ungroup left_join top_n pull
 #' @importFrom purrr map
 #' @importFrom tidyr separate_rows
 #' @importFrom stringr str_trim
@@ -930,8 +925,7 @@ plot_enrichment <- function(
 #'
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom ggplot2 scale_color_gradient2 theme_void labs element_text
-#' @importFrom dplyr filter mutate select distinct left_join
-#' count slice_head pull bind_rows group_by ungroup add_count if_else
+#' @importFrom dplyr filter mutate select distinct left_join count slice_head pull bind_rows group_by ungroup add_count if_else
 #' @importFrom tidyr separate_rows
 #' @importFrom tibble as_tibble
 #' @importFrom purrr pluck
@@ -1173,12 +1167,8 @@ plot_enrichment <- function(
 #'
 #' @return A `patchwork` object combining multiple ggplots.
 #'
-#' @importFrom ggplot2 ggplot aes geom_col coord_flip labs theme_minimal
-#' theme element_blank element_text element_line element_rect
-#' element_text scale_y_continuous scale_fill_gradient
-#'  scale_size_continuous scale_fill_manual
-#' @importFrom dplyr mutate distinct count filter left_join
-#' arrange pull select group_by ungroup
+#' @importFrom ggplot2 ggplot aes geom_col coord_flip labs theme_minimal theme element_blank element_text element_line element_rect element_text scale_y_continuous scale_fill_gradient scale_size_continuous scale_fill_manual
+#' @importFrom dplyr mutate distinct count filter left_join arrange pull select group_by ungroup
 #' @importFrom tidyr separate_rows
 #' @importFrom purrr map
 #'

@@ -189,8 +189,13 @@ plot_association(
 
 ## Session Info
 
-```{r session_info}
+<details>
+  <summary>See Session Info</summary>
+  
+```{r session_info,collapse = TRUE}
 
 sessionInfo()
 ```
+
+</details>
 

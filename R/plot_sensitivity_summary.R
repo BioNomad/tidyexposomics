@@ -64,8 +64,7 @@
 #'
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom dplyr group_by summarise arrange left_join mutate n
-#' @importFrom ggplot2 ggplot aes geom_bar geom_segment scale_fill_manual
-#'   scale_color_manual theme labs geom_vline element_text
+#' @importFrom ggplot2 ggplot aes geom_bar geom_segment scale_fill_manual scale_color_manual theme labs geom_vline element_text
 #' @importFrom ggpubr theme_pubr
 #' @export
 plot_sensitivity_summary <- function(

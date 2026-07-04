@@ -94,8 +94,7 @@
 #'
 #' @importFrom MultiAssayExperiment metadata experiments
 #' @importFrom SummarizedExperiment rowData
-#' @importFrom dplyr filter inner_join pull mutate summarise bind_rows
-#' select distinct arrange
+#' @importFrom dplyr filter inner_join pull mutate summarise bind_rows select distinct arrange
 #' @importFrom tidyr unnest pivot_wider
 #' @importFrom purrr pluck map map2
 #' @importFrom tibble column_to_rownames rownames_to_column
@@ -287,8 +286,7 @@ run_enrichment <- function(
 #'
 #' @importFrom MultiAssayExperiment metadata experiments
 #' @importFrom SummarizedExperiment rowData
-#' @importFrom dplyr filter inner_join pull mutate summarise
-#' bind_rows select distinct arrange
+#' @importFrom dplyr filter inner_join pull mutate summarise bind_rows select distinct arrange
 #' @importFrom tidyr unnest pivot_wider
 #' @importFrom purrr pluck map map2
 #' @importFrom tibble column_to_rownames rownames_to_column

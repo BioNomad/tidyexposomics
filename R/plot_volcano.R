@@ -63,9 +63,7 @@
 #'
 #' @importFrom MultiAssayExperiment metadata
 #' @importFrom dplyr group_by summarise mutate inner_join arrange
-#' desc case_when filter slice_head sym
-#' @importFrom ggplot2 ggplot aes geom_point geom_vline geom_hline
-#' facet_wrap labs theme element_text scale_color_manual
+#' @importFrom ggplot2 ggplot aes geom_point geom_vline geom_hline facet_wrap labs theme element_text scale_color_manual
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom ggpubr theme_pubr
 #' @export
