@@ -1,6 +1,13 @@
+# tidyexposomics 1.1.2
+
+* Updated exposome score vignette to pull in suggested package.
+* Updated error in MCIA factor naming conventions.
+* Updated GO link to a live link to pull GO annotation data.
+* Removing suggested package, `mirt`, from supplemental vignette.
+
 # tidyexposomics 1.1.1
 
-* added `transform_sce_to_exposomicset()` function to allow SingleCellExperiment input.
+* Added `transform_sce_to_exposomicset()` function to allow `SingleCellExperiment` input.
 
 # tidyexposomics 0.99.16
 

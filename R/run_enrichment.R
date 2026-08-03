@@ -296,90 +296,98 @@ run_enrichment <- function(
 #' @import fenr
 #' @keywords internal
 .run_fenr <- function(
-  selected_genes,
-  universe_genes,
-  db = c("GO", "KEGG", "Reactome"),
-  species = NULL,
-  fenr_col = "gene_symbol"
+    selected_genes,
+    universe_genes,
+    db = c("GO", "KEGG", "Reactome"),
+    species = NULL,
+    fenr_col = "gene_symbol"
 ) {
-    # require(fenr)
+  db <- match.arg(db)
+  # avoid small selected gene sets
+  if (length(selected_genes) <= 1L ||
+      is.null(universe_genes) || all(is.na(universe_genes))) {
+    return(tibble::tibble())
+  }
 
-    db <- match.arg(db)
+  # Handle species if required
+  if (db == "GO" && is.null(species)) {
+    stop("Please specify a species designation for GO.")
+  }
 
-    # avoid small selected gene sets
-    if (length(selected_genes) <= 1L ||
-        is.null(universe_genes) || all(is.na(universe_genes))) {
-        return(tibble::tibble())
-    }
-
-    # Fetch functional terms + mapping
-    fetch_fun <- switch(db,
-        GO = fenr::fetch_go,
-        KEGG = fenr::fetch_kegg,
-        Reactome = fenr::fetch_reactome
+  # Fix for fenr given it is trying to fetch from dead links
+  if (db == "GO") {
+    options(
+      GO_ANNOTATION_URL = "https://ftp.ebi.ac.uk/pub/databases/GO/goa/HUMAN"
     )
+  }
 
-    # Fix for fenr given it is trying to assert a dead link exists
-    if (db == "GO") {
-        # url <- paste0("http://current.geneontology.org/annotations/", species, ".gaf.gz")
-        url <- "http://current.geneontology.org/annotations"
-        options(GO_ANNOTATION_URL = url)
+  term_data <- tryCatch(
+    {
+      if (db == "GO") {
+        # fenr::fetch_go() calls assert_species(), which scrapes a
+        # dead hardcoded URL (current.geneontology.org) to validate
+        # the species argument before fetching anything. Bypass that
+        # validation step and call the two working fetchers directly.
+        mapping <- fenr:::fetch_go_genes_go(
+          species = species,
+          use_cache = TRUE,
+          on_error = "stop"
+        )
+        terms <- fenr:::fetch_go_terms(
+          use_cache = TRUE,
+          on_error = "stop"
+        )
+        list(terms = terms, mapping = mapping)
+      } else if (db == "KEGG") {
+        fenr::fetch_kegg()
+      } else {
+        fenr::fetch_reactome()
+      }
+    },
+    error = function(e) {
+      message(e$message)
+      return(NULL)
     }
+  )
 
-    # Handle species if required
-    if (db == "GO" && is.null(species)) {
-        stop("Please specify a species designation for GO.")
+  if (is.null(term_data)) {
+    return(tibble::tibble())
+  }
+
+  # Prepare for enrichment
+  terms_obj <- tryCatch(
+    {
+      fenr::prepare_for_enrichment(
+        terms = term_data$terms,
+        mapping = term_data$mapping,
+        all_features = universe_genes,
+        feature_name = fenr_col
+      )
+    },
+    error = function(e) {
+      message(e$message)
+      return(NULL)
     }
+  )
 
-    term_data <- tryCatch(
-        {
-            if (db == "GO") fetch_fun(species = species) else fetch_fun()
-        },
-        error = function(e) {
-            message(e$message)
-            return(NULL)
-        }
-    )
-    if (is.null(term_data)) {
-        return(tibble::tibble())
+  if (is.null(terms_obj)) {
+    return(tibble::tibble())
+  }
+
+  # Run enrichment
+  out <- tryCatch(
+    fenr::functional_enrichment(
+      feat_all = universe_genes,
+      feat_sel = selected_genes,
+      term_data = terms_obj
+    ),
+    error = function(e) {
+      message(e$message)
+      tibble::tibble()
     }
+  )
 
-    # Prepare for enrichment
-    terms_obj <- tryCatch(
-        {
-            # may fail if there are no mappings
-            fenr::prepare_for_enrichment(
-                terms = term_data$terms,
-                mapping = term_data$mapping,
-                all_features = universe_genes,
-                feature_name = fenr_col
-            )
-        },
-        error = function(e) {
-            message(e$message)
-            return(NULL)
-        }
-    )
-    if (is.null(terms_obj)) {
-        return(tibble::tibble())
-    }
-
-
-    # Run enrichment
-    out <- tryCatch(
-        fenr::functional_enrichment(
-            feat_all = universe_genes,
-            feat_sel = selected_genes,
-            term_data = terms_obj
-        ),
-        error = function(e) {
-            # e.g., internal size assertions
-            message(e$message)
-            tibble::tibble()
-        }
-    )
-
-    tibble::as_tibble(out)
+  tibble::as_tibble(out)
 }
 
 # --- Run Enrichment on Features ------------

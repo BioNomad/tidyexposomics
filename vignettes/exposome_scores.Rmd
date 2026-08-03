@@ -131,11 +131,6 @@ expom <- expom |>
     ) |>
     run_exposome_score(
         exposure_cols = aerosols,
-        score_type = "irt",
-        score_column_name = "exposome_irt_score"
-    ) |>
-    run_exposome_score(
-        exposure_cols = aerosols,
         score_type = "quantile",
         score_column_name = "exposome_quantile_score"
     ) |>
@@ -159,7 +154,6 @@ expom <- run_association(
     feature_set = c(
         "exposome_median_score",
         "exposome_pca_score",
-        "exposome_irt_score",
         "exposome_quantile_score",
         "exposome_var_score"
     ),
@@ -177,7 +171,6 @@ plot_association(
     terms = c(
         "exposome_median_score",
         "exposome_pca_score",
-        "exposome_irt_score",
         "exposome_quantile_score",
         "exposome_var_score"
     ),
