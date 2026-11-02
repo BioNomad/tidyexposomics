@@ -2,7 +2,7 @@
 % Please edit documentation in R/transform_sce_to_exposomicset.R
 \name{transform_sce_to_exposomicset}
 \alias{transform_sce_to_exposomicset}
-\title{Convert a SingleCellExperiment to an exposomicset}
+\title{Convert a SingleCellExperiment or Seurat Object to an exposomicset}
 \usage{
 transform_sce_to_exposomicset(
   sce,
@@ -16,7 +16,7 @@ transform_sce_to_exposomicset(
 )
 }
 \arguments{
-\item{sce}{A \code{SingleCellExperiment} object with at least one assay
+\item{sce}{A \code{SingleCellExperiment} or \code{Seurat} object with at least one assay
 and cell-level metadata columns matching \code{sample_col} and
 \code{cluster_col}.}
 
@@ -52,12 +52,10 @@ warning. Default \code{0.8}.}
 }
 \value{
 A \code{MultiAssayExperiment} exposomicset with one pseudo-bulk
-experiment per retained cell type, ready for
-\code{run_exposure_omics_association()}, \code{run_correlation()},
-\code{run_association()}, and all other tidyexposomics functions.
+experiment per retained cell type, ready for tidyexposomics functions.
 }
 \description{
-Pseudo-bulk aggregates a \code{SingleCellExperiment} to the donor level,
+Pseudo-bulk aggregates a \code{SingleCellExperiment} or \code{Seurat} object to the donor level,
 splitting by cell type so that each cell type becomes a separate named
 experiment in the returned \code{MultiAssayExperiment}. Donor-level
 metadata is extracted directly from \code{colData(sce)}.

@@ -2,7 +2,7 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 <!-- badges: end -->
   
-# tidyexposomics <a href="#"><img src="./vignettes/logo.png" align="right" height="200" /></a>
+# tidyexposomics  <a align="right" width="100%"> <img width="30%" align="right" src="./vignettes/logo.png"> </a>
 
 <br>
 <br>

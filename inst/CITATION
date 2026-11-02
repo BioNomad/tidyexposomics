@@ -1,0 +1,10 @@
+bibentry(
+  bibtype = "Article",
+  title = "tidyexposomics: integrated exposure-omics analysis powered by tidy principles",
+  author = c(person("Jason", "Laird"), person("Thomas", "Hartung"),person("Fenna","Sille"),person("Alexandra","Maertens")),
+  journal = "Bioinformatics Advances",
+  year = "2026",
+  volume = "6",
+  pages = "vbag220",
+  doi = "https://doi.org/10.1093/bioadv/vbag220"
+)

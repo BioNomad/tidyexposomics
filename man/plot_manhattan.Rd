@@ -6,6 +6,9 @@
 \usage{
 plot_manhattan(
   exposomicset,
+  omics_model = NULL,
+  exposures_model = NULL,
+  effect = "main",
   pval_thresh = 0.05,
   feature_col = "term",
   alpha = 0.5,
@@ -24,7 +27,16 @@ plot_manhattan(
 }
 \arguments{
 \item{exposomicset}{A \code{MultiAssayExperiment} object that has
-already been processed by \code{associate_all_outcome()}.}
+already been processed by \code{run_association()} for the \code{"omics"} source,
+the \code{"exposures"} source, or both.}
+
+\item{omics_model, exposures_model}{Names of the stored models to plot for
+the omics and exposures sources (see \code{\link[=association_models]{association_models()}}). Can be left
+as \code{NULL} when only one model is stored for a source.}
+
+\item{effect}{Which effect to plot: \code{"main"} (default) is the feature's main
+effect. For models with interactions, supply an interacting coefficient
+name (e.g. \code{"sexmale"}).}
 
 \item{pval_thresh}{Numeric threshold for significance (default = 0.05).}
 
@@ -38,7 +50,7 @@ Default is \code{"term"}.}
 (default = 1).}
 
 \item{vars_to_label}{Optional character vector of variable names to label
-explicitly, matched against the \code{feature_col} column.}
+explicitly, matched against the \code{feature_col} column (or \code{term}).}
 
 \item{sig_color}{Color used for significant points (default = \code{"magenta2"}).}
 
@@ -68,14 +80,18 @@ A \code{ggplot} object showing the Manhattan-style faceted plot.
 }
 \description{
 This function generates a multi-faceted Manhattan plot from the results of
-\code{associate_all_outcome()}, visualizing the significance of associations
-across omics features, grouped by category. Significant features can be
-highlighted and labeled, and strip backgrounds can be colored per facet.
+\code{run_association()}, visualizing the significance of associations
+across omics features and exposures, grouped by category. Significant
+features can be highlighted and labeled, and strip backgrounds can be
+colored per facet.
 }
 \details{
 \itemize{
-\item This function expects \code{associate_all_outcome()} to have been run first.
-\item Facets represent omics categories, and points represent features.
+\item This function expects \code{run_association()} to have been run first, for
+\code{source = "omics"}, \code{source = "exposures"}, or both. Whichever is present
+is plotted.
+\item Facets represent categories (omics experiments, or the \code{category} column
+of the exposure codebook), and points represent features.
 \item Points below the significance threshold are colored using \code{non_sig_cols},
 while significant ones are colored with \code{sig_color} and optionally labeled.
 \item Uses \code{ggrepel} to avoid overlapping labels and \code{ggh4x} for
@@ -96,10 +112,8 @@ mae <- make_example_data(
 mae <- mae |>
     run_association(
         source = "omics",
+        formula = smoker ~ age,
         top_n = 20,
-        feature_set = c("exposure_pm25", "exposure_no2"),
-        outcome = "smoker",
-        covariates = c("age"),
         family = "binomial"
     )
 

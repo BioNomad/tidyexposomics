@@ -73,6 +73,8 @@
 #'     action = "get"
 #' )
 #'
+#' @importFrom dplyr percent_rank
+#'
 #' @export
 extract_top_factor_features <- function(
   exposomicset,

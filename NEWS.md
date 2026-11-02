@@ -1,3 +1,12 @@
+# tidyexposomics 1.1.3
+
+* Updated association functions to take formulas.
+* Added functionality to increase range of plots.
+* Increased code effeciency of enrichment analysis code.
+* Updated sample/exposure cluster assignments to update the column data and codebook, respectively.
+* Updated multi-omics integration function to add factors to column data.
+* Added download functionality for single-cell example.
+
 # tidyexposomics 1.1.2
 
 * Updated exposome score vignette to pull in suggested package.

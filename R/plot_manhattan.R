@@ -1,12 +1,20 @@
 #' Plot a Manhattan-style ExWAS summary across omics categories
 #'
 #' This function generates a multi-faceted Manhattan plot from the results of
-#' `associate_all_outcome()`, visualizing the significance of associations
-#' across omics features, grouped by category. Significant features can be
-#' highlighted and labeled, and strip backgrounds can be colored per facet.
+#' `run_association()`, visualizing the significance of associations
+#' across omics features and exposures, grouped by category. Significant
+#' features can be highlighted and labeled, and strip backgrounds can be
+#' colored per facet.
 #'
 #' @param exposomicset A `MultiAssayExperiment` object that has
-#' already been processed by `associate_all_outcome()`.
+#' already been processed by `run_association()` for the `"omics"` source,
+#' the `"exposures"` source, or both.
+#' @param omics_model,exposures_model Names of the stored models to plot for
+#' the omics and exposures sources (see [association_models()]). Can be left
+#' as `NULL` when only one model is stored for a source.
+#' @param effect Which effect to plot: `"main"` (default) is the feature's main
+#' effect. For models with interactions, supply an interacting coefficient
+#' name (e.g. `"sexmale"`).
 #' @param pval_thresh Numeric threshold for significance (default = 0.05).
 #' @param feature_col A character string indicating the column name to use
 #' for feature labeling and highlighting (e.g., `"term"` or `"feature"`).
@@ -15,7 +23,7 @@
 #' @param min_per_cat Minimum number of features per category to be shown
 #' (default = 1).
 #' @param vars_to_label Optional character vector of variable names to label
-#' explicitly, matched against the `feature_col` column.
+#' explicitly, matched against the `feature_col` column (or `term`).
 #' @param sig_color Color used for significant points (default = `"magenta2"`).
 #' @param non_sig_cols Character vector of alternating colors for
 #' non-significant points (default = `c("grey25", "grey75")`).
@@ -34,8 +42,11 @@
 #' @return A `ggplot` object showing the Manhattan-style faceted plot.
 #'
 #' @details
-#' - This function expects `associate_all_outcome()` to have been run first.
-#' - Facets represent omics categories, and points represent features.
+#' - This function expects `run_association()` to have been run first, for
+#'   `source = "omics"`, `source = "exposures"`, or both. Whichever is present
+#'   is plotted.
+#' - Facets represent categories (omics experiments, or the `category` column
+#'   of the exposure codebook), and points represent features.
 #' - Points below the significance threshold are colored using `non_sig_cols`,
 #'   while significant ones are colored with `sig_color` and optionally labeled.
 #' - Uses `ggrepel` to avoid overlapping labels and `ggh4x` for
@@ -55,10 +66,8 @@
 #' mae <- mae |>
 #'     run_association(
 #'         source = "omics",
+#'         formula = smoker ~ age,
 #'         top_n = 20,
-#'         feature_set = c("exposure_pm25", "exposure_no2"),
-#'         outcome = "smoker",
-#'         covariates = c("age"),
 #'         family = "binomial"
 #'     )
 #'
@@ -76,6 +85,9 @@
 #' @export
 plot_manhattan <- function(
   exposomicset,
+  omics_model = NULL,
+  exposures_model = NULL,
+  effect = "main",
   pval_thresh = 0.05,
   feature_col = "term",
   alpha = 0.5,
@@ -91,32 +103,61 @@ plot_manhattan <- function(
   facet_angle = 90,
   facet_text_face = "bold.italic"
 ) {
-    # require(ggplot2)
     .check_suggested(pkg = "forcats")
     .check_suggested(pkg = "ggh4x")
 
-    # Check if "correlation" is a name in metadata
     if (!("association" %in% names(MultiAssayExperiment::metadata(exposomicset)))) {
-        stop("Please run `run_association() first.`")
+        stop("Please run `run_association()` first.")
     }
 
-    # If exp_names in manhattan_data, replace with experiment names
-    exposure_res_df <- exposomicset |>
-        MultiAssayExperiment::metadata() |>
-        purrr::pluck("association") |>
-        purrr::pluck("assoc_exposures") |>
-        purrr::pluck("results_df")
+    # Pull whichever sources have results (the omics or exposures source can
+    # be missing), keep the requested effect, and keep only the columns used
+    # here so differing annotation columns can't clash when binding.
+    keep_cols <- unique(c("term", feature_col, "category", "p.value"))
 
-    exposure_res_df[[feature_col]] <- exposure_res_df$term
+    collect_source <- function(source, model) {
+        res <- .get_assoc_results(
+            exposomicset,
+            source,
+            model,
+            arg = paste0(source, "_model")
+        )
 
-    manhattan_data <- exposomicset |>
-        MultiAssayExperiment::metadata() |>
-        purrr::pluck("association") |>
-        purrr::pluck("assoc_omics") |>
-        purrr::pluck("results_df") |>
-        bind_rows(
-            exposure_res_df
-        ) |>
+        if (is.null(res)) {
+            return(NULL)
+        }
+
+        res <- res |>
+            dplyr::filter(effect == !!effect)
+
+        # exposures take their label from `term`; omics may use a rowData column
+        if (source == "exposures" || !feature_col %in% names(res)) {
+            res[[feature_col]] <- res$term
+        }
+
+        # exposure categories come from the codebook
+        if (!"category" %in% names(res)) {
+            res$category <- if (source == "exposures") "Exposures" else NA_character_
+        }
+
+        res |>
+            dplyr::select(dplyr::any_of(keep_cols)) |>
+            dplyr::mutate(category = as.character(category))
+    }
+
+    results <- dplyr::bind_rows(
+        collect_source("omics", omics_model),
+        collect_source("exposures", exposures_model)
+    )
+
+    if (nrow(results) == 0) {
+        stop(
+            "No association results found for sources 'omics' or 'exposures'. ",
+            "Run `run_association()` first."
+        )
+    }
+
+    manhattan_data <- results |>
         dplyr::filter(!is.na(category)) |>
         dplyr::mutate(category = gsub("_", " ", category)) |>
         dplyr::mutate(
@@ -124,10 +165,19 @@ plot_manhattan <- function(
             thresh_met = ifelse(p.value < pval_thresh, "yes", "no")
         )
 
+    if (nrow(manhattan_data) == 0) {
+        stop(
+            "No results have a `category`. Omics results get one from the ",
+            "experiment name, and exposures from the `category` column of the ",
+            "codebook in metadata."
+        )
+    }
+
     if (!is.null(vars_to_label)) {
         manhattan_data <- manhattan_data |>
             dplyr::mutate(label = ifelse(
-                var %in% vars_to_label,
+                as.character(var) %in% vars_to_label |
+                    as.character(!!dplyr::sym(feature_col)) %in% vars_to_label,
                 as.character(!!dplyr::sym(feature_col)), NA
             )) |>
             dplyr::mutate(
@@ -146,7 +196,7 @@ plot_manhattan <- function(
             )
     }
 
-    # Filter out categories with fewer than min_per_cat significant features
+    # Filter out categories with fewer than min_per_cat features
     manhattan_data <- manhattan_data |>
         dplyr::group_by(category) |>
         dplyr::filter(dplyr::n() >= min_per_cat) |>
@@ -158,8 +208,10 @@ plot_manhattan <- function(
         sort()
 
     # Alternating point colors for non-significant values
-    nonsig_greys <- rep(non_sig_cols, length.out = length(ordered_cats))
-    category_grey_map <- setNames(nonsig_greys, ordered_cats)
+    category_grey_map <- stats::setNames(
+        rep(non_sig_cols, length.out = length(ordered_cats)),
+        ordered_cats
+    )
 
     # Add color column to data
     manhattan_data <- manhattan_data |>
@@ -171,21 +223,12 @@ plot_manhattan <- function(
             )
         )
 
-
     # Facet colors
     if (is.null(facet_cols)) {
-        facet_cols <- tidy_exp_pal[
-            seq_len(length(unique(
-                manhattan_data |>
-                    dplyr::filter(!is.na(category)) |>
-                    dplyr::pull(category)
-            )))
-        ]
-    } else {
-        facet_cols
+        facet_cols <- tidy_exp_pal[seq_len(dplyr::n_distinct(manhattan_data$category))]
     }
 
-    manhattan <- manhattan_data |>
+    manhattan_data |>
         ggplot(aes(
             y = var,
             x = -log10(p.value),
@@ -231,19 +274,18 @@ plot_manhattan <- function(
         scale_color_identity() +
         ggpubr::theme_pubr(legend = "none") +
         theme(
-            axis.ticks.y = element_blank(),
-            axis.text.y = element_blank(),
+            axis.ticks.y = ggplot2::element_blank(),
+            axis.text.y = ggplot2::element_blank(),
             strip.placement = "outside",
             strip.background = element_rect(linewidth = 0, colour = NA),
             strip.text.y = element_text(
                 angle = facet_angle,
                 face = facet_text_face
             ),
-            panel.spacing = unit(0, "lines")
+            panel.spacing = ggplot2::unit(0, "lines")
         ) +
         labs(
             y = "",
             x = expression(-Log[10] * "P")
         )
-    return(manhattan)
 }

@@ -13,7 +13,6 @@
 #'  to export. Options include:
 #'   - `"correlation"`: Correlation results.
 #'   - `"association"`: Association results.
-#'   - `"mixture_analysis"`: Mixture Analysis results.
 #'   - `"differential_analysis"`: Differential abundance results,
 #'    including sensitivity analysis if available.
 #'   - `"multiomics_integration"`: Common top features contributing to

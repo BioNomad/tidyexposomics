@@ -62,9 +62,9 @@ test_that("extract_top_factor_features works for MCIA", {
     #     as.data.frame() |>
     #     colnames()
     factors <- c(
-        "Factor 1",
-        "Factor 2",
-        "Factor 3"
+        "Factor1",
+        "Factor2",
+        "Factor3"
     )
 
     top_feats <- extract_top_factor_features(
@@ -163,3 +163,4 @@ test_that("extract_top_factor_features works for RGCCA", {
     # do we have more than 0 rows for the top features
     expect_gt(nrow(top_feats), 0)
 })
+

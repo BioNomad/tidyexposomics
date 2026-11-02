@@ -1,7 +1,7 @@
 #' Run Multi-Omics Integration
 #'
 #' Performs multi-omics integration using one of several available methods:
-#'  MOFA, MCIA, RGCCA, or DIABLO. This function takes a `MultiAssayExperiment`
+#'  `MOFA`, `MCIA`, `RGCCA`, or `DIABLO.` This function takes a `MultiAssayExperiment`
 #'  object with two or more assays and computes shared latent factors
 #'  across omics layers.
 #'
@@ -23,7 +23,8 @@
 #'
 #' @return If `action = "add"`, returns a `MultiAssayExperiment` with
 #'  integration results
-#' stored in `metadata(exposomicset)$multiomics_integration$integration_results`.
+#' stored in `metadata(exposomicset)$multiomics_integration$integration_results` and the sample-level
+#' latent factors are stored in the `colData(exposomicset)`.
 #'  If `action = "get"`, returns a list with integration `method` and `result`.
 #'
 #' @details
@@ -104,6 +105,15 @@ run_multiomics_integration <- function(
             result = result
         )
         MultiAssayExperiment::metadata(exposomicset) <- all_metadata
+
+        MultiAssayExperiment::colData(exposomicset) <- exposomicset |>
+            pivot_sample() |>
+            dplyr::inner_join(
+                exposomicset |> .extract_latent_factors(),
+                by = c(".sample" = "id")
+            ) |>
+            tibble::column_to_rownames(".sample") |>
+            S4Vectors::DataFrame()
 
         # Add analysis step record
         step_record <- list(
@@ -267,7 +277,6 @@ run_multiomics_integration <- function(
 #' @return An RGCCA result object from `RGCCA::rgcca()`.
 #' @keywords internal
 #' @noRd
-#' @importFrom RGCCA rgcca
 #' @importFrom SummarizedExperiment assay
 #' @importFrom MultiAssayExperiment experiments
 .run_rgcca <- function(
@@ -275,6 +284,7 @@ run_multiomics_integration <- function(
   n_factors
 ) {
     message("Applying RGCCA integration.")
+    .check_suggested("RGCCA")
 
     # Prepare data: list of assays (samples x features)
     x <- purrr::map(
@@ -310,7 +320,6 @@ run_multiomics_integration <- function(
 #' @return A DIABLO result object from `mixOmics::block.splsda()`.
 #' @keywords internal
 #' @noRd
-#' @importFrom mixOmics block.splsda
 #' @importFrom SummarizedExperiment assay
 #' @importFrom MultiAssayExperiment experiments colData
 .run_diablo <- function(
@@ -321,6 +330,7 @@ run_multiomics_integration <- function(
   near.zero.var
 ) {
     message("Applying DIABLO supervised integration.")
+    .check_suggested("mixOmics")
 
     if (is.null(outcome)) {
         stop("DIABLO requires an outcome variable for supervision.")
@@ -362,4 +372,84 @@ run_multiomics_integration <- function(
         max.iter = max.iter,
         near.zero.var = near.zero.var
     )
+}
+
+# --- Extract Latent Factors Function -------------
+#' Extract Latent Factors
+#'
+#' Retrieve latent factors (MOFA, MCIA, MCCA, DIABLO, or RGCCA) for
+#' modeling from metadata.
+#'
+#' @keywords internal
+#' @noRd
+.extract_latent_factors <- function(exposomicset) {
+    result <- exposomicset |>
+        MultiAssayExperiment::metadata() |>
+        purrr::pluck("multiomics_integration") |>
+        purrr::pluck("integration_results")
+
+    mat <- switch(result$method,
+        "MOFA" = {
+            .check_suggested("MOFA2")
+            MOFA2::get_factors(result$result)[[1]]
+        },
+        "MCIA" = {
+            scores <- result$result@global_scores
+            colnames(scores) <- paste0("Factor", seq_len(ncol(scores)))
+            scores
+        },
+        "MCCA" = {
+            result$result$sample_scores |>
+                purrr::map(~ .x |>
+                    as.data.frame() |>
+                    tibble::rownames_to_column("sample") |>
+                    tidyr::pivot_longer(-sample,
+                        names_to = "factor",
+                        values_to = "weight"
+                    )) |>
+                dplyr::bind_rows(.id = "exp_name") |>
+                dplyr::group_by(factor, sample) |>
+                dplyr::reframe(weight = mean(weight), .groups = "drop") |>
+                tidyr::pivot_wider(names_from = "factor", values_from = "weight") |>
+                tibble::column_to_rownames("sample") |>
+                (\(df) {
+                    colnames(df) <- gsub(" ", "_", colnames(df))
+                    df
+                })()
+        },
+        "DIABLO" = {
+            result$result$variates |>
+                (\(lst) lst[names(lst) != "Y"])() |>
+                purrr::imap_dfc(~ {
+                    comp_names <- paste(.y, colnames(.x), sep = " ")
+                    df <- as.data.frame(.x)
+                    colnames(df) <- comp_names
+                    df
+                }) |>
+                tibble::rownames_to_column("id") |>
+                tibble::column_to_rownames("id") |>
+                (\(df) {
+                    colnames(df) <- gsub(" ", "_", colnames(df))
+                    df
+                })()
+        },
+        "RGCCA" = {
+            purrr::imap_dfc(result$result$Y, ~ {
+                comp_names <- paste(.y, colnames(.x), sep = " ")
+                df <- as.data.frame(.x)
+                colnames(df) <- comp_names
+                df
+            }) |>
+                tibble::rownames_to_column("id") |>
+                tibble::column_to_rownames("id") |>
+                (\(df) {
+                    colnames(df) <- gsub(" ", "_", colnames(df))
+                    df
+                })()
+        },
+        stop("Unsupported integration method.")
+    )
+
+    mat <- as.data.frame(mat)
+    tibble::rownames_to_column(mat, "id")
 }

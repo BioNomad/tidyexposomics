@@ -20,6 +20,14 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+<div class="alert" style="background-color: #caebe8;color: #000000;" role="alert"><strong>Objectives</strong></div>
+
+* Set up a codebook with the recommended metadata fields.
+* Choose the appropriate ontology for an exposure, outcome, or chemical variable.
+* Annotate exposure variables with ontology terms using the Shiny app.
+* Export an annotated metadata file for downstream analysis.
+
 # Exposure Metadata and Ontology Annotation
 <hr>
 
@@ -94,13 +102,7 @@ shiny::runApp(build_ont_annot_app())
 knitr::include_graphics("./ont_annot.png")
 ```
 
-## Session Info
 
-<details>
-  <summary>See Session Info</summary>
-  
-```{r session_info,collapse = TRUE}
-sessionInfo()
-```
-
-</details>
+<div class="text-end">
+  <a href="exposure_preprocessing.html" class="btn btn-primary" role="button">Next: Exposure Preprocessing</a>
+</div>

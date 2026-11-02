@@ -247,7 +247,7 @@ scale_color_tidy_exp <- function(..., rev = FALSE) {
                 ) |>
                 test_differential_abundance(
                     formula,
-                    .abundance = !!sym(abundance_col),
+                    abundance = !!sym(abundance_col),
                     method = method,
                     contrasts = contrast,
                     scaling_method = scaling_method

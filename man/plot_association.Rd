@@ -2,17 +2,24 @@
 % Please edit documentation in R/plot_association.R
 \name{plot_association}
 \alias{plot_association}
-\title{Plot Association Results (Unified Forest Plot)}
+\title{Plot Association Results}
 \usage{
 plot_association(
   exposomicset,
   source = c("omics", "exposures", "factors", "go_pcs"),
+  model = NULL,
   terms = NULL,
+  effect = "main",
   filter_col = "p.value",
   filter_thresh = 0.05,
   direction_filter = "all",
   add_r2_tile = TRUE,
   r2_col = "adj_r2",
+  up_col = "#8E0152",
+  down_col = "#006666",
+  ns_col = "grey55",
+  r2_low_col = "#e8e1eb",
+  r2_high_col = "#3f1b4f",
   facet = FALSE,
   nrow = 1,
   subtitle = NULL
@@ -25,8 +32,15 @@ results in metadata.}
 \item{source}{Character string indicating the association source.
 One of \code{"omics"}, \code{"exposures"}, \code{"factors"}, or \code{"go_pcs"}.}
 
+\item{model}{Name of the stored model to plot (see \code{\link[=association_models]{association_models()}}).
+Can be left as \code{NULL} when only one model is stored for the source.}
+
 \item{terms}{Optional character vector of term names to subset the plot to.
 Default is \code{NULL} (include all).}
+
+\item{effect}{Character; which effect to plot. \code{"main"} (default) is the
+feature's main effect. For models with interactions, supply the name of the
+interacting coefficient (e.g. \code{"sexMale"}) to plot the interaction instead.}
 
 \item{filter_col}{Column used to assess statistical significance
 (default: \code{"p.value"}).}
@@ -42,13 +56,28 @@ One of \code{"all"} (default), \code{"up"}, or \code{"down"}.}
 
 \item{r2_col}{Column used for coloring the tile plot (default: \code{"adj_r2"}).}
 
+\item{up_col}{Character; color used for significant positive associations
+(default: \code{"#8E0152"}).}
+
+\item{down_col}{Character; color used for significant negative associations
+(default: \code{"#006666"}).}
+
+\item{ns_col}{Character; color used for non-significant associations
+(default: \code{"grey55"}).}
+
+\item{r2_low_col}{Character; color for the low end of the R^2 tile gradient
+(default: \code{"#e8e1eb"}). Only used when \code{add_r2_tile = TRUE}.}
+
+\item{r2_high_col}{Character; color for the high end of the R^2 tile
+gradient (default: \code{"#3f1b4f"}). Only used when \code{add_r2_tile = TRUE}.}
+
 \item{facet}{Logical; if \code{TRUE} and \code{source == "go_pcs"},
 apply nested faceting by experiment and GO cluster (default: \code{FALSE}).}
 
 \item{nrow}{Integer; number of rows for facet layout if enabled (default: \code{1}).}
 
 \item{subtitle}{Optional subtitle for the plot. If \code{NULL},
-automatically generated from covariates used in the model.}
+automatically generated from the model formula and sample subset.}
 }
 \value{
 A \code{ggplot2} object: either a single forest plot or a composite plot
@@ -63,27 +92,23 @@ Supports faceting and visual augmentation with R^2 tiles when available.
 This function visualizes effect size estimates and confidence intervals from
 association analyses. It allows filtering by
 direction (\code{"up"} for positive, \code{"down"} for negative) and by significance.
-For \code{source = "go_pcs"}, it supports special
-formatting by splitting term labels into nested facets.
 
 The R^2 tile (if enabled) adds a side heatmap indicating model fit for
 each association. This can be useful for model diagnostics.
+
+To see several models together, use \code{compare_association()} and \code{plot_association_comparison()}.
 }
 \examples{
-
-# create example data
 mae <- make_example_data(
     n_samples = 10,
     return_mae = TRUE
 )
 
-# run association tests
 mae <- mae |>
     run_association(
+        formula = smoker ~ age,
         source = "exposures",
         feature_set = c("exposure_pm25", "exposure_no2"),
-        outcome = "smoker",
-        covariates = c("age"),
         family = "binomial"
     )
 

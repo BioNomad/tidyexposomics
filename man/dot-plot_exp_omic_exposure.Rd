@@ -7,7 +7,8 @@
 .plot_exp_omic_exposure(
   exposomicset,
   pval_col = "p_adjust",
-  pval_thresh = 0.05
+  pval_thresh = 0.05,
+  estimate_thresh = 0
 )
 }
 \arguments{
@@ -18,6 +19,10 @@ Defaults to \code{"p_adjust"}.}
 
 \item{pval_thresh}{Numeric. Significance threshold applied to \code{pval_col}.
 Rows with values below this threshold are retained. Defaults to \code{0.05}.}
+
+\item{estimate_thresh}{Numeric. Minimum absolute effect size. Rows with
+\code{abs(estimate)} greater than or equal to this value are retained.
+Defaults to \code{0} (no filtering on estimate).}
 }
 \value{
 A \code{ggplot} object.

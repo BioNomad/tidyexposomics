@@ -1,11 +1,11 @@
-#' Convert a SingleCellExperiment to an exposomicset
+#' Convert a SingleCellExperiment or Seurat Object to an exposomicset
 #'
-#' Pseudo-bulk aggregates a \code{SingleCellExperiment} to the donor level,
+#' Pseudo-bulk aggregates a \code{SingleCellExperiment} or \code{Seurat} object to the donor level,
 #' splitting by cell type so that each cell type becomes a separate named
 #' experiment in the returned \code{MultiAssayExperiment}. Donor-level
 #' metadata is extracted directly from \code{colData(sce)}.
 #'
-#' @param sce A \code{SingleCellExperiment} object with at least one assay
+#' @param sce A \code{SingleCellExperiment} or \code{Seurat} object with at least one assay
 #'   and cell-level metadata columns matching \code{sample_col} and
 #'   \code{cluster_col}.
 #' @param codebook A data frame with columns \code{variable} and
@@ -33,9 +33,7 @@
 #'   warning. Default \code{0.8}.
 #'
 #' @return A \code{MultiAssayExperiment} exposomicset with one pseudo-bulk
-#'   experiment per retained cell type, ready for
-#'   \code{run_exposure_omics_association()}, \code{run_correlation()},
-#'   \code{run_association()}, and all other tidyexposomics functions.
+#'   experiment per retained cell type, ready for tidyexposomics functions.
 #'
 #' @details
 #' Pseudo-bulk aggregation sums raw counts across all cells belonging to the
@@ -71,7 +69,15 @@ transform_sce_to_exposomicset <- function(
   min_cells_per_donor = 10,
   min_donor_frac = 0.8
 ) {
+    .check_suggested(pkg = "SingleCellExperiment")
     # Validate
+    if (inherits(sce, "Seurat")) {
+        .check_suggested(pkg = "Seurat")
+        if (!requireNamespace("Seurat", quietly = TRUE)) {
+            stop("Package 'Seurat' is required to convert Seurat objects.")
+        }
+        sce <- Seurat::as.SingleCellExperiment(sce)
+    }
     if (!inherits(sce, "SingleCellExperiment")) {
         stop("`sce` must be a SingleCellExperiment.")
     }
@@ -152,12 +158,12 @@ transform_sce_to_exposomicset <- function(
 
         # sum counts per donor, vapply over unique donors, rowSums per group
         pb_mat <- vapply(eligible, function(d) {
-          cols <- donors_ct == d
-          if (sum(cols) == 1L) {
-            as.numeric(mat_ct[, cols, drop = TRUE])
-          } else {
-            as.numeric(Matrix::rowSums(mat_ct[, cols, drop = FALSE]))
-          }
+            cols <- donors_ct == d
+            if (sum(cols) == 1L) {
+                as.numeric(mat_ct[, cols, drop = TRUE])
+            } else {
+                as.numeric(Matrix::rowSums(mat_ct[, cols, drop = FALSE]))
+            }
         }, FUN.VALUE = numeric(nrow(assay_mat)))
 
         # ensure matrix with correct dimnames

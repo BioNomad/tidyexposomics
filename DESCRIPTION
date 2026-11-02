@@ -1,6 +1,6 @@
 Package: tidyexposomics
 Title: Integrated Exposure-Omics Analysis Powered by Tidy Principles
-Version: 1.1.2
+Version: 1.1.3
 Authors@R: 
     c(
     person(given = "Jason",
@@ -68,12 +68,11 @@ Imports:
     jsonlite,
     limma,
     MASS,
+    Matrix,
     methods,
-    mixOmics,
     naniar,
     purrr,
     readr,
-    RGCCA,
     rlang,
     S4Vectors,
     scales,
@@ -108,21 +107,25 @@ Suggests:
     impute,
     janitor,
     knitr,
-    Matrix,
     matrixStats,
     mice,
     mirt,
     missForest,
+    mixOmics,
     MOFA2,
     nipalsMCIA,
     openxlsx,
     patchwork,
     reticulate,
+    RGCCA,
     rmarkdown,
+    Seurat,
+    SingleCellExperiment,
     testthat (>= 3.0.0),
     tidygraph,
     tidyHeatmap,
+    tidyselect,
     tidytext,
     tidyverse
 Config/testthat/edition: 3
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

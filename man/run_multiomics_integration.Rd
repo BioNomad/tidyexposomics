@@ -42,12 +42,13 @@ variance for \code{mixOmics::block.splsda}, default is \code{TRUE} .}
 \value{
 If \code{action = "add"}, returns a \code{MultiAssayExperiment} with
 integration results
-stored in \code{metadata(exposomicset)$multiomics_integration$integration_results}.
+stored in \code{metadata(exposomicset)$multiomics_integration$integration_results} and the sample-level
+latent factors are stored in the \code{colData(exposomicset)}.
 If \code{action = "get"}, returns a list with integration \code{method} and \code{result}.
 }
 \description{
 Performs multi-omics integration using one of several available methods:
-MOFA, MCIA, RGCCA, or DIABLO. This function takes a \code{MultiAssayExperiment}
+\code{MOFA}, \code{MCIA}, \code{RGCCA}, or \code{DIABLO.} This function takes a \code{MultiAssayExperiment}
 object with two or more assays and computes shared latent factors
 across omics layers.
 }

@@ -47,7 +47,7 @@ A ggplot object (ggraph circular plot).
 \description{
 Generates a circular network plot to visualize relationships between
 exposures, either based on correlation ("exposures") or
-shared features ("degs", "factors").
+shared features ("degs", "factors", or "omics").
 }
 \examples{
 

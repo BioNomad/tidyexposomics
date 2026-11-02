@@ -2,7 +2,7 @@
 #'
 #' Generates a circular network plot to visualize relationships between
 #' exposures, either based on correlation ("exposures") or
-#' shared features ("degs", "factors").
+#' shared features ("degs", "factors", or "omics").
 #'
 #' @param exposomicset A MultiAssayExperiment object.
 #' @param feature_type One of "exposures", "degs", or "factors".
@@ -21,7 +21,7 @@
 #' @return A ggplot object (ggraph circular plot).
 #'
 #' @import ggplot2
-#' @importFrom dplyr filter rename arrange
+#' @importFrom dplyr filter rename arrange mutate
 #' @importFrom igraph graph_from_data_frame
 #'
 #' @examples
@@ -53,7 +53,8 @@ plot_circos_correlation <- function(
       "omics",
       "factors",
       "factor_features",
-      "exposures", "pcs"
+      "exposures",
+      "pcs"
   ),
   exposure_cols = NULL,
   corr_threshold = NULL,
@@ -64,9 +65,6 @@ plot_circos_correlation <- function(
   high = "#8E0152",
   midpoint = NULL
 ) {
-    # require(ggplot2)
-    # require(ggraph)
-    # require(igraph)
     .check_suggested(pkg = "ggraph")
     .check_suggested(pkg = "scales")
 
@@ -83,44 +81,34 @@ plot_circos_correlation <- function(
 
         # Optional exposure filtering
         if (!is.null(exposure_cols)) {
-            correlation_df <- dplyr::filter(
-                correlation_df,
-                var1 %in% exposure_cols & var2 %in% exposure_cols
-            )
+            correlation_df <- correlation_df |>
+                dplyr::filter(
+                    var1 %in% exposure_cols & var2 %in% exposure_cols
+                )
         }
 
         if (!is.null(corr_threshold)) {
-            correlation_df <- dplyr::filter(
-                correlation_df, abs(correlation) >= corr_threshold
-            )
+            correlation_df <- correlation_df |>
+                dplyr::filter(abs(correlation) >= corr_threshold)
         }
 
-        correlation_df$edge_weight <- abs(correlation_df$correlation)
-        correlation_df <- dplyr::rename(correlation_df,
-            source = var1,
-            target = var2
-        )
-        edge_color_var <- correlation_df$correlation
+        # edge_weight (|r|) drives width; edge_color (signed r) drives color
+        correlation_df <- correlation_df |>
+            dplyr::mutate(
+                edge_weight = abs(correlation),
+                edge_color = correlation
+            ) |>
+            dplyr::rename(
+                source = var1,
+                target = var2
+            )
+
         midpoint_val <- ifelse(is.null(midpoint), 0, midpoint)
     } else {
         # degs or factors
-        tag <- if (feature_type == "degs") {
-            "omics_exposure_deg_correlation"
-        } else {
-            "omics_exposure_factor_correlation"
-        }
+        correlation_df <- MultiAssayExperiment::metadata(exposomicset) |>
+            purrr::pluck("correlation", feature_type)
 
-        correlation_list <- MultiAssayExperiment::metadata(exposomicset)$correlation
-        correlation_df <- correlation_list[[feature_type]]
-
-        # if (is.null(correlation_df)){
-        #   stop(paste0(
-        #     "No correlation found for feature_type = '",
-        #     feature_type,
-        #     "'. Run `run_correlation(..., feature_type = '",
-        #     feature_type,
-        #     "')` first."))
-        # }
         if (is.null(correlation_df)) {
             stop(sprintf(
                 "No correlation found for feature_type = '%s'.
@@ -129,47 +117,30 @@ plot_circos_correlation <- function(
             ))
         }
 
-        feature_list <- split(
-            correlation_df,
-            correlation_df$exposure
-        ) |>
-            purrr::map(~ unique(.x$feature))
+        correlation_df <- correlation_df |>
+            split(~exposure) |>
+            purrr::map(~ unique(.x$feature)) |>
+            .get_pairwise_overlaps() |>
+            dplyr::filter(num_shared > shared_cutoff) |>
+            dplyr::rename(edge_weight = num_shared) |>
+            dplyr::mutate(edge_color = edge_weight)
 
-        overlap_df <- .get_pairwise_overlaps(feature_list)
-        overlap_df <- overlap_df |>
-            dplyr::filter(num_shared > shared_cutoff)
-
-        correlation_df <- overlap_df |>
-            dplyr::rename(
-                source = source,
-                target = target,
-                edge_weight = num_shared
-            )
-
-        edge_color_var <- correlation_df$edge_weight
-        midpoint_val <- ifelse(is.null(midpoint),
+        midpoint_val <- ifelse(
+            is.null(midpoint),
             mean(correlation_df$edge_weight),
             midpoint
         )
     }
 
     # Get node metadata
-    codebook <- MultiAssayExperiment::metadata(exposomicset)$codebook
-    node_vars <- unique(c(correlation_df$source, correlation_df$target))
-    vertex_df <- dplyr::filter(codebook, variable %in% node_vars)
-
-    # Sort Correlation Df
-    correlation_df <- correlation_df |>
-        arrange(abs(edge_weight))
-
-    # Ensure igraph object
-    graph <- igraph::graph_from_data_frame(correlation_df,
-        vertices = vertex_df,
-        directed = FALSE
-    )
+    vertex_df <- MultiAssayExperiment::metadata(exposomicset)$codebook |>
+        dplyr::filter(
+            variable %in% unique(c(correlation_df$source, correlation_df$target))
+        )
 
     # Colors
     all_categories <- na.omit(unique(vertex_df$category))
+
     if (!is.null(annotation_colors)) {
         if (!all(all_categories %in% names(annotation_colors))) {
             stop("All node categories must be included in annotation_colors.")
@@ -182,16 +153,25 @@ plot_circos_correlation <- function(
         )
     }
 
-    # Plot
-    ggraph::ggraph(graph,
-        layout = "linear",
-        circular = TRUE
-    ) +
-        ggraph::geom_edge_arc(aes(
-            color = edge_weight,
-            width = scales::rescale(edge_weight, to = c(1, 5))
-        )) +
-        ggraph::geom_node_point(aes(fill = category),
+    # Plot (edges sorted so the strongest are drawn on top)
+    correlation_df |>
+        dplyr::arrange(edge_weight) |>
+        igraph::graph_from_data_frame(
+            vertices = vertex_df,
+            directed = FALSE
+        ) |>
+        ggraph::ggraph(
+            layout = "linear",
+            circular = TRUE
+        ) +
+        ggraph::geom_edge_arc(
+            aes(
+                color = edge_color,
+                width = scales::rescale(edge_weight, to = c(1, 5))
+            )
+        ) +
+        ggraph::geom_node_point(
+            aes(fill = category),
             shape = 21,
             size = 4,
             alpha = 0.8
@@ -214,12 +194,17 @@ plot_circos_correlation <- function(
             mid = mid,
             high = high,
             midpoint = midpoint_val,
+            limits = if (feature_type == "exposures") c(-1, 1) else NULL,
             guide = ggraph::guide_edge_colorbar()
         ) +
-        ggplot2::coord_fixed(xlim = c(-2, 2), ylim = c(-2, 2)) +
+        ggplot2::coord_fixed(
+            xlim = c(-2, 2),
+            ylim = c(-2, 2)
+        ) +
         ggplot2::guides(edge_width = "none") +
         ggplot2::labs(
-            edge_color = ifelse(feature_type == "exposures",
+            edge_color = ifelse(
+                feature_type == "exposures",
                 "Correlation",
                 "Shared Features"
             ),

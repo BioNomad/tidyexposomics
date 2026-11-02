@@ -27,7 +27,7 @@ and optionally omics datasets.
 \description{
 Constructs a \code{MultiAssayExperiment} object from exposure data and optionally
 omics datasets, ensuring proper formatting and alignment of samples and
-features. For epidemiology-only workflows, omics data can be omitted.
+features. For exposure-phenotype-only workflows, omics data can be omitted.
 }
 \details{
 The function validates inputs and creates a \code{MultiAssayExperiment} object.

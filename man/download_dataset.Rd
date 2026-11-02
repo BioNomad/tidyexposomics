@@ -6,14 +6,14 @@
 \usage{
 download_dataset(
   name = c("omics_list", "fdata", "meta", "annotated_cb", "expom_1", "chebi", "ecto",
-    "hpo"),
+    "hpo", "hca_lung"),
   verbose = TRUE,
   validate = TRUE
 )
 }
 \arguments{
 \item{name}{Dataset name: one of "omics_list", "fdata", "meta",
-"annotated_cb", "expom_1", "chebi", "ecto", "hpo".}
+"annotated_cb", "expom_1", "chebi", "ecto", "hpo", "hca_lung".}
 
 \item{verbose}{Logical; print messages.}
 

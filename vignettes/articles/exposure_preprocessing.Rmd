@@ -1,0 +1,233 @@
+---
+title: "Exposure Preprocessing"
+author: "Jason Laird"
+header-includes:
+   - \usepackage{amsmath}
+   - \usepackage{amsfonts}
+output:
+  BiocStyle::html_document:
+    toc_float: true
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{tidyexposomics: integrated exposure-omics analysis powered by tidy principles}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning = FALSE,message = FALSE)
+```
+
+<div class="text-end">
+  <a href="exposure_annotation.html" class="btn btn-primary" role="button">Previous: Exposure Ontology</a>
+</div>
+
+
+
+<div class="alert" style="background-color: #caebe8;color: #000000;" role="alert"><strong>Objectives</strong></div>
+
+* Create an `exposomicset` object from a codebook and exposure metadata.
+* Identify and visualize missing values in exposure data.
+* Impute missing exposure values.
+* Assess variable normality and apply transformations to improve it.
+
+## Getting the data in order
+
+To get started with an exposure-outcome-only workflow, we need to create our exposomicset which stores this data:
+
+```{r load-data}
+# Load Libraries
+library(tidyverse)
+library(tidyexposomics)
+
+# Load example data
+data("tidyexposomics_example")
+
+# Create exposomic set object
+expom <- create_exposomicset(
+    codebook = tidyexposomics_example$annotated_cb,
+    exposure = tidyexposomics_example$meta
+)
+```
+
+You'll notice it took two inputs, (1) a codebook with information about the exposures ([see more about codebooks here](exposure_annotation.html)), and (2) the meta data which contain the exposures and covariate information.
+
+For the sake of simplicity we will focus on a short list of exposures:
+
+```{r exposure-priority}
+# Grab exposure variables
+exp_vars <- tidyexposomics_example$annotated_cb |>
+    filter(category %in% c(
+        "aerosol",
+        "main group molecular entity",
+        "polyatomic entity"
+    )) |>
+    pull(variable) |>
+    as.character()
+```
+
+
+# Quality Control
+<hr>
+
+## Missingness
+
+Oftentimes when collecting data, there are missing values. Let’s use the `plot_missing` function to determine where our missing values are:
+
+```{r missing-bar,fig.height=2,fig.width=5}
+# Plot the missingness summary
+plot_missing(
+    exposomicset = expom,
+    plot_type = "summary",
+    threshold = 0
+)
+```
+
+Here we see that there are 4 variables in the exposure data that are missing data. Let’s take a look at them:
+
+```{r missing-bar-lollipop,fig.height=2,fig.width=4,fig.cap= "Percent missingness per exposure variable. Parity, `h_parity_None`, shows the highest missingness."}
+
+# Plot missing variables withing exposure group
+plot_missing(
+    exposomicset = expom,
+    plot_type = "lollipop",
+    threshold = 0,
+    layers = "Exposure"
+)
+```
+
+Here we see that one variable, `h_parity_None`, has about 4% missing values. We can apply a missingness filter using the `filter_missing` function. However, given that this level of missingness is quite low, we will not be applying a missingness filter and instead impute the missing data.
+
+## Imputation
+
+The `run_impute_missing` function is used to impute missing values. Here we can specify the imputation method for exposure and omics data separately.
+
+The `exposure_impute_method` argument is used to set the imputation method for exposure data, and the `omics_impute_method` argument is used to set the imputation method for omics data. The `omics_to_impute` argument is used to specify which omics data to impute. Here we will impute the exposure data given using the `missforest` method, but other options for imputation methods include:
+
+- `median`: Imputes missing values with the median of the variable.
+
+- `mean`: Imputes missing values with the mean of the variable.
+
+- `knn`: Uses k-nearest neighbors to impute missing values.
+
+- `mice`: Uses the Multivariate Imputation by Chained Equations (MICE) method to impute missing values.
+
+- `missforest`: Uses the MissForest method to impute missing values.
+
+- `lod_sqrt2`: Imputes missing values using the square root of the lower limit of detection (LOD) for each variable. This is useful for variables that have a lower limit of detection, such as chemical exposures.
+
+```{r impute-missing}
+
+# Impute missing values
+expom <- run_impute_missing(
+    exposomicset = expom,
+    exposure_impute_method = "missforest",
+    exposure_cols = exp_vars
+)
+```
+
+
+## Normality Check
+
+When determining variable associations, it is important to check the normality of the data. The `run_normality_check` function is used to check the normality of the data.
+
+```{r normality-check}
+
+# Check variable normality
+expom <- run_normality_check(
+    exposomicset = expom,
+    action = "add"
+)
+```
+
+The `transform_exposure` function is used to transform the data to make it more normal. Here the transform_method is set to `boxcox_best` as it will automatically select the best transformation method based on the data. The `transform_method` can be manually set to `log2`, `sqrt`, or `x_1_3` as well. We specify the exposure_cols argument to set the columns to transform.
+
+```{r trasform-vars}
+
+# Transform variables
+expom <- transform_exposure(
+    exposomicset = expom,
+    transform_method = "boxcox_best",
+    exposure_cols = exp_vars
+)
+```
+
+To check the normality of the exposure data, we can use the `plot_normality_summary` function. This function plots the normality of the data before and after transformation. The `transformed` argument is set to `TRUE` to plot the normality status of the transformed data.
+
+```{r norm-plot,fig.width= 4,fig.height= 4}
+
+# Examine normality summary
+plot_normality_summary(
+    exposomicset = expom,
+    transformed = TRUE
+)
+```
+
+
+
+## Exposure Summary
+
+We can summarize the exposure data using the `run_summarize_exposures` function. This function calculates summary statistics for each exposure variable, including the number of values, number of missing values, minimum, maximum, range, sum, median, mean, standard error, and confidence intervals. The `exposure_cols` argument determines which variables to include in the summary.
+
+
+```{r exp-sum, fig.width=6, fig.height=4}
+
+# Summarize exposure data
+run_summarize_exposures(
+    exposomicset = expom,
+    action = "get",
+    exposure_cols = exp_vars
+) |>
+    head()
+```
+
+## Exposure Visualization
+<hr>
+
+To visualize our exposure data, we can use the `plot_exposures` function. This function allows us to plot the exposure data in a variety of ways. Here we will plot the exposure data using a boxplot. The `exposure_cat` argument is used to set the exposure category to plot. Additionally, we could specify `exposure_cols` to only plot certain exposures. The `plot_type` argument is used to set the type of plot to create. Here we use a boxplot, but we could also use a ridge plot. 
+
+```{r plot-aerosol, fig.width=3, fig.height=5}
+
+# Plot aerosol exposure distributions by sex
+plot_exposures(
+    exposomicset = expom,
+    group_by = "e3_sex_None",
+    exposure_cols = c(
+      "h_pm25_ratio_preg_None",
+      "h_pm10_ratio_preg_None"
+    ),
+    plot_type = "boxplot",
+    ylab = "Values",
+    title = "Aerosol Exposure by Sex"
+)+
+  ggpubr::stat_compare_means(label="p.signif")
+```
+
+Here we see that levels of PM2.5 were higher in females compared to males.
+
+## Coverting the Exposomicset back to dataframes
+
+If you need to grab your codebook, feel free to do so using the `extract_results` function:
+
+```{r extract-codebook}
+extract_results(
+  exposomicset = expom,
+  result ="codebook") |> 
+  head()
+```
+
+If you want to grab the exposure+metadata do so using the `pivot_sample` function:
+
+```{r grab-exposure-data}
+expom |> 
+  pivot_sample() |> 
+  head()
+```
+
+
+<div class="text-end">
+  <a href="exposure_sample_clustering.html" class="btn btn-primary" role="button">Next: Exposure/Sample Clustering</a>
+</div>
+

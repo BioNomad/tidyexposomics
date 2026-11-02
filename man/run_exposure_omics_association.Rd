@@ -6,9 +6,9 @@
 \usage{
 run_exposure_omics_association(
   exposomicset,
+  formula = ~.feature,
   exposures = NULL,
   exp_name = NULL,
-  covariates = NULL,
   scaling_method = "none",
   correction_method = "fdr",
   top_pct = NULL,
@@ -20,14 +20,17 @@ run_exposure_omics_association(
 \item{exposomicset}{A \code{MultiAssayExperiment} object containing exposome
 and omics data.}
 
+\item{formula}{A one-sided formula describing the model to fit for each
+exposure. Use \code{.feature} as a placeholder for the exposure being tested;
+it is replaced by each variable in \code{exposures} in turn. Any other terms
+must be columns in \code{colData} and are treated as covariates. Defaults to
+\code{~ .feature} (no covariates).}
+
 \item{exposures}{Character vector of exposure variable names to test.
 If \code{NULL}, uses all variables from the codebook.}
 
 \item{exp_name}{Name(s) of the omics assay(s) to test against. If \code{NULL},
 uses all assays.}
-
-\item{covariates}{Optional character vector of covariate names to include
-in the model.}
 
 \item{scaling_method}{Character. Scaling method to apply before modeling.
 Options include \code{"none"} (default).}
@@ -53,11 +56,10 @@ limma's linear modeling framework.
 }
 \details{
 This function uses limma to test associations between multiple exposures
-and omics features. For each exposure, a linear model is fit with the
-exposure as the predictor and each omics feature as the outcome,
-adjusting for covariates.
+and omics features. For each exposure, the model given by \code{formula} is
+fit with each omics feature as the outcome, e.g.
 
-\code{omics_feature ~ exposure + covariate1 + covariate2 + ...}
+\code{omics_feature ~ .feature + covariate1 + covariate2 + ...}
 }
 \examples{
 # create example data
@@ -69,8 +71,8 @@ mae <- make_example_data(
 # run exposure-omics association
 mae <- mae |>
     run_exposure_omics_association(
-        exposures = c("exposure_pm25", "exposure_no2"),
-        covariates = c("age", "sex")
+        formula = ~ .feature + age + sex,
+        exposures = c("exposure_pm25", "exposure_no2")
     )
 
 }

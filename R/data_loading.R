@@ -1,7 +1,7 @@
 #' Download and cache a tidyexposomics dataset
 #'
 #' @param name Dataset name: one of "omics_list", "fdata", "meta",
-#'   "annotated_cb", "expom_1", "chebi", "ecto", "hpo".
+#'   "annotated_cb", "expom_1", "chebi", "ecto", "hpo", "hca_lung".
 #' @param verbose Logical; print messages.
 #' @param validate Logical; validate MD5 checksum.
 #' @return A list or object loaded from the cached .RData.
@@ -11,7 +11,7 @@
 download_dataset <- function(
   name = c(
       "omics_list", "fdata", "meta", "annotated_cb",
-      "expom_1", "chebi", "ecto", "hpo"
+      "expom_1", "chebi", "ecto", "hpo", "hca_lung"
   ),
   verbose = TRUE,
   validate = TRUE
@@ -26,11 +26,12 @@ download_dataset <- function(
         expom_1 = "5e84c508469a4db77a22f03f27ab9ccd",
         chebi = "8a5703b5ac54e63006c002c834a3f703",
         ecto = "0a267757ea47d5d99f5f4929f26186c6",
-        hpo = "9948e6b99815da81daa2d9a2e586a9ae"
+        hpo = "9948e6b99815da81daa2d9a2e586a9ae",
+        hca_lung = "b21905fb1ddf9e83094a50ed10b01077"
     )
 
     zip_name <- paste0(name, ".zip")
-    url <- paste0("https://zenodo.org/records/17137560/files/", zip_name)
+    url <- paste0("https://zenodo.org/records/23841784/files/", zip_name)
 
     bfc <- BiocFileCache::BiocFileCache()
     cached_zip <- BiocFileCache::bfcrpath(bfc, url)

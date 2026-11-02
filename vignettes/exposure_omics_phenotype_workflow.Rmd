@@ -1,0 +1,718 @@
+---
+title: "Exposure-Omics-Phenotype Workflow"
+author: "Jason Laird"
+header-includes:
+   - \usepackage{amsmath}
+   - \usepackage{amsfonts}
+output:
+  BiocStyle::html_document:
+    toc_float: true
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{tidyexposomics: Exposure-Omics-Phenotype Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning = FALSE,message = FALSE)
+```
+
+<div class="alert" style="background-color: #caebe8;color: #000000;" role="alert"><strong>Objectives</strong></div>
+
+* Create an `exposomicset` object from a codebook and exposure metadata.
+* Learn how to add in omics data to the `exposomicset` object.
+* Identify and visualize missing values in exposure data.
+* Impute missing exposure values.
+* Assess variable normality and apply transformations to improve it.
+* Run an exposome-wide association study (ExWAS) to test many exposures against a single outcome.
+* Fit interaction models to test whether an exposure-outcome relationship depends on another variable.
+* Stratify models or subset samples to examine specific subgroups.
+* Compare effect estimates across models.
+* Filter omics data to remove features with low expression/abundance or variance.
+* Test for differentially abundant omics features associated with an outcome using.
+* Visualize differential abundance results across omics layers.
+* Test associations between every exposure and every omics feature.
+* Understand how enrichment analysis connects omics features to biological processes.
+* Extract exposure-associated omics features from association results with `extract_results`.
+* Run Gene Ontology enrichment on exposure-associated features with `run_enrichment`.
+* Summarize and plot enrichment results across exposure categories and omics layers.
+
+# Exposure Preprocessing
+
+## Getting the data in order
+
+To get started with an exposure-outcome-only workflow, we need to create our exposomicset which stores this data. This time, we are going to add in the omics data too!
+
+```{r load-data}
+# Load Libraries
+library(tidyexposomics)
+
+# Load example data
+data("tidyexposomics_example")
+
+# Create exposomic set object
+expom <- create_exposomicset(
+  codebook = tidyexposomics_example$annotated_cb,
+  exposure = tidyexposomics_example$meta,
+  omics = list(
+    "Gene Expression" = tidyexposomics_example$exp_filt,
+    "Methylation" = tidyexposomics_example$methyl_filt
+  ),
+  row_data = list(
+    "Gene Expression" = tidyexposomics_example$exp_fdata,
+    "Methylation" = tidyexposomics_example$methyl_fdata
+  )
+)
+```
+
+Here you will see we have two lists: (1) the omics matrices, where the rows are omics features (e.g. genes, proteins, metabolites) and the columns are samples, (2) row data with information about these omics features. We also gave it a codebook with information about the exposures ([see more about codebooks here](exposure_annotation.html)), and the meta data which contain the exposures and covariate information.
+
+For the sake of simplicity we will focus on a short list of exposures:
+
+`````{r exposure-priority}
+# Grab exposure variables
+exp_vars <- tidyexposomics_example$annotated_cb |>
+  dplyr::filter(
+    category %in% c(
+      "aerosol",
+      "main group molecular entity",
+      "polyatomic entity"
+    )
+  ) |>
+  dplyr::pull(variable) |>
+  as.character()
+`````
+
+# Quality Control
+<hr>
+
+## Missingness
+
+Oftentimes when collecting data, there are missing values. Let’s use the `plot_missing` function to determine where our missing values are:
+
+```{r missing-bar,fig.height=2,fig.width=5}
+# Plot the missingness summary
+plot_missing(
+  exposomicset = expom,
+  plot_type = "summary",
+  threshold = 0
+)
+```
+
+Here we see that there are 4 variables in the exposure data that are missing data. Let’s take a look at them:
+
+```{r missing-bar-lollipop,fig.height=2,fig.width=4}
+# Plot missing variables withing exposure group
+plot_missing(
+  exposomicset = expom,
+  plot_type = "lollipop",
+  threshold = 0,
+  layers = "Exposure"
+)
+```
+
+Here we see that one variable, `h_parity_None`, has about 4% missing values. We can apply a missingness filter using the `filter_missing` function. However, given that this level of missingness is quite low, we will not be applying a missingness filter and instead impute the missing data.
+
+## Imputation
+
+The `run_impute_missing` function is used to impute missing values. Here we can specify the imputation method for exposure and omics data separately.
+
+The `exposure_impute_method` argument is used to set the imputation method for exposure data, and the `omics_impute_method` argument is used to set the imputation method for omics data. The `omics_to_impute` argument is used to specify which omics data to impute. Here we will impute the exposure data given using the `missforest` method, but other options for imputation methods include:
+
+- `median`: Imputes missing values with the median of the variable.
+
+- `mean`: Imputes missing values with the mean of the variable.
+
+- `knn`: Uses k-nearest neighbors to impute missing values.
+
+- `mice`: Uses the Multivariate Imputation by Chained Equations (MICE) method to impute missing values.
+
+- `missforest`: Uses the MissForest method to impute missing values.
+
+- `lod_sqrt2`: Imputes missing values using the square root of the lower limit of detection (LOD) for each variable. This is useful for variables that have a lower limit of detection, such as chemical exposures.
+
+```{r impute-missing}
+# Impute missing values
+expom <- run_impute_missing(
+  exposomicset = expom,
+  exposure_impute_method = "missforest",
+  exposure_cols = exp_vars
+)
+```
+
+## Normality Check
+
+When determining variable associations, it is important to check the normality of the data. The `run_normality_check` function is used to check the normality of the data.
+
+```{r normality-check}
+# Check variable normality
+expom <- run_normality_check(
+  exposomicset = expom,
+  action = "add"
+)
+```
+
+The `transform_exposure` function is used to transform the data to make it more normal. Here the transform_method is set to `boxcox_best` as it will automatically select the best transformation method based on the data. The `transform_method` can be manually set to `log2`, `sqrt`, or `x_1_3` as well. We specify the exposure_cols argument to set the columns to transform.
+
+```{r trasform-vars}
+# Transform variables
+expom <- transform_exposure(
+  exposomicset = expom,
+  transform_method = "boxcox_best",
+  exposure_cols = exp_vars
+)
+```
+
+To check the normality of the exposure data, we can use the `plot_normality_summary` function. This function plots the normality of the data before and after transformation. The `transformed` argument is set to `TRUE` to plot the normality status of the transformed data.
+
+```{r norm-plot,fig.width= 4,fig.height= 4}
+# Examine normality summary
+plot_normality_summary(
+  exposomicset = expom,
+  transformed = TRUE
+)
+```
+
+## Exposure Summary
+
+We can summarize the exposure data using the `run_summarize_exposures` function. This function calculates summary statistics for each exposure variable, including the number of values, number of missing values, minimum, maximum, range, sum, median, mean, standard error, and confidence intervals. The `exposure_cols` argument determines which variables to include in the summary.
+
+```{r exp-sum, fig.width=6, fig.height=4}
+# Summarize exposure data
+run_summarize_exposures(
+  exposomicset = expom,
+  action = "get",
+  exposure_cols = exp_vars
+) |>
+  head()
+```
+
+## Exposure Visualization
+<hr>
+
+To visualize our exposure data, we can use the `plot_exposures` function. This function allows us to plot the exposure data in a variety of ways. Here we will plot the exposure data using a boxplot. The `exposure_cat` argument is used to set the exposure category to plot. Additionally, we could specify `exposure_cols` to only plot certain exposures. The `plot_type` argument is used to set the type of plot to create. Here we use a boxplot, but we could also use a ridge plot. 
+
+```{r plot-aerosol, fig.width=3, fig.height=5}
+# Plot aerosol exposure distributions by sex
+plot_exposures(
+  exposomicset = expom,
+  group_by = "e3_sex_None",
+  exposure_cols = c(
+    "h_pm25_ratio_preg_None",
+    "h_pm10_ratio_preg_None"
+  ),
+  plot_type = "boxplot",
+  ylab = "Values",
+  title = "Aerosol Exposure by Sex"
+) +
+  ggpubr::stat_compare_means(label = "p.signif")
+```
+
+Here we see that levels of PM2.5 were higher in females compared to males.
+
+## Coverting the Exposomicset back to dataframes
+
+If you need to grab your codebook, feel free to do so using the `extract_results` function:
+
+```{r extract-codebook}
+extract_results(
+  exposomicset = expom,
+  result = "codebook"
+) |>
+  head()
+```
+
+If you want to grab the exposure+metadata do so using the `pivot_sample` function:
+
+```{r grab-exposure-data}
+expom |>
+  pivot_sample() |>
+  head()
+```
+
+# ExWAS
+
+## Exposome-wide association study (ExWAS)
+
+Inspired by the concept of genome-wide association studies, or GWAS, the ExWAS is a high-throughput way of identifying many exposures with an association to an outcome. The `run_association` allows us to see which exposure variables are associated with our outcome, `hs_asthma`, which is a 0 or 1, so we set the family to `binomial`. If the variable was continuous, we'd usually set it to `gaussian`. Just one more note: since we are running this model on many different exposures, we use `.feature` as a placeholder:
+
+```{r assoc-exposures}
+# Perform ExWAS
+expom <- run_association(
+  exposomicset = expom,
+  formula = hs_asthma ~ .feature,
+  source = "exposures",
+  feature_set = exp_vars,
+  action = "add",
+  family = "binomial"
+)
+```
+
+We can visualize these associations using the `plot_association` function and set our p-value filter to color associations below that threshold, here we set it to 0.3 just to demonstrate the coloring, but we suggest using the `p_adjust` column for `filter_col` and a cutoff of 0.05:
+
+```{r plot-exwas,fig.width=6}
+# Plot the association forest plot
+plot_association(
+  exposomicset = expom,
+  effect = "main",
+  source = "exposures",
+  terms = exp_vars,
+  filter_thresh = 0.3,
+  up_col = "#8E0152",
+  down_col = "#006666",
+  filter_col = "p.value",
+  r2_col = "r2"
+)
+```
+
+## Interaction Modeling
+
+Sometimes, the relationship between an exposure an outcome *depends* on another variable. For this folks tend to leverage interaction modeling. Let's look at how we would see if the the relationship between asthma and an exposure depends on age:
+
+```{r int-models,fig.width=6}
+run_association(
+  exposomicset = expom,
+  overwrite = TRUE,
+  formula = hs_asthma ~ .feature * h_age_None,
+  source = "exposures",
+  feature_set = exp_vars,
+  action = "add",
+  family = "binomial"
+) |>
+  plot_association(
+    effect = "h_age_None",
+    source = "exposures",
+    terms = exp_vars,
+    filter_thresh = 0.3,
+    up_col = "#8E0152",
+    down_col = "#006666",
+    filter_col = "p.value",
+    r2_col = "r2"
+  )
+```
+
+Notice, how we switched  `effect = "main"` to `effect = "h_age_None"` so that we could grab the interaction results.
+
+## Stratifying Models
+
+We may also want to run a model on a portion of our data, like say just male patients:
+
+```{r stratify-m,fig.width=7.5,fig.height=3.5}
+expom |>
+  run_association(
+    formula = hs_asthma ~ .feature + h_age_None,
+    source = "exposures",
+    overwrite = TRUE,
+    feature_set = exp_vars,
+    family = "binomial",
+    strata = "e3_sex_None",
+    name = "by_sex"
+  ) |>
+  plot_association(
+    effect = "main",
+    source = "exposures",
+    model = "by_sex_male",
+    terms = exp_vars,
+    filter_thresh = 0.3,
+    up_col = "#8E0152",
+    down_col = "#006666",
+    filter_col = "p.value",
+    r2_col = "r2"
+  )
+```
+
+We can also filter our object with the `subset` argument. Let's examine the association in children with a higher BMI z-score:
+
+```{r stratify-f,fig.width=7.5,fig.height=3.5}
+expom |>
+  run_association(
+    formula = hs_asthma ~ .feature + h_age_None,
+    source = "exposures",
+    overwrite = TRUE,
+    feature_set = exp_vars,
+    family = "binomial",
+    subset = hs_zbmi_who > 0,
+    name = "high_bmi"
+  ) |>
+  plot_association(
+    effect = "main",
+    source = "exposures",
+    model = "high_bmi",
+    terms = exp_vars,
+    filter_thresh = 0.3,
+    up_col = "#8E0152",
+    down_col = "#006666",
+    filter_col = "p.value",
+    r2_col = "r2"
+  )
+```
+
+## Comparing models
+
+Now sometimes we want to compare the results of different models. Here we demonstrate how to make many different models using two approaches: (1) specifying a list of formulas, and (2) using the `strata` or `subset` functionality. This will create results for four different models:
+
+```{r compare-models}
+expom <- expom |>
+  run_association(
+    formula = list(
+      crude = hs_asthma ~ .feature,
+      adj = hs_asthma ~ .feature + h_age_None
+    ),
+    source = "exposures",
+    overwrite = TRUE,
+    feature_set = exp_vars,
+    family = "binomial"
+  ) |>
+  run_association(
+    formula = hs_asthma ~ .feature + h_age_None,
+    source = "exposures",
+    feature_set = exp_vars,
+    family = "binomial",
+    strata = "e3_sex_None",
+    name = "by_sex"
+  )
+```
+
+To see what model results are available you can use the following:
+
+```{r av-models}
+association_models(expom)
+```
+
+Now let's demonstrate how to compare two models, here we will compare effect estimates for males and females:
+
+```{r compare-sex,fig.width=6,fig.height=3.5}
+expom |>
+  compare_association(
+    "exposures",
+    models = c(
+      "by_sex_female",
+      "by_sex_male"
+    )
+  ) |>
+  plot_association_comparison(type = "forest")
+```
+
+We could also choose to visualize it using a scatter plot:
+
+```{r compare-scatter,fig.width=4,fig.height=3.7}
+expom |>
+  compare_association(
+    "exposures",
+    models = c(
+      "by_sex_female",
+      "by_sex_male"
+    )
+  ) |>
+  plot_association_comparison(type = "scatter")
+```
+
+Here we see that the effect estimates are not correlated with one another, suggesting that the relationship between asthma and exposure differs by sex.
+
+# Omics Preprocessing
+
+## Filtering Omics Features
+
+We can filter omics features based on variance or expression levels. The `filter_omics` function is used to filter omics features. The method argument is used to set the method for filtering. Here we can use either:
+
+- **Variance**: Filters features based on variance. We recommend this for omics based on continuous measurements, such as log-transformed counts, M-values, protein intensities, or metabolite concentrations.
+
+- **Expression**: Filters features based on expression levels. We recommend this for omics where many values may be near-zero or zero, such as RNA-seq data.
+
+The `assays` argument is used to specify which omics data to filter. The `assay_name` argument is used to specify which assay to filter. The `min_var`, `min_value`, and `min_prop` arguments are used to set the minimum variance, minimum expression value, and minimum proportion of samples exceeding the minimum value, respectively.
+
+```{r filter-omics}
+# filter omics layers by variance and expression
+# Methylation filtering
+expom <- filter_omics(
+  exposomicset = expom,
+  method = "variance",
+  assays = "Methylation",
+  assay_name = 1,
+  min_var = 0.05
+)
+
+# Gene expression filtering
+expom <- filter_omics(
+  exposomicset = expom,
+  method = "expression",
+  assays = "Gene Expression",
+  assay_name = 1,
+  min_value = 1,
+  min_prop = 0.3
+)
+```
+
+# Differential Abundance
+
+We provide functionality to test for differentially abundant features associated with an outcome across multiple omics layers. This is done using the `run_differential_abundance` function, which fits a model defined by the user (using the `formula` argument) and supports several methods. Here we apply the `limma_trend` method, a widely used approach for analyzing omics data. Users can also specify how features are scaled (e.g. none, quantile, TMM) before fitting. 
+
+```{r diff-abundance,results='hide'}
+# Run differential abundance analysis
+expom <- run_differential_abundance(
+  exposomicset = expom,
+  formula = ~hs_asthma,
+  method = "limma_trend",
+  scaling_method = "none",
+  action = "add"
+)
+```
+
+We can summarize the results of the differential abundance analysis with a volcano plot, which highlights features with a high log fold change and that are statistically significant. The `plot_volcano` function generates this visualization, with options to set thresholds for p-values and log fold changes, and to label a subset of top-ranked features. In this example, we use the `feature_clean` column to display interpretable feature names.
+
+**Note:** we set the `pval_col` to `P.Value` for the purposes of this example, but we recommend keeping the default of `adj.P.Val` to use the adjusted p-values.
+
+```{r volcano-plot,fig.height=3.5, fig.width=6, fig.align='center'}
+# Plot the volcano plot
+plot_volcano(
+  exposomicset = expom,
+  top_n_label = 3,
+  feature_col = "feature_clean",
+  logFC_thresh = log2(1),
+  pval_thresh = 0.05,
+  pval_col = "P.Value",
+  logFC_col = "logFC",
+  nrow = 1
+)
+```
+
+# Exposure-Omics Association
+<hr>
+
+## Exposure-Omics Association
+
+Above we saw that there are not too many omics features associated with asthma. Which may be due to the subsampling in this example or because exposures are driving different biology. Let's examine what omics features exposures are associated with.
+
+```{r exp-omics-assoc, fig.align='center'}
+# Run association testing between every exposure and omics feature
+expom <- run_exposure_omics_association(
+  exposomicset = expom,
+  exposures = exp_vars,
+  action = "add"
+)
+```
+
+Now let's see how many omics features each exposure is associated with using the `plot_exposure_omics_association` function where we can either plot by the individual exposure or exposure category:
+
+```{r plot-exp-omics-assoc, fig.align='center',fig.width=7,fig.height=2.5}
+# Plot the number of exposure-omics associations
+plot_exposure_omics_association(
+  exposomicset = expom,
+  plot_type = "category",
+  pval_col = "p.value",
+  pval_thresh = 0.05
+)
+```
+
+Here we can see that there are omics features associated with exposures, while there are fewer that are associated with asthma directly.
+
+# Biological Interpretation
+
+This is perhaps the most difficult task in all this. Omics readouts are almost always noisy and discovering that one consistent nugget of biological truth is not trivial. Luckily, `tidyexposomics` provides many ways of getting at biological signals. One such way is gene ontology (GO) enrichment, which identifies processes where omics features are over-represented.
+
+## Enrichment Analysis
+<hr>
+
+Enrichment analysis tests whether a set of molecular features (e.g. differentially abundant genes, metabolites, etc.) is over-represented in a predefined biological process. The benefit of grouping our exposures into categories is that we can now determine how broad categories of exposures are tied to biological processes. The `run_enrichment` function can perform enrichment analysis on the following feature types:
+
+- `degs`: Differentially abundant features.
+
+- `degs_robust`: Robust differentially abundant features from the sensitivity analysis.
+
+- `omics`: User chosen features.
+
+- `factor_features`: Multi-omics factor features either from `factor_type = “common_top_factor_features”` or `“top_factor_features”`.
+
+- `degs_cor`: Differentially abundant features correlated with a set of exposures.
+
+- `omics_cor`: User chosen features correlated with a set of exposures.
+
+- `factor_features_cor`: Multi-omics factor features correlated with a set of exposures.
+
+Here we will run enrichment analysis on omics features associated with exposures. Specifically, we will grab omics features associated with aerosols using the `extract_results` function. This function allows us to pull any of the results we have been generating so far. We will then filter these association results to significant associations (p-value < 0.05) and those with the `category` "aerosol".
+
+```{r var-map}
+# Extract omics features associated with aerosols
+var_map <- extract_results(
+  exposomicset = expom,
+  result = "association"
+) |>
+  purrr::pluck(
+    "exposure_omics",
+    "results_df"
+  ) |>
+  dplyr::filter(
+    p.value < 0.05,
+    category == "aerosol"
+  ) |>
+  dplyr::select(
+    exp_name,
+    variable = feature
+  )
+```
+
+Now we will perform enrichment analysis and specify `feature_col` to represent the column in our feature metadata with IDs that can be mapped (i.e. gene names). We will be performing Gene ontology enrichment powered by the [`fenr` package](https://www.bioconductor.org/packages/release/bioc/html/fenr.html) (Fenr, 2025). Note that we specify a `clustering_approach.` This will cluster our enrichment terms by the molecular feature overlap. 
+
+```{r enrichment}
+# Run enrichment analysis on factor features correlated with exposures
+expom <- run_enrichment(
+  exposomicset = expom,
+  variable_map = var_map,
+  feature_type = "omics",
+  feature_col = "feature_clean",
+  db = c("GO"),
+  species = "goa_human",
+  fenr_col = "gene_symbol",
+  padj_method = "none",
+  pval_thresh = 1,
+  min_set = 1,
+  max_set = 800,
+  clustering_approach = "diana",
+  action = "add"
+)
+```
+
+## Enrichment Visualizations
+
+To visualize our enrichment results we provide several options:
+
+- `dotplot`: A dot plot showing the top enriched terms. The size of the dots represents the number of features associated with the term, while the color represents the significance of the term.
+
+- `cnet`: A network plot showing the relationship between features and enriched terms.
+
+- `network`: A network plot showing the relationship between enriched terms.
+
+- `heatmap`: A heatmap showing the relationship between features and enriched terms.
+
+- `summary`: A summary figure of the enrichment results.
+
+### Enrichment Summary
+
+To summarize the enrichment results, we can use the `plot_enrichment` function with the `plot_type` argument set to `summary.` This will plot a summary of the enrichment results, showing:
+
+- The number of exposure categories per enrichment term group.
+
+- The number of features driving the enrichment term group.
+
+- A p-value distribution of the enrichment term group.
+
+- The number of terms in the enrichment term group.
+
+- The total number of terms per experiment name.
+
+- The overlap in enrichment terms between experiments (i.e. between gene expression and methylation).
+
+```{r enrichment-summary,fig.width=14,fig.height=5}
+# Plot the summary diagram
+plot_enrichment(
+  exposomicset = expom,
+  feature_type = "omics",
+  plot_type = "summary"
+)
+```
+
+Here we see that it is just the features associated with “polyatomic entity” exposures that seem to be enriched. Additionally, there appears to be no overlap in terms between methylation and gene expression results.
+
+### DotPlot
+
+By setting the `plot_type` to dotplot we can create a dotplot to show which omics are associated with which terms. By specifying the `top_n_genes` we can add the most frequent features in that particular enrichment term group.
+
+```{r enrichment-dotplot,fig.height=11, fig.width=9.5}
+# Plot a dotplot of terms
+plot_enrichment(
+  exposomicset = expom,
+  feature_type = "omics",
+  plot_type = "dotplot",
+  top_n = 15,
+  add_top_genes = TRUE,
+  top_n_genes = 5
+)
+```
+
+### Term Network Plot
+
+We can set the `plot_type` to `network` to understand how our enrichment terms are individually connected.
+
+```{r enrichment-term-network, fig.width=6, fig.height=5}
+# Plot the term network plot
+# Setting a seed so that the plot layout is consistent
+set.seed(42)
+
+plot_enrichment(
+  exposomicset = expom,
+  feature_type = "omics",
+  plot_type = "network",
+  label_top_n = 3
+)
+```
+
+At the individual term level, we see that they differ by omics layer, with the gene expression driving terms related to vesicle traficking and the methylation data driving terms related to G protein-coupled receptor signaling.
+
+### Heatmap
+
+Setting the `plot_type` to `heatmap` can help us understand which genes are driving the enrichment terms. First we need to create a `fill_df` so we know how to fill the tiles. Here we use the median estimate
+
+```{r fill-df}
+# Build the fill table
+# one estimate per experiment x feature
+fill_df <- extract_results(
+  exposomicset = expom,
+  result = "association"
+) |>
+  purrr::pluck(
+    "exposure_omics",
+    "results_df"
+  ) |>
+  dplyr::filter(
+    p.value < 0.05,
+    category == "aerosol"
+  ) |>
+  dplyr::reframe(
+    estimate = median(estimate),
+    .by = c(exp_name, feature)
+  )
+```
+
+Now we can use this fill information to make our heatmap! Let's see what features are driving Group 2:
+
+```{r enrichment-heatmap, warning=FALSE,fig.height=4.5, fig.width=11}
+# Plot a heatmap of genes and corresponding GO terms
+plot_enrichment(
+  exposomicset = expom,
+  feature_type = "omics",
+  go_groups = "Group 2",
+  plot_type = "heatmap",
+  fill_data = fill_df,
+  feature_col = "feature_clean"
+)
+```
+
+### Cnet Plot
+
+Another way to visualize this information is with the `cnet` plot, where the enrichment terms are connected to the omics features driving them.
+
+```{r enrichment-cnetplot, fig.width=8, fig.height=8}
+# Plot the gene-term network
+# Setting a seed so that the plot layout is consistent
+set.seed(42)
+
+plot_enrichment(
+  exposomicset = expom,
+  feature_type = "omics",
+  go_groups = "Group 2",
+  plot_type = "cnet",
+  fill_data = fill_df,
+  feature_col = "feature_clean"
+)
+```
+
+
+<details>
+<summary>Session Info</summary>
+
+```{r si}
+sessionInfo()
+```
+
+</details>

@@ -13,12 +13,9 @@ plot_enrichment(
   n_per_group = 5,
   add_top_genes = TRUE,
   top_n_genes = 5,
-  heatmap_fill = TRUE,
-  logfc_thresh = log2(1),
-  pval_col = "P.Value",
-  pval_thresh = 0.05,
-  score_metric = "stability_score",
-  score_thresh = NULL,
+  fill_data = NULL,
+  fill_col = "estimate",
+  fill_label = NULL,
   overlap_thresh = 0.2,
   node_radius = 0.2,
   pie_colors = NULL,
@@ -33,8 +30,7 @@ plot_enrichment(
   layout_algo = "fr",
   edge_alpha = 0.3,
   label_size = 3,
-  feature_col = "feature",
-  logfc_col = "logFC"
+  feature_col = "feature"
 )
 }
 \arguments{
@@ -61,23 +57,16 @@ dotplot facets. Default is \code{TRUE}.}
 \item{top_n_genes}{Integer; number of top genes to show in each group
 (used in \code{"dotplot"}). Default is \code{5}.}
 
-\item{heatmap_fill}{Logical; whether to fill tiles by logFC in the heatmap.
-Default is \code{TRUE}.}
+\item{fill_data}{Optional data frame used to color heatmap tiles and cnet
+gene nodes. Needs \code{exp_name}, \code{feature}, and a numeric column named by
+\code{fill_col}. Build it from any source (differential abundance,
+exposure-omics association, or your own scores). If \code{NULL}, tiles and
+nodes are grey.}
 
-\item{logfc_thresh}{Numeric; log2 fold change threshold for filtering
-(heatmap only). Default is \code{log2(1)}.}
+\item{fill_col}{Name of the numeric column in \code{fill_data}.
+Default is \code{"estimate"}.}
 
-\item{pval_col}{Column name of the p-value used for filtering in \code{"degs"}
-heatmap. Default is \code{"P.Value"}.}
-
-\item{pval_thresh}{Threshold for \code{pval_col} (heatmap only).
-Default is \code{0.05}.}
-
-\item{score_metric}{Column for stability score
-(used in \code{"degs_robust"} heatmap). Default is \code{"stability_score"}.}
-
-\item{score_thresh}{Numeric; threshold for \code{score_metric}
-(heatmap only). Default is \code{NULL}.}
+\item{fill_label}{Legend title. Defaults to \code{fill_col}.}
 
 \item{overlap_thresh}{Numeric; Jaccard threshold for edges in
 the network plot. Default is \code{0.2}.}
@@ -107,7 +96,7 @@ Default is \code{0.2}.}
 Default is \code{3}.}
 
 \item{go_groups}{Optional character vector of GO group names to subset
-enrichment results (all plots).}
+enrichment results (all plots). Required for \code{"heatmap"}.}
 
 \item{layout_algo}{Graph layout algorithm to use in \code{"network"} and \code{"cnet"}
 plots. Default is \code{"fr"}.}
@@ -118,11 +107,10 @@ Default is \code{0.3}.}
 \item{label_size}{Font size for labels in network and cnet plots.
 Default is \code{3}.}
 
-\item{feature_col}{Column name used to join gene-level metadata.
+\item{feature_col}{Column in the feature metadata holding the gene
+identifiers used in \code{run_enrichment()}. Must match the \code{feature_col}
+used there. Used to map \code{fill_data} onto enriched genes.
 Default is \code{"feature"}.}
-
-\item{logfc_col}{Column name used for log2 fold change values.
-Default is \code{"logFC"}.}
 }
 \value{
 A \code{ggplot} or \code{patchwork} object corresponding to the
@@ -139,15 +127,19 @@ using one of several plot types:
 \itemize{
 \item \code{"dotplot"}: Enrichment terms grouped by GO group, colored by
 significance.
-\item \code{"heatmap"}: Term - gene matrix with optional logFC fill and
+\item \code{"heatmap"}: Term - gene matrix with optional fill and
 shared gene highlighting.
 \item \code{"network"}: Graph of term overlap based on shared genes,
 faceted by metadata if desired.
-\item \code{"cnet"}: Gene - term bipartite graph with gene logFC values
+\item \code{"cnet"}: Gene - term bipartite graph with gene values
 and term pie slices.
 \item \code{"summary"}: Multi-panel figure with GO group ridgeplots,
 gene counts, and Venn diagram.
 }
+
+For \code{"heatmap"} and \code{"cnet"}, \code{fill_data} must have one row per
+\code{exp_name} x \code{feature}. When a gene symbol maps to several features within
+an experiment, the value with the largest magnitude is kept.
 }
 \examples{
 # create example data

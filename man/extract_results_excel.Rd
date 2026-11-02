@@ -24,7 +24,6 @@ to export. Options include:
 \itemize{
 \item \code{"correlation"}: Correlation results.
 \item \code{"association"}: Association results.
-\item \code{"mixture_analysis"}: Mixture Analysis results.
 \item \code{"differential_analysis"}: Differential abundance results,
 including sensitivity analysis if available.
 \item \code{"multiomics_integration"}: Common top features contributing to

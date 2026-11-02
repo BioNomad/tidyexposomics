@@ -117,7 +117,8 @@ plot_top_factor_features <- function(
                             exp_name = .y
                         )
                 ) |>
-                dplyr::bind_rows()
+                dplyr::bind_rows() |>
+                mutate(factor = gsub("V", "Factor", factor))
         },
         "DIABLO" = {
             result$loadings |>

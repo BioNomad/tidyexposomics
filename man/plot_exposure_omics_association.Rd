@@ -6,30 +6,36 @@
 \usage{
 plot_exposure_omics_association(
   exposomicset,
-  plot_type = c("exposures", "category"),
+  plot_type = c("exposures", "category", "exp_name"),
   pval_col = "p_adjust",
-  pval_thresh = 0.05
+  pval_thresh = 0.05,
+  estimate_thresh = 0
 )
 }
 \arguments{
 \item{exposomicset}{A \code{MultiAssayExperiment} object containing association results.}
 
-\item{plot_type}{Character. One of \code{"exposures"} or \code{"category"}. Controls
-whether associations are summarized per exposure or per exposure category.
-Defaults to \code{"exposures"}.}
+\item{plot_type}{Character. One of \code{"exposures"}, \code{"category"}, or
+\code{"exp_name"}. Controls whether associations are summarized per exposure,
+per exposure category, or per omics experiment (assay). Defaults to
+\code{"exposures"}.}
 
 \item{pval_col}{Character. Name of the column used for p-value filtering.
 Defaults to \code{"p_adjust"}.}
 
 \item{pval_thresh}{Numeric. Significance threshold applied to \code{pval_col}.
 Rows with values below this threshold are retained. Defaults to \code{0.05}.}
+
+\item{estimate_thresh}{Numeric. Minimum absolute effect size. Rows with
+\code{abs(estimate)} greater than or equal to this value are retained.
+Defaults to \code{0} (no filtering on estimate).}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
 Plots the number of significant exposure-omics associations, grouped
-either by exposure or the exposure category.
+by exposure, exposure category, or omics experiment.
 }
 \examples{
 # create example data
@@ -41,13 +47,14 @@ mae <- make_example_data(
 # run exposure-omics association
 mae <- mae |>
     run_exposure_omics_association(
-        exposures = c("exposure_pm25", "exposure_no2"),
-        covariates = c("age", "sex")
+        formula = ~ .feature + age + sex,
+        exposures = c("exposure_pm25", "exposure_no2")
     )
 
 plot_exposure_omics_association(
     exposomicset = mae,
-    plot_type = "exposures"
+    plot_type = "exp_name",
+    estimate_thresh = 0.1
 )
 
 }

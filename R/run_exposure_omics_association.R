@@ -5,12 +5,15 @@
 #'
 #' @param exposomicset A `MultiAssayExperiment` object containing exposome
 #'   and omics data.
+#' @param formula A one-sided formula describing the model to fit for each
+#'   exposure. Use `.feature` as a placeholder for the exposure being tested;
+#'   it is replaced by each variable in `exposures` in turn. Any other terms
+#'   must be columns in `colData` and are treated as covariates. Defaults to
+#'   `~ .feature` (no covariates).
 #' @param exposures Character vector of exposure variable names to test.
 #'   If `NULL`, uses all variables from the codebook.
 #' @param exp_name Name(s) of the omics assay(s) to test against. If `NULL`,
 #'   uses all assays.
-#' @param covariates Optional character vector of covariate names to include
-#'   in the model.
 #' @param scaling_method Character. Scaling method to apply before modeling.
 #'   Options include `"none"` (default).
 #' @param correction_method Method for p-value adjustment. Default is `"fdr"`.
@@ -26,11 +29,10 @@
 #'
 #' @details
 #' This function uses limma to test associations between multiple exposures
-#' and omics features. For each exposure, a linear model is fit with the
-#' exposure as the predictor and each omics feature as the outcome,
-#' adjusting for covariates.
+#' and omics features. For each exposure, the model given by `formula` is
+#' fit with each omics feature as the outcome, e.g.
 #'
-#' `omics_feature ~ exposure + covariate1 + covariate2 + ...`
+#' `omics_feature ~ .feature + covariate1 + covariate2 + ...`
 #'
 #' @examples
 #' # create example data
@@ -42,8 +44,8 @@
 #' # run exposure-omics association
 #' mae <- mae |>
 #'     run_exposure_omics_association(
-#'         exposures = c("exposure_pm25", "exposure_no2"),
-#'         covariates = c("age", "sex")
+#'         formula = ~ .feature + age + sex,
+#'         exposures = c("exposure_pm25", "exposure_no2")
 #'     )
 #'
 #' @importFrom limma lmFit eBayes topTable
@@ -51,9 +53,9 @@
 #' @export
 run_exposure_omics_association <- function(
   exposomicset,
+  formula = ~.feature,
   exposures = NULL,
   exp_name = NULL,
-  covariates = NULL,
   scaling_method = "none",
   correction_method = "fdr",
   top_pct = NULL,
@@ -63,19 +65,30 @@ run_exposure_omics_association <- function(
     .check_suggested("limma")
     filter_by <- match.arg(filter_by)
 
+    # Validate formula
+    if (!inherits(formula, "formula") || length(formula) != 2) {
+        stop("`formula` must be a one-sided formula, e.g. ~ .feature + age")
+    }
+    if (!".feature" %in% all.vars(formula)) {
+        stop("`formula` must include the `.feature` placeholder, e.g. ~ .feature + age")
+    }
+
+    # Covariates are every term in the formula other than the placeholder
+    covariates <- setdiff(all.vars(formula), ".feature")
+
     # Get exposure names from codebook if not provided
     if (is.null(exposures)) {
         exposures <- MultiAssayExperiment::metadata(exposomicset)$codebook$variable
     }
 
-    # Validate exposures exist
-    col_data <- exposomicset |>
+    # Validate exposures and covariates exist
+    missing_vars <- exposomicset |>
         MultiAssayExperiment::colData() |>
-        as.data.frame()
+        colnames() |>
+        (\(x) setdiff(c(exposures, covariates), x))()
 
-    missing_exp <- setdiff(exposures, colnames(col_data))
-    if (length(missing_exp) > 0) {
-        stop("Exposures not found in colData: ", paste(missing_exp, collapse = ", "))
+    if (length(missing_vars) > 0) {
+        stop("Variables not found in colData: ", paste(missing_vars, collapse = ", "))
     }
 
     # Remove covariates from exposures if present
@@ -87,8 +100,8 @@ run_exposure_omics_association <- function(
     }
 
     message(sprintf(
-        "Testing %d exposures across %d assays",
-        length(exposures), length(exp_name)
+        "Testing %d exposures across %d assays using model: %s",
+        length(exposures), length(exp_name), deparse(formula)
     ))
 
     # Run analysis across all assays
@@ -104,13 +117,13 @@ run_exposure_omics_association <- function(
                 ) |>
                 .run_exposure_omics_limma(
                     exposures = exposures,
-                    covariates = covariates,
+                    formula = formula,
                     scaling_method = scaling_method
                 )
         }) |>
         stats::setNames(exp_name) |>
         dplyr::bind_rows(.id = "exp_name") |>
-        dplyr::filter(contrast == ".exposure") |>
+        dplyr::filter(contrast == ".feature") |>
         dplyr::mutate(p_adjust = stats::p.adjust(p.value, method = correction_method)) |>
         dplyr::select(-contrast) |>
         tibble::as_tibble()
@@ -125,6 +138,7 @@ run_exposure_omics_association <- function(
     if (action == "add") {
         MultiAssayExperiment::metadata(exposomicset)$association$exposure_omics <- list(
             results_df = results,
+            formula = formula,
             covariates = covariates,
             exposures = exposures,
             exp_name = exp_name,
@@ -135,15 +149,15 @@ run_exposure_omics_association <- function(
             run_exposure_omics_association = list(
                 timestamp = Sys.time(),
                 params = list(
+                    formula = deparse(formula),
                     exposures = exposures,
                     exp_name = exp_name,
-                    covariates = covariates,
                     scaling_method = scaling_method,
                     correction_method = correction_method
                 ),
                 notes = sprintf(
-                    "Tested %d exposures against %d assays using limma-trend",
-                    length(exposures), length(exp_name)
+                    "Tested %d exposures against %d assays using limma-trend (%s)",
+                    length(exposures), length(exp_name), deparse(formula)
                 )
             )
         )
@@ -165,25 +179,19 @@ run_exposure_omics_association <- function(
 .run_exposure_omics_limma <- function(
   se,
   exposures,
-  covariates,
+  formula,
   scaling_method
 ) {
     exposures |>
         lapply(function(exp_var) {
             # Scale numeric exposures, keep categorical as is
             if (is.numeric(SummarizedExperiment::colData(se)[[exp_var]])) {
-                SummarizedExperiment::colData(se)$.exposure <- as.numeric(
+                SummarizedExperiment::colData(se)$.feature <- as.numeric(
                     scale(SummarizedExperiment::colData(se)[[exp_var]])
                 )
             } else {
-                SummarizedExperiment::colData(se)$.exposure <-
+                SummarizedExperiment::colData(se)$.feature <-
                     SummarizedExperiment::colData(se)[[exp_var]]
-            }
-
-            formula <- if (!is.null(covariates) && length(covariates) > 0) {
-                stats::as.formula(paste("~ .exposure +", paste(covariates, collapse = " + ")))
-            } else {
-                ~.exposure
             }
 
             .run_limma_trend(

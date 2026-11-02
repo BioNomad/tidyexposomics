@@ -16,42 +16,42 @@ vignette: >
 
 
 
+
 ```{r setup,include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,warning = FALSE,message = FALSE)
 ```
 
-## Load Data and Libraries
+<div class="text-end">
+  <a href="exwas.html" class="btn btn-primary" role="button">Previous: ExWAS</a>
+</div>
 
-```{r load-libraries,message=FALSE,warning=FALSE}
+<div class="alert" style="background-color: #caebe8;color: #000000;" role="alert"><strong>Objectives</strong></div>
+
+* Summarize multiple exposures into a single exposome score.
+* Test exposome scores against an outcome and vizualize.
+
+
+## Prerequisites
+
+We covered [exposure preprocessing](exposure_preprocessing.html) in a previous vignette. Here is the quick start code from that vignette to get you going:
+
+<details>
+<summary>Click to expand code</summary>
+
+```{r quick-start,collapse=TRUE}
 # Load Libraries
 library(tidyverse)
 library(tidyexposomics)
-```
 
-We will start off with our example dataset pulled from the [ISGlobal Exposome Data Challenge 2021](https://doi.org/10.1016/j.envint.2022.107422) (Maitre et al., 2022). 
-
-```{r load-data}
 # Load example data
 data("tidyexposomics_example")
 
 # Create exposomic set object
 expom <- create_exposomicset(
     codebook = tidyexposomics_example$annotated_cb,
-    exposure = tidyexposomics_example$meta,
-    omics = list(
-        "Gene Expression" = tidyexposomics_example$exp_filt,
-        "Methylation" = tidyexposomics_example$methyl_filt
-    ),
-    row_data = list(
-        "Gene Expression" = tidyexposomics_example$exp_fdata,
-        "Methylation" = tidyexposomics_example$methyl_fdata
-    )
+    exposure = tidyexposomics_example$meta
 )
-```
 
-We will focus on a few exposure variable categories.
-
-```{r exp-vars}
 # Grab exposure variables
 exp_vars <- tidyexposomics_example$annotated_cb |>
     filter(category %in% c(
@@ -61,14 +61,6 @@ exp_vars <- tidyexposomics_example$annotated_cb |>
     )) |>
     pull(variable) |>
     as.character()
-```
-
-# Quality Control
-<hr>
-
-As in the main vignette, we will impute exposure data using `missforest`.
-
-```{r impute-missing}
 
 # Impute missing values
 expom <- run_impute_missing(
@@ -76,12 +68,12 @@ expom <- run_impute_missing(
     exposure_impute_method = "missforest",
     exposure_cols = exp_vars
 )
-```
 
-
-And we will transform our exposure data to ensure it is more normally distributed using the `boxcox_best` method.
-
-```{r trasform-vars}
+# Check variable normality
+expom <- run_normality_check(
+    exposomicset = expom,
+    action = "add"
+)
 
 # Transform variables
 expom <- transform_exposure(
@@ -90,6 +82,9 @@ expom <- transform_exposure(
     exposure_cols = exp_vars
 )
 ```
+
+</details>
+
 
 ## Exposome Scores
 <hr>
@@ -149,7 +144,7 @@ We can then associate these exposome scores with asthma status using the `run_as
 # Associate exposome scores with outcome
 expom <- run_association(
     exposomicset = expom,
-    outcome = "hs_asthma",
+    formula = hs_asthma ~ .feature,
     source = "exposures",
     feature_set = c(
         "exposome_median_score",
@@ -180,15 +175,7 @@ plot_association(
 )
 ```
 
-## Session Info
 
-<details>
-  <summary>See Session Info</summary>
-  
-```{r session_info,collapse = TRUE}
-
-sessionInfo()
-```
-
-</details>
-
+<div class="text-end">
+  <a href="omics_preprocessing.html" class="btn btn-primary" role="button">Next: Omics Preprocessing</a>
+</div>

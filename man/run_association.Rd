@@ -6,14 +6,17 @@
 \usage{
 run_association(
   exposomicset,
-  outcome,
+  formula,
   source = c("omics", "exposures", "factors"),
-  covariates = NULL,
   feature_set = NULL,
   log_trans = TRUE,
   top_n = NULL,
   family = "gaussian",
   correction_method = "fdr",
+  subset = NULL,
+  strata = NULL,
+  name = NULL,
+  overwrite = FALSE,
   action = "add",
   feature_col = NULL,
   mirna_assays = NULL
@@ -23,12 +26,18 @@ run_association(
 \item{exposomicset}{A \code{MultiAssayExperiment} object containing data
 and metadata.}
 
-\item{outcome}{The outcome variable name (must be in \code{colData}).}
+\item{formula}{A two-sided formula whose left-hand side is a single
+column of \code{colData} (the outcome) and whose right-hand side contains the
+covariates, e.g. \code{smoker ~ age * sex}. Each feature is added to the model
+as a main effect. To control how the feature enters the model (for example
+to test an interaction), use the placeholder \code{.feature} on the right-hand
+side, e.g. \code{smoker ~ .feature * sex + age}. Use \code{outcome ~ 1} for an
+unadjusted model. Alternatively, a \strong{named list of formulas}
+(e.g. \code{list(crude = y ~ 1, adjusted = y ~ age + sex)}) fits every
+specification in one call, each stored under its list name.}
 
 \item{source}{Source of features to test. One of \code{"omics"},
 \code{"exposures"}, \code{"factors"}.}
-
-\item{covariates}{Optional vector of covariate names to include in the model.}
 
 \item{feature_set}{Optional character vector of exposure or GO terms to test.}
 
@@ -40,7 +49,24 @@ most variable features.}
 
 \item{family}{GLM family; \code{"gaussian"} or \code{"binomial"}.}
 
-\item{correction_method}{Method for p-value adjustment (default: \code{"fdr"}).}
+\item{correction_method}{Method for p-value adjustment (default: \code{"fdr"}).
+Adjustment is performed separately for each model and each effect
+(see Value).}
+
+\item{subset}{Optional bare expression evaluated against the (unscaled)
+\code{colData} that selects the samples to model, e.g. \code{sex == "female"} or
+\code{age > 40 & smoker == "no"}.}
+
+\item{strata}{Optional single column name of \code{colData}. The model is fit
+separately within each level and stored as \verb{[MODEL_NAME]_[LEVEL_IN_STRATA]}. The stratifying
+variable must not appear in \code{formula}.}
+
+\item{name}{Optional name for the stored model. Defaults to \code{"default"},
+or to the text of \code{subset} when one is given. Ignored when \code{formula} is a
+named list (the list names are used).}
+
+\item{overwrite}{Logical; if \code{TRUE}, replace an existing model with the same
+name instead of erroring or appending features to it (default: \code{FALSE}).}
 
 \item{action}{If \code{"add"} (default), saves results to metadata;
 else returns results as list.}
@@ -55,31 +81,93 @@ when extracting GO terms.}
 If \code{action = "add"}, returns updated \code{MultiAssayExperiment}.
 Otherwise, returns a list of:
 \itemize{
-\item \code{results_df}: tidy summary of associations
-\item \code{covariates}: the covariates used
-\item \code{model_data}: model matrix used in the GLMs
+\item \code{models}: a named list of fitted models, each containing \code{results_df}
+(tidy summary of associations), \code{formula}, \code{covariates}, \code{family},
+\code{subset}, \code{strata_var}, \code{stratum}, and \code{n_samples}
+\item \code{model_data}: the (full) data used in the GLMs
 }
+
+In \code{results_df}, \code{term} is the feature, \code{coef} is the model coefficient
+name, \code{effect} is \code{"main"} for the feature's main effect or the name of the
+interacting term (e.g. \code{"sexMale"}), and \code{n} / \code{n_events} give the
+observations (and binomial events) used.
 }
 \description{
 Perform GLM-based association testing between a specified outcome and
-features from exposures, omics, or latent factors. Automatically adjusts
-for covariates and supports both Gaussian and binomial models.
+features from exposures, omics, or latent factors. Each feature is tested
+in its own model, built from a user-supplied formula. Models can be run on
+subsets of samples, stratified by a grouping variable, or repeated across
+several formulas. Every fitted model is stored under a name so that
+specifications can be compared later with \code{compare_association()}.
+}
+\details{
+Numeric \code{colData} columns are z-scored once on the \strong{full} sample before any
+subsetting, so effect sizes are on the same standardized scale in every
+subset and stratum and can be compared directly.
+
+If a model with the same \code{name} already exists for the source and was fit
+with the same formula, subset, and family, new features are appended to it
+and p-values are re-adjusted across the combined set. A different
+specification under an existing name is an error unless \code{overwrite = TRUE}.
+
+With \code{strata}, a stratum that cannot be fit (for example, a single outcome
+level or a constant covariate) is skipped with a warning.
 }
 \examples{
-
-#' # create example data
+# create example data
 mae <- make_example_data(
     n_samples = 10,
     return_mae = TRUE
 )
 
-# run association tests
+# covariate-adjusted main effect
 mae <- mae |>
     run_association(
+        formula = smoker ~ age,
         source = "exposures",
         feature_set = c("exposure_pm25", "exposure_no2"),
-        outcome = "smoker",
-        covariates = c("age"),
         family = "binomial"
     )
+
+# several specifications at once
+mae <- mae |>
+    run_association(
+        formula = list(
+            crude = smoker ~ 1,
+            adjusted = smoker ~ age
+        ),
+        source = "exposures",
+        feature_set = c("exposure_pm25", "exposure_no2"),
+        family = "binomial"
+    )
+
+\dontrun{
+# subset of samples (assumes a `sex` column in colData)
+mae <- mae |>
+    run_association(
+        formula = smoker ~ age,
+        source = "exposures",
+        feature_set = c("exposure_pm25", "exposure_no2"),
+        family = "binomial",
+        subset = sex == "female",
+        name = "female"
+    )
+
+# stratified by sex, then compared
+mae <- mae |>
+    run_association(
+        formula = smoker ~ age,
+        source = "exposures",
+        feature_set = c("exposure_pm25", "exposure_no2"),
+        family = "binomial",
+        strata = "sex",
+        name = "by_sex"
+    )
+
+mae |>
+    compare_association(
+        source = "exposures",
+        models = c("by_sex_female", "by_sex_male")
+    )
+}
 }

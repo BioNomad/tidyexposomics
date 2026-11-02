@@ -2,7 +2,7 @@
 #'
 #' Constructs a `MultiAssayExperiment` object from exposure data and optionally
 #' omics datasets, ensuring proper formatting and alignment of samples and
-#' features. For epidemiology-only workflows, omics data can be omitted.
+#' features. For exposure-phenotype-only workflows, omics data can be omitted.
 #'
 #' @param codebook A data frame containing variable information metadata.
 #' @param exposure A data frame containing exposure data,

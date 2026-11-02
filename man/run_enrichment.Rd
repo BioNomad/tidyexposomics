@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_enrichment.R
 \name{run_enrichment}
 \alias{run_enrichment}
-\title{Perform enrichment analysis on selected features from a exposomicset object}
+\title{Run functional enrichment on omics features}
 \usage{
 run_enrichment(
   exposomicset,
@@ -25,121 +25,123 @@ run_enrichment(
   min_set = 3,
   max_set = 800,
   clustering_approach = "diana",
-  action = "add"
+  action = c("add", "get")
 )
 }
 \arguments{
-\item{exposomicset}{An \code{exposomicset} (a \code{MultiAssayExperiment}
-object with metadata) containing omics and metadata.}
+\item{exposomicset}{A \code{MultiAssayExperiment} (exposomicset) object with
+the upstream analysis results stored in its metadata.}
 
-\item{feature_type}{Character string indicating the feature source.
-One of \code{"degs"}, \code{"degs_robust"},
-\code{"omics"}, \code{"factor_features"}, \code{"degs_cor"}, \code{"omics_cor"},
-or \code{"factor_features_cor"}.}
+\item{feature_type}{Character. Which features to test:
+\describe{
+\item{\code{"degs"}}{Differentially abundant features passing the p-value
+and log fold-change thresholds.}
+\item{\code{"degs_robust"}}{Features with a stability score above
+\code{score_threshold} from the sensitivity analysis.}
+\item{\code{"omics"}}{Features supplied via \code{variable_map}.}
+\item{\code{"factor_features"}}{Features loading on multi-omics
+integration factors (see \code{factor_type}).}
+\item{\code{"degs_cor"}, \code{"omics_cor"}, \code{"factor_features_cor"}}{Features
+from the corresponding correlation results, tested per
+\code{category}.}
+}}
 
-\item{score_col}{Column name used for stability score filtering
-(only for \code{degs_robust}).}
+\item{score_col}{Character. Column in the feature stability table used
+for \code{"degs_robust"}. Default \code{"stability_score"}.}
 
-\item{score_threshold}{Optional numeric threshold for filtering
-stability scores. If \code{NULL}, the default
-threshold stored in the metadata will be used.}
+\item{score_threshold}{Numeric or \code{NULL}. Minimum stability score. If
+\code{NULL}, the threshold stored in the sensitivity analysis is used.}
 
-\item{variable_map}{A data frame with \code{exp_name} and \code{variable} columns,
-used when \code{feature_type = "omics"}.}
+\item{variable_map}{A data frame with a \code{variable} column (and \code{exp_name},
+\code{category} where applicable) mapping variables to features. Required
+when \code{feature_type} is \code{"omics"}.}
 
-\item{factor_type}{Character string for selecting factor features:
-\code{"common_top_factor_features"} or
+\item{factor_type}{Character. Which factor feature set to use for
+\code{"factor_features"}: \code{"common_top_factor_features"} or
 \code{"top_factor_features"}.}
 
-\item{feature_col}{The name of the feature column used to extract
-gene identifiers.}
+\item{feature_col}{Character. Column in the feature metadata
+(\code{rowData}) holding the identifier used for enrichment, e.g. gene
+symbols. Default \code{"feature"}.}
 
-\item{deg_pval_col}{Column name for adjusted p-values from DEG analysis.}
+\item{deg_pval_col}{Character. Column with adjusted p-values in the
+differential abundance table. Default \code{"adj.P.Val"}.}
 
-\item{deg_pval_threshold}{Threshold to select significant DEGs
-(default: 0.05).}
+\item{deg_pval_threshold}{Numeric. P-value cutoff for calling DEGs
+(strictly less than). Default \code{0.05}.}
 
-\item{deg_logfc_col}{Column name for log-fold changes from DEG analysis.}
+\item{deg_logfc_col}{Character. Column with log fold-changes in the
+differential abundance table. Default \code{"logFC"}.}
 
-\item{deg_logfc_threshold}{Threshold to select DEGs by absolute logFC
-(default: \code{log2(1.5)}).}
+\item{deg_logfc_threshold}{Numeric. Absolute log fold-change cutoff for
+calling DEGs (strictly greater than). Default \code{log2(1.5)}.}
 
-\item{db}{Enrichment database to use. One of \code{"GO"},
-\code{"KEGG"}, \code{"Reactome"}.}
+\item{db}{Character. Annotation database: \code{"GO"}, \code{"KEGG"}, or
+\code{"Reactome"}.}
 
-\item{species}{Species name (required for GO enrichment,
-e.g., \code{"Homo sapiens"}). Ignored for other databases.}
+\item{species}{Character or \code{NULL}. Species designation passed to
+\pkg{fenr}. Required for \code{db = "GO"}, and used for Reactome.}
 
-\item{fenr_col}{Column name for gene IDs used by \code{fenr}
-(e.g., \code{"gene_symbol"}).}
+\item{fenr_col}{Character. Name of the feature column in the
+\pkg{fenr} term mapping to match against. Default \code{"gene_symbol"}.}
 
-\item{padj_method}{Method for p-value adjustment (default: \code{"fdr"}).}
+\item{padj_method}{Character. Method passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}.
+Default \code{"fdr"}.}
 
-\item{pval_thresh}{Adjusted p-value threshold for filtering enriched terms
-(default: 0.1).}
+\item{pval_thresh}{Numeric. Adjusted p-value cutoff for retained terms.
+Default \code{0.1}.}
 
-\item{min_set}{Minimum number of selected genes overlapping an enriched term
-(default: 3).}
+\item{min_set, max_set}{Numeric. Terms are kept only if the number of
+selected features annotated to them is greater than \code{min_set} and less
+than \code{max_set}. Defaults \code{3} and \code{800}.}
 
-\item{max_set}{Maximum number of selected genes overlapping an enriched term
-(default: 800).}
+\item{clustering_approach}{Character. Clustering method used to group
+enriched terms from the Jaccard similarity matrix. Default \code{"diana"}.}
 
-\item{clustering_approach}{Clustering method for GO term grouping.
-Defaults to \code{"diana"}.}
-
-\item{action}{Either \code{"add"} to store results in the object's metadata
-or \code{"get"} to return results as a data frame.}
+\item{action}{Character. \code{"add"} stores the results in the object's
+metadata and returns the object; \code{"get"} returns the enrichment
+results directly.}
 }
 \value{
-If \code{action = "add"}, returns the modified \code{exposomicset} with
-enrichment results added to metadata.
-If \code{action = "get"}, returns a \code{data.frame} of enrichment results
-with GO term clusters (if applicable).
+If \code{action = "get"}, a tibble of enrichment results with
+\code{exp_name}, adjusted p-values (\code{padj}), a \code{go_group} cluster
+assignment and, for \verb{_cor} feature types, \code{category}. If
+\code{action = "add"}, the input \code{exposomicset} with results stored in
+\code{metadata(exposomicset)$enrichment[[feature_type]]} and the run
+parameters recorded in \code{metadata(exposomicset)$summary$steps}.
 }
 \description{
-This function performs enrichment analysis using selected features derived
-from differential expression, correlation analysis,
-or multi-omics factor features across experiments in an \code{exposomicset}.
-It supports multiple enrichment databases (e.g., GO, KEGG, Reactome),
-applies FDR correction, and optionally clusters GO terms by Jaccard overlap.
+Runs over-representation analysis with \pkg{fenr} on features selected
+from an \code{MultiAssayExperiment}-based exposomicset. Features are mapped to
+gene identifiers, tested against a per-experiment universe (all features
+in that experiment's \code{rowData}), p-values are adjusted across all tests,
+and enriched terms are clustered by gene overlap (Jaccard similarity).
 }
 \details{
-The function identifies selected features based on the chosen
-\code{feature_type}, determines the gene universe
-for each experiment, and performs enrichment analysis using the
-\code{fenr} package. Results are adjusted for
-multiple testing and optionally clustered by gene set overlap (for GO terms).
-
-If \code{feature_type} includes correlation-based results
-(ending in \verb{_cor}), enrichment is performed for each
-exposure category separately.
+Term data are downloaded only when there are features to test. For
+\code{db = "GO"}, \pkg{fenr}'s default annotation URL is overridden and
+\code{fenr::fetch_go()} is bypassed, because both rely on endpoints that are
+no longer available. Fewer than two selected genes in an
+experiment/category skips that test; fewer than two enriched terms skips
+clustering and sets \code{go_group} to \code{NA}.
 }
 \examples{
-# create example data
-mae <- make_example_data(
-    n_samples = 30,
-    return_mae = TRUE
-)
-
-# perform differential abundance analysis
-mae <- run_differential_abundance(
-    exposomicset = mae,
-    formula = ~ smoker + sex,
-    abundance_col = "counts",
-    method = "limma_voom",
-    action = "add"
-)
-
-# perform enrichment analysis
+\dontrun{
+# Enrichment of DEGs against GO (biological process terms)
 mae <- run_enrichment(
     exposomicset = mae,
     feature_type = "degs",
-    feature_col = "symbol",
-    species = "goa_human",
-    deg_logfc_threshold = log2(1),
-    deg_pval_col = "P.Value",
-    deg_pval_threshold = 0.2,
-    action = "add"
+    db = "GO",
+    species = "hsapiens"
 )
+
+# Return results without modifying the object
+res <- run_enrichment(
+    exposomicset = mae,
+    feature_type = "degs_robust",
+    db = "KEGG",
+    action = "get"
+)
+}
 
 }

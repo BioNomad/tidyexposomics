@@ -1,0 +1,69 @@
+---
+title: "Getting Started with tidyexposomics"
+author: "Jason Laird"
+header-includes:
+   - \usepackage{amsmath}
+   - \usepackage{amsfonts}
+output:
+  BiocStyle::html_document:
+    toc_float: true
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{tidyexposomics: Exposure Scores}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Tidyexposomics let's you connect exposures, to phenotypes to omics, which is a lot of ground to cover! We provide a series of tutorials that take you through how to do this. We support exposure-phenotype only workflows and those with omics data included too. 
+
+Got an idea for a tutorial you want? Feel free to submit a request [here](https://github.com/BioNomad/tidyexposomics/issues/new)!
+
+### Exposure-Phenotype Analysis
+
+*Data to have: exposures and phenotypes* 
+
+<div style="display: inline-block;">
+<a href="exposure_annotation.html">
+  <img src="./exposure_ontology.png" width="210" >
+</a> 
+<a href="exposure_preprocessing.html">
+  <img src="./exposure_preprocessing.png" width="210" >
+</a> 
+<a href="exposure_sample_clustering.html">
+  <img src="./exposure_sample_clustering.png" width="210">
+</a> 
+<a href="exwas.html">
+  <img src="./exwas.png" width="210">
+</a> 
+<a href="exposome_scores.html">
+  <img src="./exposome_scores.png" width="210">
+</a> 
+</div>
+
+
+
+### Exposure-Phenotype-Omics Analysis
+
+*Data to have: exposures, omics, and phenotypes* 
+
+<div style="display: inline-block;"><a href="omics_preprocessing.html">
+  <img src="./omics_preprocessing.png" width="210">
+</a> 
+<a href="exposure_omics_associations.html">
+  <img src="./exposure_omics_associations.png" width="210">
+</a> 
+<a href="multi_omics_integration.html">
+  <img src="./multi_omics_integration.png" width="210">
+</a> 
+<a href="biological_interpretation.html">
+  <img src="./biological_interpretation.png" width="210">
+</a> 
+<a href="single_cell_exposure_associations.html">
+  <img src="./single_cell_associations.png" width="210">
+</a> 
+</div>

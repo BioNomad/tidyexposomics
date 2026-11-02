@@ -15,16 +15,15 @@ test_that("run_association works with exposures as source and guassian", {
     # Run association analysis
     assoc_mae <- run_association(
         exposomicset = mae,
-        outcome = "exposure_pm25",
+        formula = exposure_pm25 ~ .feature + sex,
         source = "exposures",
-        covariates = "sex",
         feature_set = feature_set,
         family = "gaussian",
         action = "add"
     )
 
     # Confirm metadata was added
-    assoc_meta <- MultiAssayExperiment::metadata(assoc_mae)$association$assoc_exposures
+    assoc_meta <- MultiAssayExperiment::metadata(assoc_mae)$association$assoc_exposures$models$default
     expect_true("results_df" %in% names(assoc_meta))
     expect_true("covariates" %in% names(assoc_meta))
     expect_true(all(c("term", "estimate", "p.value", "r2", "adj_r2") %in% colnames(assoc_meta$results_df)))
@@ -53,16 +52,15 @@ test_that("run_association works with exposures as source and binomial", {
     # Run association analysis
     assoc_mae <- run_association(
         exposomicset = mae,
-        outcome = "smoker",
+        formula = smoker ~ .feature + sex,
         source = "exposures",
-        covariates = "sex",
         feature_set = feature_set,
         family = "binomial",
         action = "add"
     )
 
     # Confirm metadata was added
-    assoc_meta <- MultiAssayExperiment::metadata(assoc_mae)$association$assoc_exposures
+    assoc_meta <- MultiAssayExperiment::metadata(assoc_mae)$association$assoc_exposures$models$default
     expect_true("results_df" %in% names(assoc_meta))
     expect_true("covariates" %in% names(assoc_meta))
     expect_true(all(c("term", "estimate", "p.value", "r2", "adj_r2") %in% colnames(assoc_meta$results_df)))
