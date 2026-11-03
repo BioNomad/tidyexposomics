@@ -1,0 +1,101 @@
+# Convert a SingleCellExperiment or Seurat Object to an exposomicset
+
+Pseudo-bulk aggregates a `SingleCellExperiment` or `Seurat` object to
+the donor level, splitting by cell type so that each cell type becomes a
+separate named experiment in the returned `MultiAssayExperiment`.
+Donor-level metadata is extracted directly from `colData(sce)`.
+
+## Usage
+
+``` r
+transform_sce_to_exposomicset(
+  sce,
+  codebook,
+  sample_col = "sample",
+  cluster_col = "label",
+  sample_meta_cols = NULL,
+  assay_name = "counts",
+  min_cells_per_donor = 10,
+  min_donor_frac = 0.8
+)
+```
+
+## Arguments
+
+- sce:
+
+  A `SingleCellExperiment` or `Seurat` object with at least one assay
+  and cell-level metadata columns matching `sample_col` and
+  `cluster_col`.
+
+- codebook:
+
+  A data frame with columns `variable` and `category` describing the
+  donor-level metadata columns selected via `sample_meta_cols`.
+
+- sample_col:
+
+  Character. Column in `colData(sce)` identifying the donor or sample
+  each cell belongs to. Default `"sample"`.
+
+- cluster_col:
+
+  Character. Column in `colData(sce)` identifying cell type or cluster
+  labels. Each unique value becomes a separate experiment in the MAE.
+  Default `"label"`.
+
+- sample_meta_cols:
+
+  Character vector of column names in `colData(sce)` to retain as
+  donor-level metadata. These should be donor-level variables (e.g. age,
+  sex, smoking status) rather than cell-level variables (e.g.
+  n_genes_detected). The function deduplicates to one row per donor
+  after selecting these columns. If `NULL`, only `sample_col` is used
+  and `colData` will be minimal.
+
+- assay_name:
+
+  Character. Assay to aggregate. Default `"counts"`.
+
+- min_cells_per_donor:
+
+  Integer. Minimum number of cells a donor must contribute to a given
+  cell type to be included in that cell type's pseudo-bulk matrix.
+  Donors below this are dropped from that experiment only. Default `10`.
+
+- min_donor_frac:
+
+  Numeric between 0 and 1. Minimum fraction of donors that must pass
+  `min_cells_per_donor` for a cell type to be retained as an experiment.
+  Cell types below this threshold are dropped with a warning. Default
+  `0.8`.
+
+## Value
+
+A `MultiAssayExperiment` exposomicset with one pseudo-bulk experiment
+per retained cell type, ready for tidyexposomics functions.
+
+## Details
+
+Pseudo-bulk aggregation sums raw counts across all cells belonging to
+the same donor and cell type.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+mae <- transform_sce_to_exposomicset(
+    sce              = sce,
+    codebook         = my_codebook,
+    sample_col       = "donor_id",
+    cluster_col      = "cell_type",
+    sample_meta_cols = c("age", "sex", "smoking_status", "BMI")
+)
+
+mae <- mae |>
+    run_exposure_omics_association(
+        exposures  = c("pm25", "no2"),
+        covariates = c("age", "sex")
+    )
+} # }
+```

@@ -1,0 +1,41 @@
+# Plot Significant Associations per Omics Experiment
+
+Internal helper that counts and plots the number of significant
+exposure-omics associations for each omics experiment (assay).
+
+## Usage
+
+``` r
+.plot_exp_omic_exp_name(
+  exposomicset,
+  pval_col = "p_adjust",
+  pval_thresh = 0.05,
+  estimate_thresh = 0
+)
+```
+
+## Arguments
+
+- exposomicset:
+
+  A `MultiAssayExperiment` object containing association results.
+
+- pval_col:
+
+  Character. Name of the column used for p-value filtering. Defaults to
+  `"p_adjust"`.
+
+- pval_thresh:
+
+  Numeric. Significance threshold applied to `pval_col`. Rows with
+  values below this threshold are retained. Defaults to `0.05`.
+
+- estimate_thresh:
+
+  Numeric. Minimum absolute effect size. Rows with `abs(estimate)`
+  greater than or equal to this value are retained. Defaults to `0` (no
+  filtering on estimate).
+
+## Value
+
+A `ggplot` object.

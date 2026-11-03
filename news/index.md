@@ -1,0 +1,102 @@
+# Changelog
+
+## tidyexposomics 1.1.3
+
+- Updated association functions to take formulas.
+- Added functionality to increase range of plots.
+- Increased code effeciency of enrichment analysis code.
+- Updated sample/exposure cluster assignments to update the column data
+  and codebook, respectively.
+- Updated multi-omics integration function to add factors to column
+  data.
+- Added download functionality for single-cell example.
+
+## tidyexposomics 1.1.2
+
+- Updated exposome score vignette to pull in suggested package.
+- Updated error in MCIA factor naming conventions.
+- Updated GO link to a live link to pull GO annotation data.
+- Removing suggested package, `mirt`, from supplemental vignette.
+
+## tidyexposomics 1.1.1
+
+- Added
+  [`transform_sce_to_exposomicset()`](https://BioNomad.github.io/tidyexposomics/reference/transform_sce_to_exposomicset.md)
+  function to allow `SingleCellExperiment` input.
+
+## tidyexposomics 0.99.16
+
+- Fixed multi-omics latent factor naming.
+
+## tidyexposomics 0.99.15
+
+- Bump version for Bioconductor release.
+
+## tidyexposomics 0.99.14
+
+- Fixed extract top factor features MCIA factor mapping.
+- Updated Zenodo download to incorporate a checksums validation.
+
+## tidyexposomics 0.99.13
+
+- Fixed run_association function to take factors from MCIA.
+- Added function to perform pairwise exposure-omics association testing.
+
+## tidyexposomics 0.99.12
+
+- Removing `.Rproj.user` directory.
+
+## tidyexposomics 0.99.11
+
+- Setting `nipalsMCIA` to suggests due to `nipalsMCIA` RMD check
+  failures.
+
+## tidyexposomics 0.99.10
+
+- Fixed [`set.seed()`](https://rdrr.io/r/base/Random.html) to make
+  network plots consistent within vignette.
+- Fixed issue with impute exposure logic.
+- Updated naming conventions for variable maps.
+
+## tidyexposomics 0.99.9
+
+- Added [`set.seed()`](https://rdrr.io/r/base/Random.html) to make
+  network plots consistent.
+- Updated vignette formatting and PCA documentation.
+
+## tidyexposomics 0.99.8
+
+- Added BiocFileCache-based caching and removed globalenv assignments.
+- Swithced to small example data for vignette and added figure captions.
+- Added MultiAssayExperiment to Depends.
+- Standardized MIT license file.
+- Updated pipeline summary output.
+
+## tidyexposomics 0.99.5/0.99.6/0.99.7
+
+- Removed .Rproj tracking, .gitignore lines.
+- Updated testing strategy.
+- Modified dependency to 4.5.0.
+- Added vignette chunk labels.
+
+## tidyexposomics 0.99.2/0.99.3/0.99.4
+
+- Updated namespace issues with tidybulk.
+
+## tidyexposomics 0.99.1
+
+- Updated variable language for consistency.
+- Pre-build objects for vignette run time.
+- Updated circos plot visuals.
+- Updated network functions to create unique node names.
+
+## tidyexposomics 0.99.0
+
+- Initial Bioconductor submission.
+- Implements a full exposome-omics pipeline including:
+  - Quality control
+  - Association analysis
+  - Differential abundance analysis
+  - Multi-omics integration analysis
+  - Functional enrichment analysis
+  - Vizualization
